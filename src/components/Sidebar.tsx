@@ -6,6 +6,8 @@ const NAV = [
   { to: '/clientes', label: 'Clientes', icon: '👤' },
   { to: '/os', label: 'Ordens de Serviço', icon: '🔧' },
   { to: '/vendas', label: 'Vendas', icon: '🛒' },
+  { to: '/usuarios', label: 'Usuários', icon: '👥' },
+  { to: '/configuracoes', label: 'Configurações', icon: '⚙️' },
 ];
 
 export default function Sidebar() {

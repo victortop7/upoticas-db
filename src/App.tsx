@@ -7,6 +7,8 @@ import Dashboard from './pages/Dashboard';
 import Clientes from './pages/Clientes';
 import OrdensServico from './pages/OrdensServico';
 import Vendas from './pages/Vendas';
+import Usuarios from './pages/Usuarios';
+import Configuracoes from './pages/Configuracoes';
 
 export default function App() {
   return (
@@ -21,6 +23,8 @@ export default function App() {
             <Route path="/clientes" element={<Clientes />} />
             <Route path="/os" element={<OrdensServico />} />
             <Route path="/vendas" element={<Vendas />} />
+            <Route path="/usuarios" element={<Usuarios />} />
+            <Route path="/configuracoes" element={<Configuracoes />} />
           </Route>
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>

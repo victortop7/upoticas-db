@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../lib/api';
 import type { OrdemServico, Cliente } from '../types';
+import ClienteModal from './ClienteModal';
 
 interface Props {
   os: OrdemServico | null;
@@ -46,6 +47,7 @@ export default function OSModal({ os, onClose, onSaved }: Props) {
   const [buscaCliente, setBuscaCliente] = useState('');
   const [saving, setSaving] = useState(false);
   const [erro, setErro] = useState('');
+  const [novoClienteOpen, setNovoClienteOpen] = useState(false);
 
   useEffect(() => {
     loadClientes('');
@@ -137,7 +139,29 @@ export default function OSModal({ os, onClose, onSaved }: Props) {
 
   const clienteSelecionado = clientes.find(c => c.id === form.cliente_id);
 
+  async function handleClienteCadastrado() {
+    setNovoClienteOpen(false);
+    const res = await api.get<{ clientes: Cliente[] }>('/clientes?page=1');
+    setClientes(res.clientes);
+    if (res.clientes.length > 0) {
+      const recente = [...res.clientes].sort((a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      )[0];
+      setForm(f => ({ ...f, cliente_id: recente.id }));
+      setBuscaCliente(recente.nome);
+    }
+  }
+
   return (
+    <>
+    {novoClienteOpen && (
+      <ClienteModal
+        cliente={null}
+        zIndex={1100}
+        onClose={() => setNovoClienteOpen(false)}
+        onSaved={handleClienteCadastrado}
+      />
+    )}
     <div style={{
       position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -204,7 +228,13 @@ export default function OSModal({ os, onClose, onSaved }: Props) {
                 </div>
               </div>
               <div style={{ marginBottom: '14px' }}>
-                <label style={labelStyle}>Buscar Cliente</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <label style={{ ...labelStyle, marginBottom: 0 }}>Buscar Cliente</label>
+                  <button type="button" onClick={() => setNovoClienteOpen(true)} style={{
+                    fontSize: '12px', fontWeight: '600', color: 'var(--primary)',
+                    background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                  }}>+ Cadastrar novo</button>
+                </div>
                 <input
                   style={inputStyle}
                   placeholder="Digite o nome do cliente..."
@@ -388,5 +418,6 @@ export default function OSModal({ os, onClose, onSaved }: Props) {
         </div>
       </div>
     </div>
+    </>
   );
 }
