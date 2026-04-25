@@ -6,6 +6,7 @@ import Cadastro from './pages/Cadastro';
 import Dashboard from './pages/Dashboard';
 import Clientes from './pages/Clientes';
 import OrdensServico from './pages/OrdensServico';
+import Vendas from './pages/Vendas';
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/clientes" element={<Clientes />} />
             <Route path="/os" element={<OrdensServico />} />
+            <Route path="/vendas" element={<Vendas />} />
           </Route>
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
