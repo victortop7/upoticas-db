@@ -128,8 +128,6 @@ export default function OSModal({ os, onClose, onSaved }: Props) {
     color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.4px',
   };
 
-  const field = (children: React.ReactNode, mb = '14px'): React.CSSProperties => ({ marginBottom: mb });
-
   const ABAS: { key: Aba; label: string }[] = [
     { key: 'cliente', label: 'Cliente' },
     { key: 'grau', label: 'Receita' },
