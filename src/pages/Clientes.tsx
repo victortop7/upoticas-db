@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { api } from '../lib/api';
 import type { Cliente } from '../types';
 import ClienteModal from '../components/ClienteModal';
+import ClienteHistoricoModal from '../components/ClienteHistoricoModal';
 
 interface ClientesResponse {
   clientes: Cliente[];
@@ -17,6 +18,7 @@ export default function Clientes() {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editando, setEditando] = useState<Cliente | null>(null);
+  const [historicoCliente, setHistoricoCliente] = useState<Cliente | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -150,21 +152,22 @@ export default function Clientes() {
                 <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>
                   {c.cidade ? `${c.cidade}${c.uf ? `/${c.uf}` : ''}` : '—'}
                 </td>
-                <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                <td style={{ padding: '12px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                  <button onClick={() => setHistoricoCliente(c)} style={{
+                    padding: '5px 10px', fontSize: '12px', marginRight: '6px',
+                    background: 'var(--surface-alt)', color: 'var(--text-dim)',
+                    border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer',
+                  }}>Histórico</button>
                   <button onClick={() => abrirEditar(c)} style={{
                     padding: '5px 10px', fontSize: '12px', marginRight: '6px',
                     background: 'var(--primary-dim)', color: 'var(--primary)',
                     border: '1px solid transparent', borderRadius: '6px', cursor: 'pointer',
-                  }}>
-                    Editar
-                  </button>
+                  }}>Editar</button>
                   <button onClick={() => excluir(c.id)} style={{
                     padding: '5px 10px', fontSize: '12px',
                     background: 'var(--red-dim)', color: 'var(--red)',
                     border: '1px solid transparent', borderRadius: '6px', cursor: 'pointer',
-                  }}>
-                    Excluir
-                  </button>
+                  }}>Excluir</button>
                 </td>
               </tr>
             ))}
@@ -193,6 +196,13 @@ export default function Clientes() {
           cliente={editando}
           onClose={() => setModalOpen(false)}
           onSaved={() => { setModalOpen(false); load(); }}
+        />
+      )}
+      {historicoCliente && (
+        <ClienteHistoricoModal
+          clienteId={historicoCliente.id}
+          clienteNome={historicoCliente.nome}
+          onClose={() => setHistoricoCliente(null)}
         />
       )}
     </div>

@@ -2,6 +2,72 @@ import { useState, useEffect } from 'react';
 import { api } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 
+function AlterarSenhaModal({ onClose }: { onClose: () => void }) {
+  const [form, setForm] = useState({ senha_atual: '', nova_senha: '', confirmar: '' });
+  const [saving, setSaving] = useState(false);
+  const [erro, setErro] = useState('');
+  const [ok, setOk] = useState(false);
+
+  function set(field: string, value: string) { setForm(f => ({ ...f, [field]: value })); }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (form.nova_senha !== form.confirmar) { setErro('As senhas não coincidem'); return; }
+    if (form.nova_senha.length < 6) { setErro('Nova senha deve ter pelo menos 6 caracteres'); return; }
+    setSaving(true); setErro('');
+    try {
+      await api.put('/auth/senha', { senha_atual: form.senha_atual, nova_senha: form.nova_senha });
+      setOk(true);
+      setTimeout(onClose, 1500);
+    } catch (err: any) {
+      setErro(err.message || 'Erro ao alterar senha');
+    } finally { setSaving(false); }
+  }
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%', padding: '8px 10px', fontSize: '14px',
+    border: '1px solid var(--border)', borderRadius: '8px',
+    background: 'var(--surface)', color: 'var(--text)', outline: 'none', boxSizing: 'border-box',
+  };
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}
+      onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={{ background: 'var(--surface)', borderRadius: '16px', border: '1px solid var(--border)', width: '100%', maxWidth: '400px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }}>
+        <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2 style={{ margin: 0, fontSize: '17px', fontWeight: '700', color: 'var(--text)' }}>Alterar Senha</h2>
+          <button onClick={onClose} style={{ width: '32px', height: '32px', border: 'none', borderRadius: '8px', background: 'var(--surface-alt)', color: 'var(--text-dim)', cursor: 'pointer', fontSize: '18px' }}>×</button>
+        </div>
+        <form onSubmit={handleSubmit} style={{ padding: '20px 24px' }}>
+          {ok ? (
+            <p style={{ textAlign: 'center', color: '#16a34a', fontWeight: '600', fontSize: '15px', margin: '8px 0 16px' }}>✓ Senha alterada com sucesso!</p>
+          ) : (
+            <>
+              {[
+                { field: 'senha_atual', label: 'Senha atual' },
+                { field: 'nova_senha', label: 'Nova senha' },
+                { field: 'confirmar', label: 'Confirmar nova senha' },
+              ].map(({ field, label }) => (
+                <div key={field} style={{ marginBottom: '14px' }}>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '500', color: 'var(--text-muted)', marginBottom: '4px' }}>{label}</label>
+                  <input type="password" style={inputStyle} value={(form as any)[field]} onChange={e => set(field, e.target.value)} placeholder="••••••" />
+                </div>
+              ))}
+              {erro && <p style={{ margin: '0 0 12px', fontSize: '13px', color: 'var(--red)' }}>{erro}</p>}
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', paddingTop: '8px', borderTop: '1px solid var(--border)' }}>
+                <button type="button" onClick={onClose} style={{ padding: '9px 18px', fontSize: '14px', background: 'var(--surface-alt)', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer' }}>Cancelar</button>
+                <button type="submit" disabled={saving} style={{ padding: '9px 20px', fontSize: '14px', fontWeight: '600', background: saving ? 'var(--primary-dim)' : 'var(--primary)', color: saving ? 'var(--primary)' : 'white', border: 'none', borderRadius: '8px', cursor: saving ? 'default' : 'pointer' }}>
+                  {saving ? 'Salvando...' : 'Alterar'}
+                </button>
+              </div>
+            </>
+          )}
+        </form>
+      </div>
+    </div>
+  );
+}
+
 const UF_LIST = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
 
 interface TenantConfig {
@@ -25,6 +91,7 @@ export default function Configuracoes() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [erro, setErro] = useState('');
+  const [senhaModalOpen, setSenhaModalOpen] = useState(false);
   const [config, setConfig] = useState<TenantConfig | null>(null);
 
   useEffect(() => {
@@ -174,11 +241,20 @@ export default function Configuracoes() {
         </div>
       </form>
 
-      {/* E-mail (read-only) */}
-      <div style={{ marginTop: '16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '18px 20px' }}>
-        <p style={{ margin: '0 0 4px', fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>E-mail da conta</p>
-        <p style={{ margin: 0, fontSize: '14px', color: 'var(--text)', fontFamily: 'var(--mono)' }}>{config?.email}</p>
+      {/* E-mail + Senha */}
+      <div style={{ marginTop: '16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '18px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <p style={{ margin: '0 0 4px', fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>E-mail da conta</p>
+          <p style={{ margin: 0, fontSize: '14px', color: 'var(--text)', fontFamily: 'var(--mono)' }}>{config?.email}</p>
+        </div>
+        <button onClick={() => setSenhaModalOpen(true)} style={{
+          padding: '8px 16px', fontSize: '13px', fontWeight: '500',
+          background: 'var(--surface-alt)', color: 'var(--text-dim)',
+          border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer',
+        }}>Alterar senha</button>
       </div>
+
+      {senhaModalOpen && <AlterarSenhaModal onClose={() => setSenhaModalOpen(false)} />}
     </div>
   );
 }

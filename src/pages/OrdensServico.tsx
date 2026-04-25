@@ -79,6 +79,11 @@ export default function OrdensServico() {
     load();
   }
 
+  async function trocarSituacao(id: string, situacao: string) {
+    await api.post('/os/situacao', { id, situacao });
+    load();
+  }
+
   const filterBtnStyle = (active: boolean): React.CSSProperties => ({
     padding: '6px 12px', fontSize: '12px', fontWeight: '500',
     border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`,
@@ -188,13 +193,22 @@ export default function OrdensServico() {
                      os.tipo === 'lente_contato' ? 'Lente Contato' :
                      os.tipo === 'conserto' ? 'Conserto' : 'Outro'}
                   </td>
-                  <td style={{ padding: '12px 16px' }}>
-                    <span style={{
-                      padding: '3px 9px', borderRadius: '20px', fontSize: '12px', fontWeight: '500',
-                      background: sc.bg, color: sc.color,
-                    }}>
-                      {SITUACAO_LABEL[os.situacao]}
-                    </span>
+                  <td style={{ padding: '8px 16px' }}>
+                    <select
+                      value={os.situacao}
+                      onChange={e => trocarSituacao(os.id, e.target.value)}
+                      style={{
+                        padding: '4px 8px', fontSize: '12px', fontWeight: '500',
+                        background: sc.bg, color: sc.color,
+                        border: `1px solid ${sc.color}44`, borderRadius: '20px',
+                        cursor: 'pointer', outline: 'none', appearance: 'none',
+                        WebkitAppearance: 'none',
+                      }}
+                    >
+                      {Object.entries(SITUACAO_LABEL).map(([val, label]) => (
+                        <option key={val} value={val}>{label}</option>
+                      ))}
+                    </select>
                   </td>
                   <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', color: 'var(--text)' }}>
                     {formatBRL(os.valor_total)}
