@@ -130,6 +130,7 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
     {novoClienteOpen && (
       <ClienteModal
         cliente={null}
+        zIndex={1100}
         onClose={() => setNovoClienteOpen(false)}
         onSaved={handleClienteCadastrado}
       />

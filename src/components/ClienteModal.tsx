@@ -6,11 +6,12 @@ interface Props {
   cliente: Cliente | null;
   onClose: () => void;
   onSaved: () => void;
+  zIndex?: number;
 }
 
 const UF_LIST = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
 
-export default function ClienteModal({ cliente, onClose, onSaved }: Props) {
+export default function ClienteModal({ cliente, onClose, onSaved, zIndex = 1000 }: Props) {
   const [form, setForm] = useState({
     nome: '', apelido: '', cpf: '', telefone: '', celular: '', email: '',
     data_nascimento: '', endereco: '', bairro: '', cidade: '', uf: '', cep: '',
@@ -83,7 +84,7 @@ export default function ClienteModal({ cliente, onClose, onSaved }: Props) {
     <div style={{
       position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      zIndex: 1000, padding: '16px',
+      zIndex, padding: '16px',
     }} onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{
         background: 'var(--surface)', borderRadius: '16px',
