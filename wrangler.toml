@@ -5,4 +5,4 @@ pages_build_output_dir = "dist"
 [[d1_databases]]
 binding = "DB"
 database_name = "upoticas-db"
-database_id = "COLOQUE_O_ID_AQUI"
+database_id = "dbb50f5a-a0e3-4d6d-834d-a8b26ff3dd47"
