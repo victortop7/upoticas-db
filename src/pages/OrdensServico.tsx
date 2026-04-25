@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import type { OrdemServico } from '../types';
 import OSModal from '../components/OSModal';
@@ -46,6 +47,7 @@ export default function OrdensServico() {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editando, setEditando] = useState<OrdemServico | null>(null);
+  const navigate = useNavigate();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -207,6 +209,11 @@ export default function OrdensServico() {
                     {formatDate(os.data_entrega)}
                   </td>
                   <td style={{ padding: '12px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                    <button onClick={() => navigate(`/os/${os.id}/imprimir`)} style={{
+                      padding: '5px 10px', fontSize: '12px', marginRight: '6px',
+                      background: 'var(--surface-alt)', color: 'var(--text-dim)',
+                      border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer',
+                    }}>🖨️</button>
                     <button onClick={() => abrirEditar(os)} style={{
                       padding: '5px 10px', fontSize: '12px', marginRight: '6px',
                       background: 'var(--primary-dim)', color: 'var(--primary)',
