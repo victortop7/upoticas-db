@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useTheme } from '../hooks/useTheme';
 
 const NAV = [
   { to: '/dashboard', label: 'Painel', icon: '◉' },
@@ -14,6 +15,7 @@ const NAV = [
 export default function Sidebar() {
   const { tenant, usuario, logout } = useAuth();
   const navigate = useNavigate();
+  const { dark, toggle } = useTheme();
 
   async function handleLogout() {
     await logout();
@@ -88,6 +90,21 @@ export default function Sidebar() {
 
       {/* Footer */}
       <div style={{ padding: '12px 8px', borderTop: '1px solid var(--border)' }}>
+        <button
+          onClick={toggle}
+          style={{
+            width: '100%', padding: '9px 10px', fontSize: '14px',
+            color: 'var(--text-dim)', background: 'transparent',
+            border: 'none', borderRadius: '8px', cursor: 'pointer',
+            textAlign: 'left', display: 'flex', alignItems: 'center', gap: '10px',
+            transition: 'background 0.15s', marginBottom: '2px',
+          }}
+          onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-alt)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+        >
+          <span>{dark ? '☀️' : '🌙'}</span>
+          {dark ? 'Modo claro' : 'Modo escuro'}
+        </button>
         <button
           onClick={handleLogout}
           style={{
