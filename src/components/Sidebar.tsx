@@ -7,6 +7,7 @@ const NAV_GERAL = [
   { to: '/clientes', label: 'Clientes', icon: '👤' },
   { to: '/os', label: 'Ordens de Serviço', icon: '🔧' },
   { to: '/vendas', label: 'Vendas', icon: '🛒' },
+  { to: '/crm', label: 'Funil CRM', icon: '🎯' },
   { to: '/relatorios', label: 'Relatórios', icon: '📊' },
 ];
 
