@@ -1,5 +1,6 @@
 import { Outlet, Navigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import BuscaGlobal from './BuscaGlobal';
 import { useAuth } from '../hooks/useAuth';
 
 export default function Layout() {
@@ -26,6 +27,7 @@ export default function Layout() {
       }}>
         <Outlet />
       </main>
+      <BuscaGlobal />
     </div>
   );
 }

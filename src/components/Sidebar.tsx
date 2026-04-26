@@ -66,6 +66,22 @@ export default function Sidebar() {
 
       {/* Nav */}
       <nav style={{ flex: 1, padding: '12px 8px' }}>
+        {/* Busca global */}
+        <button
+          onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }))}
+          style={{
+            width: '100%', padding: '8px 10px', marginBottom: '8px',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            background: 'var(--surface-alt)', border: '1px solid var(--border)',
+            borderRadius: '8px', cursor: 'pointer', color: 'var(--text-muted)',
+            fontSize: '13px',
+          }}
+        >
+          <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span>🔍</span> Buscar...
+          </span>
+          <kbd style={{ fontSize: '10px', padding: '1px 5px', borderRadius: '3px', background: 'var(--surface)', border: '1px solid var(--border)', fontFamily: 'var(--mono)' }}>⌃K</kbd>
+        </button>
         <p style={{ fontSize: '10px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', padding: '0 8px', margin: '0 0 6px' }}>
           Menu
         </p>
