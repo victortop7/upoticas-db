@@ -12,6 +12,11 @@ import Configuracoes from './pages/Configuracoes';
 import Relatorios from './pages/Relatorios';
 import ImprimirOS from './pages/ImprimirOS';
 import Landing from './pages/Landing';
+import Contas from './pages/financeiro/Contas';
+import ContasPagar from './pages/financeiro/ContasPagar';
+import ContasReceber from './pages/financeiro/ContasReceber';
+import Caixa from './pages/financeiro/Caixa';
+import FluxoFinanceiro from './pages/financeiro/FluxoFinanceiro';
 
 export default function App() {
   return (
@@ -31,6 +36,11 @@ export default function App() {
             <Route path="/usuarios" element={<Usuarios />} />
             <Route path="/configuracoes" element={<Configuracoes />} />
             <Route path="/relatorios" element={<Relatorios />} />
+            <Route path="/financeiro/contas" element={<Contas />} />
+            <Route path="/financeiro/contas-pagar" element={<ContasPagar />} />
+            <Route path="/financeiro/contas-receber" element={<ContasReceber />} />
+            <Route path="/financeiro/caixa" element={<Caixa />} />
+            <Route path="/financeiro/fluxo" element={<FluxoFinanceiro />} />
           </Route>
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>

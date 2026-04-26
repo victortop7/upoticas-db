@@ -2,12 +2,23 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 
-const NAV = [
+const NAV_GERAL = [
   { to: '/dashboard', label: 'Painel', icon: '◉' },
   { to: '/clientes', label: 'Clientes', icon: '👤' },
   { to: '/os', label: 'Ordens de Serviço', icon: '🔧' },
   { to: '/vendas', label: 'Vendas', icon: '🛒' },
   { to: '/relatorios', label: 'Relatórios', icon: '📊' },
+];
+
+const NAV_FINANCEIRO = [
+  { to: '/financeiro/caixa', label: 'Caixa', icon: '💵' },
+  { to: '/financeiro/contas-pagar', label: 'Contas a Pagar', icon: '📤' },
+  { to: '/financeiro/contas-receber', label: 'Contas a Receber', icon: '📥' },
+  { to: '/financeiro/fluxo', label: 'Fluxo Financeiro', icon: '📈' },
+  { to: '/financeiro/contas', label: 'Contas', icon: '🏦' },
+];
+
+const NAV_CONFIG = [
   { to: '/usuarios', label: 'Usuários', icon: '👥' },
   { to: '/configuracoes', label: 'Configurações', icon: '⚙️' },
 ];
@@ -82,25 +93,33 @@ export default function Sidebar() {
           </span>
           <kbd style={{ fontSize: '10px', padding: '1px 5px', borderRadius: '3px', background: 'var(--surface)', border: '1px solid var(--border)', fontFamily: 'var(--mono)' }}>⌃K</kbd>
         </button>
-        <p style={{ fontSize: '10px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', padding: '0 8px', margin: '0 0 6px' }}>
-          Menu
-        </p>
-        {NAV.map(item => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            style={({ isActive }) => ({
-              display: 'flex', alignItems: 'center', gap: '10px',
-              padding: '9px 10px', borderRadius: '8px', marginBottom: '2px',
-              fontSize: '14px', fontWeight: isActive ? '600' : '400',
-              color: isActive ? 'var(--primary)' : 'var(--text-dim)',
-              background: isActive ? 'var(--primary-dim)' : 'transparent',
-              textDecoration: 'none', transition: 'all 0.15s',
-            })}
-          >
-            <span style={{ fontSize: '16px' }}>{item.icon}</span>
-            {item.label}
-          </NavLink>
+        {([
+          { label: 'Menu', items: NAV_GERAL },
+          { label: 'Financeiro', items: NAV_FINANCEIRO },
+          { label: 'Sistema', items: NAV_CONFIG },
+        ] as const).map(({ label, items }) => (
+          <div key={label}>
+            <p style={{ fontSize: '10px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', padding: '0 8px', margin: '8px 0 4px' }}>
+              {label}
+            </p>
+            {items.map(item => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                style={({ isActive }) => ({
+                  display: 'flex', alignItems: 'center', gap: '10px',
+                  padding: '8px 10px', borderRadius: '8px', marginBottom: '2px',
+                  fontSize: '13px', fontWeight: isActive ? '600' : '400',
+                  color: isActive ? 'var(--primary)' : 'var(--text-dim)',
+                  background: isActive ? 'var(--primary-dim)' : 'transparent',
+                  textDecoration: 'none', transition: 'all 0.15s',
+                })}
+              >
+                <span style={{ fontSize: '15px' }}>{item.icon}</span>
+                {item.label}
+              </NavLink>
+            ))}
+          </div>
         ))}
       </nav>
 
