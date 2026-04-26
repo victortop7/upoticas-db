@@ -13,6 +13,10 @@ import Relatorios from './pages/Relatorios';
 import ImprimirOS from './pages/ImprimirOS';
 import Landing from './pages/Landing';
 import Contas from './pages/financeiro/Contas';
+import Campanhas from './pages/marketing/Campanhas';
+import Modelos from './pages/marketing/Modelos';
+import Aniversariantes from './pages/marketing/Aniversariantes';
+import Historico from './pages/marketing/Historico';
 import ContasPagar from './pages/financeiro/ContasPagar';
 import ContasReceber from './pages/financeiro/ContasReceber';
 import Caixa from './pages/financeiro/Caixa';
@@ -41,6 +45,10 @@ export default function App() {
             <Route path="/financeiro/contas-receber" element={<ContasReceber />} />
             <Route path="/financeiro/caixa" element={<Caixa />} />
             <Route path="/financeiro/fluxo" element={<FluxoFinanceiro />} />
+            <Route path="/marketing/campanhas" element={<Campanhas />} />
+            <Route path="/marketing/modelos" element={<Modelos />} />
+            <Route path="/marketing/aniversariantes" element={<Aniversariantes />} />
+            <Route path="/marketing/historico" element={<Historico />} />
           </Route>
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>

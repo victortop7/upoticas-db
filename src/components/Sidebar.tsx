@@ -18,6 +18,13 @@ const NAV_FINANCEIRO = [
   { to: '/financeiro/contas', label: 'Contas', icon: '🏦' },
 ];
 
+const NAV_MARKETING = [
+  { to: '/marketing/campanhas', label: 'Campanhas', icon: '📢' },
+  { to: '/marketing/aniversariantes', label: 'Aniversariantes', icon: '🎂' },
+  { to: '/marketing/modelos', label: 'Modelos', icon: '💬' },
+  { to: '/marketing/historico', label: 'Histórico', icon: '📋' },
+];
+
 const NAV_CONFIG = [
   { to: '/usuarios', label: 'Usuários', icon: '👥' },
   { to: '/configuracoes', label: 'Configurações', icon: '⚙️' },
@@ -96,6 +103,7 @@ export default function Sidebar() {
         {([
           { label: 'Menu', items: NAV_GERAL },
           { label: 'Financeiro', items: NAV_FINANCEIRO },
+          { label: 'Marketing', items: NAV_MARKETING },
           { label: 'Sistema', items: NAV_CONFIG },
         ] as const).map(({ label, items }) => (
           <div key={label}>
