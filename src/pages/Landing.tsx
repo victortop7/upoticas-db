@@ -45,53 +45,67 @@ const FEATURES = [
 
 const PLANOS = [
   {
-    nome: 'Básico',
-    preco: '49',
-    desc: 'Para começar com organização',
+    nome: 'Gestão',
+    preco: '250',
+    desc: 'Para óticas que querem organização',
     features: [
-      'Clientes ilimitados',
-      'OS ilimitadas',
-      'Controle de vendas',
-      'Relatórios básicos',
-      '1 usuário',
-      'Suporte por e-mail',
+      { texto: 'Clientes ilimitados', inc: true },
+      { texto: 'Ordens de Serviço ilimitadas', inc: true },
+      { texto: 'Controle de Vendas e Caixa', inc: true },
+      { texto: 'Controle de Estoque', inc: true },
+      { texto: 'Relatórios gerenciais', inc: true },
+      { texto: 'Impressão de OS', inc: true },
+      { texto: 'Até 3 usuários', inc: true },
+      { texto: 'Financeiro (contas a pagar/receber)', inc: false },
+      { texto: 'Controle de Inadimplência', inc: false },
+      { texto: 'CRM & Funil de relacionamento', inc: false },
+      { texto: 'Marketing e Campanhas WhatsApp', inc: false },
+      { texto: 'Usuários ilimitados', inc: false },
     ],
     destaque: false,
     cta: 'Começar grátis',
   },
   {
-    nome: 'Pro',
-    preco: '89',
+    nome: 'Gestão Pro',
+    preco: '350',
     desc: 'Para óticas em crescimento',
     features: [
-      'Tudo do Básico',
-      'Até 5 usuários',
-      'Financeiro completo',
-      'CRM & Marketing',
-      'Estoque completo',
-      'Relatórios avançados',
-      'Suporte prioritário',
-      'Backup automático',
+      { texto: 'Clientes ilimitados', inc: true },
+      { texto: 'Ordens de Serviço ilimitadas', inc: true },
+      { texto: 'Controle de Vendas e Caixa', inc: true },
+      { texto: 'Controle de Estoque', inc: true },
+      { texto: 'Relatórios gerenciais', inc: true },
+      { texto: 'Impressão de OS', inc: true },
+      { texto: 'Até 5 usuários', inc: true },
+      { texto: 'Financeiro (contas a pagar/receber)', inc: true },
+      { texto: 'Controle de Inadimplência', inc: true },
+      { texto: 'CRM & Funil de relacionamento', inc: true },
+      { texto: 'Marketing e Campanhas WhatsApp', inc: false },
+      { texto: 'Usuários ilimitados', inc: false },
     ],
     destaque: true,
     cta: 'Começar grátis',
   },
   {
-    nome: 'Empresarial',
-    preco: '149',
-    desc: 'Para redes e múltiplas unidades',
+    nome: 'Completo',
+    preco: '450',
+    desc: 'Para quem quer vender mais',
     features: [
-      'Tudo do Pro',
-      'Usuários ilimitados',
-      'Múltiplas unidades',
-      'Integração laboratório',
-      'API e integrações',
-      'Gerente de conta',
-      'Onboarding guiado',
-      'SLA garantido',
+      { texto: 'Clientes ilimitados', inc: true },
+      { texto: 'Ordens de Serviço ilimitadas', inc: true },
+      { texto: 'Controle de Vendas e Caixa', inc: true },
+      { texto: 'Controle de Estoque', inc: true },
+      { texto: 'Relatórios gerenciais', inc: true },
+      { texto: 'Impressão de OS', inc: true },
+      { texto: 'Usuários ilimitados', inc: true },
+      { texto: 'Financeiro (contas a pagar/receber)', inc: true },
+      { texto: 'Controle de Inadimplência', inc: true },
+      { texto: 'CRM & Funil de relacionamento', inc: true },
+      { texto: 'Marketing e Campanhas WhatsApp', inc: true },
+      { texto: 'Suporte prioritário + onboarding', inc: true },
     ],
     destaque: false,
-    cta: 'Falar com consultor',
+    cta: 'Começar grátis',
   },
 ];
 
@@ -300,17 +314,19 @@ export default function Landing() {
                 <span style={{ fontSize: '14px', color: '#64748b' }}>/mês</span>
               </div>
 
-              <ul style={{ margin: '0 0 28px', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <ul style={{ margin: '0 0 28px', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '9px' }}>
                 {p.features.map((f, j) => (
-                  <li key={j} style={{ fontSize: '14px', color: '#cbd5e1', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                    <span style={{ color: '#22c55e', fontWeight: '800', flexShrink: 0, marginTop: '1px' }}>✓</span>
-                    {f}
+                  <li key={j} style={{ fontSize: '13.5px', color: f.inc ? '#cbd5e1' : '#475569', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                    <span style={{ color: f.inc ? '#22c55e' : '#374151', fontWeight: '800', flexShrink: 0, marginTop: '1px', fontSize: '14px' }}>
+                      {f.inc ? '✓' : '✕'}
+                    </span>
+                    <span style={{ textDecoration: f.inc ? 'none' : 'line-through', textDecorationColor: '#374151' }}>{f.texto}</span>
                   </li>
                 ))}
               </ul>
 
               <button
-                onClick={() => i === 2 ? window.open('https://wa.me/5511999999999?text=Quero+saber+mais+sobre+o+plano+Empresarial+do+UpÓticas', '_blank') : navigate('/cadastro')}
+                onClick={() => navigate('/cadastro')}
                 style={{
                   width: '100%', padding: '13px', fontSize: '15px', fontWeight: '700',
                   background: p.destaque ? 'linear-gradient(135deg,#2563eb,#1d4ed8)' : 'transparent',
