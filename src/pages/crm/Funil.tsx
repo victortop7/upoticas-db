@@ -7,7 +7,8 @@ interface Card {
   id: string; estagio: string; prioridade: string; notas: string | null;
   cliente_id: string; nome: string; celular?: string; telefone?: string;
   email?: string; cidade?: string; uf?: string; data_nascimento?: string;
-  ultima_os?: string; ultima_venda?: string; total_os: number; total_gasto: number;
+  ultima_entrega?: string; ultima_venda?: string; total_os: number;
+  total_gasto: number; valor_pendente: number;
   updated_at: string;
 }
 
@@ -15,9 +16,10 @@ const ESTAGIOS = [
   { key: 'novo',       label: 'Novos',      icon: '🆕', color: '#64748b' },
   { key: 'contato',    label: 'Contato',    icon: '📞', color: '#2563eb' },
   { key: 'pos_venda',  label: 'Pós-venda',  icon: '💰', color: '#16a34a' },
+  { key: 'a_receber',  label: 'A Receber',  icon: '💳', color: '#dc2626' },
   { key: 'aniversario',label: 'Aniversário',icon: '🎂', color: '#d97706' },
   { key: 'indicacao',  label: 'Indicação',  icon: '👥', color: '#7c3aed' },
-  { key: 'reativacao', label: 'Reativação', icon: '🔄', color: '#dc2626' },
+  { key: 'reativacao', label: 'Reativação', icon: '🔄', color: '#ea580c' },
   { key: 'vip',        label: 'VIP',        icon: '⭐', color: '#b45309' },
 ];
 
@@ -25,6 +27,7 @@ const MSG_PADRAO: Record<string, string> = {
   novo:        'Olá {nome}! Seja bem-vindo à {loja}! 😊 Qualquer dúvida, estamos à disposição.',
   contato:     'Olá {nome}, tudo bem? Passando para saber se posso te ajudar com algo na {loja}.',
   pos_venda:   'Olá {nome}! Espero que esteja satisfeito com sua compra na {loja}. Precisando de ajuste ou dúvida, é só falar! 😊',
+  a_receber:   'Olá {nome}, tudo bem? Identificamos um valor em aberto referente ao seu pedido na {loja}. Poderia nos contatar para regularizar? 😊',
   aniversario: 'Olá {nome}! 🎂 Feliz aniversário! Temos uma surpresa especial para você na {loja}. Venha nos visitar!',
   indicacao:   'Olá {nome}! Que tal indicar um amigo para a {loja}? Por cada indicação você ganha um desconto especial na próxima compra! 👥',
   reativacao:  'Olá {nome}, sentimos sua falta! 😊 Temos novidades esperando por você na {loja}. Venha conferir!',
@@ -67,7 +70,7 @@ function CardItem({ card, onMover, onSalvarNota, tenant }: {
   const fone = card.celular || card.telefone || '';
   const temFone = foneValido(fone);
   const aniv = proximoAniversario(card.data_nascimento);
-  const ultimaAtiv = card.ultima_os || card.ultima_venda;
+  const ultimaAtiv = card.ultima_entrega || card.ultima_venda;
   const estagio = ESTAGIOS.find(e => e.key === card.estagio);
 
   function abrirWhatsApp() {
@@ -133,6 +136,11 @@ function CardItem({ card, onMover, onSalvarNota, tenant }: {
           {card.total_gasto > 0 && (
             <span style={{ fontSize: '10px', background: 'rgba(22,163,74,0.08)', color: '#16a34a', padding: '1px 6px', borderRadius: '10px' }}>
               {brl(card.total_gasto)}
+            </span>
+          )}
+          {card.valor_pendente > 0 && (
+            <span style={{ fontSize: '10px', background: 'rgba(220,38,38,0.1)', color: '#dc2626', padding: '1px 6px', borderRadius: '10px', fontWeight: '600' }}>
+              💳 {brl(card.valor_pendente)}
             </span>
           )}
           {ultimaAtiv && (
