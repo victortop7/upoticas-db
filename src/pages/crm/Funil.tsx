@@ -319,9 +319,100 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant }: {
   );
 }
 
+// ─── View semanal para marketing ─────────────────────────────────────────────
+function MarketingView() {
+  const DIAS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  const [vendas, setVendas] = useState<{ dia: string; vendas: number; valor: number }[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      const hoje = new Date();
+      const dow = hoje.getDay(); // 0=dom
+      const diff = dow === 0 ? 6 : dow - 1; // dias desde segunda
+      const seg = new Date(hoje); seg.setDate(hoje.getDate() - diff);
+      const sab = new Date(seg); sab.setDate(seg.getDate() + 5);
+      const fmt = (d: Date) => d.toISOString().split('T')[0];
+      try {
+        const res = await api.get<{ vendas_por_dia: { dia: string; vendas: number; valor: number }[] }>(
+          `/relatorios/resumo?inicio=${fmt(seg)}&fim=${fmt(sab)}`
+        );
+        setVendas(res.vendas_por_dia);
+      } finally { setLoading(false); }
+    }
+    load();
+  }, []);
+
+  // gera os 6 dias da semana (seg–sab)
+  const hoje = new Date();
+  const dow = hoje.getDay();
+  const diff = dow === 0 ? 6 : dow - 1;
+  const semana = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(hoje); d.setDate(hoje.getDate() - diff + i);
+    return d.toISOString().split('T')[0];
+  });
+
+  const totalSemana = vendas.reduce((s, v) => s + v.vendas, 0);
+  const maxVendas = Math.max(...vendas.map(v => v.vendas), 1);
+
+  return (
+    <div style={{ padding: '32px' }}>
+      <div style={{ marginBottom: '28px' }}>
+        <h1 style={{ margin: '0 0 4px', fontSize: '22px', fontWeight: '600', color: 'var(--text)' }}>Minhas Vendas da Semana</h1>
+        <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-dim)' }}>Segunda a Sábado — semana atual</p>
+      </div>
+
+      {/* Total */}
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '14px', padding: '24px 28px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+        <div style={{ width: '52px', height: '52px', borderRadius: '14px', background: 'rgba(37,99,235,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>🛒</div>
+        <div>
+          <p style={{ margin: 0, fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total da semana</p>
+          <p style={{ margin: '4px 0 0', fontSize: '36px', fontWeight: '800', color: 'var(--primary)', fontFamily: 'var(--mono)', letterSpacing: '-1px' }}>{loading ? '...' : totalSemana}</p>
+          <p style={{ margin: '2px 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>vendas registradas</p>
+        </div>
+      </div>
+
+      {/* Grid por dia */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '12px' }}>
+        {semana.map((dataStr, i) => {
+          const diaData = vendas.find(v => v.dia === dataStr);
+          const count = diaData?.vendas || 0;
+          const isHoje = dataStr === hoje.toISOString().split('T')[0];
+          const isPast = dataStr < hoje.toISOString().split('T')[0];
+          const barH = count > 0 ? Math.max(12, (count / maxVendas) * 80) : 4;
+          return (
+            <div key={dataStr} style={{
+              background: isHoje ? 'rgba(37,99,235,0.08)' : 'var(--surface)',
+              border: `1px solid ${isHoje ? 'rgba(37,99,235,0.3)' : 'var(--border)'}`,
+              borderRadius: '12px', padding: '16px 12px', textAlign: 'center',
+            }}>
+              <p style={{ margin: '0 0 12px', fontSize: '12px', fontWeight: '600', color: isHoje ? 'var(--primary)' : 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                {DIAS[i]}
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', height: '80px', marginBottom: '10px' }}>
+                <div style={{
+                  width: '28px', borderRadius: '6px 6px 0 0',
+                  background: count > 0 ? (isHoje ? 'var(--primary)' : '#2563eb88') : 'var(--border)',
+                  height: `${barH}px`, transition: 'height 0.3s',
+                }} />
+              </div>
+              <p style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: count > 0 ? 'var(--text)' : 'var(--text-muted)', fontFamily: 'var(--mono)' }}>{loading ? '·' : count}</p>
+              <p style={{ margin: '2px 0 0', fontSize: '11px', color: isPast && count === 0 ? 'var(--text-muted)' : 'var(--text-muted)' }}>
+                {count === 1 ? 'venda' : 'vendas'}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ─── Funil principal ──────────────────────────────────────────────────────────
 export default function Funil() {
-  const { tenant } = useAuth();
+  const { tenant, usuario } = useAuth();
+
+  if (usuario?.perfil === 'marketing') return <MarketingView />;
   const [estagios, setEstagios] = useState<Estagio[]>([]);
   const [cards, setCards] = useState<Card[]>([]);
   const [loading, setLoading] = useState(true);

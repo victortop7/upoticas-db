@@ -86,33 +86,16 @@ export default function Sidebar() {
 
       {/* Nav */}
       <nav style={{ flex: 1, padding: '12px 8px', overflowY: 'auto', overflowX: 'hidden' }}>
-        {/* Busca global */}
-        <button
-          onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }))}
-          style={{
-            width: '100%', padding: '8px 10px', marginBottom: '8px',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            background: 'var(--surface-alt)', border: '1px solid var(--border)',
-            borderRadius: '8px', cursor: 'pointer', color: 'var(--text-muted)',
-            fontSize: '13px',
-          }}
-        >
-          <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>🔍</span> Buscar...
-          </span>
-          <kbd style={{ fontSize: '10px', padding: '1px 5px', borderRadius: '3px', background: 'var(--surface)', border: '1px solid var(--border)', fontFamily: 'var(--mono)' }}>⌃K</kbd>
-        </button>
-        {([
-          { label: 'Menu', items: NAV_GERAL },
-          { label: 'Financeiro', items: NAV_FINANCEIRO },
-          { label: 'Marketing', items: NAV_MARKETING },
-          { label: 'Sistema', items: NAV_CONFIG },
-        ] as const).map(({ label, items }) => (
-          <div key={label}>
+        {usuario?.perfil === 'marketing' ? (
+          /* Menu restrito para marketing */
+          <div>
             <p style={{ fontSize: '10px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', padding: '0 8px', margin: '8px 0 4px' }}>
-              {label}
+              Menu
             </p>
-            {items.map(item => (
+            {[
+              { to: '/vendas', label: 'Vendas', icon: '🛒' },
+              { to: '/crm', label: 'Funil CRM', icon: '🎯' },
+            ].map(item => (
               <NavLink
                 key={item.to}
                 to={item.to}
@@ -130,7 +113,55 @@ export default function Sidebar() {
               </NavLink>
             ))}
           </div>
-        ))}
+        ) : (
+          /* Menu completo para admin/vendedor/caixa */
+          <>
+            <button
+              onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }))}
+              style={{
+                width: '100%', padding: '8px 10px', marginBottom: '8px',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                background: 'var(--surface-alt)', border: '1px solid var(--border)',
+                borderRadius: '8px', cursor: 'pointer', color: 'var(--text-muted)',
+                fontSize: '13px',
+              }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>🔍</span> Buscar...
+              </span>
+              <kbd style={{ fontSize: '10px', padding: '1px 5px', borderRadius: '3px', background: 'var(--surface)', border: '1px solid var(--border)', fontFamily: 'var(--mono)' }}>⌃K</kbd>
+            </button>
+            {([
+              { label: 'Menu', items: NAV_GERAL },
+              { label: 'Financeiro', items: NAV_FINANCEIRO },
+              { label: 'Marketing', items: NAV_MARKETING },
+              { label: 'Sistema', items: NAV_CONFIG },
+            ] as const).map(({ label, items }) => (
+              <div key={label}>
+                <p style={{ fontSize: '10px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', padding: '0 8px', margin: '8px 0 4px' }}>
+                  {label}
+                </p>
+                {items.map(item => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    style={({ isActive }) => ({
+                      display: 'flex', alignItems: 'center', gap: '10px',
+                      padding: '8px 10px', borderRadius: '8px', marginBottom: '2px',
+                      fontSize: '13px', fontWeight: isActive ? '600' : '400',
+                      color: isActive ? 'var(--primary)' : 'var(--text-dim)',
+                      background: isActive ? 'var(--primary-dim)' : 'transparent',
+                      textDecoration: 'none', transition: 'all 0.15s',
+                    })}
+                  >
+                    <span style={{ fontSize: '15px' }}>{item.icon}</span>
+                    {item.label}
+                  </NavLink>
+                ))}
+              </div>
+            ))}
+          </>
+        )}
       </nav>
 
       {/* Footer */}
