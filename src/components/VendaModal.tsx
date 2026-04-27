@@ -23,6 +23,48 @@ interface Props {
   onSaved: () => void;
 }
 
+function NovoVendedorInline({ onClose, onSaved }: { onClose: () => void; onSaved: (id: string) => void }) {
+  const [form, setForm] = useState({ nome: '', email: '', perfil: 'vendedor', senha: '' });
+  const [saving, setSaving] = useState(false);
+  const [erro, setErro] = useState('');
+  const inp: React.CSSProperties = { width: '100%', padding: '8px 10px', fontSize: '14px', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--surface)', color: 'var(--text)', outline: 'none', boxSizing: 'border-box' };
+  const lbl: React.CSSProperties = { display: 'block', fontSize: '12px', fontWeight: '500', color: 'var(--text-muted)', marginBottom: '4px' };
+  async function submit(e: React.FormEvent) {
+    e.preventDefault(); setSaving(true); setErro('');
+    try {
+      const res = await api.post<{ id: string }>('/usuarios', form);
+      onSaved(res.id);
+    } catch (err: any) { setErro(err.message || 'Erro'); } finally { setSaving(false); }
+  }
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200, padding: '16px' }} onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={{ background: 'var(--surface)', borderRadius: '14px', border: '1px solid var(--border)', width: '100%', maxWidth: '400px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+        <div style={{ padding: '18px 22px 14px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700' }}>Cadastrar Vendedor</h3>
+          <button onClick={onClose} style={{ width: '28px', height: '28px', border: 'none', borderRadius: '6px', background: 'var(--surface-alt)', color: 'var(--text-dim)', cursor: 'pointer', fontSize: '16px' }}>×</button>
+        </div>
+        <form onSubmit={submit} style={{ padding: '18px 22px' }}>
+          <div style={{ marginBottom: '10px' }}><label style={lbl}>Nome *</label><input style={inp} value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} placeholder="Nome completo" autoFocus /></div>
+          <div style={{ marginBottom: '10px' }}><label style={lbl}>E-mail *</label><input type="email" style={inp} value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="email@exemplo.com" /></div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+            <div><label style={lbl}>Perfil</label>
+              <select style={inp} value={form.perfil} onChange={e => setForm(f => ({ ...f, perfil: e.target.value }))}>
+                <option value="vendedor">Vendedor</option><option value="marketing">Marketing</option><option value="caixa">Caixa</option><option value="admin">Admin</option>
+              </select>
+            </div>
+            <div><label style={lbl}>Senha *</label><input type="password" style={inp} value={form.senha} onChange={e => setForm(f => ({ ...f, senha: e.target.value }))} placeholder="Mín. 6 caracteres" /></div>
+          </div>
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', paddingTop: '8px', borderTop: '1px solid var(--border)' }}>
+            {erro && <span style={{ fontSize: '12px', color: 'var(--red)', flex: 1, alignSelf: 'center' }}>{erro}</span>}
+            <button type="button" onClick={onClose} style={{ padding: '8px 16px', fontSize: '13px', background: 'var(--surface-alt)', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '7px', cursor: 'pointer' }}>Cancelar</button>
+            <button type="submit" disabled={saving} style={{ padding: '8px 16px', fontSize: '13px', fontWeight: '600', background: saving ? 'var(--primary-dim)' : 'var(--primary)', color: saving ? 'var(--primary)' : 'white', border: 'none', borderRadius: '7px', cursor: saving ? 'default' : 'pointer' }}>{saving ? 'Criando...' : 'Criar'}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 const FORMAS = [
   { value: 'dinheiro', label: 'Dinheiro' },
   { value: 'pix', label: 'Pix' },
@@ -37,18 +79,29 @@ const EMPTY = {
   valor_total: '', desconto: '', forma_pagamento: 'pix', observacao: '',
 };
 
+interface UsuarioSimples { id: string; nome: string; perfil: string; }
+
 export default function VendaModal({ venda, onClose, onSaved }: Props) {
   const { usuario } = useAuth();
   const isMarketing = usuario?.perfil === 'marketing';
+  const isAdmin = usuario?.perfil === 'admin';
   const [form, setForm] = useState({ ...EMPTY });
+  const [funcionarioId, setFuncionarioId] = useState('');
+  const [vendedores, setVendedores] = useState<UsuarioSimples[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [buscaCliente, setBuscaCliente] = useState('');
   const [saving, setSaving] = useState(false);
   const [erro, setErro] = useState('');
   const [novoClienteOpen, setNovoClienteOpen] = useState(false);
+  const [novoVendedorOpen, setNovoVendedorOpen] = useState(false);
 
   useEffect(() => {
     loadClientes('');
+    if (isAdmin) {
+      api.get<{ usuarios: UsuarioSimples[] }>('/usuarios').then(r =>
+        setVendedores(r.usuarios.filter((u: any) => u.ativo))
+      ).catch(() => {});
+    }
     if (venda) {
       setForm({
         cliente_id: venda.cliente_id || '',
@@ -60,7 +113,7 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
         observacao: venda.observacao || '',
       });
     }
-  }, [venda]);
+  }, [venda, isAdmin]);
 
   async function loadClientes(q: string) {
     try {
@@ -86,9 +139,10 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
     setSaving(true);
     setErro('');
     try {
-      const payload = isMarketing
-        ? { ...form, valor_total: '0', desconto: '0', forma_pagamento: 'outro' }
-        : form;
+      const payload = {
+        ...(isMarketing ? { ...form, valor_total: '0', desconto: '0', forma_pagamento: 'outro' } : form),
+        ...(isAdmin && funcionarioId ? { funcionario_id: funcionarioId } : {}),
+      };
       if (venda) {
         await api.put(`/vendas/${venda.id}`, payload);
       } else {
@@ -131,6 +185,13 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
     }
   }
 
+  async function recarregarVendedores() {
+    const r = await api.get<{ usuarios: UsuarioSimples[] }>('/usuarios');
+    const lista = r.usuarios.filter((u: any) => u.ativo);
+    setVendedores(lista);
+    setNovoVendedorOpen(false);
+  }
+
   return (
     <>
     {novoClienteOpen && (
@@ -140,6 +201,9 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
         onClose={() => setNovoClienteOpen(false)}
         onSaved={handleClienteCadastrado}
       />
+    )}
+    {novoVendedorOpen && (
+      <NovoVendedorInline onClose={() => setNovoVendedorOpen(false)} onSaved={async (id) => { await recarregarVendedores(); setFuncionarioId(id); }} />
     )}
     <div style={{
       position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)',
@@ -227,6 +291,22 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
               borderRadius: '8px', padding: '8px 12px', fontSize: '13px', marginBottom: '14px',
             }}>
               <span style={{ fontWeight: '600', color: 'var(--primary)' }}>✓ {clienteSelecionado.nome}</span>
+            </div>
+          )}
+
+          {/* Vendedor (só admin vê) */}
+          {isAdmin && (
+            <div style={{ marginBottom: '14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <label style={{ ...labelStyle, marginBottom: 0 }}>Vendedor</label>
+                <button type="button" onClick={() => setNovoVendedorOpen(true)} style={{ fontSize: '12px', fontWeight: '600', color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>+ Cadastrar novo</button>
+              </div>
+              <select style={inputStyle} value={funcionarioId} onChange={e => setFuncionarioId(e.target.value)}>
+                <option value="">— Atribuir a mim mesmo —</option>
+                {vendedores.map(v => (
+                  <option key={v.id} value={v.id}>{v.nome} ({v.perfil})</option>
+                ))}
+              </select>
             </div>
           )}
 

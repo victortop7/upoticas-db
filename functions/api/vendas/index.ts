@@ -42,6 +42,15 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
 
     query += ' ORDER BY v.numero DESC LIMIT ? OFFSET ?';
 
+    // inclui nome do vendedor no retorno
+    query = query.replace(
+      'SELECT v.*',
+      'SELECT v.*, u.nome as vendedor_nome, u.perfil as vendedor_perfil'
+    ).replace(
+      'FROM vendas v',
+      'FROM vendas v LEFT JOIN usuarios u ON u.id = v.funcionario_id'
+    );
+
     const [results, countResult] = await Promise.all([
       env.DB.prepare(query).bind(...params, limit, offset).all(),
       env.DB.prepare(countQuery).bind(...params).first<{ total: number }>(),
@@ -90,7 +99,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       valorTotal, desconto, valorFinal,
       body.forma_pagamento || null,
       body.observacao || null,
-      auth.usuario_id,
+      // admin pode atribuir a outro vendedor
+      (auth.perfil === 'admin' && body.funcionario_id) ? body.funcionario_id : auth.usuario_id,
       now, now
     ).run();
 

@@ -8,6 +8,7 @@ import Clientes from './pages/Clientes';
 import OrdensServico from './pages/OrdensServico';
 import Vendas from './pages/Vendas';
 import Usuarios from './pages/Usuarios';
+import Vendedores from './pages/Vendedores';
 import Configuracoes from './pages/Configuracoes';
 import Relatorios from './pages/Relatorios';
 import ImprimirOS from './pages/ImprimirOS';
@@ -39,6 +40,7 @@ export default function App() {
             <Route path="/os" element={<OrdensServico />} />
             <Route path="/vendas" element={<Vendas />} />
             <Route path="/usuarios" element={<Usuarios />} />
+            <Route path="/vendedores" element={<Vendedores />} />
             <Route path="/configuracoes" element={<Configuracoes />} />
             <Route path="/relatorios" element={<Relatorios />} />
             <Route path="/financeiro/contas" element={<Contas />} />

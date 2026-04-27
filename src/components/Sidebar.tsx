@@ -27,6 +27,7 @@ const NAV_MARKETING = [
 ];
 
 const NAV_CONFIG = [
+  { to: '/vendedores', label: 'Vendedores', icon: '🏆' },
   { to: '/usuarios', label: 'Usuários', icon: '👥' },
   { to: '/configuracoes', label: 'Configurações', icon: '⚙️' },
 ];
