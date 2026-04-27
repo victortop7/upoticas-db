@@ -77,6 +77,13 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       now, now
     ).run();
 
+    // Cria card no CRM automaticamente
+    try {
+      await env.DB.prepare(
+        'INSERT OR IGNORE INTO crm_cards (id, tenant_id, cliente_id, estagio, prioridade, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
+      ).bind(crypto.randomUUID(), auth.tenant_id, id, 'novo', 'normal', now, now).run();
+    } catch {}
+
     const cliente = await env.DB.prepare('SELECT * FROM clientes WHERE id = ?').bind(id).first();
     return json(cliente, 201);
   } catch (err) {
