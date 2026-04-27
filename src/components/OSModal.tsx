@@ -137,6 +137,16 @@ export default function OSModal({ os, onClose, onSaved }: Props) {
     { key: 'financeiro', label: 'Financeiro' },
   ];
 
+  const ORDEM_ABAS: Aba[] = ['cliente', 'grau', 'produtos', 'financeiro'];
+  const abaAtualIdx = ORDEM_ABAS.indexOf(aba);
+  const isUltimaAba = abaAtualIdx === ORDEM_ABAS.length - 1;
+
+  function avancar() {
+    if (!isUltimaAba) {
+      setAba(ORDEM_ABAS[abaAtualIdx + 1]);
+    }
+  }
+
   const clienteSelecionado = clientes.find(c => c.id === form.cliente_id);
 
   async function handleClienteCadastrado() {
@@ -407,14 +417,24 @@ export default function OSModal({ os, onClose, onSaved }: Props) {
             background: 'var(--surface-alt)', color: 'var(--text-dim)',
             border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer',
           }}>Cancelar</button>
-          <button onClick={handleSubmit} disabled={saving} style={{
-            padding: '9px 20px', fontSize: '14px', fontWeight: '600',
-            background: saving ? 'var(--primary-dim)' : 'var(--primary)',
-            color: saving ? 'var(--primary)' : 'white',
-            border: 'none', borderRadius: '8px', cursor: saving ? 'default' : 'pointer',
-          }}>
-            {saving ? 'Salvando...' : os ? 'Salvar' : 'Criar OS'}
-          </button>
+          {!isUltimaAba ? (
+            <button type="button" onClick={avancar} style={{
+              padding: '9px 20px', fontSize: '14px', fontWeight: '600',
+              background: 'var(--primary)', color: 'white',
+              border: 'none', borderRadius: '8px', cursor: 'pointer',
+            }}>
+              Avançar →
+            </button>
+          ) : (
+            <button onClick={handleSubmit} disabled={saving} style={{
+              padding: '9px 20px', fontSize: '14px', fontWeight: '600',
+              background: saving ? 'var(--primary-dim)' : 'var(--primary)',
+              color: saving ? 'var(--primary)' : 'white',
+              border: 'none', borderRadius: '8px', cursor: saving ? 'default' : 'pointer',
+            }}>
+              {saving ? 'Salvando...' : os ? 'Salvar' : 'Criar OS'}
+            </button>
+          )}
         </div>
       </div>
     </div>
