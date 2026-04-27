@@ -192,10 +192,10 @@ export default function Relatorios() {
                       <td style={{ padding: '12px 16px' }}>
                         <span style={{
                           padding: '2px 8px', borderRadius: '20px', fontSize: '11px', fontWeight: '600',
-                          background: v.perfil === 'admin' ? 'rgba(124,58,237,0.1)' : 'rgba(37,99,235,0.1)',
-                          color: v.perfil === 'admin' ? '#7c3aed' : '#2563eb',
+                          background: v.perfil === 'admin' ? 'rgba(124,58,237,0.1)' : v.perfil === 'marketing' ? 'rgba(236,72,153,0.1)' : 'rgba(37,99,235,0.1)',
+                          color: v.perfil === 'admin' ? '#7c3aed' : v.perfil === 'marketing' ? '#db2777' : '#2563eb',
                         }}>
-                          {v.perfil === 'admin' ? 'Admin' : v.perfil === 'vendedor' ? 'Vendedor' : 'Caixa'}
+                          {v.perfil === 'admin' ? 'Admin' : v.perfil === 'vendedor' ? 'Vendedor' : v.perfil === 'marketing' ? 'Marketing' : 'Caixa'}
                         </span>
                       </td>
                       <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', color: 'var(--text-dim)', textAlign: 'right' }}>{v.total_vendas}</td>

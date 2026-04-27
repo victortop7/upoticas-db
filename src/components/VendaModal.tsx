@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api } from '../lib/api';
+import { useAuth } from '../hooks/useAuth';
 import type { Cliente } from '../types';
 import ClienteModal from './ClienteModal';
 
@@ -37,6 +38,8 @@ const EMPTY = {
 };
 
 export default function VendaModal({ venda, onClose, onSaved }: Props) {
+  const { usuario } = useAuth();
+  const isMarketing = usuario?.perfil === 'marketing';
   const [form, setForm] = useState({ ...EMPTY });
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [buscaCliente, setBuscaCliente] = useState('');
@@ -76,17 +79,20 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.valor_total || parseFloat(form.valor_total) <= 0) {
+    if (!isMarketing && (!form.valor_total || parseFloat(form.valor_total) <= 0)) {
       setErro('Informe o valor total da venda');
       return;
     }
     setSaving(true);
     setErro('');
     try {
+      const payload = isMarketing
+        ? { ...form, valor_total: '0', desconto: '0', forma_pagamento: 'outro' }
+        : form;
       if (venda) {
-        await api.put(`/vendas/${venda.id}`, form);
+        await api.put(`/vendas/${venda.id}`, payload);
       } else {
-        await api.post('/vendas', form);
+        await api.post('/vendas', payload);
       }
       onSaved();
     } catch (err: any) {
@@ -224,60 +230,72 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
             </div>
           )}
 
-          {/* Forma de pagamento + situação */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
-            <div>
-              <label style={labelStyle}>Forma de Pagamento</label>
-              <select style={inputStyle} value={form.forma_pagamento} onChange={e => set('forma_pagamento', e.target.value)}>
-                {FORMAS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-              </select>
-            </div>
-            <div>
-              <label style={labelStyle}>Situação</label>
-              <select style={inputStyle} value={form.situacao} onChange={e => set('situacao', e.target.value)}>
-                <option value="ativa">Ativa</option>
-                <option value="cancelada">Cancelada</option>
-              </select>
-            </div>
+          {/* Situação */}
+          <div style={{ marginBottom: '14px' }}>
+            <label style={labelStyle}>Situação</label>
+            <select style={inputStyle} value={form.situacao} onChange={e => set('situacao', e.target.value)}>
+              <option value="ativa">Ativa</option>
+              <option value="cancelada">Cancelada</option>
+            </select>
           </div>
 
-          {/* Valores */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
-            <div>
-              <label style={labelStyle}>Valor Total (R$) *</label>
-              <input
-                type="number" step="0.01" min="0"
-                style={{ ...inputStyle, fontFamily: 'var(--mono)', textAlign: 'right' }}
-                value={form.valor_total}
-                onChange={e => set('valor_total', e.target.value)}
-                placeholder="0,00"
-                autoFocus
-              />
+          {isMarketing ? (
+            <div style={{
+              background: 'rgba(236,72,153,0.07)', border: '1px solid rgba(236,72,153,0.2)',
+              borderRadius: '10px', padding: '14px 18px', marginBottom: '14px',
+              display: 'flex', alignItems: 'center', gap: '10px',
+            }}>
+              <span style={{ fontSize: '18px' }}>📢</span>
+              <div>
+                <p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: '#db2777' }}>Venda de Marketing</p>
+                <p style={{ margin: '2px 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>Registrada sem valor — apenas para contabilização</p>
+              </div>
             </div>
-            <div>
-              <label style={labelStyle}>Desconto (R$)</label>
-              <input
-                type="number" step="0.01" min="0"
-                style={{ ...inputStyle, fontFamily: 'var(--mono)', textAlign: 'right' }}
-                value={form.desconto}
-                onChange={e => set('desconto', e.target.value)}
-                placeholder="0,00"
-              />
-            </div>
-          </div>
-
-          {/* Resumo valor final */}
-          <div style={{
-            background: 'rgba(37,99,235,0.05)', border: '1px solid rgba(37,99,235,0.15)',
-            borderRadius: '10px', padding: '14px 18px',
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            marginBottom: '14px',
-          }}>
-            <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-dim)' }}>Valor Final</span>
-            <span style={{ fontSize: '22px', fontWeight: '700', fontFamily: 'var(--mono)', color: 'var(--primary)' }}>
-              {valorFinal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-            </span>
-          </div>
+          ) : (
+            <>
+              {/* Forma de pagamento + Valores */}
+              <div style={{ marginBottom: '14px' }}>
+                <label style={labelStyle}>Forma de Pagamento</label>
+                <select style={inputStyle} value={form.forma_pagamento} onChange={e => set('forma_pagamento', e.target.value)}>
+                  {FORMAS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+                </select>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
+                <div>
+                  <label style={labelStyle}>Valor Total (R$) *</label>
+                  <input
+                    type="number" step="0.01" min="0"
+                    style={{ ...inputStyle, fontFamily: 'var(--mono)', textAlign: 'right' }}
+                    value={form.valor_total}
+                    onChange={e => set('valor_total', e.target.value)}
+                    placeholder="0,00"
+                    autoFocus
+                  />
+                </div>
+                <div>
+                  <label style={labelStyle}>Desconto (R$)</label>
+                  <input
+                    type="number" step="0.01" min="0"
+                    style={{ ...inputStyle, fontFamily: 'var(--mono)', textAlign: 'right' }}
+                    value={form.desconto}
+                    onChange={e => set('desconto', e.target.value)}
+                    placeholder="0,00"
+                  />
+                </div>
+              </div>
+              <div style={{
+                background: 'rgba(37,99,235,0.05)', border: '1px solid rgba(37,99,235,0.15)',
+                borderRadius: '10px', padding: '14px 18px',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                marginBottom: '14px',
+              }}>
+                <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-dim)' }}>Valor Final</span>
+                <span style={{ fontSize: '22px', fontWeight: '700', fontFamily: 'var(--mono)', color: 'var(--primary)' }}>
+                  {valorFinal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                </span>
+              </div>
+            </>
+          )}
 
           <div>
             <label style={labelStyle}>Observação</label>

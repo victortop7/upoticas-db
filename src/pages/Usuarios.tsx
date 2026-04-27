@@ -16,11 +16,12 @@ interface ModalProps {
   onSaved: () => void;
 }
 
-const PERFIL_LABEL: Record<string, string> = { admin: 'Admin', vendedor: 'Vendedor', caixa: 'Caixa' };
+const PERFIL_LABEL: Record<string, string> = { admin: 'Admin', vendedor: 'Vendedor', caixa: 'Caixa', marketing: 'Marketing' };
 const PERFIL_COLOR: Record<string, { bg: string; color: string }> = {
-  admin:    { bg: 'rgba(124,58,237,0.1)', color: '#7c3aed' },
-  vendedor: { bg: 'rgba(37,99,235,0.1)', color: '#2563eb' },
-  caixa:    { bg: 'rgba(34,197,94,0.1)', color: '#16a34a' },
+  admin:     { bg: 'rgba(124,58,237,0.1)', color: '#7c3aed' },
+  vendedor:  { bg: 'rgba(37,99,235,0.1)', color: '#2563eb' },
+  caixa:     { bg: 'rgba(34,197,94,0.1)', color: '#16a34a' },
+  marketing: { bg: 'rgba(236,72,153,0.1)', color: '#db2777' },
 };
 
 function UsuarioModal({ usuario, onClose, onSaved }: ModalProps) {
@@ -88,6 +89,7 @@ function UsuarioModal({ usuario, onClose, onSaved }: ModalProps) {
                 <option value="admin">Admin</option>
                 <option value="vendedor">Vendedor</option>
                 <option value="caixa">Caixa</option>
+                <option value="marketing">Marketing</option>
               </select>
             </div>
             <div>
