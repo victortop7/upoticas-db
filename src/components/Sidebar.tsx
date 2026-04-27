@@ -44,7 +44,7 @@ export default function Sidebar() {
   return (
     <div style={{
       width: 'var(--sidebar-w)',
-      minHeight: '100vh',
+      height: '100vh',
       background: 'var(--surface)',
       borderRight: '1px solid var(--border)',
       display: 'flex',
@@ -52,6 +52,7 @@ export default function Sidebar() {
       position: 'fixed',
       top: 0, left: 0,
       zIndex: 100,
+      overflow: 'hidden',
     }}>
       {/* Logo */}
       <div style={{ padding: '20px 16px', borderBottom: '1px solid var(--border)' }}>
