@@ -7,6 +7,7 @@ interface Resumo {
   os: { total: number; valor_total: number; recebido: number; pendente: number; por_situacao: { situacao: string; n: number }[] };
   top_clientes: { nome: string; compras: number; total: number }[];
   vendas_por_dia: { dia: string; vendas: number; valor: number }[];
+  por_vendedor: { vendedor: string; perfil: string; total_vendas: number; valor_total: number; ticket_medio: number; total_desconto: number }[];
 }
 
 const SITUACAO_LABEL: Record<string, string> = {
@@ -166,6 +167,47 @@ export default function Relatorios() {
               )}
             </div>
           </div>
+
+          {/* Por Vendedor */}
+          {data.por_vendedor.length > 0 && (
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden', marginBottom: '24px' }}>
+              <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
+                <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>Desempenho por Vendedor</h3>
+              </div>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                    {['Vendedor', 'Perfil', 'Qtd Vendas', 'Total Vendido', 'Ticket Médio', 'Descontos'].map(h => (
+                      <th key={h} style={{ padding: '10px 16px', textAlign: h === 'Vendedor' || h === 'Perfil' ? 'left' : 'right', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', background: 'var(--surface-alt)' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.por_vendedor.map((v, i) => (
+                    <tr key={i} style={{ borderBottom: i < data.por_vendedor.length - 1 ? '1px solid var(--border)' : 'none' }}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-alt)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                    >
+                      <td style={{ padding: '12px 16px', fontSize: '14px', color: 'var(--text)', fontWeight: '600' }}>{v.vendedor}</td>
+                      <td style={{ padding: '12px 16px' }}>
+                        <span style={{
+                          padding: '2px 8px', borderRadius: '20px', fontSize: '11px', fontWeight: '600',
+                          background: v.perfil === 'admin' ? 'rgba(124,58,237,0.1)' : 'rgba(37,99,235,0.1)',
+                          color: v.perfil === 'admin' ? '#7c3aed' : '#2563eb',
+                        }}>
+                          {v.perfil === 'admin' ? 'Admin' : v.perfil === 'vendedor' ? 'Vendedor' : 'Caixa'}
+                        </span>
+                      </td>
+                      <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', color: 'var(--text-dim)', textAlign: 'right' }}>{v.total_vendas}</td>
+                      <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '700', color: '#16a34a', textAlign: 'right' }}>{brl(v.valor_total)}</td>
+                      <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '600', color: '#2563eb', textAlign: 'right' }}>{brl(v.ticket_medio)}</td>
+                      <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', color: '#d97706', textAlign: 'right' }}>{brl(v.total_desconto)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
 
           {/* Top clientes */}
           {data.top_clientes.length > 0 && (

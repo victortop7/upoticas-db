@@ -17,6 +17,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       osSituacoes,
       topClientes,
       vendasPorDia,
+      porVendedor,
     ] = await Promise.all([
       env.DB.prepare(`
         SELECT COUNT(*) as total, COALESCE(SUM(valor_final), 0) as valor,
@@ -53,6 +54,19 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
         AND date(created_at) BETWEEN ? AND ?
         GROUP BY date(created_at) ORDER BY dia ASC
       `).bind(auth.tenant_id, inicio, fim).all<{ dia: string; vendas: number; valor: number }>(),
+
+      env.DB.prepare(`
+        SELECT u.nome as vendedor, u.perfil,
+               COUNT(v.id) as total_vendas,
+               COALESCE(SUM(v.valor_final), 0) as valor_total,
+               COALESCE(AVG(v.valor_final), 0) as ticket_medio,
+               COALESCE(SUM(v.desconto), 0) as total_desconto
+        FROM vendas v
+        JOIN usuarios u ON u.id = v.funcionario_id
+        WHERE v.tenant_id = ? AND v.situacao = 'ativa'
+        AND date(v.created_at) BETWEEN ? AND ?
+        GROUP BY v.funcionario_id ORDER BY valor_total DESC
+      `).bind(auth.tenant_id, inicio, fim).all<{ vendedor: string; perfil: string; total_vendas: number; valor_total: number; ticket_medio: number; total_desconto: number }>(),
     ]);
 
     return json({
@@ -71,6 +85,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       },
       top_clientes: topClientes.results,
       vendas_por_dia: vendasPorDia.results,
+      por_vendedor: porVendedor.results,
     });
   } catch (err) {
     return json({ error: 'Erro interno', detail: String(err) }, 500);
