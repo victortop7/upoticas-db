@@ -168,23 +168,23 @@ export default function Relatorios() {
             </div>
           </div>
 
-          {/* Por Vendedor */}
-          {data.por_vendedor.length > 0 && (
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden', marginBottom: '24px' }}>
-              <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
-                <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>Desempenho por Vendedor</h3>
-              </div>
+          {/* Por Vendedor — separado por perfil */}
+          {(() => {
+            const vendedores = data.por_vendedor.filter(v => v.perfil !== 'marketing');
+            const marketing  = data.por_vendedor.filter(v => v.perfil === 'marketing');
+
+            const tabelaRows = (lista: typeof data.por_vendedor, colunas: string[]) => (
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    {['Vendedor', 'Perfil', 'Qtd Vendas', 'Total Vendido', 'Ticket Médio', 'Descontos'].map(h => (
-                      <th key={h} style={{ padding: '10px 16px', textAlign: h === 'Vendedor' || h === 'Perfil' ? 'left' : 'right', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', background: 'var(--surface-alt)' }}>{h}</th>
+                    {colunas.map(h => (
+                      <th key={h} style={{ padding: '10px 16px', textAlign: h === 'Nome' || h === 'Perfil' ? 'left' : 'right', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', background: 'var(--surface-alt)' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {data.por_vendedor.map((v, i) => (
-                    <tr key={i} style={{ borderBottom: i < data.por_vendedor.length - 1 ? '1px solid var(--border)' : 'none' }}
+                  {lista.map((v, i) => (
+                    <tr key={i} style={{ borderBottom: i < lista.length - 1 ? '1px solid var(--border)' : 'none' }}
                       onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-alt)')}
                       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                     >
@@ -199,15 +199,41 @@ export default function Relatorios() {
                         </span>
                       </td>
                       <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', color: 'var(--text-dim)', textAlign: 'right' }}>{v.total_vendas}</td>
-                      <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '700', color: '#16a34a', textAlign: 'right' }}>{brl(v.valor_total)}</td>
-                      <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '600', color: '#2563eb', textAlign: 'right' }}>{brl(v.ticket_medio)}</td>
-                      <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', color: '#d97706', textAlign: 'right' }}>{brl(v.total_desconto)}</td>
+                      {v.perfil !== 'marketing' && <>
+                        <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '700', color: '#16a34a', textAlign: 'right' }}>{brl(v.valor_total)}</td>
+                        <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '600', color: '#2563eb', textAlign: 'right' }}>{brl(v.ticket_medio)}</td>
+                        <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', color: '#d97706', textAlign: 'right' }}>{brl(v.total_desconto)}</td>
+                      </>}
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
-          )}
+            );
+
+            return (
+              <>
+                {vendedores.length > 0 && (
+                  <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden', marginBottom: '20px' }}>
+                    <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '15px' }}>🛒</span>
+                      <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>Desempenho — Vendas</h3>
+                    </div>
+                    {tabelaRows(vendedores, ['Nome', 'Perfil', 'Qtd Vendas', 'Total Vendido', 'Ticket Médio', 'Descontos'])}
+                  </div>
+                )}
+                {marketing.length > 0 && (
+                  <div style={{ background: 'var(--surface)', border: '1px solid rgba(236,72,153,0.25)', borderRadius: '12px', overflow: 'hidden', marginBottom: '20px' }}>
+                    <div style={{ padding: '14px 20px', borderBottom: '1px solid rgba(236,72,153,0.15)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '15px' }}>📢</span>
+                      <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>Desempenho — Marketing</h3>
+                      <span style={{ fontSize: '12px', color: '#db2777', marginLeft: '4px' }}>apenas contagem</span>
+                    </div>
+                    {tabelaRows(marketing, ['Nome', 'Perfil', 'Qtd Vendas Atribuídas'])}
+                  </div>
+                )}
+              </>
+            );
+          })()}
 
           {/* Top clientes */}
           {data.top_clientes.length > 0 && (
