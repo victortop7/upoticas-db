@@ -1,7 +1,7 @@
-import type { PagesFunction } from '@cloudflare/workers-types';
+import type { PagesFunction, D1Database } from '@cloudflare/workers-types';
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
-import { ensureCrmTable } from './setup';
+import { ensureCrmTable, ensureEstagiosPadrao } from './setup';
 
 async function aplicarRegras(db: D1Database, tenant_id: string) {
   // 1. VIP: total gasto >= R$2.000 (não sobrescreve a_receber nem aniversario)
@@ -77,6 +77,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;
   await ensureCrmTable(env.DB);
+  await ensureEstagiosPadrao(env.DB, auth.tenant_id);
 
   // Cria cards para clientes sem card
   await env.DB.prepare(`
