@@ -161,14 +161,16 @@ export default function Vendedores() {
     color: active ? 'white' : 'var(--text-dim)',
   });
 
-  // vendedores sem vendas no período também aparecem
-  const todosVendedores = usuarios.map(u => {
+  const todos = usuarios.map(u => {
     const s = stats.find(s => s.vendedor === u.nome);
     return s || { vendedor: u.nome, perfil: u.perfil, total_vendas: 0, valor_total: 0, ticket_medio: 0, total_desconto: 0 };
-  }).sort((a, b) => b.valor_total - a.valor_total);
+  });
 
-  const totalGeral = stats.reduce((s, v) => s + v.valor_total, 0);
-  const totalVendas = stats.reduce((s, v) => s + v.total_vendas, 0);
+  const todosVendedores = todos.filter(v => v.perfil !== 'marketing').sort((a, b) => b.valor_total - a.valor_total);
+  const todosMarketing  = todos.filter(v => v.perfil === 'marketing').sort((a, b) => b.total_vendas - a.total_vendas);
+
+  const totalGeral = stats.filter(v => v.perfil !== 'marketing').reduce((s, v) => s + v.valor_total, 0);
+  const totalVendas = stats.filter(v => v.perfil !== 'marketing').reduce((s, v) => s + v.total_vendas, 0);
 
   const MEDALHAS = ['🥇', '🥈', '🥉'];
 
@@ -312,6 +314,63 @@ export default function Vendedores() {
           </table>
         )}
       </div>
+
+      {/* Tabela Marketing */}
+      {todosMarketing.length > 0 && (
+        <div style={{ background: 'var(--surface)', border: '1px solid rgba(236,72,153,0.25)', borderRadius: '12px', overflow: 'hidden', marginTop: '20px' }}>
+          <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(236,72,153,0.15)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '15px' }}>📢</span>
+            <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '600', color: 'var(--text)' }}>
+              {isAdmin ? 'Desempenho — Marketing' : 'Ranking Marketing'}
+            </h3>
+            <span style={{ fontSize: '12px', color: '#db2777', marginLeft: '4px' }}>apenas contagem</span>
+          </div>
+          {loading ? (
+            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>Carregando...</div>
+          ) : (
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid rgba(236,72,153,0.15)' }}>
+                  {['#', 'Colaborador', 'Vendas Atribuídas'].map(h => (
+                    <th key={h} style={{ padding: '12px 16px', textAlign: h === '#' || h === 'Colaborador' ? 'left' : 'right', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', background: 'rgba(236,72,153,0.05)' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {todosMarketing.map((v, i) => {
+                  const isMe = v.vendedor === usuario?.nome;
+                  return (
+                    <tr key={i} style={{ borderBottom: i < todosMarketing.length - 1 ? '1px solid rgba(236,72,153,0.08)' : 'none', background: isMe && !isAdmin ? 'rgba(236,72,153,0.04)' : 'transparent' }}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(236,72,153,0.07)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = isMe && !isAdmin ? 'rgba(236,72,153,0.04)' : 'transparent')}
+                    >
+                      <td style={{ padding: '14px 16px', width: '48px' }}>
+                        <span style={{ fontSize: i < 3 ? '18px' : '13px', fontFamily: 'var(--mono)', color: 'var(--text-muted)' }}>
+                          {i < 3 ? ['🥇','🥈','🥉'][i] : `#${i + 1}`}
+                        </span>
+                      </td>
+                      <td style={{ padding: '14px 16px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(236,72,153,0.1)', border: '1px solid rgba(236,72,153,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: '700', color: '#db2777', flexShrink: 0 }}>
+                            {v.vendedor.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>{v.vendedor}</span>
+                            {isMe && !isAdmin && <span style={{ marginLeft: '6px', fontSize: '11px', background: 'rgba(236,72,153,0.12)', color: '#db2777', padding: '1px 6px', borderRadius: '4px', fontWeight: '600' }}>Você</span>}
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{ padding: '14px 16px', fontFamily: 'var(--mono)', fontSize: '15px', fontWeight: '700', textAlign: 'right', color: v.total_vendas > 0 ? '#db2777' : 'var(--text-muted)' }}>
+                        {v.total_vendas}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
 
       {isAdmin && novoOpen && (
         <NovoVendedorModal
