@@ -133,11 +133,11 @@ export default function Sidebar() {
               <kbd style={{ fontSize: '10px', padding: '1px 5px', borderRadius: '3px', background: 'var(--surface)', border: '1px solid var(--border)', fontFamily: 'var(--mono)' }}>⌃K</kbd>
             </button>
             {([
-              { label: 'Menu', items: NAV_GERAL },
-              { label: 'Financeiro', items: NAV_FINANCEIRO },
+              { label: 'Menu', items: [...NAV_GERAL, ...(usuario?.perfil !== 'admin' ? [{ to: '/vendedores', label: 'Ranking', icon: '🏆' }] : [])] },
+              ...(usuario?.perfil === 'admin' ? [{ label: 'Financeiro', items: NAV_FINANCEIRO }] : []),
               { label: 'Marketing', items: NAV_MARKETING },
-              { label: 'Sistema', items: NAV_CONFIG },
-            ] as const).map(({ label, items }) => (
+              { label: 'Sistema', items: usuario?.perfil === 'admin' ? NAV_CONFIG : [] },
+            ]).filter(g => g.items.length > 0).map(({ label, items }) => (
               <div key={label}>
                 <p style={{ fontSize: '10px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', padding: '0 8px', margin: '8px 0 4px' }}>
                   {label}
