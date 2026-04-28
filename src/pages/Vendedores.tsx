@@ -232,9 +232,9 @@ export default function Vendedores() {
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
                 {(isAdmin
                   ? ['#', 'Colaborador', 'Perfil', 'Vendas', 'Total Vendido', 'Ticket Médio', 'Descontos', 'Participação']
-                  : ['#', 'Vendedor', 'Vendas', 'Seu Total', 'Seu Ticket Médio']
+                  : ['#', 'Vendedor']
                 ).map(h => (
-                  <th key={h} style={{ padding: '12px 16px', textAlign: ['#','Colaborador','Vendedor','Perfil'].includes(h) ? 'left' : 'right', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', background: 'var(--surface-alt)' }}>{h}</th>
+                  <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', background: 'var(--surface-alt)' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -252,13 +252,11 @@ export default function Vendedores() {
                     onMouseEnter={e => (e.currentTarget.style.background = isMe && !isAdmin ? 'rgba(37,99,235,0.08)' : 'var(--surface-alt)')}
                     onMouseLeave={e => (e.currentTarget.style.background = isMe && !isAdmin ? 'rgba(37,99,235,0.05)' : 'transparent')}
                   >
-                    {/* Posição / Medalha */}
                     <td style={{ padding: '14px 16px', width: '48px' }}>
-                      <span style={{ fontSize: i < 3 ? '18px' : '13px', fontFamily: 'var(--mono)', color: 'var(--text-muted)' }}>
+                      <span style={{ fontSize: i < 3 ? '20px' : '13px', fontFamily: 'var(--mono)', color: 'var(--text-muted)' }}>
                         {i < 3 ? MEDALHAS[i] : `#${i + 1}`}
                       </span>
                     </td>
-                    {/* Nome */}
                     <td style={{ padding: '14px 16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: pc.bg, border: `1px solid ${pc.color}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: '700', color: pc.color, flexShrink: 0 }}>
@@ -270,21 +268,14 @@ export default function Vendedores() {
                         </div>
                       </div>
                     </td>
-                    {/* Perfil — só admin */}
                     {isAdmin && (
-                      <td style={{ padding: '14px 16px' }}>
-                        <span style={{ padding: '3px 9px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', background: pc.bg, color: pc.color }}>
-                          {PERFIL_LABEL[v.perfil] || v.perfil}
-                        </span>
-                      </td>
-                    )}
-                    {/* Qtd vendas — visível para todos */}
-                    <td style={{ padding: '14px 16px', fontFamily: 'var(--mono)', fontSize: '13px', color: v.total_vendas > 0 ? 'var(--text)' : 'var(--text-muted)', textAlign: 'right', fontWeight: v.total_vendas > 0 ? '600' : '400' }}>
-                      {v.total_vendas}
-                    </td>
-                    {/* Valores — admin vê todos, vendedor só o próprio */}
-                    {isAdmin ? (
                       <>
+                        <td style={{ padding: '14px 16px' }}>
+                          <span style={{ padding: '3px 9px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', background: pc.bg, color: pc.color }}>
+                            {PERFIL_LABEL[v.perfil] || v.perfil}
+                          </span>
+                        </td>
+                        <td style={{ padding: '14px 16px', fontFamily: 'var(--mono)', fontSize: '13px', color: v.total_vendas > 0 ? 'var(--text)' : 'var(--text-muted)', textAlign: 'right', fontWeight: '600' }}>{v.total_vendas}</td>
                         <td style={{ padding: '14px 16px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '700', color: v.valor_total > 0 ? '#16a34a' : 'var(--text-muted)', textAlign: 'right' }}>{brl(v.valor_total)}</td>
                         <td style={{ padding: '14px 16px', fontFamily: 'var(--mono)', fontSize: '13px', color: v.ticket_medio > 0 ? '#2563eb' : 'var(--text-muted)', textAlign: 'right' }}>{brl(v.ticket_medio)}</td>
                         <td style={{ padding: '14px 16px', fontFamily: 'var(--mono)', fontSize: '13px', color: v.total_desconto > 0 ? '#d97706' : 'var(--text-muted)', textAlign: 'right' }}>{brl(v.total_desconto)}</td>
@@ -295,15 +286,6 @@ export default function Vendedores() {
                             </div>
                             <span style={{ fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--text-muted)', minWidth: '36px', textAlign: 'right' }}>{participacao.toFixed(0)}%</span>
                           </div>
-                        </td>
-                      </>
-                    ) : (
-                      <>
-                        <td style={{ padding: '14px 16px', fontFamily: 'var(--mono)', fontSize: '13px', textAlign: 'right', fontWeight: '700', color: isMe ? '#16a34a' : 'var(--text-muted)' }}>
-                          {isMe ? brl(v.valor_total) : '••••••'}
-                        </td>
-                        <td style={{ padding: '14px 16px', fontFamily: 'var(--mono)', fontSize: '13px', textAlign: 'right', color: isMe ? '#2563eb' : 'var(--text-muted)' }}>
-                          {isMe ? brl(v.ticket_medio) : '••••'}
                         </td>
                       </>
                     )}
@@ -331,8 +313,8 @@ export default function Vendedores() {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid rgba(236,72,153,0.15)' }}>
-                  {['#', 'Colaborador', 'Vendas Atribuídas'].map(h => (
-                    <th key={h} style={{ padding: '12px 16px', textAlign: h === '#' || h === 'Colaborador' ? 'left' : 'right', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', background: 'rgba(236,72,153,0.05)' }}>{h}</th>
+                  {(isAdmin ? ['#', 'Colaborador', 'Vendas Atribuídas'] : ['#', 'Colaborador']).map(h => (
+                    <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', background: 'rgba(236,72,153,0.05)' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -360,9 +342,11 @@ export default function Vendedores() {
                           </div>
                         </div>
                       </td>
-                      <td style={{ padding: '14px 16px', fontFamily: 'var(--mono)', fontSize: '15px', fontWeight: '700', textAlign: 'right', color: v.total_vendas > 0 ? '#db2777' : 'var(--text-muted)' }}>
-                        {v.total_vendas}
-                      </td>
+                      {isAdmin && (
+                        <td style={{ padding: '14px 16px', fontFamily: 'var(--mono)', fontSize: '15px', fontWeight: '700', textAlign: 'right', color: v.total_vendas > 0 ? '#db2777' : 'var(--text-muted)' }}>
+                          {v.total_vendas}
+                        </td>
+                      )}
                     </tr>
                   );
                 })}
