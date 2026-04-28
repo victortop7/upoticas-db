@@ -228,10 +228,10 @@ export default function Vendedores() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                {isAdmin
+                {(isAdmin
                   ? ['#', 'Colaborador', 'Perfil', 'Vendas', 'Total Vendido', 'Ticket Médio', 'Descontos', 'Participação']
                   : ['#', 'Vendedor', 'Vendas', 'Seu Total', 'Seu Ticket Médio']
-                }.map(h => (
+                ).map(h => (
                   <th key={h} style={{ padding: '12px 16px', textAlign: ['#','Colaborador','Vendedor','Perfil'].includes(h) ? 'left' : 'right', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', background: 'var(--surface-alt)' }}>{h}</th>
                 ))}
               </tr>
