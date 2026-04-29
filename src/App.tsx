@@ -10,6 +10,7 @@ import LabNovaOrdem from './pages/lab/LabNovaOrdem';
 import LabOrdemDetalhe from './pages/lab/LabOrdemDetalhe';
 import LabImprimirOS from './pages/lab/LabImprimirOS';
 import LabOticas from './pages/lab/LabOticas';
+import LabEstoque from './pages/lab/LabEstoque';
 import LabServicos from './pages/lab/LabServicos';
 import Dashboard from './pages/Dashboard';
 import Clientes from './pages/Clientes';
@@ -70,6 +71,7 @@ export default function App() {
             <Route path="/lab/ordens/nova" element={<LabNovaOrdem />} />
             <Route path="/lab/ordens/:id" element={<LabOrdemDetalhe />} />
             <Route path="/lab/oticas" element={<LabOticas />} />
+            <Route path="/lab/estoque" element={<LabEstoque />} />
             <Route path="/lab/servicos" element={<LabServicos />} />
           </Route>
 

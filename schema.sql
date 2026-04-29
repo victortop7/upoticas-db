@@ -193,6 +193,34 @@ CREATE TABLE IF NOT EXISTS lab_servicos_os (
   total REAL NOT NULL DEFAULT 0
 );
 
+-- Estoque de lentes do laboratório
+CREATE TABLE IF NOT EXISTS lab_estoque (
+  id TEXT PRIMARY KEY,
+  tenant_id TEXT NOT NULL REFERENCES tenants(id),
+  marca TEXT NOT NULL,
+  tratamento TEXT NOT NULL DEFAULT 'Sem tratamento',
+  indice TEXT NOT NULL,                         -- '1.50', '1.56', '1.61', '1.67', '1.74'
+  tipo TEXT NOT NULL DEFAULT 'monofocal',       -- monofocal | bifocal | progressivo
+  descricao TEXT,
+  quantidade INTEGER NOT NULL DEFAULT 0,
+  quantidade_minima INTEGER NOT NULL DEFAULT 5,
+  ativo INTEGER NOT NULL DEFAULT 1,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Movimentações de estoque (entrada/saída)
+CREATE TABLE IF NOT EXISTS lab_estoque_movimentacoes (
+  id TEXT PRIMARY KEY,
+  tenant_id TEXT NOT NULL REFERENCES tenants(id),
+  produto_id TEXT NOT NULL REFERENCES lab_estoque(id),
+  tipo TEXT NOT NULL,                           -- entrada | saida
+  quantidade INTEGER NOT NULL,
+  motivo TEXT,
+  ordem_id TEXT REFERENCES lab_ordens(id),
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 -- Índices Lab
 CREATE INDEX IF NOT EXISTS idx_lab_oticas_tenant ON lab_oticas(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_lab_ordens_tenant ON lab_ordens(tenant_id);
@@ -201,3 +229,5 @@ CREATE INDEX IF NOT EXISTS idx_lab_ordens_status ON lab_ordens(tenant_id, status
 CREATE INDEX IF NOT EXISTS idx_lab_receita_ordem ON lab_receita(ordem_id);
 CREATE INDEX IF NOT EXISTS idx_lab_armacao_ordem ON lab_armacao(ordem_id);
 CREATE INDEX IF NOT EXISTS idx_lab_servicos_ordem ON lab_servicos_os(ordem_id);
+CREATE INDEX IF NOT EXISTS idx_lab_estoque_tenant ON lab_estoque(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_lab_estoque_mov_produto ON lab_estoque_movimentacoes(produto_id);

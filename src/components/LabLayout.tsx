@@ -5,6 +5,7 @@ const NAV = [
   { to: '/lab/dashboard', icon: '◼', label: 'Dashboard' },
   { to: '/lab/ordens', icon: '📋', label: 'Ordens de Serviço' },
   { to: '/lab/oticas', icon: '🏪', label: 'Óticas Clientes' },
+  { to: '/lab/estoque', icon: '📦', label: 'Estoque de Lentes' },
   { to: '/lab/servicos', icon: '⚙', label: 'Catálogo de Serviços' },
 ];
 
