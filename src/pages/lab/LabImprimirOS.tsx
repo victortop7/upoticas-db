@@ -232,8 +232,8 @@ export default function LabImprimirOS() {
 
       <style>{`
         @media print {
-          body { margin: 0; background: #fff !important; }
-          @page { margin: 10mm; size: A4; }
+          body { margin: 0; background: #fff !important; zoom: 0.68; }
+          @page { margin: 6mm; size: A4; }
         }
         @media screen {
           body { background: #e5e7eb; }
