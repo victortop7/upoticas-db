@@ -7,11 +7,12 @@ interface Produto {
 }
 
 const INDICES = ['1.50', '1.53', '1.56', '1.59', '1.61', '1.67', '1.74'];
-const TIPOS = ['monofocal', 'bifocal', 'progressivo'];
+const TIPOS = ['visao_simples', 'monofocal', 'bifocal', 'progressivo', 'ocupacional'];
 const TRATAMENTOS = ['Sem tratamento', 'Antirreflexo', 'Blue Cut', 'Fotossensível', 'UV400', 'Antirreflexo + Blue Cut', 'Antirreflexo + Fotossensível'];
 
 const TIPO_LABEL: Record<string, string> = {
-  monofocal: 'Monofocal', bifocal: 'Bifocal', progressivo: 'Progressivo',
+  visao_simples: 'Visão Simples', monofocal: 'Monofocal', bifocal: 'Bifocal',
+  progressivo: 'Progressivo', ocupacional: 'Ocupacional',
 };
 
 const FORM_VAZIO = { marca: '', tratamento: 'Sem tratamento', indice: '1.56', tipo: 'monofocal', descricao: '', quantidade: '0', quantidade_minima: '5' };
