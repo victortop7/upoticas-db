@@ -12,7 +12,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     }
 
     const usuario = await env.DB.prepare(
-      'SELECT u.*, t.nome as tenant_nome, t.plano, t.trial_expira, t.ativo as tenant_ativo FROM usuarios u JOIN tenants t ON t.id = u.tenant_id WHERE u.email = ? AND u.ativo = 1'
+      'SELECT u.*, t.nome as tenant_nome, t.tipo as tenant_tipo, t.plano, t.trial_expira, t.ativo as tenant_ativo FROM usuarios u JOIN tenants t ON t.id = u.tenant_id WHERE u.email = ? AND u.ativo = 1'
     ).bind(body.email).first<Record<string, unknown>>();
 
     if (!usuario) {
@@ -34,6 +34,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     const tenant = {
       id: usuario.tenant_id,
       nome: usuario.tenant_nome,
+      tipo: usuario.tenant_tipo,
       email: usuario.email,
       plano: usuario.plano,
       trial_expira: usuario.trial_expira,
