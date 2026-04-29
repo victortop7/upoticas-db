@@ -2,6 +2,7 @@ export interface Tenant {
   id: string;
   nome: string;
   email: string;
+  tipo: 'otica' | 'lab';
   plano: 'trial' | 'basico' | 'pro';
   trial_expira?: string;
   ativo: boolean;

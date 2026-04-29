@@ -18,7 +18,7 @@ export default function Login() {
     try {
       const data = await login(email, senha);
       setAuth(data);
-      navigate('/dashboard');
+      navigate(data.tenant?.tipo === 'lab' ? '/lab/dashboard' : '/dashboard');
     } catch (err: unknown) {
       setErro(err instanceof Error ? err.message : 'Erro ao entrar');
     } finally {

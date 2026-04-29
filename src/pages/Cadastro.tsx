@@ -1,11 +1,15 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { register } from '../lib/auth';
 import { useAuth } from '../hooks/useAuth';
 
 export default function Cadastro() {
   const navigate = useNavigate();
   const { setAuth } = useAuth();
+  const [searchParams] = useSearchParams();
+  const tipo = searchParams.get('tipo') === 'lab' ? 'lab' : 'otica';
+  const isLab = tipo === 'lab';
+
   const [form, setForm] = useState({
     nome_otica: '',
     nome: '',
@@ -40,9 +44,10 @@ export default function Cadastro() {
         nome: form.nome,
         email: form.email,
         senha: form.senha,
+        tipo,
       });
       setAuth(data);
-      navigate('/dashboard');
+      navigate(isLab ? '/lab/dashboard' : '/dashboard');
     } catch (err: unknown) {
       setErro(err instanceof Error ? err.message : 'Erro ao criar conta');
     } finally {
@@ -77,7 +82,7 @@ export default function Cadastro() {
             </span>
           </div>
           <p style={{ color: 'var(--text-dim)', fontSize: '14px', margin: 0 }}>
-            Experimente grátis por 14 dias
+            {isLab ? 'UpÓticas Lab · ' : ''}Experimente grátis por 14 dias
           </p>
         </div>
 
@@ -109,14 +114,14 @@ export default function Cadastro() {
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--text)', marginBottom: '6px' }}>
-                Nome da Ótica
+                {isLab ? 'Nome do Laboratório' : 'Nome da Ótica'}
               </label>
               <input
                 name="nome_otica"
                 value={form.nome_otica}
                 onChange={handleChange}
                 required
-                placeholder="Ex: Ótica Visão Clara"
+                placeholder={isLab ? 'Ex: Lab Óptico Central' : 'Ex: Ótica Visão Clara'}
                 style={inputStyle}
                 onFocus={e => e.target.style.borderColor = 'var(--primary)'}
                 onBlur={e => e.target.style.borderColor = 'var(--border)'}

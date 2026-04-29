@@ -190,6 +190,44 @@ export default function Landing() {
         </div>
       </nav>
 
+      {/* Product Chooser */}
+      <section style={{ background: 'rgba(255,255,255,0.018)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '40px 24px' }}>
+        <div style={{ maxWidth: '700px', margin: '0 auto', textAlign: 'center' }}>
+          <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '20px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1.2px' }}>
+            Escolha seu sistema
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+            {/* Card Ótica */}
+            <button
+              onClick={() => navigate('/cadastro?tipo=otica')}
+              style={{ background: 'rgba(37,99,235,0.08)', border: '1px solid rgba(37,99,235,0.22)', borderRadius: '14px', padding: '24px 20px', cursor: 'pointer', textAlign: 'left', transition: 'border-color 0.2s, background 0.2s', fontFamily: 'inherit' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(37,99,235,0.14)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(37,99,235,0.45)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(37,99,235,0.08)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(37,99,235,0.22)'; }}
+            >
+              <div style={{ fontSize: '26px', marginBottom: '10px' }}>🏪</div>
+              <div style={{ fontSize: '16px', fontWeight: '800', color: '#f1f5f9', marginBottom: '4px' }}>UpÓticas</div>
+              <div style={{ fontSize: '12px', color: '#3b82f6', fontWeight: '600', marginBottom: '8px' }}>Para óticas</div>
+              <div style={{ fontSize: '13px', color: '#94a3b8', lineHeight: '1.55' }}>Clientes, OS, vendas, estoque e financeiro</div>
+              <div style={{ marginTop: '14px', fontSize: '13px', fontWeight: '700', color: '#3b82f6' }}>Começar grátis →</div>
+            </button>
+
+            {/* Card Lab */}
+            <button
+              onClick={() => navigate('/cadastro?tipo=lab')}
+              style={{ background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.22)', borderRadius: '14px', padding: '24px 20px', cursor: 'pointer', textAlign: 'left', transition: 'border-color 0.2s, background 0.2s', fontFamily: 'inherit' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(168,85,247,0.14)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(168,85,247,0.45)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(168,85,247,0.08)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(168,85,247,0.22)'; }}
+            >
+              <div style={{ fontSize: '26px', marginBottom: '10px' }}>🔬</div>
+              <div style={{ fontSize: '16px', fontWeight: '800', color: '#f1f5f9', marginBottom: '4px' }}>UpÓticas Lab</div>
+              <div style={{ fontSize: '12px', color: '#a855f7', fontWeight: '600', marginBottom: '8px' }}>Para laboratórios ópticos</div>
+              <div style={{ fontSize: '13px', color: '#94a3b8', lineHeight: '1.55' }}>Ordens de produção, fila, óticas clientes e faturamento</div>
+              <div style={{ marginTop: '14px', fontSize: '13px', fontWeight: '700', color: '#a855f7' }}>Começar grátis →</div>
+            </button>
+          </div>
+        </div>
+      </section>
+
       {/* Hero */}
       <section style={{ textAlign: 'center', padding: '100px 24px 80px', maxWidth: '820px', margin: '0 auto', position: 'relative' }}>
         {/* Background glow */}

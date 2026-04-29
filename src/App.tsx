@@ -1,8 +1,16 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './hooks/useAuth';
 import Layout from './components/Layout';
+import LabLayout from './components/LabLayout';
 import Login from './pages/Login';
 import Cadastro from './pages/Cadastro';
+import LabDashboard from './pages/lab/LabDashboard';
+import LabOrdens from './pages/lab/LabOrdens';
+import LabNovaOrdem from './pages/lab/LabNovaOrdem';
+import LabOrdemDetalhe from './pages/lab/LabOrdemDetalhe';
+import LabImprimirOS from './pages/lab/LabImprimirOS';
+import LabOticas from './pages/lab/LabOticas';
+import LabServicos from './pages/lab/LabServicos';
 import Dashboard from './pages/Dashboard';
 import Clientes from './pages/Clientes';
 import OrdensServico from './pages/OrdensServico';
@@ -33,6 +41,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/os/:id/imprimir" element={<ImprimirOS />} />
+          <Route path="/lab/ordens/:id/imprimir" element={<LabImprimirOS />} />
           <Route element={<Layout />}>
             <Route path="/inicio" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<Dashboard />} />
@@ -54,6 +63,16 @@ export default function App() {
             <Route path="/marketing/aniversariantes" element={<Aniversariantes />} />
             <Route path="/marketing/historico" element={<Historico />} />
           </Route>
+          {/* Lab */}
+          <Route element={<LabLayout />}>
+            <Route path="/lab/dashboard" element={<LabDashboard />} />
+            <Route path="/lab/ordens" element={<LabOrdens />} />
+            <Route path="/lab/ordens/nova" element={<LabNovaOrdem />} />
+            <Route path="/lab/ordens/:id" element={<LabOrdemDetalhe />} />
+            <Route path="/lab/oticas" element={<LabOticas />} />
+            <Route path="/lab/servicos" element={<LabServicos />} />
+          </Route>
+
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </BrowserRouter>

@@ -19,6 +19,7 @@ export async function register(data: {
   nome: string;
   email: string;
   senha: string;
+  tipo?: string;
 }): Promise<AuthState> {
   return api.post<AuthState>('/auth/register', data);
 }
