@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 
 interface Otica {
@@ -13,6 +14,7 @@ interface Otica {
 }
 
 export default function LabOticas() {
+  const navigate = useNavigate();
   const [oticas, setOticas] = useState<Otica[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(false);
@@ -81,7 +83,12 @@ export default function LabOticas() {
             </thead>
             <tbody>
               {oticas.map(o => (
-                <tr key={o.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                <tr key={o.id}
+                  onClick={() => navigate(`/lab/oticas/${o.id}`)}
+                  style={{ borderBottom: '1px solid var(--border)', cursor: 'pointer', transition: 'background 0.1s' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-alt)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
                   <td style={{ padding: '12px 16px', fontSize: '13px', fontWeight: '600', color: 'var(--text)' }}>{o.nome}</td>
                   <td style={{ padding: '12px 16px', fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{o.cnpj ?? '—'}</td>
                   <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>{o.telefone ?? '—'}</td>

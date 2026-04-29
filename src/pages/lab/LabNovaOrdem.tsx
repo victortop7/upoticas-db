@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../../lib/api';
 
 interface Otica { id: string; nome: string; }
@@ -21,12 +21,13 @@ function calcEsfPerto(esf: string, adicao: string): string {
 
 export default function LabNovaOrdem() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [oticas, setOticas] = useState<Otica[]>([]);
   const [catalogo, setCatalogo] = useState<Servico[]>([]);
   const [saving, setSaving] = useState(false);
   const [erro, setErro] = useState('');
 
-  const [oticaId, setOticaId] = useState('');
+  const [oticaId, setOticaId] = useState(searchParams.get('otica') ?? '');
   const [vendedor, setVendedor] = useState('');
   const [refOtica, setRefOtica] = useState('');
   const [previsao, setPrevisao] = useState('');
