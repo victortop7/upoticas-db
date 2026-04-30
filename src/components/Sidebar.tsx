@@ -13,6 +13,7 @@ const NAV_GERAL = [
 
 const NAV_FINANCEIRO = [
   { to: '/financeiro/caixa', label: 'Caixa', icon: '💵' },
+  { to: '/faturamento', label: 'Faturamento', icon: '🧾' },
   { to: '/financeiro/contas-pagar', label: 'Contas a Pagar', icon: '📤' },
   { to: '/financeiro/contas-receber', label: 'Contas a Receber', icon: '📥' },
   { to: '/financeiro/fluxo', label: 'Fluxo Financeiro', icon: '📈' },

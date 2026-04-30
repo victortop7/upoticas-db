@@ -192,6 +192,35 @@ CREATE TABLE IF NOT EXISTS estoque_movimentacoes (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS faturas (
+  id TEXT PRIMARY KEY,
+  tenant_id TEXT NOT NULL REFERENCES tenants(id),
+  numero INTEGER NOT NULL,
+  cliente_id TEXT NOT NULL REFERENCES clientes(id),
+  situacao TEXT NOT NULL DEFAULT 'aberta',   -- aberta | paga | vencida | cancelada
+  valor_total REAL NOT NULL DEFAULT 0,
+  data_vencimento TEXT,
+  data_pagamento TEXT,
+  forma_pagamento TEXT,
+  observacao TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(tenant_id, numero)
+);
+
+CREATE TABLE IF NOT EXISTS fatura_itens (
+  id TEXT PRIMARY KEY,
+  tenant_id TEXT NOT NULL REFERENCES tenants(id),
+  fatura_id TEXT NOT NULL REFERENCES faturas(id),
+  venda_id TEXT REFERENCES vendas(id),
+  os_id TEXT REFERENCES ordens_servico(id),
+  descricao TEXT NOT NULL,
+  valor REAL NOT NULL DEFAULT 0
+);
+
+CREATE INDEX IF NOT EXISTS idx_faturas_tenant ON faturas(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_faturas_cliente ON faturas(cliente_id);
+CREATE INDEX IF NOT EXISTS idx_fatura_itens ON fatura_itens(fatura_id);
 CREATE INDEX IF NOT EXISTS idx_estoque_tenant ON estoque(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_estoque_produto ON estoque(produto_id);
 CREATE INDEX IF NOT EXISTS idx_estoque_mov_tenant ON estoque_movimentacoes(tenant_id);
