@@ -14,6 +14,7 @@ interface Venda {
   valor_final: number;
   forma_pagamento?: string;
   observacao?: string;
+  nfce_status?: string;
   created_at: string;
 }
 
@@ -75,6 +76,18 @@ export default function Vendas() {
 
   function abrirNova() { setEditando(null); setModalOpen(true); }
   function abrirEditar(v: Venda) { setEditando(v); setModalOpen(true); }
+
+  async function emitirNfce(vendaId: string) {
+    try {
+      const res = await api.post<{ ok: boolean; mensagem?: string; status?: string }>('/nfce/emitir', { venda_id: vendaId });
+      if (res.ok) {
+        alert(res.mensagem || 'NFC-e registrada com sucesso!');
+        load();
+      }
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Erro ao emitir NFC-e');
+    }
+  }
 
   async function excluir(id: string, numero: number) {
     if (!confirm(`Excluir venda #${numero}?`)) return;
@@ -201,6 +214,15 @@ export default function Vendas() {
                     </span>
                   </td>
                   <td style={{ padding: '12px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                    <button onClick={() => emitirNfce(v.id)} style={{
+                      padding: '5px 10px', fontSize: '11px', marginRight: '6px',
+                      background: v.nfce_status === 'emitida' ? 'rgba(34,197,94,0.1)' : 'rgba(245,158,11,0.1)',
+                      color: v.nfce_status === 'emitida' ? 'var(--green)' : 'var(--amber)',
+                      border: '1px solid transparent', borderRadius: '6px', cursor: v.nfce_status === 'emitida' ? 'default' : 'pointer',
+                      fontWeight: '600',
+                    }} disabled={v.nfce_status === 'emitida'}>
+                      {v.nfce_status === 'emitida' ? '✓ NFC-e' : 'NFC-e'}
+                    </button>
                     <button onClick={() => abrirEditar(v)} style={{
                       padding: '5px 10px', fontSize: '12px', marginRight: '6px',
                       background: 'var(--primary-dim)', color: 'var(--primary)',

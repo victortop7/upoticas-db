@@ -81,12 +81,16 @@ interface TenantConfig {
   endereco?: string;
   cidade?: string;
   uf?: string;
+  nfce_api_key?: string;
+  nfce_ambiente?: string;
   created_at: string;
 }
 
 export default function Configuracoes() {
   const { setAuth, usuario, tenant } = useAuth();
-  const [form, setForm] = useState({ nome: '', telefone: '', cnpj: '', endereco: '', cidade: '', uf: '' });
+  const [form, setForm] = useState({ nome: '', telefone: '', cnpj: '', endereco: '', cidade: '', uf: '', nfce_api_key: '', nfce_ambiente: 'homologacao' });
+  const [nfceSaved, setNfceSaved] = useState(false);
+  const [nfceSaving, setNfceSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -104,6 +108,8 @@ export default function Configuracoes() {
         endereco: data.endereco || '',
         cidade: data.cidade || '',
         uf: data.uf || '',
+        nfce_api_key: data.nfce_api_key || '',
+        nfce_ambiente: data.nfce_ambiente || 'homologacao',
       });
     }).finally(() => setLoading(false));
   }, []);
@@ -252,6 +258,71 @@ export default function Configuracoes() {
           background: 'var(--surface-alt)', color: 'var(--text-dim)',
           border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer',
         }}>Alterar senha</button>
+      </div>
+
+      {/* NFC-e */}
+      <div style={{ marginTop: '16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+          <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '600', color: 'var(--text)' }}>NFC-e / Nota Fiscal</h3>
+          <span style={{ fontSize: '10px', fontWeight: '700', color: '#d97706', background: 'rgba(217,119,6,0.12)', padding: '2px 8px', borderRadius: '20px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            Em breve
+          </span>
+        </div>
+        <p style={{ margin: '0 0 18px', fontSize: '13px', color: 'var(--text-muted)' }}>
+          Configure sua chave de API para emitir NFC-e direto das vendas.
+        </p>
+
+        <div style={{ marginBottom: '14px' }}>
+          <label style={labelStyle}>Ambiente</label>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {[{ v: 'homologacao', l: 'Homologação (teste)' }, { v: 'producao', l: 'Produção' }].map(({ v, l }) => (
+              <button key={v} type="button"
+                onClick={() => set('nfce_ambiente', v)}
+                style={{
+                  padding: '8px 16px', fontSize: '13px', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '500',
+                  background: form.nfce_ambiente === v ? (v === 'producao' ? 'rgba(34,197,94,0.12)' : 'rgba(59,130,246,0.12)') : 'transparent',
+                  color: form.nfce_ambiente === v ? (v === 'producao' ? 'var(--green)' : 'var(--accent)') : 'var(--text-muted)',
+                  border: `1px solid ${form.nfce_ambiente === v ? (v === 'producao' ? 'var(--green)' : 'var(--accent)') : 'var(--border)'}`,
+                }}>
+                {l}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ marginBottom: '18px' }}>
+          <label style={labelStyle}>Chave API (Focus NF-e)</label>
+          <input
+            type="password"
+            style={{ ...inputStyle, fontFamily: 'var(--mono)' }}
+            value={form.nfce_api_key}
+            onChange={e => set('nfce_api_key', e.target.value)}
+            placeholder="Sua chave de API..."
+          />
+          <p style={{ margin: '6px 0 0', fontSize: '11px', color: 'var(--text-muted)' }}>
+            Obtenha em <strong>app.focusnfe.com.br</strong> → Configurações → Tokens de API
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <button
+            type="button"
+            disabled={nfceSaving}
+            onClick={async () => {
+              setNfceSaving(true);
+              try {
+                await api.put('/configuracoes', form);
+                setNfceSaved(true);
+                setTimeout(() => setNfceSaved(false), 3000);
+              } catch {}
+              setNfceSaving(false);
+            }}
+            style={{ padding: '9px 20px', fontSize: '13px', fontWeight: '600', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+          >
+            {nfceSaving ? 'Salvando...' : 'Salvar configuração NFC-e'}
+          </button>
+          {nfceSaved && <span style={{ fontSize: '13px', color: 'var(--green)', fontWeight: '500' }}>✓ Salvo</span>}
+        </div>
       </div>
 
       {senhaModalOpen && <AlterarSenhaModal onClose={() => setSenhaModalOpen(false)} />}
