@@ -135,6 +135,38 @@ CREATE TABLE IF NOT EXISTS medicos (
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS produtos (
+  id TEXT PRIMARY KEY,
+  tenant_id TEXT NOT NULL REFERENCES tenants(id),
+  codigo TEXT,
+  descricao TEXT NOT NULL,
+  grupo TEXT,
+  unidade TEXT NOT NULL DEFAULT 'UN',
+  preco_custo REAL NOT NULL DEFAULT 0,
+  preco_venda REAL NOT NULL DEFAULT 0,
+  margem REAL GENERATED ALWAYS AS (
+    CASE WHEN preco_custo > 0 THEN ROUND((preco_venda - preco_custo) / preco_custo * 100, 2) ELSE 0 END
+  ) VIRTUAL,
+  fornecedor_id TEXT REFERENCES fornecedores(id),
+  observacao TEXT,
+  ativo INTEGER NOT NULL DEFAULT 1,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS produtos_precos_especiais (
+  id TEXT PRIMARY KEY,
+  tenant_id TEXT NOT NULL REFERENCES tenants(id),
+  produto_id TEXT NOT NULL REFERENCES produtos(id),
+  cliente_id TEXT NOT NULL REFERENCES clientes(id),
+  preco REAL NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(produto_id, cliente_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_produtos_tenant ON produtos(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_produtos_grupo ON produtos(tenant_id, grupo);
+CREATE INDEX IF NOT EXISTS idx_precos_especiais_produto ON produtos_precos_especiais(produto_id);
 CREATE INDEX IF NOT EXISTS idx_fornecedores_tenant ON fornecedores(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_medicos_tenant ON medicos(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_clientes_tenant ON clientes(tenant_id);
