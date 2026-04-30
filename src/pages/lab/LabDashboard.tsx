@@ -1,124 +1,161 @@
-import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { api } from '../../lib/api';
 
-interface Stats {
-  total_ordens: number;
-  aguardando: number;
-  em_producao: number;
-  prontos: number;
-  entregues_hoje: number;
-  total_oticas: number;
-}
-
-const STATUS_COLOR: Record<string, string> = {
-  aguardando: 'var(--amber)',
-  em_producao: 'var(--accent)',
-  pronto: 'var(--green)',
-  entregue: 'var(--text-dim)',
-  cancelado: 'var(--red)',
-};
-
-const STATUS_LABEL: Record<string, string> = {
-  aguardando: 'Aguardando',
-  em_producao: 'Em Produção',
-  pronto: 'Pronto',
-  entregue: 'Entregue',
-  cancelado: 'Cancelado',
-};
+const MODULOS = [
+  { letra: 'A', nome: 'CONFIGURAÇÕES', icon: '⚙', to: null },
+  { letra: 'B', nome: 'ÓTICAS CLIENTES', icon: '🏪', to: '/lab/oticas' },
+  { letra: 'C', nome: 'FORNECEDORES/OFTALMOS', icon: '🏭', to: '/lab/fornecedores' },
+  { letra: 'D', nome: 'CADASTRO DE PRODUTOS', icon: '📦', to: '/lab/produtos' },
+  { letra: 'E', nome: 'CADASTRO DE ESTOQUE', icon: '🗂️', to: '/lab/estoque' },
+  { letra: 'F', nome: 'MOVIMENTAÇÃO DE ESTOQUE', icon: '🔄', to: '/lab/estoque' },
+  { letra: 'G', nome: 'PEDIDOS / ORDENS DE SERVIÇO', icon: '📋', to: '/lab/ordens' },
+  { letra: 'H', nome: 'NOTAS FISCAIS/FECHAMENTOS', icon: '🧾', to: null },
+  { letra: 'I', nome: 'FATURAMENTO', icon: '💰', to: '/lab/faturamento' },
+  { letra: 'J', nome: 'CONTAS A RECEBER', icon: '📥', to: null },
+  { letra: 'K', nome: 'CONTAS A PAGAR', icon: '📤', to: null },
+  { letra: 'L', nome: 'CONTROLE BANCÁRIO', icon: '🏛️', to: '/lab/bancario' },
+];
 
 export default function LabDashboard() {
-  const { tenant } = useAuth();
   const navigate = useNavigate();
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [recentes, setRecentes] = useState<any[]>([]);
-
-  useEffect(() => {
-    api.get<{ stats: Stats; recentes: any[] }>('/lab/dashboard')
-      .then(d => { setStats(d.stats); setRecentes(d.recentes); })
-      .catch(() => {});
-  }, []);
-
-  const kpis = stats ? [
-    { label: 'Total de Ordens', value: stats.total_ordens, color: 'var(--text)' },
-    { label: 'Aguardando', value: stats.aguardando, color: 'var(--amber)' },
-    { label: 'Em Produção', value: stats.em_producao, color: 'var(--accent)' },
-    { label: 'Prontos p/ Retirada', value: stats.prontos, color: 'var(--green)' },
-    { label: 'Entregues Hoje', value: stats.entregues_hoje, color: 'var(--green)' },
-    { label: 'Óticas Clientes', value: stats.total_oticas, color: 'var(--purple)' },
-  ] : [];
+  const { tenant } = useAuth();
 
   return (
-    <div style={{ padding: '32px', maxWidth: '1100px' }}>
-      {/* Header */}
-      <div style={{ marginBottom: '28px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-          <span style={{ fontSize: '11px', fontWeight: '700', color: '#a855f7', textTransform: 'uppercase', letterSpacing: '1px' }}>
-            UpÓticas Lab
-          </span>
-          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--green)', display: 'inline-block' }} />
-        </div>
-        <h1 style={{ margin: 0, fontSize: '22px', fontWeight: '700', color: 'var(--text)' }}>{tenant?.nome}</h1>
-        <p style={{ margin: '4px 0 0', fontSize: '14px', color: 'var(--text-dim)' }}>Visão geral do laboratório</p>
-      </div>
+    <div style={{
+      minHeight: '100%',
+      background: '#c8c4b0',
+      display: 'flex',
+      alignItems: 'flex-start',
+      justifyContent: 'center',
+      padding: '24px 16px',
+      fontFamily: "'Courier New', Courier, monospace",
+    }}>
+      <div style={{ display: 'flex', gap: '24px', width: '100%', maxWidth: '800px' }}>
 
-      {/* KPIs */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px', marginBottom: '28px' }}>
-        {stats ? kpis.map((k, i) => (
-          <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px' }}>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>{k.label}</div>
-            <div style={{ fontSize: '28px', fontWeight: '800', color: k.color, fontFamily: 'var(--mono)' }}>{k.value}</div>
+        {/* ===== PAINEL DE MÓDULOS ===== */}
+        <div style={{ flex: 1 }}>
+          {/* Header do painel */}
+          <div style={{
+            background: 'linear-gradient(90deg, #000080, #0000aa)',
+            color: '#ffffff',
+            textAlign: 'center',
+            padding: '6px 12px',
+            fontSize: '13px',
+            fontWeight: 'bold',
+            letterSpacing: '2px',
+            border: '2px outset #8080ff',
+            borderBottom: 'none',
+          }}>
+            MÓDULOS
           </div>
-        )) : Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', height: '80px', opacity: 0.4 }} />
-        ))}
-      </div>
 
-      {/* Ordens recentes */}
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px' }}>
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>Ordens Recentes</span>
-          <button onClick={() => navigate('/lab/ordens')} style={{ fontSize: '12px', color: '#a855f7', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-            Ver todas →
-          </button>
-        </div>
-        {recentes.length === 0 ? (
-          <div style={{ padding: '32px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>
-            Nenhuma ordem ainda.{' '}
-            <button onClick={() => navigate('/lab/ordens/nova')} style={{ color: '#a855f7', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '14px' }}>
-              Criar primeira OS →
-            </button>
+          {/* Lista de módulos */}
+          <div style={{ border: '2px inset #808080', background: '#d4d0c8' }}>
+            {MODULOS.map((m, i) => (
+              <div
+                key={m.letra}
+                onClick={() => m.to && navigate(m.to)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '7px 10px',
+                  borderBottom: i < MODULOS.length - 1 ? '1px solid #b0acA4' : 'none',
+                  background: i % 2 === 0 ? '#d4d0c8' : '#dedad2',
+                  cursor: m.to ? 'pointer' : 'default',
+                  transition: 'background 0.1s',
+                  opacity: m.to ? 1 : 0.55,
+                  userSelect: 'none',
+                }}
+                onMouseEnter={e => { if (m.to) (e.currentTarget as HTMLDivElement).style.background = '#000080'; }}
+                onMouseLeave={e => { if (m.to) (e.currentTarget as HTMLDivElement).style.background = i % 2 === 0 ? '#d4d0c8' : '#dedad2'; }}
+                onMouseOver={e => {
+                  if (m.to) {
+                    const el = e.currentTarget as HTMLDivElement;
+                    el.querySelectorAll('span').forEach(s => { (s as HTMLElement).style.color = '#ffffff'; });
+                  }
+                }}
+                onMouseOut={e => {
+                  const el = e.currentTarget as HTMLDivElement;
+                  el.querySelectorAll('span').forEach(s => { (s as HTMLElement).style.color = ''; });
+                }}
+              >
+                {/* Ícone */}
+                <span style={{ fontSize: '16px', width: '28px', textAlign: 'center', flexShrink: 0 }}>{m.icon}</span>
+
+                {/* Nome */}
+                <span style={{ flex: 1, fontSize: '12px', fontWeight: 'bold', color: '#000000', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                  {m.nome}
+                </span>
+
+                {/* Letra */}
+                <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#000080', width: '20px', textAlign: 'right', flexShrink: 0 }}>
+                  {m.letra}
+                </span>
+              </div>
+            ))}
           </div>
-        ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                {['Nº OS', 'Ótica', 'Serviços', 'Previsão', 'Status'].map(h => (
-                  <th key={h} style={{ padding: '10px 20px', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {recentes.map((o: any) => (
-                <tr key={o.id} onClick={() => navigate(`/lab/ordens/${o.id}`)} style={{ borderBottom: '1px solid var(--border)', cursor: 'pointer' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-alt)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                >
-                  <td style={{ padding: '12px 20px', fontSize: '13px', fontFamily: 'var(--mono)', color: 'var(--text)' }}>#{String(o.numero).padStart(4, '0')}</td>
-                  <td style={{ padding: '12px 20px', fontSize: '13px', color: 'var(--text)' }}>{o.otica_nome}</td>
-                  <td style={{ padding: '12px 20px', fontSize: '13px', color: 'var(--text-dim)' }}>{o.servicos_count} serviço(s)</td>
-                  <td style={{ padding: '12px 20px', fontSize: '13px', fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{o.previsao_entrega ?? '—'}</td>
-                  <td style={{ padding: '12px 20px' }}>
-                    <span style={{ fontSize: '11px', fontWeight: '600', color: STATUS_COLOR[o.status] ?? 'var(--text-dim)', background: `${STATUS_COLOR[o.status] ?? 'var(--text-dim)'}18`, padding: '3px 8px', borderRadius: '20px' }}>
-                      {STATUS_LABEL[o.status] ?? o.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+        </div>
+
+        {/* ===== PAINEL LATERAL (INFO) ===== */}
+        <div style={{ width: '200px', flexShrink: 0 }}>
+          {/* Logo/Empresa */}
+          <div style={{
+            background: 'linear-gradient(135deg, #000080, #0000cc)',
+            border: '2px outset #8080ff',
+            padding: '16px 12px',
+            marginBottom: '12px',
+            textAlign: 'center',
+          }}>
+            <div style={{ fontSize: '22px', marginBottom: '6px' }}>🔬</div>
+            <div style={{ color: '#ffff00', fontSize: '13px', fontWeight: 'bold', letterSpacing: '1px' }}>UpÓticas</div>
+            <div style={{ color: '#c0c0ff', fontSize: '11px', letterSpacing: '2px' }}>LAB</div>
+            <div style={{ borderTop: '1px solid #4040aa', marginTop: '8px', paddingTop: '8px', color: '#a0a0ff', fontSize: '10px', lineHeight: '1.6' }}>
+              {tenant?.nome}
+            </div>
+          </div>
+
+          {/* Acesso rápido OS */}
+          <div style={{
+            background: '#d4d0c8',
+            border: '2px outset #808080',
+            padding: '10px 12px',
+            marginBottom: '8px',
+          }}>
+            <div style={{ background: '#000080', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '3px 6px', marginBottom: '8px', letterSpacing: '1px' }}>
+              ACESSO RÁPIDO
+            </div>
+            {[
+              { label: 'Nova OS', to: '/lab/ordens/nova', icon: '➕' },
+              { label: 'Ver Ordens', to: '/lab/ordens', icon: '📋' },
+              { label: 'Óticas', to: '/lab/oticas', icon: '🏪' },
+            ].map(item => (
+              <button
+                key={item.to}
+                onClick={() => navigate(item.to)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '6px',
+                  width: '100%', padding: '4px 6px', marginBottom: '4px',
+                  background: '#c8c4b0', border: '1px outset #a0a098',
+                  fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer',
+                  color: '#000000', textAlign: 'left',
+                  fontWeight: 'bold',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#000080'; (e.currentTarget as HTMLButtonElement).style.color = '#ffffff'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#c8c4b0'; (e.currentTarget as HTMLButtonElement).style.color = '#000000'; }}
+              >
+                <span>{item.icon}</span>
+                <span style={{ textTransform: 'uppercase', letterSpacing: '0.3px' }}>{item.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Versão */}
+          <div style={{ background: '#d4d0c8', border: '2px inset #808080', padding: '8px 10px', fontSize: '10px', color: '#404040', textAlign: 'center' }}>
+            <div style={{ fontWeight: 'bold', color: '#000080', marginBottom: '4px' }}>UpÓticas Lab</div>
+            <div>Versão 1.0</div>
+            <div style={{ marginTop: '4px', color: '#606060' }}>Soluções Ópticas</div>
+          </div>
+        </div>
       </div>
     </div>
   );
