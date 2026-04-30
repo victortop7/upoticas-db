@@ -1,94 +1,104 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { useState, useEffect } from 'react';
 
 const MODULOS = [
-  { letra: 'A', nome: 'CONFIGURAÇÕES', icon: '⚙', to: '/lab/configuracoes' },
-  { letra: 'B', nome: 'ÓTICAS CLIENTES', icon: '🏪', to: '/lab/oticas' },
-  { letra: 'C', nome: 'FORNECEDORES/OFTALMOS', icon: '🏭', to: '/lab/fornecedores' },
-  { letra: 'D', nome: 'CADASTRO DE PRODUTOS', icon: '📦', to: '/lab/produtos' },
-  { letra: 'E', nome: 'CADASTRO DE ESTOQUE', icon: '🗂️', to: '/lab/estoque' },
-  { letra: 'F', nome: 'MOVIMENTAÇÃO DE ESTOQUE', icon: '🔄', to: '/lab/estoque' },
+  { letra: 'A', nome: 'CONFIGURAÇÕES',              icon: '⚙',  to: '/lab/configuracoes' },
+  { letra: 'B', nome: 'ÓTICAS CLIENTES',             icon: '🏪', to: '/lab/oticas' },
+  { letra: 'C', nome: 'FORNECEDORES/OFTALMOS',       icon: '🏭', to: '/lab/fornecedores' },
+  { letra: 'D', nome: 'CADASTRO DE PRODUTOS',        icon: '📦', to: '/lab/produtos' },
+  { letra: 'E', nome: 'CADASTRO DE ESTOQUE',         icon: '🗂️', to: '/lab/estoque' },
+  { letra: 'F', nome: 'MOVIMENTAÇÃO DE ESTOQUE',     icon: '🔄', to: '/lab/estoque' },
   { letra: 'G', nome: 'PEDIDOS / ORDENS DE SERVIÇO', icon: '📋', to: '/lab/ordens' },
-  { letra: 'H', nome: 'NOTAS FISCAIS/FECHAMENTOS', icon: '🧾', to: null },
-  { letra: 'I', nome: 'FATURAMENTO', icon: '💰', to: '/lab/faturamento' },
-  { letra: 'J', nome: 'CONTAS A RECEBER', icon: '📥', to: null },
-  { letra: 'K', nome: 'CONTAS A PAGAR', icon: '📤', to: null },
-  { letra: 'L', nome: 'CONTROLE BANCÁRIO', icon: '🏛️', to: '/lab/bancario' },
+  { letra: 'H', nome: 'NOTAS FISCAIS/FECHAMENTOS',   icon: '🧾', to: null },
+  { letra: 'I', nome: 'FATURAMENTO',                 icon: '💰', to: '/lab/faturamento' },
+  { letra: 'J', nome: 'CONTAS A RECEBER',            icon: '📥', to: null },
+  { letra: 'K', nome: 'CONTAS A PAGAR',              icon: '📤', to: null },
+  { letra: 'L', nome: 'CONTROLE BANCÁRIO',           icon: '🏛️', to: '/lab/bancario' },
 ];
 
 export default function LabDashboard() {
   const navigate = useNavigate();
   const { tenant } = useAuth();
+  const [dark, setDark] = useState(() => localStorage.getItem('lab_dark') === '1');
+
+  useEffect(() => {
+    const handler = () => setDark(localStorage.getItem('lab_dark') === '1');
+    window.addEventListener('labtheme', handler);
+    return () => window.removeEventListener('labtheme', handler);
+  }, []);
+
+  const bg        = dark ? '#111111' : '#c8c4b0';
+  const panelBg   = dark ? '#1c1c1c' : '#d4d0c8';
+  const rowEven   = dark ? '#1c1c1c' : '#d4d0c8';
+  const rowOdd    = dark ? '#222222' : '#dedad2';
+  const rowBorder = dark ? '#333333' : '#b0aca4';
+  const txtMain   = dark ? '#d8d8d8' : '#000000';
+  const hdrBg     = 'linear-gradient(90deg, #005500, #007700)';
+  const hdrTxt    = '#ccffcc';
+  const hdrBorder = '#2a8a2a';
+  const accentTxt = dark ? '#66cc66' : '#005500';
+
+  function toggleDark() {
+    const next = dark ? '0' : '1';
+    localStorage.setItem('lab_dark', next);
+    window.dispatchEvent(new Event('labtheme'));
+  }
 
   return (
     <div style={{
       minHeight: '100%',
-      background: '#c8c4b0',
-      display: 'flex',
-      alignItems: 'flex-start',
-      justifyContent: 'center',
-      padding: '24px 16px',
+      background: bg,
+      padding: '16px',
       fontFamily: "'Courier New', Courier, monospace",
+      transition: 'background 0.2s',
     }}>
-      <div style={{ display: 'flex', gap: '24px', width: '100%', maxWidth: '800px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
 
-        {/* ===== PAINEL DE MÓDULOS ===== */}
-        <div style={{ flex: 1 }}>
+        {/* ===== PAINEL DE MÓDULOS (esquerda) ===== */}
+        <div style={{ flex: 1, maxWidth: '520px' }}>
+
           {/* Header do painel */}
           <div style={{
-            background: 'linear-gradient(90deg, #1a3a1a, #2d5a2d)',
-            color: '#ccffcc',
+            background: hdrBg,
+            color: hdrTxt,
             textAlign: 'center',
-            padding: '6px 12px',
+            padding: '5px 12px',
             fontSize: '13px',
             fontWeight: 'bold',
             letterSpacing: '2px',
-            border: '2px outset #4a8a4a',
+            border: `2px outset ${hdrBorder}`,
             borderBottom: 'none',
           }}>
             MÓDULOS
           </div>
 
-          {/* Lista de módulos */}
-          <div style={{ border: '2px inset #808080', background: '#d4d0c8' }}>
+          {/* Lista */}
+          <div style={{ border: `2px inset ${dark ? '#444' : '#808080'}`, background: panelBg }}>
             {MODULOS.map((m, i) => (
               <div
                 key={m.letra}
                 onClick={() => m.to && navigate(m.to)}
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
+                  display: 'flex', alignItems: 'center',
                   padding: '7px 10px',
-                  borderBottom: i < MODULOS.length - 1 ? '1px solid #b0acA4' : 'none',
-                  background: i % 2 === 0 ? '#d4d0c8' : '#dedad2',
+                  borderBottom: i < MODULOS.length - 1 ? `1px solid ${rowBorder}` : 'none',
+                  background: i % 2 === 0 ? rowEven : rowOdd,
                   cursor: m.to ? 'pointer' : 'default',
-                  transition: 'background 0.1s',
-                  opacity: m.to ? 1 : 0.55,
+                  opacity: m.to ? 1 : 0.45,
                   userSelect: 'none',
+                  transition: 'background 0.08s',
                 }}
-                onMouseEnter={e => { if (m.to) (e.currentTarget as HTMLDivElement).style.background = '#1a3a1a'; }}
-                onMouseLeave={e => { if (m.to) (e.currentTarget as HTMLDivElement).style.background = i % 2 === 0 ? '#d4d0c8' : '#dedad2'; }}
-                onMouseOver={e => {
-                  if (m.to) {
-                    const el = e.currentTarget as HTMLDivElement;
-                    el.querySelectorAll('span').forEach(s => { (s as HTMLElement).style.color = '#ffffff'; });
-                  }
-                }}
-                onMouseOut={e => {
-                  const el = e.currentTarget as HTMLDivElement;
-                  el.querySelectorAll('span').forEach(s => { (s as HTMLElement).style.color = ''; });
-                }}
+                onMouseEnter={e => { if (m.to) (e.currentTarget as HTMLElement).style.background = '#005500'; }}
+                onMouseLeave={e => { if (m.to) (e.currentTarget as HTMLElement).style.background = i % 2 === 0 ? rowEven : rowOdd; }}
+                onMouseOver={e => { if (m.to) e.currentTarget.querySelectorAll('span').forEach(s => (s as HTMLElement).style.color = '#ffffff'); }}
+                onMouseOut={e => { e.currentTarget.querySelectorAll('span').forEach(s => (s as HTMLElement).style.color = ''); }}
               >
-                {/* Ícone */}
                 <span style={{ fontSize: '16px', width: '28px', textAlign: 'center', flexShrink: 0 }}>{m.icon}</span>
-
-                {/* Nome */}
-                <span style={{ flex: 1, fontSize: '12px', fontWeight: 'bold', color: '#000000', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                <span style={{ flex: 1, fontSize: '12px', fontWeight: 'bold', color: txtMain, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
                   {m.nome}
                 </span>
-
-                {/* Letra */}
-                <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#2d5a2d', width: '20px', textAlign: 'right', flexShrink: 0 }}>
+                <span style={{ fontSize: '13px', fontWeight: 'bold', color: accentTxt, width: '20px', textAlign: 'right', flexShrink: 0 }}>
                   {m.letra}
                 </span>
               </div>
@@ -96,38 +106,34 @@ export default function LabDashboard() {
           </div>
         </div>
 
-        {/* ===== PAINEL LATERAL (INFO) ===== */}
+        {/* ===== PAINEL LATERAL (direita) ===== */}
         <div style={{ width: '200px', flexShrink: 0 }}>
-          {/* Logo/Empresa */}
+
+          {/* Logo */}
           <div style={{
-            background: 'linear-gradient(135deg, #1a3a1a, #2d5a2d)',
-            border: '2px outset #4a8a4a',
+            background: hdrBg,
+            border: `2px outset ${hdrBorder}`,
             padding: '16px 12px',
             marginBottom: '12px',
             textAlign: 'center',
           }}>
             <div style={{ fontSize: '22px', marginBottom: '6px' }}>🔬</div>
             <div style={{ color: '#88ff88', fontSize: '13px', fontWeight: 'bold', letterSpacing: '1px' }}>UpÓticas</div>
-            <div style={{ color: '#ccffcc', fontSize: '11px', letterSpacing: '2px' }}>LAB</div>
+            <div style={{ color: hdrTxt, fontSize: '11px', letterSpacing: '2px' }}>LAB</div>
             <div style={{ borderTop: '1px solid #3a6a3a', marginTop: '8px', paddingTop: '8px', color: '#a0d0a0', fontSize: '10px', lineHeight: '1.6' }}>
               {tenant?.nome}
             </div>
           </div>
 
-          {/* Acesso rápido OS */}
-          <div style={{
-            background: '#d4d0c8',
-            border: '2px outset #808080',
-            padding: '10px 12px',
-            marginBottom: '8px',
-          }}>
-            <div style={{ background: '#1a3a1a', color: '#ccffcc', fontSize: '10px', fontWeight: 'bold', padding: '3px 6px', marginBottom: '8px', letterSpacing: '1px' }}>
+          {/* Acesso rápido */}
+          <div style={{ background: panelBg, border: `2px outset ${dark ? '#555' : '#808080'}`, padding: '10px 12px', marginBottom: '8px' }}>
+            <div style={{ background: '#005500', color: hdrTxt, fontSize: '10px', fontWeight: 'bold', padding: '3px 6px', marginBottom: '8px', letterSpacing: '1px' }}>
               ACESSO RÁPIDO
             </div>
             {[
-              { label: 'Nova OS', to: '/lab/ordens/nova', icon: '➕' },
-              { label: 'Ver Ordens', to: '/lab/ordens', icon: '📋' },
-              { label: 'Óticas', to: '/lab/oticas', icon: '🏪' },
+              { label: 'Nova OS',    to: '/lab/ordens/nova', icon: '➕' },
+              { label: 'Ver Ordens', to: '/lab/ordens',      icon: '📋' },
+              { label: 'Óticas',     to: '/lab/oticas',      icon: '🏪' },
             ].map(item => (
               <button
                 key={item.to}
@@ -135,13 +141,13 @@ export default function LabDashboard() {
                 style={{
                   display: 'flex', alignItems: 'center', gap: '6px',
                   width: '100%', padding: '4px 6px', marginBottom: '4px',
-                  background: '#c8c4b0', border: '1px outset #a0a098',
+                  background: dark ? '#2a2a2a' : '#c8c4b0',
+                  border: `1px outset ${dark ? '#555' : '#a0a098'}`,
                   fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer',
-                  color: '#000000', textAlign: 'left',
-                  fontWeight: 'bold',
+                  color: txtMain, textAlign: 'left', fontWeight: 'bold',
                 }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#1a3a1a'; (e.currentTarget as HTMLButtonElement).style.color = '#ccffcc'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#c8c4b0'; (e.currentTarget as HTMLButtonElement).style.color = '#000000'; }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#005500'; (e.currentTarget as HTMLElement).style.color = '#ccffcc'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = dark ? '#2a2a2a' : '#c8c4b0'; (e.currentTarget as HTMLElement).style.color = txtMain; }}
               >
                 <span>{item.icon}</span>
                 <span style={{ textTransform: 'uppercase', letterSpacing: '0.3px' }}>{item.label}</span>
@@ -149,11 +155,23 @@ export default function LabDashboard() {
             ))}
           </div>
 
-          {/* Versão */}
-          <div style={{ background: '#d4d0c8', border: '2px inset #808080', padding: '8px 10px', fontSize: '10px', color: '#404040', textAlign: 'center' }}>
-            <div style={{ fontWeight: 'bold', color: '#1a3a1a', marginBottom: '4px' }}>UpÓticas Lab</div>
+          {/* Modo noturno + Versão */}
+          <div style={{ background: panelBg, border: `2px inset ${dark ? '#444' : '#808080'}`, padding: '8px 10px', fontSize: '10px', color: dark ? '#aaaaaa' : '#404040', textAlign: 'center' }}>
+            <button
+              onClick={toggleDark}
+              style={{
+                width: '100%', padding: '4px 6px', marginBottom: '8px',
+                background: dark ? '#333' : '#c8c4b0',
+                border: `1px outset ${dark ? '#555' : '#a0a098'}`,
+                fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer',
+                color: dark ? '#ccffcc' : '#000000', fontWeight: 'bold',
+              }}
+            >
+              {dark ? '☀️ MODO CLARO' : '🌙 MODO NOTURNO'}
+            </button>
+            <div style={{ fontWeight: 'bold', color: accentTxt, marginBottom: '4px' }}>UpÓticas Lab</div>
             <div>Versão 1.0</div>
-            <div style={{ marginTop: '4px', color: '#606060' }}>Soluções Ópticas</div>
+            <div style={{ marginTop: '4px', color: dark ? '#666' : '#606060' }}>Soluções Ópticas</div>
           </div>
         </div>
       </div>
