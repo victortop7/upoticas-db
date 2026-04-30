@@ -26,6 +26,11 @@ const NAV_MARKETING = [
   { to: '/marketing/historico', label: 'Histórico', icon: '📋' },
 ];
 
+const NAV_CADASTROS = [
+  { to: '/fornecedores', label: 'Fornecedores', icon: '🏭' },
+  { to: '/medicos', label: 'Médicos / Oftalmos', icon: '👨‍⚕️' },
+];
+
 const NAV_CONFIG = [
   { to: '/vendedores', label: 'Vendedores', icon: '🏆' },
   { to: '/usuarios', label: 'Usuários', icon: '👥' },
@@ -136,6 +141,7 @@ export default function Sidebar() {
               { label: 'Menu', items: [...NAV_GERAL, ...(usuario?.perfil !== 'admin' ? [{ to: '/vendedores', label: 'Ranking', icon: '🏆' }] : [])] },
               ...(usuario?.perfil === 'admin' ? [{ label: 'Financeiro', items: NAV_FINANCEIRO }] : []),
               { label: 'Marketing', items: NAV_MARKETING },
+              { label: 'Cadastros', items: usuario?.perfil === 'admin' ? NAV_CADASTROS : [] },
               { label: 'Sistema', items: usuario?.perfil === 'admin' ? NAV_CONFIG : [] },
             ]).filter(g => g.items.length > 0).map(({ label, items }) => (
               <div key={label}>

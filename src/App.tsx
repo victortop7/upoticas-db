@@ -33,6 +33,8 @@ import ContasPagar from './pages/financeiro/ContasPagar';
 import ContasReceber from './pages/financeiro/ContasReceber';
 import Caixa from './pages/financeiro/Caixa';
 import FluxoFinanceiro from './pages/financeiro/FluxoFinanceiro';
+import Fornecedores from './pages/Fornecedores';
+import Medicos from './pages/Medicos';
 
 export default function App() {
   return (
@@ -59,6 +61,8 @@ export default function App() {
             <Route path="/financeiro/contas-receber" element={<ContasReceber />} />
             <Route path="/financeiro/caixa" element={<Caixa />} />
             <Route path="/financeiro/fluxo" element={<FluxoFinanceiro />} />
+            <Route path="/fornecedores" element={<Fornecedores />} />
+            <Route path="/medicos" element={<Medicos />} />
             <Route path="/crm" element={<Funil />} />
             <Route path="/marketing/campanhas" element={<Campanhas />} />
             <Route path="/marketing/modelos" element={<Modelos />} />

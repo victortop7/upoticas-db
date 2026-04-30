@@ -94,6 +94,49 @@ CREATE TABLE IF NOT EXISTS vendas (
   UNIQUE(tenant_id, numero)
 );
 
+CREATE TABLE IF NOT EXISTS fornecedores (
+  id TEXT PRIMARY KEY,
+  tenant_id TEXT NOT NULL REFERENCES tenants(id),
+  nome TEXT NOT NULL,
+  fantasia TEXT,
+  cnpj TEXT,
+  ie TEXT,
+  telefone TEXT,
+  celular TEXT,
+  email TEXT,
+  contato TEXT,
+  endereco TEXT,
+  bairro TEXT,
+  cidade TEXT,
+  uf TEXT,
+  cep TEXT,
+  observacao TEXT,
+  ativo INTEGER NOT NULL DEFAULT 1,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS medicos (
+  id TEXT PRIMARY KEY,
+  tenant_id TEXT NOT NULL REFERENCES tenants(id),
+  nome TEXT NOT NULL,
+  crm TEXT,
+  especialidade TEXT DEFAULT 'Oftalmologia',
+  telefone TEXT,
+  celular TEXT,
+  email TEXT,
+  clinica TEXT,
+  endereco TEXT,
+  cidade TEXT,
+  uf TEXT,
+  observacao TEXT,
+  ativo INTEGER NOT NULL DEFAULT 1,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_fornecedores_tenant ON fornecedores(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_medicos_tenant ON medicos(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_clientes_tenant ON clientes(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_os_tenant ON ordens_servico(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_os_cliente ON ordens_servico(cliente_id);
