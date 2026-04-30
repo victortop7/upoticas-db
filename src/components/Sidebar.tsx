@@ -30,6 +30,7 @@ const NAV_CADASTROS = [
   { to: '/fornecedores', label: 'Fornecedores', icon: '🏭' },
   { to: '/medicos', label: 'Médicos / Oftalmos', icon: '👨‍⚕️' },
   { to: '/produtos', label: 'Produtos / Serviços', icon: '📦' },
+  { to: '/estoque', label: 'Estoque', icon: '🗂️' },
 ];
 
 const NAV_CONFIG = [

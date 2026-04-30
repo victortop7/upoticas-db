@@ -164,6 +164,38 @@ CREATE TABLE IF NOT EXISTS produtos_precos_especiais (
   UNIQUE(produto_id, cliente_id)
 );
 
+CREATE TABLE IF NOT EXISTS estoque (
+  id TEXT PRIMARY KEY,
+  tenant_id TEXT NOT NULL REFERENCES tenants(id),
+  produto_id TEXT NOT NULL REFERENCES produtos(id),
+  quantidade REAL NOT NULL DEFAULT 0,
+  quantidade_minima REAL NOT NULL DEFAULT 0,
+  quantidade_maxima REAL,
+  localizacao TEXT,
+  updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(tenant_id, produto_id)
+);
+
+CREATE TABLE IF NOT EXISTS estoque_movimentacoes (
+  id TEXT PRIMARY KEY,
+  tenant_id TEXT NOT NULL REFERENCES tenants(id),
+  produto_id TEXT NOT NULL REFERENCES produtos(id),
+  tipo TEXT NOT NULL,
+  quantidade REAL NOT NULL,
+  quantidade_anterior REAL,
+  quantidade_nova REAL,
+  motivo TEXT,
+  documento TEXT,
+  fornecedor_id TEXT REFERENCES fornecedores(id),
+  preco_unitario REAL,
+  usuario_id TEXT REFERENCES usuarios(id),
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_estoque_tenant ON estoque(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_estoque_produto ON estoque(produto_id);
+CREATE INDEX IF NOT EXISTS idx_estoque_mov_tenant ON estoque_movimentacoes(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_estoque_mov_produto ON estoque_movimentacoes(produto_id);
 CREATE INDEX IF NOT EXISTS idx_produtos_tenant ON produtos(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_produtos_grupo ON produtos(tenant_id, grupo);
 CREATE INDEX IF NOT EXISTS idx_precos_especiais_produto ON produtos_precos_especiais(produto_id);

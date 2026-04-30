@@ -36,6 +36,7 @@ import FluxoFinanceiro from './pages/financeiro/FluxoFinanceiro';
 import Fornecedores from './pages/Fornecedores';
 import Medicos from './pages/Medicos';
 import Produtos from './pages/Produtos';
+import Estoque from './pages/Estoque';
 
 export default function App() {
   return (
@@ -65,6 +66,7 @@ export default function App() {
             <Route path="/fornecedores" element={<Fornecedores />} />
             <Route path="/medicos" element={<Medicos />} />
             <Route path="/produtos" element={<Produtos />} />
+            <Route path="/estoque" element={<Estoque />} />
             <Route path="/crm" element={<Funil />} />
             <Route path="/marketing/campanhas" element={<Campanhas />} />
             <Route path="/marketing/modelos" element={<Modelos />} />
