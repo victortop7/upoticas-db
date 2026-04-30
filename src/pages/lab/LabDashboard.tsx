@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
 const MODULOS = [
-  { letra: 'A', nome: 'CONFIGURAÇÕES', icon: '⚙', to: null },
+  { letra: 'A', nome: 'CONFIGURAÇÕES', icon: '⚙', to: '/lab/configuracoes' },
   { letra: 'B', nome: 'ÓTICAS CLIENTES', icon: '🏪', to: '/lab/oticas' },
   { letra: 'C', nome: 'FORNECEDORES/OFTALMOS', icon: '🏭', to: '/lab/fornecedores' },
   { letra: 'D', nome: 'CADASTRO DE PRODUTOS', icon: '📦', to: '/lab/produtos' },

@@ -13,6 +13,7 @@ import LabOticas from './pages/lab/LabOticas';
 import LabOticaDetalhe from './pages/lab/LabOticaDetalhe';
 import LabEstoque from './pages/lab/LabEstoque';
 import LabServicos from './pages/lab/LabServicos';
+import LabConfiguracoes from './pages/lab/LabConfiguracoes';
 import Dashboard from './pages/Dashboard';
 import Clientes from './pages/Clientes';
 import OrdensServico from './pages/OrdensServico';
@@ -87,6 +88,7 @@ export default function App() {
             <Route path="/lab/oticas/:id" element={<LabOticaDetalhe />} />
             <Route path="/lab/estoque" element={<LabEstoque />} />
             <Route path="/lab/servicos" element={<LabServicos />} />
+            <Route path="/lab/configuracoes" element={<LabConfiguracoes />} />
             <Route path="/lab/fornecedores" element={<Fornecedores />} />
             <Route path="/lab/produtos" element={<Produtos />} />
             <Route path="/lab/faturamento" element={<Faturamento />} />
