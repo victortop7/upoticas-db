@@ -36,14 +36,14 @@ export default function LabDashboard() {
         <div style={{ flex: 1 }}>
           {/* Header do painel */}
           <div style={{
-            background: 'linear-gradient(90deg, #000080, #0000aa)',
-            color: '#ffffff',
+            background: 'linear-gradient(90deg, #1a3a1a, #2d5a2d)',
+            color: '#ccffcc',
             textAlign: 'center',
             padding: '6px 12px',
             fontSize: '13px',
             fontWeight: 'bold',
             letterSpacing: '2px',
-            border: '2px outset #8080ff',
+            border: '2px outset #4a8a4a',
             borderBottom: 'none',
           }}>
             MÓDULOS
@@ -66,7 +66,7 @@ export default function LabDashboard() {
                   opacity: m.to ? 1 : 0.55,
                   userSelect: 'none',
                 }}
-                onMouseEnter={e => { if (m.to) (e.currentTarget as HTMLDivElement).style.background = '#000080'; }}
+                onMouseEnter={e => { if (m.to) (e.currentTarget as HTMLDivElement).style.background = '#1a3a1a'; }}
                 onMouseLeave={e => { if (m.to) (e.currentTarget as HTMLDivElement).style.background = i % 2 === 0 ? '#d4d0c8' : '#dedad2'; }}
                 onMouseOver={e => {
                   if (m.to) {
@@ -88,7 +88,7 @@ export default function LabDashboard() {
                 </span>
 
                 {/* Letra */}
-                <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#000080', width: '20px', textAlign: 'right', flexShrink: 0 }}>
+                <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#2d5a2d', width: '20px', textAlign: 'right', flexShrink: 0 }}>
                   {m.letra}
                 </span>
               </div>
@@ -100,16 +100,16 @@ export default function LabDashboard() {
         <div style={{ width: '200px', flexShrink: 0 }}>
           {/* Logo/Empresa */}
           <div style={{
-            background: 'linear-gradient(135deg, #000080, #0000cc)',
-            border: '2px outset #8080ff',
+            background: 'linear-gradient(135deg, #1a3a1a, #2d5a2d)',
+            border: '2px outset #4a8a4a',
             padding: '16px 12px',
             marginBottom: '12px',
             textAlign: 'center',
           }}>
             <div style={{ fontSize: '22px', marginBottom: '6px' }}>🔬</div>
-            <div style={{ color: '#ffff00', fontSize: '13px', fontWeight: 'bold', letterSpacing: '1px' }}>UpÓticas</div>
-            <div style={{ color: '#c0c0ff', fontSize: '11px', letterSpacing: '2px' }}>LAB</div>
-            <div style={{ borderTop: '1px solid #4040aa', marginTop: '8px', paddingTop: '8px', color: '#a0a0ff', fontSize: '10px', lineHeight: '1.6' }}>
+            <div style={{ color: '#88ff88', fontSize: '13px', fontWeight: 'bold', letterSpacing: '1px' }}>UpÓticas</div>
+            <div style={{ color: '#ccffcc', fontSize: '11px', letterSpacing: '2px' }}>LAB</div>
+            <div style={{ borderTop: '1px solid #3a6a3a', marginTop: '8px', paddingTop: '8px', color: '#a0d0a0', fontSize: '10px', lineHeight: '1.6' }}>
               {tenant?.nome}
             </div>
           </div>
@@ -121,7 +121,7 @@ export default function LabDashboard() {
             padding: '10px 12px',
             marginBottom: '8px',
           }}>
-            <div style={{ background: '#000080', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '3px 6px', marginBottom: '8px', letterSpacing: '1px' }}>
+            <div style={{ background: '#1a3a1a', color: '#ccffcc', fontSize: '10px', fontWeight: 'bold', padding: '3px 6px', marginBottom: '8px', letterSpacing: '1px' }}>
               ACESSO RÁPIDO
             </div>
             {[
@@ -140,7 +140,7 @@ export default function LabDashboard() {
                   color: '#000000', textAlign: 'left',
                   fontWeight: 'bold',
                 }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#000080'; (e.currentTarget as HTMLButtonElement).style.color = '#ffffff'; }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#1a3a1a'; (e.currentTarget as HTMLButtonElement).style.color = '#ccffcc'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#c8c4b0'; (e.currentTarget as HTMLButtonElement).style.color = '#000000'; }}
               >
                 <span>{item.icon}</span>
@@ -151,7 +151,7 @@ export default function LabDashboard() {
 
           {/* Versão */}
           <div style={{ background: '#d4d0c8', border: '2px inset #808080', padding: '8px 10px', fontSize: '10px', color: '#404040', textAlign: 'center' }}>
-            <div style={{ fontWeight: 'bold', color: '#000080', marginBottom: '4px' }}>UpÓticas Lab</div>
+            <div style={{ fontWeight: 'bold', color: '#1a3a1a', marginBottom: '4px' }}>UpÓticas Lab</div>
             <div>Versão 1.0</div>
             <div style={{ marginTop: '4px', color: '#606060' }}>Soluções Ópticas</div>
           </div>

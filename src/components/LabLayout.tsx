@@ -27,23 +27,23 @@ export default function LabLayout() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: "'Courier New', Courier, monospace", background: '#c8c4b0' }}>
 
-      {/* ===== HEADER AZUL ===== */}
+      {/* ===== HEADER ===== */}
       <div style={{
-        background: 'linear-gradient(90deg, #000080, #0000cc)',
-        color: '#ffff00',
+        background: 'linear-gradient(90deg, #1a3a1a, #2d5a2d)',
+        color: '#ccffcc',
         padding: '4px 16px',
         fontSize: '14px',
         fontWeight: 'bold',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        borderBottom: '2px solid #6060ff',
+        borderBottom: '2px solid #4a8a4a',
         letterSpacing: '1px',
         textTransform: 'uppercase',
       }}>
         <span>UpÓticas Lab — {tenant?.nome || 'Laboratório'}</span>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <span style={{ fontSize: '11px', color: '#c0c0ff' }}>{usuario?.nome}</span>
+          <span style={{ fontSize: '11px', color: '#a0d0a0' }}>{usuario?.nome}</span>
           <button
             onClick={handleLogout}
             style={{ padding: '2px 10px', fontSize: '11px', background: '#cc0000', color: '#ffffff', border: '1px solid #ff4040', borderRadius: '2px', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 'bold' }}
@@ -56,16 +56,16 @@ export default function LabLayout() {
       {/* ===== CORPO ===== */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
 
-        {/* ===== SIDEBAR VERMELHA ===== */}
+        {/* ===== SIDEBAR ===== */}
         <div style={{
-          background: 'linear-gradient(180deg, #cc0000, #990000)',
+          background: 'linear-gradient(180deg, #1a3a1a, #0d2010)',
           width: '52px',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '12px 0',
-          borderRight: '2px solid #880000',
+          borderRight: '2px solid #2a5a2a',
           flexShrink: 0,
         }}>
           {/* Logo vertical */}
@@ -83,12 +83,12 @@ export default function LabLayout() {
           </div>
 
           {/* Ícone central */}
-          <div style={{ color: '#ffcc00', fontSize: '20px', textAlign: 'center' }}>🔬</div>
+          <div style={{ color: '#88ff88', fontSize: '20px', textAlign: 'center' }}>🔬</div>
 
           {/* Lab vertical */}
           <div style={{
             writingMode: 'vertical-rl',
-            color: '#ffcc00',
+            color: '#88ff88',
             fontSize: '11px',
             fontWeight: 'bold',
             letterSpacing: '3px',
@@ -114,8 +114,8 @@ export default function LabLayout() {
                 onClick={() => navigate('/lab/dashboard')}
                 style={{
                   padding: '2px 14px', fontSize: '11px', fontWeight: 'bold',
-                  background: '#000080', color: '#ffffff',
-                  border: '1px outset #8080ff', borderRadius: '2px',
+                  background: '#1a3a1a', color: '#ccffcc',
+                  border: '1px outset #4a8a4a', borderRadius: '2px',
                   cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase',
                   letterSpacing: '0.5px',
                 }}
@@ -131,20 +131,20 @@ export default function LabLayout() {
         </div>
       </div>
 
-      {/* ===== STATUS BAR AZUL ===== */}
+      {/* ===== STATUS BAR ===== */}
       <div style={{
-        background: 'linear-gradient(90deg, #000080, #0000cc)',
-        color: '#ffffff',
+        background: 'linear-gradient(90deg, #1a3a1a, #2d5a2d)',
+        color: '#ccffcc',
         padding: '3px 16px',
         fontSize: '11px',
-        borderTop: '2px solid #6060ff',
+        borderTop: '2px solid #4a8a4a',
         display: 'flex',
         justifyContent: 'space-between',
         letterSpacing: '0.5px',
         textTransform: 'uppercase',
       }}>
         <span>▶ SELECIONE A OPÇÃO DESEJADA</span>
-        <span style={{ color: '#c0c0ff' }}>UpÓticas Lab v1.0</span>
+        <span style={{ color: '#88cc88' }}>UpÓticas Lab v1.0</span>
       </div>
     </div>
   );
