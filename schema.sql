@@ -218,6 +218,35 @@ CREATE TABLE IF NOT EXISTS fatura_itens (
   valor REAL NOT NULL DEFAULT 0
 );
 
+CREATE TABLE IF NOT EXISTS contas_bancarias (
+  id TEXT PRIMARY KEY,
+  tenant_id TEXT NOT NULL REFERENCES tenants(id),
+  nome TEXT NOT NULL,
+  banco TEXT,
+  agencia TEXT,
+  conta TEXT,
+  tipo TEXT NOT NULL DEFAULT 'corrente',   -- corrente | poupanca | caixa | investimento
+  saldo_inicial REAL NOT NULL DEFAULT 0,
+  ativo INTEGER NOT NULL DEFAULT 1,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS lancamentos_bancarios (
+  id TEXT PRIMARY KEY,
+  tenant_id TEXT NOT NULL REFERENCES tenants(id),
+  conta_id TEXT NOT NULL REFERENCES contas_bancarias(id),
+  tipo TEXT NOT NULL,                       -- credito | debito
+  valor REAL NOT NULL,
+  historico TEXT NOT NULL,
+  documento TEXT,
+  data_lancamento TEXT NOT NULL,
+  conciliado INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_contas_bancarias_tenant ON contas_bancarias(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_lancamentos_conta ON lancamentos_bancarios(conta_id);
+CREATE INDEX IF NOT EXISTS idx_lancamentos_data ON lancamentos_bancarios(tenant_id, data_lancamento);
 CREATE INDEX IF NOT EXISTS idx_faturas_tenant ON faturas(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_faturas_cliente ON faturas(cliente_id);
 CREATE INDEX IF NOT EXISTS idx_fatura_itens ON fatura_itens(fatura_id);

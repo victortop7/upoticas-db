@@ -18,6 +18,7 @@ const NAV_FINANCEIRO = [
   { to: '/financeiro/contas-receber', label: 'Contas a Receber', icon: '📥' },
   { to: '/financeiro/fluxo', label: 'Fluxo Financeiro', icon: '📈' },
   { to: '/financeiro/contas', label: 'Contas', icon: '🏦' },
+  { to: '/bancario', label: 'Controle Bancário', icon: '🏛️' },
 ];
 
 const NAV_MARKETING = [
