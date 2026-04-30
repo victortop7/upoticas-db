@@ -94,7 +94,6 @@ export default function Faturamento() {
     await api.delete(`/faturamento/${id}`); loadFaturas();
   }
 
-  const clientesPendentes = [...new Set(pendentes.map(p => p.cliente_id))];
   const inp: React.CSSProperties = { width: '100%', padding: '8px 10px', fontSize: '13px', background: 'var(--surface-alt)', border: '1px solid var(--border)', borderRadius: '7px', color: 'var(--text)', outline: 'none', boxSizing: 'border-box' };
 
   return (
