@@ -87,6 +87,10 @@ export default function App() {
             <Route path="/lab/oticas/:id" element={<LabOticaDetalhe />} />
             <Route path="/lab/estoque" element={<LabEstoque />} />
             <Route path="/lab/servicos" element={<LabServicos />} />
+            <Route path="/lab/fornecedores" element={<Fornecedores />} />
+            <Route path="/lab/produtos" element={<Produtos />} />
+            <Route path="/lab/faturamento" element={<Faturamento />} />
+            <Route path="/lab/bancario" element={<Bancario />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/login" replace />} />
