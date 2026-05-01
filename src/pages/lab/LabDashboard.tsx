@@ -50,7 +50,7 @@ export default function LabDashboard() {
       minHeight: '100%',
       background: bg,
       padding: '16px',
-      fontFamily: "'Courier New', Courier, monospace",
+      fontFamily: "'Montserrat', sans-serif",
       transition: 'background 0.2s',
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
@@ -95,7 +95,7 @@ export default function LabDashboard() {
                 onMouseOut={e => { e.currentTarget.querySelectorAll('span').forEach(s => (s as HTMLElement).style.color = ''); }}
               >
                 <span style={{ fontSize: '16px', width: '28px', textAlign: 'center', flexShrink: 0 }}>{m.icon}</span>
-                <span style={{ flex: 1, fontSize: '12px', fontWeight: 'bold', color: txtMain, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                <span style={{ flex: 1, fontSize: '12px', fontWeight: '700', color: txtMain, letterSpacing: '0.8px', textTransform: 'uppercase' }}>
                   {m.nome}
                 </span>
                 <span style={{ fontSize: '13px', fontWeight: 'bold', color: accentTxt, width: '20px', textAlign: 'right', flexShrink: 0 }}>

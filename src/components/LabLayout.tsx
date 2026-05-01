@@ -46,20 +46,20 @@ export default function LabLayout() {
   const navBorder = dark ? '#333333' : '#a0a098';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: "'Courier New', Courier, monospace", background: mainBg, transition: 'background 0.2s' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: "'Montserrat', sans-serif", background: mainBg, transition: 'background 0.2s' }}>
 
       {/* ===== HEADER ===== */}
       <div style={{
         background: hdrBg,
         color: hdrTxt,
         padding: '4px 16px',
-        fontSize: '14px',
-        fontWeight: 'bold',
+        fontSize: '13px',
+        fontWeight: '700',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         borderBottom: `2px solid ${hdrBorder}`,
-        letterSpacing: '1px',
+        letterSpacing: '1.5px',
         textTransform: 'uppercase',
       }}>
         <span>UpÓticas Lab — {tenant?.nome || 'Laboratório'}</span>
