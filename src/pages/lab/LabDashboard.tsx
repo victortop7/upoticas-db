@@ -117,9 +117,7 @@ export default function LabDashboard() {
             marginBottom: '12px',
             textAlign: 'center',
           }}>
-            <div style={{ fontSize: '22px', marginBottom: '6px' }}>🔬</div>
-            <div style={{ color: '#ffaaaa', fontSize: '13px', fontWeight: 'bold', letterSpacing: '1px' }}>UpÓticas</div>
-            <div style={{ color: hdrTxt, fontSize: '11px', letterSpacing: '2px' }}>LAB</div>
+            <img src="/logo-lab.svg" alt="UpÓticas Lab" style={{ width: '130px', marginBottom: '8px' }} />
             <div style={{ borderTop: '1px solid #6a1a1a', marginTop: '8px', paddingTop: '8px', color: '#a0d0a0', fontSize: '10px', lineHeight: '1.6' }}>
               {tenant?.nome}
             </div>
