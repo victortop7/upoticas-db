@@ -34,10 +34,10 @@ export default function LabDashboard() {
   const rowOdd    = dark ? '#222222' : '#dedad2';
   const rowBorder = dark ? '#333333' : '#b0aca4';
   const txtMain   = dark ? '#d8d8d8' : '#000000';
-  const hdrBg     = 'linear-gradient(90deg, #005500, #007700)';
-  const hdrTxt    = '#ccffcc';
-  const hdrBorder = '#2a8a2a';
-  const accentTxt = dark ? '#66cc66' : '#005500';
+  const hdrBg     = 'linear-gradient(90deg, #880000, #cc0000)';
+  const hdrTxt    = '#ffcccc';
+  const hdrBorder = '#aa2222';
+  const accentTxt = dark ? '#ff6666' : '#880000';
 
   function toggleDark() {
     const next = dark ? '0' : '1';
@@ -89,7 +89,7 @@ export default function LabDashboard() {
                   userSelect: 'none',
                   transition: 'background 0.08s',
                 }}
-                onMouseEnter={e => { if (m.to) (e.currentTarget as HTMLElement).style.background = '#005500'; }}
+                onMouseEnter={e => { if (m.to) (e.currentTarget as HTMLElement).style.background = '#880000'; }}
                 onMouseLeave={e => { if (m.to) (e.currentTarget as HTMLElement).style.background = i % 2 === 0 ? rowEven : rowOdd; }}
                 onMouseOver={e => { if (m.to) e.currentTarget.querySelectorAll('span').forEach(s => (s as HTMLElement).style.color = '#ffffff'); }}
                 onMouseOut={e => { e.currentTarget.querySelectorAll('span').forEach(s => (s as HTMLElement).style.color = ''); }}
@@ -118,16 +118,16 @@ export default function LabDashboard() {
             textAlign: 'center',
           }}>
             <div style={{ fontSize: '22px', marginBottom: '6px' }}>🔬</div>
-            <div style={{ color: '#88ff88', fontSize: '13px', fontWeight: 'bold', letterSpacing: '1px' }}>UpÓticas</div>
+            <div style={{ color: '#ffaaaa', fontSize: '13px', fontWeight: 'bold', letterSpacing: '1px' }}>UpÓticas</div>
             <div style={{ color: hdrTxt, fontSize: '11px', letterSpacing: '2px' }}>LAB</div>
-            <div style={{ borderTop: '1px solid #3a6a3a', marginTop: '8px', paddingTop: '8px', color: '#a0d0a0', fontSize: '10px', lineHeight: '1.6' }}>
+            <div style={{ borderTop: '1px solid #6a1a1a', marginTop: '8px', paddingTop: '8px', color: '#a0d0a0', fontSize: '10px', lineHeight: '1.6' }}>
               {tenant?.nome}
             </div>
           </div>
 
           {/* Acesso rápido */}
           <div style={{ background: panelBg, border: `2px outset ${dark ? '#555' : '#808080'}`, padding: '10px 12px', marginBottom: '8px' }}>
-            <div style={{ background: '#005500', color: hdrTxt, fontSize: '10px', fontWeight: 'bold', padding: '3px 6px', marginBottom: '8px', letterSpacing: '1px' }}>
+            <div style={{ background: '#880000', color: hdrTxt, fontSize: '10px', fontWeight: 'bold', padding: '3px 6px', marginBottom: '8px', letterSpacing: '1px' }}>
               ACESSO RÁPIDO
             </div>
             {[
@@ -146,7 +146,7 @@ export default function LabDashboard() {
                   fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer',
                   color: txtMain, textAlign: 'left', fontWeight: 'bold',
                 }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#005500'; (e.currentTarget as HTMLElement).style.color = '#ccffcc'; }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#880000'; (e.currentTarget as HTMLElement).style.color = '#ffcccc'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = dark ? '#2a2a2a' : '#c8c4b0'; (e.currentTarget as HTMLElement).style.color = txtMain; }}
               >
                 <span>{item.icon}</span>
@@ -164,7 +164,7 @@ export default function LabDashboard() {
                 background: dark ? '#333' : '#c8c4b0',
                 border: `1px outset ${dark ? '#555' : '#a0a098'}`,
                 fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer',
-                color: dark ? '#ccffcc' : '#000000', fontWeight: 'bold',
+                color: dark ? '#ffcccc' : '#000000', fontWeight: 'bold',
               }}
             >
               {dark ? '☀️ MODO CLARO' : '🌙 MODO NOTURNO'}
