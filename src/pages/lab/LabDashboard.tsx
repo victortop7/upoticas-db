@@ -27,7 +27,7 @@ const OPCOES: Record<ModuleKey, Opcao[]> = {
     { num: 3, label: 'PARÂMETROS DO SISTEMA',      disabled: true },
     { num: 4, label: 'TABELAS DO SISTEMA',         disabled: true },
     { num: 5, label: 'CADASTRO DE TRANSPORTADORAS',disabled: true },
-    { num: 6, label: 'CADASTRO DE VENDEDORES',     disabled: true },
+    { num: 6, label: 'CADASTRO DE OPERADORES',      to: '/lab/operadores' },
   ],
   B: [
     { num: 1, label: 'INCLUIR ÓTICA',      to: '/lab/oticas' },

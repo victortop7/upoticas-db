@@ -4,12 +4,16 @@ import { api } from '../../lib/api';
 
 interface Otica { id: string; nome: string; }
 interface Servico { id: string; nome: string; valor_padrao: number; }
+interface Usuario { id: string; nome: string; }
 
 const OLHO_VAZIO = {
   esf_longe: '', cil_longe: '', eixo_longe: '', dnp: '', alt: '', adicao: '', prisma: '',
 };
 
-const COND_PGTO = ['A Vista', 'Prazo 7 dias', 'Prazo 15 dias', 'Prazo 30 dias', 'Prazo 60 dias'];
+const COND_PGTO = [
+  { code: 'VV', label: 'VV - PAGAMENTO À VISTA' },
+  { code: 'F',  label: 'F - VENDA FATURADA' },
+];
 
 const INP: React.CSSProperties = {
   width: '100%', padding: '7px 10px', fontSize: '13px',
@@ -17,6 +21,20 @@ const INP: React.CSSProperties = {
   borderRadius: '7px', color: 'var(--text)', outline: 'none', boxSizing: 'border-box',
   fontFamily: 'var(--mono)',
 };
+
+function addBusinessDays(start: Date, days: number): Date {
+  const d = new Date(start);
+  let added = 0;
+  while (added < days) {
+    d.setDate(d.getDate() + 1);
+    if (d.getDay() !== 0 && d.getDay() !== 6) added++;
+  }
+  return d;
+}
+
+function toYMD(d: Date): string {
+  return d.toISOString().split('T')[0];
+}
 
 function FieldLabel({ text }: { text: string }) {
   return (
@@ -78,14 +96,15 @@ export default function LabNovaOrdem() {
   const [searchParams] = useSearchParams();
   const [oticas, setOticas] = useState<Otica[]>([]);
   const [catalogo, setCatalogo] = useState<Servico[]>([]);
+  const [operadores, setOperadores] = useState<Usuario[]>([]);
   const [saving, setSaving] = useState(false);
   const [erro, setErro] = useState('');
 
   const [oticaId, setOticaId] = useState(searchParams.get('otica') ?? '');
-  const [vendedor, setVendedor] = useState('');
+  const [operador, setOperador] = useState('');
   const [refOtica, setRefOtica] = useState('');
-  const [previsao, setPrevisao] = useState('');
-  const [condPgto, setCondPgto] = useState('');
+  const [previsao, setPrevisao] = useState(() => toYMD(addBusinessDays(new Date(), 5)));
+  const [condPgto, setCondPgto] = useState('VV');
   const [textoGravura, setTextoGravura] = useState('');
   const [observacoes, setObservacoes] = useState('');
   const [od, setOd] = useState({ ...OLHO_VAZIO });
@@ -96,6 +115,7 @@ export default function LabNovaOrdem() {
   useEffect(() => {
     api.get<Otica[]>('/lab/oticas').then(setOticas).catch(() => {});
     api.get<Servico[]>('/lab/servicos').then(setCatalogo).catch(() => {});
+    api.get<{ usuarios: Usuario[] }>('/usuarios').then(d => setOperadores(d.usuarios)).catch(() => {});
   }, []);
 
   function totalServico(s: typeof servicos[0]) {
@@ -149,7 +169,7 @@ export default function LabNovaOrdem() {
     setSaving(true);
     try {
       const { id } = await api.post<{ id: string; numero: number }>('/lab/ordens', {
-        otica_id: oticaId, vendedor: vendedor || null, ref_otica: refOtica || null,
+        otica_id: oticaId, operador: operador || null, ref_otica: refOtica || null,
         previsao_entrega: previsao || null, condicao_pgto: condPgto || null,
         texto_gravura: textoGravura || null, observacoes: observacoes || null,
         total: totalGeral, receita: receitaPayload,
@@ -182,9 +202,11 @@ export default function LabNovaOrdem() {
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-        {/* Ótica + Info */}
+        {/* Informações da OS */}
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px' }}>
           <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text)', marginBottom: '14px' }}>Informações da OS</div>
+
+          {/* Linha 1: Ótica | Ref. Ótica | Previsão de Entrega */}
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '12px', marginBottom: '12px' }}>
             <div>
               <FieldLabel text="Ótica *" />
@@ -198,20 +220,25 @@ export default function LabNovaOrdem() {
               <input value={refOtica} onChange={e => setRefOtica(e.target.value)} style={INP} placeholder="Nº na ótica" />
             </div>
             <div>
-              <FieldLabel text="Previsão de Entrega" />
+              <FieldLabel text="Previsão de Entrega (mín. 5 dias úteis)" />
               <input type="date" value={previsao} onChange={e => setPrevisao(e.target.value)} style={INP} />
             </div>
           </div>
+
+          {/* Linha 2: Operador | Condição de Pagamento | Texto de Gravura */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
             <div>
-              <FieldLabel text="Vendedor" />
-              <input value={vendedor} onChange={e => setVendedor(e.target.value)} style={INP} />
+              <FieldLabel text="Operador" />
+              <select value={operador} onChange={e => setOperador(e.target.value)} style={{ ...INP, fontFamily: 'var(--sans)' }}>
+                <option value="">— Selecionar operador</option>
+                {operadores.map(u => <option key={u.id} value={u.nome}>{u.nome}</option>)}
+              </select>
             </div>
             <div>
               <FieldLabel text="Condição de Pagamento" />
               <select value={condPgto} onChange={e => setCondPgto(e.target.value)} style={{ ...INP, fontFamily: 'var(--sans)' }}>
                 <option value="">—</option>
-                {COND_PGTO.map(c => <option key={c} value={c}>{c}</option>)}
+                {COND_PGTO.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
               </select>
             </div>
             <div>
