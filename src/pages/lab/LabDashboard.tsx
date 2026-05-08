@@ -13,7 +13,7 @@ const MODULOS: { letra: ModuleKey; nome: string; icon: string; ativo: boolean }[
   { letra: 'F', nome: 'MOVIMENTAÇÃO DE ESTOQUE',     icon: '🔄', ativo: true  },
   { letra: 'G', nome: 'PEDIDOS / ORDENS DE SERVIÇO', icon: '📋', ativo: true  },
   { letra: 'H', nome: 'NOTAS FISCAIS/FECHAMENTOS',   icon: '🧾', ativo: false },
-  { letra: 'I', nome: 'FATURAMENTO',                 icon: '💰', ativo: true  },
+  { letra: 'I', nome: 'FATURAMENTO',                 icon: '💰', ativo: false },
   { letra: 'J', nome: 'CONTAS A RECEBER',            icon: '📥', ativo: false },
   { letra: 'K', nome: 'CONTAS A PAGAR',              icon: '📤', ativo: false },
   { letra: 'L', nome: 'CONTROLE BANCÁRIO',           icon: '🏛️', ativo: true  },
