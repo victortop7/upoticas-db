@@ -143,14 +143,14 @@ export default function Landing() {
       {/* ===== FOTO ÓTICAS (galeria) ===== */}
       <section style={{ padding: '0 48px 70px', maxWidth: '1180px', margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '12px', borderRadius: '20px', overflow: 'hidden', maxHeight: '360px' }}>
-          <img src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=700&h=360&fit=crop&q=80" alt="Ótica" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          <img src="https://images.unsplash.com/photo-1682664175844-8db2a436bd94?w=700&h=360&fit=crop&q=80" alt="Interior da ótica" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <img src="https://images.unsplash.com/photo-1509695507497-903c140c43b0?w=350&h=172&fit=crop&q=80" alt="Óculos" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', borderRadius: '0' }} />
-            <img src="https://images.unsplash.com/photo-1556306535-0f09a537f0a3?w=350&h=172&fit=crop&q=80" alt="Ótica loja" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            <img src="https://images.unsplash.com/photo-1682664175832-98a0ecdfca79?w=350&h=172&fit=crop&q=80" alt="Expositores de óculos" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            <img src="https://images.unsplash.com/photo-1764778055595-b641b067ab40?w=350&h=172&fit=crop&q=80" alt="Óculos na prateleira" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <img src="https://images.unsplash.com/photo-1588776814546-ec7e2c0f0e71?w=350&h=172&fit=crop&q=80" alt="Óculos display" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-            <img src="https://images.unsplash.com/photo-1577401239170-897942555fb3?w=350&h=172&fit=crop&q=80" alt="Atendimento ótica" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            <img src="https://images.unsplash.com/photo-1682664175900-7771b38e1585?w=350&h=172&fit=crop&q=80" alt="Vitrine de óculos" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            <img src="https://images.unsplash.com/photo-1775825094939-3759ede3dec2?w=350&h=172&fit=crop&q=80" alt="Cliente na ótica" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           </div>
         </div>
       </section>
@@ -169,7 +169,7 @@ export default function Landing() {
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${REDGLOW}0.45)`; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = `${REDGLOW}0.2)`; }}
             >
-              <img src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=600&h=180&fit=crop&q=80" alt="Ótica" style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }} />
+              <img src="https://images.unsplash.com/photo-1776890948428-5cb3e62cc680?w=600&h=180&fit=crop&q=80" alt="Ótica" style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }} />
               <div style={{ padding: '22px 20px' }}>
                 <div style={{ fontSize: '17px', fontWeight: '800', color: '#f1f5f9', marginBottom: '4px' }}>UpÓticas</div>
                 <div style={{ fontSize: '12px', color: RED3, fontWeight: '600', marginBottom: '10px' }}>Para óticas</div>
@@ -185,7 +185,7 @@ export default function Landing() {
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${REDGLOW}0.45)`; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = `${REDGLOW}0.2)`; }}
             >
-              <img src="https://images.unsplash.com/photo-1581093458791-9d15e3decc66?w=600&h=180&fit=crop&q=80" alt="Laboratório" style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }} />
+              <img src="https://images.unsplash.com/photo-1758573467030-52481ea92007?w=600&h=180&fit=crop&q=80" alt="Laboratório óptico" style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }} />
               <div style={{ padding: '22px 20px' }}>
                 <div style={{ fontSize: '17px', fontWeight: '800', color: '#f1f5f9', marginBottom: '4px' }}>UpLaboratorio</div>
                 <div style={{ fontSize: '12px', color: RED3, fontWeight: '600', marginBottom: '10px' }}>Para laboratórios ópticos</div>
@@ -220,7 +220,7 @@ export default function Landing() {
       {/* ===== FOTO LABORATÓRIO ===== */}
       <section style={{ padding: '0 48px 70px', maxWidth: '1180px', margin: '0 auto' }}>
         <div style={{ borderRadius: '20px', overflow: 'hidden', position: 'relative' }}>
-          <img src="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=1200&h=400&fit=crop&q=80" alt="Laboratório óptico" style={{ width: '100%', height: '360px', objectFit: 'cover', display: 'block' }} />
+          <img src="https://images.unsplash.com/photo-1732064137039-1599dc5d0a17?w=1200&h=400&fit=crop&q=80" alt="Laboratório óptico" style={{ width: '100%', height: '360px', objectFit: 'cover', display: 'block' }} />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(10,13,20,0.85) 0%, rgba(10,13,20,0.2) 60%, transparent 100%)', display: 'flex', alignItems: 'center', padding: '48px' }}>
             <div style={{ maxWidth: '420px' }}>
               <div style={{ fontSize: '12px', color: RED3, fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '12px' }}>UpLaboratorio</div>
