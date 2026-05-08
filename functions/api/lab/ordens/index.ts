@@ -64,7 +64,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     const stmts = [
       env.DB.prepare(
         'INSERT INTO lab_ordens (id, tenant_id, numero, otica_id, vendedor, ref_otica, previsao_entrega, condicao_pgto, texto_gravura, observacoes, total) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-      ).bind(id, tenant_id, numero, body.otica_id, body.vendedor ?? null, body.ref_otica ?? null, body.previsao_entrega ?? null, body.condicao_pgto ?? null, body.texto_gravura ?? null, body.observacoes ?? null, body.total ?? 0),
+      ).bind(id, tenant_id, numero, body.otica_id, (body as Record<string, unknown>).operador ?? body.vendedor ?? null, body.ref_otica ?? null, body.previsao_entrega ?? null, body.condicao_pgto ?? null, body.texto_gravura ?? null, body.observacoes ?? null, body.total ?? 0),
     ];
 
     for (const r of body.receita ?? []) {

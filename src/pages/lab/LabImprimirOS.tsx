@@ -71,7 +71,7 @@ function OSVia({ ordem, od, oe, armacao, servicos, total, tenant, via }: OSViaPr
         <div style={{ ...C.box, padding: '6px 8px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 10px' }}>
           {[
             { l: 'Ref. Ótica', v: ordem.ref_otica ?? '—' },
-            { l: 'Vendedor', v: ordem.vendedor ?? '—' },
+            { l: 'Operador', v: ordem.vendedor ?? '—' },
             { l: 'Cond. Pgto', v: ordem.condicao_pgto ?? '—' },
             { l: 'Previsão', v: fmtData(ordem.previsao_entrega) },
           ].map(({ l, v }) => (

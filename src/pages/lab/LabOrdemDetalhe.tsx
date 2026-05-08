@@ -119,7 +119,7 @@ export default function LabOrdemDetalhe() {
           {[
             { label: 'Ótica', value: ordem.otica_nome },
             { label: 'Ref. Ótica', value: ordem.ref_otica ?? '—' },
-            { label: 'Vendedor', value: ordem.vendedor ?? '—' },
+            { label: 'Operador', value: ordem.vendedor ?? '—' },
             { label: 'Previsão', value: ordem.previsao_entrega ?? '—' },
             { label: 'Cond. Pgto', value: ordem.condicao_pgto ?? '—' },
             { label: 'Gravura', value: ordem.texto_gravura ?? '—' },
