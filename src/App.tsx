@@ -25,6 +25,7 @@ import Configuracoes from './pages/Configuracoes';
 import Relatorios from './pages/Relatorios';
 import ImprimirOS from './pages/ImprimirOS';
 import Landing from './pages/Landing';
+import InteresseLab from './pages/InteresseLab';
 import Contas from './pages/financeiro/Contas';
 import Funil from './pages/crm/Funil';
 import Campanhas from './pages/marketing/Campanhas';
@@ -49,6 +50,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/interesse-lab" element={<InteresseLab />} />
           <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/os/:id/imprimir" element={<ImprimirOS />} />
           <Route path="/lab/ordens/:id/imprimir" element={<LabImprimirOS />} />
