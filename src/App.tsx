@@ -22,6 +22,7 @@ import LabVendedores from './pages/lab/LabVendedores';
 import LabContasReceber from './pages/lab/LabContasReceber';
 import LabContasPagar from './pages/lab/LabContasPagar';
 import LabBancario from './pages/lab/LabBancario';
+import LabFaturamento from './pages/lab/LabFaturamento';
 import Dashboard from './pages/Dashboard';
 import Clientes from './pages/Clientes';
 import OrdensServico from './pages/OrdensServico';
@@ -107,6 +108,7 @@ export default function App() {
             <Route path="/lab/contas-receber" element={<LabContasReceber />} />
             <Route path="/lab/contas-pagar" element={<LabContasPagar />} />
             <Route path="/lab/bancario-lab" element={<LabBancario />} />
+            <Route path="/lab/faturamento-lab" element={<LabFaturamento />} />
             <Route path="/lab/fornecedores" element={<Fornecedores />} />
             <Route path="/lab/produtos" element={<Produtos />} />
             <Route path="/lab/faturamento" element={<Faturamento />} />

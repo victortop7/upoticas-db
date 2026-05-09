@@ -15,7 +15,7 @@ const MODULOS: { letra: ModuleKey; nome: string; icon: string; ativo: boolean }[
   { letra: 'G', nome: 'VENDAS/ORDENS DE SERVIÇOS',  icon: '📋', ativo: true },
   { letra: 'H', nome: 'CONTROLE DE FLUXO',          icon: '⚡', ativo: true },
   { letra: 'I', nome: 'NOTAS FISCAIS/FECHAMENTOS',  icon: '🧾', ativo: false },
-  { letra: 'J', nome: 'FATURAMENTO',                icon: '💰', ativo: false },
+  { letra: 'J', nome: 'FATURAMENTO',                icon: '💰', ativo: true  },
   { letra: 'K', nome: 'CONTAS A RECEBER/PAGAR',     icon: '📥', ativo: true  },
   { letra: 'L', nome: 'CONTROLE BANCÁRIO',          icon: '🏛️', ativo: true },
 ];
@@ -67,7 +67,11 @@ const OPCOES: Record<ModuleKey, Opcao[]> = {
     { num: 4, label: 'CONSULTA/PRODUÇÃO',        to: '/lab/fluxo' },
   ],
   I: [],
-  J: [],
+  J: [
+    { num: 1, label: 'GERAR FECHAMENTO',      to: '/lab/faturamento-lab' },
+    { num: 2, label: 'CONSULTA/LISTAGEM',     to: '/lab/faturamento-lab' },
+    { num: 3, label: 'VENDEDORES',            to: '/lab/vendedores'      },
+  ],
   K: [
     { num: 1, label: 'CONTAS A RECEBER', to: '/lab/contas-receber' },
     { num: 2, label: 'CONTAS A PAGAR',   to: '/lab/contas-pagar'   },
