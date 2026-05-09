@@ -102,9 +102,12 @@ export default function LabNovaOrdem() {
 
   const [oticaId, setOticaId] = useState(searchParams.get('otica') ?? '');
   const [operador, setOperador] = useState('');
+  const [medico, setMedico] = useState('');
   const [refOtica, setRefOtica] = useState('');
   const [previsao, setPrevisao] = useState(() => toYMD(addBusinessDays(new Date(), 5)));
   const [condPgto, setCondPgto] = useState('VV');
+  const [sinal, setSinal] = useState('');
+  const [rota, setRota] = useState('');
   const [textoGravura, setTextoGravura] = useState('');
   const [observacoes, setObservacoes] = useState('');
   const [od, setOd] = useState({ ...OLHO_VAZIO });
@@ -169,9 +172,11 @@ export default function LabNovaOrdem() {
     setSaving(true);
     try {
       const { id } = await api.post<{ id: string; numero: number }>('/lab/ordens', {
-        otica_id: oticaId, operador: operador || null, ref_otica: refOtica || null,
-        previsao_entrega: previsao || null, condicao_pgto: condPgto || null,
-        texto_gravura: textoGravura || null, observacoes: observacoes || null,
+        otica_id: oticaId, operador: operador || null, medico: medico || null,
+        ref_otica: refOtica || null, previsao_entrega: previsao || null,
+        condicao_pgto: condPgto || null, sinal: parseFloat(sinal) || null,
+        rota: rota || null, texto_gravura: textoGravura || null,
+        observacoes: observacoes || null,
         total: totalGeral, receita: receitaPayload,
         armacao: {
           material: armacao.material || null, estojo: armacao.estojo ? 1 : 0,
@@ -225,7 +230,7 @@ export default function LabNovaOrdem() {
             </div>
           </div>
 
-          {/* Linha 2: Operador | Condição de Pagamento | Texto de Gravura */}
+          {/* Linha 2: Operador | Médico | Ref. Ótica extra */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
             <div>
               <FieldLabel text="Operador" />
@@ -235,6 +240,18 @@ export default function LabNovaOrdem() {
               </select>
             </div>
             <div>
+              <FieldLabel text="Médico / Oftalmologista" />
+              <input value={medico} onChange={e => setMedico(e.target.value)} style={INP} placeholder="Nome do médico" />
+            </div>
+            <div>
+              <FieldLabel text="Texto de Gravura" />
+              <input value={textoGravura} onChange={e => setTextoGravura(e.target.value)} style={INP} />
+            </div>
+          </div>
+
+          {/* Linha 3: Condição | Sinal | Rota */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+            <div>
               <FieldLabel text="Condição de Pagamento" />
               <select value={condPgto} onChange={e => setCondPgto(e.target.value)} style={{ ...INP, fontFamily: 'var(--sans)' }}>
                 <option value="">—</option>
@@ -242,8 +259,12 @@ export default function LabNovaOrdem() {
               </select>
             </div>
             <div>
-              <FieldLabel text="Texto de Gravura" />
-              <input value={textoGravura} onChange={e => setTextoGravura(e.target.value)} style={INP} />
+              <FieldLabel text="Sinal / Entrada (R$)" />
+              <input type="number" step="0.01" min="0" value={sinal} onChange={e => setSinal(e.target.value)} style={INP} placeholder="0,00" />
+            </div>
+            <div>
+              <FieldLabel text="Rota de Entrega" />
+              <input value={rota} onChange={e => setRota(e.target.value)} style={INP} placeholder="Ex: Rota 1, Centro..." />
             </div>
           </div>
         </div>

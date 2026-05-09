@@ -120,8 +120,11 @@ export default function LabOrdemDetalhe() {
             { label: 'Ótica', value: ordem.otica_nome },
             { label: 'Ref. Ótica', value: ordem.ref_otica ?? '—' },
             { label: 'Operador', value: ordem.vendedor ?? '—' },
+            { label: 'Médico', value: ordem.medico ?? '—' },
             { label: 'Previsão', value: ordem.previsao_entrega ?? '—' },
             { label: 'Cond. Pgto', value: ordem.condicao_pgto ?? '—' },
+            { label: 'Sinal/Entrada', value: ordem.sinal ? `R$ ${Number(ordem.sinal).toFixed(2).replace('.',',')}` : '—' },
+            { label: 'Rota', value: ordem.rota ?? '—' },
             { label: 'Gravura', value: ordem.texto_gravura ?? '—' },
           ].map(item => (
             <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>

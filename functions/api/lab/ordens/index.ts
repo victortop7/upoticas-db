@@ -61,10 +61,16 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     const id = crypto.randomUUID();
     const numero = numRow?.next ?? 1;
 
+    // Garante colunas novas
+    for (const col of ['medico TEXT', 'sinal REAL', 'rota TEXT']) {
+      try { await env.DB.prepare(`ALTER TABLE lab_ordens ADD COLUMN ${col}`).run(); } catch {}
+    }
+
+    const b = body as Record<string, unknown>;
     const stmts = [
       env.DB.prepare(
-        'INSERT INTO lab_ordens (id, tenant_id, numero, otica_id, vendedor, ref_otica, previsao_entrega, condicao_pgto, texto_gravura, observacoes, total) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-      ).bind(id, tenant_id, numero, body.otica_id, (body as Record<string, unknown>).operador ?? body.vendedor ?? null, body.ref_otica ?? null, body.previsao_entrega ?? null, body.condicao_pgto ?? null, body.texto_gravura ?? null, body.observacoes ?? null, body.total ?? 0),
+        'INSERT INTO lab_ordens (id, tenant_id, numero, otica_id, vendedor, medico, ref_otica, previsao_entrega, condicao_pgto, sinal, rota, texto_gravura, observacoes, total) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      ).bind(id, tenant_id, numero, body.otica_id, b.operador ?? body.vendedor ?? null, b.medico ?? null, body.ref_otica ?? null, body.previsao_entrega ?? null, body.condicao_pgto ?? null, b.sinal ?? null, b.rota ?? null, body.texto_gravura ?? null, body.observacoes ?? null, body.total ?? 0),
     ];
 
     for (const r of body.receita ?? []) {
