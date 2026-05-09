@@ -16,7 +16,7 @@ const MODULOS: { letra: ModuleKey; nome: string; icon: string; ativo: boolean }[
   { letra: 'H', nome: 'CONTROLE DE FLUXO',          icon: '⚡', ativo: true },
   { letra: 'I', nome: 'NOTAS FISCAIS/FECHAMENTOS',  icon: '🧾', ativo: false },
   { letra: 'J', nome: 'FATURAMENTO',                icon: '💰', ativo: false },
-  { letra: 'K', nome: 'CONTAS A RECEBER/PAGAR',     icon: '📥', ativo: false },
+  { letra: 'K', nome: 'CONTAS A RECEBER/PAGAR',     icon: '📥', ativo: true  },
   { letra: 'L', nome: 'CONTROLE BANCÁRIO',          icon: '🏛️', ativo: true },
 ];
 
@@ -27,7 +27,7 @@ const OPCOES: Record<ModuleKey, Opcao[]> = {
     { num: 1, label: 'NUMERAÇÃO DE DOCUMENTOS',    to: '/lab/configuracoes' },
     { num: 3, label: 'PARÂMETROS DO SISTEMA',       to: '/lab/configuracoes' },
     { num: 4, label: 'TABELAS DO SISTEMA',          to: '/lab/configuracoes' },
-    { num: 5, label: 'CADASTRO DE TRANSPORTADORAS', disabled: true },
+    { num: 5, label: 'CADASTRO DE TRANSPORTADORAS', to: '/lab/transportadoras' },
     { num: 6, label: 'CADASTRO DE OPERADORES',      to: '/lab/operadores' },
   ],
   B: [
@@ -68,7 +68,10 @@ const OPCOES: Record<ModuleKey, Opcao[]> = {
   ],
   I: [],
   J: [],
-  K: [],
+  K: [
+    { num: 1, label: 'CONTAS A RECEBER', to: '/lab/contas-receber' },
+    { num: 2, label: 'CONTAS A PAGAR',   to: '/lab/contas-pagar'   },
+  ],
   L: [
     { num: 1, label: 'CONTROLE BANCÁRIO',       to: '/lab/bancario' },
     { num: 2, label: 'LANÇAMENTOS',             to: '/lab/bancario' },

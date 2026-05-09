@@ -17,6 +17,10 @@ import LabConfiguracoes from './pages/lab/LabConfiguracoes';
 import LabOperadores from './pages/lab/LabOperadores';
 import LabRelatorios from './pages/lab/LabRelatorios';
 import LabFluxo from './pages/lab/LabFluxo';
+import LabTransportadoras from './pages/lab/LabTransportadoras';
+import LabVendedores from './pages/lab/LabVendedores';
+import LabContasReceber from './pages/lab/LabContasReceber';
+import LabContasPagar from './pages/lab/LabContasPagar';
 import Dashboard from './pages/Dashboard';
 import Clientes from './pages/Clientes';
 import OrdensServico from './pages/OrdensServico';
@@ -97,6 +101,10 @@ export default function App() {
             <Route path="/lab/operadores" element={<LabOperadores />} />
             <Route path="/lab/relatorios" element={<LabRelatorios />} />
             <Route path="/lab/fluxo" element={<LabFluxo />} />
+            <Route path="/lab/transportadoras" element={<LabTransportadoras />} />
+            <Route path="/lab/vendedores" element={<LabVendedores />} />
+            <Route path="/lab/contas-receber" element={<LabContasReceber />} />
+            <Route path="/lab/contas-pagar" element={<LabContasPagar />} />
             <Route path="/lab/fornecedores" element={<Fornecedores />} />
             <Route path="/lab/produtos" element={<Produtos />} />
             <Route path="/lab/faturamento" element={<Faturamento />} />
