@@ -58,6 +58,7 @@ const OPCOES: Record<ModuleKey, Opcao[]> = {
     { num: 1, label: 'INCLUIR PEDIDO / OS',     to: '/lab/ordens/nova' },
     { num: 2, label: 'CONSULTA/LISTAGEM',       to: '/lab/ordens' },
     { num: 3, label: 'ALTERAR / CONSULTAR OS',  to: '/lab/ordens' },
+    { num: 4, label: 'RELATÓRIO MENSAL',         to: '/lab/relatorios' },
   ],
   H: [],
   I: [
