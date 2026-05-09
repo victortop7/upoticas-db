@@ -1,22 +1,23 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useState, useEffect } from 'react';
+import { api } from '../../lib/api';
 
 type ModuleKey = 'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'|'K'|'L';
 
 const MODULOS: { letra: ModuleKey; nome: string; icon: string; ativo: boolean }[] = [
-  { letra: 'A', nome: 'CONFIGURAÇÕES',              icon: '⚙',  ativo: true  },
-  { letra: 'B', nome: 'ÓTICAS CLIENTES',             icon: '🏪', ativo: true  },
-  { letra: 'C', nome: 'FORNECEDORES/OFTALMOS',       icon: '🏭', ativo: true  },
-  { letra: 'D', nome: 'CADASTRO DE PRODUTOS',        icon: '📦', ativo: true  },
-  { letra: 'E', nome: 'CADASTRO DE ESTOQUE',         icon: '🗂️', ativo: true  },
-  { letra: 'F', nome: 'MOVIMENTAÇÃO DE ESTOQUE',     icon: '🔄', ativo: true  },
-  { letra: 'G', nome: 'PEDIDOS / ORDENS DE SERVIÇO', icon: '📋', ativo: true  },
-  { letra: 'H', nome: 'NOTAS FISCAIS/FECHAMENTOS',   icon: '🧾', ativo: false },
-  { letra: 'I', nome: 'FATURAMENTO',                 icon: '💰', ativo: false },
-  { letra: 'J', nome: 'CONTAS A RECEBER',            icon: '📥', ativo: false },
-  { letra: 'K', nome: 'CONTAS A PAGAR',              icon: '📤', ativo: false },
-  { letra: 'L', nome: 'CONTROLE BANCÁRIO',           icon: '🏛️', ativo: true  },
+  { letra: 'A', nome: 'CONFIGURAÇÕES',              icon: '⚙',  ativo: true },
+  { letra: 'B', nome: 'ÓTICAS CLIENTES',            icon: '🏪', ativo: true },
+  { letra: 'C', nome: 'FORNECEDORES/OFTALMOS',      icon: '🏭', ativo: true },
+  { letra: 'D', nome: 'CADASTRO DE PRODUTOS',       icon: '📦', ativo: true },
+  { letra: 'E', nome: 'CADASTRO DE ESTOQUE',        icon: '🗂️', ativo: true },
+  { letra: 'F', nome: 'MOVIMENTAÇÃO DE ESTOQUE',    icon: '🔄', ativo: true },
+  { letra: 'G', nome: 'VENDAS/ORDENS DE SERVIÇOS',  icon: '📋', ativo: true },
+  { letra: 'H', nome: 'CONTROLE DE FLUXO',          icon: '⚡', ativo: true },
+  { letra: 'I', nome: 'NOTAS FISCAIS/FECHAMENTOS',  icon: '🧾', ativo: false },
+  { letra: 'J', nome: 'FATURAMENTO',                icon: '💰', ativo: false },
+  { letra: 'K', nome: 'CONTAS A RECEBER/PAGAR',     icon: '📥', ativo: false },
+  { letra: 'L', nome: 'CONTROLE BANCÁRIO',          icon: '🏛️', ativo: true },
 ];
 
 type Opcao = { num: number; label: string; to?: string; disabled?: boolean };
@@ -24,9 +25,9 @@ type Opcao = { num: number; label: string; to?: string; disabled?: boolean };
 const OPCOES: Record<ModuleKey, Opcao[]> = {
   A: [
     { num: 1, label: 'NUMERAÇÃO DE DOCUMENTOS',    to: '/lab/configuracoes' },
-    { num: 3, label: 'PARÂMETROS DO SISTEMA',      disabled: true },
-    { num: 4, label: 'TABELAS DO SISTEMA',         disabled: true },
-    { num: 5, label: 'CADASTRO DE TRANSPORTADORAS',disabled: true },
+    { num: 3, label: 'PARÂMETROS DO SISTEMA',       to: '/lab/configuracoes' },
+    { num: 4, label: 'TABELAS DO SISTEMA',          to: '/lab/configuracoes' },
+    { num: 5, label: 'CADASTRO DE TRANSPORTADORAS', disabled: true },
     { num: 6, label: 'CADASTRO DE OPERADORES',      to: '/lab/operadores' },
   ],
   B: [
@@ -40,9 +41,9 @@ const OPCOES: Record<ModuleKey, Opcao[]> = {
     { num: 4, label: 'CONSULTA/LISTAGEM',  to: '/lab/fornecedores' },
   ],
   D: [
-    { num: 1, label: 'INCLUIR PRODUTO',    to: '/lab/produtos' },
-    { num: 2, label: 'ALTERAR DADOS',      to: '/lab/produtos' },
-    { num: 4, label: 'CONSULTA/LISTAGEM',  to: '/lab/produtos' },
+    { num: 1, label: 'INCLUIR PRODUTO/SERVIÇO', to: '/lab/produtos' },
+    { num: 2, label: 'ALTERAR DADOS',           to: '/lab/produtos' },
+    { num: 4, label: 'CONSULTA/LISTAGEM',       to: '/lab/produtos' },
   ],
   E: [
     { num: 1, label: 'INCLUIR ITEM DE ESTOQUE', to: '/lab/estoque' },
@@ -55,16 +56,17 @@ const OPCOES: Record<ModuleKey, Opcao[]> = {
     { num: 3, label: 'CONSULTA/LISTAGEM',       to: '/lab/estoque' },
   ],
   G: [
-    { num: 1, label: 'INCLUIR PEDIDO / OS',     to: '/lab/ordens/nova' },
+    { num: 1, label: 'EMITIR OS / PEDIDO',      to: '/lab/ordens/nova' },
     { num: 2, label: 'CONSULTA/LISTAGEM',       to: '/lab/ordens' },
-    { num: 3, label: 'ALTERAR / CONSULTAR OS',  to: '/lab/ordens' },
-    { num: 4, label: 'RELATÓRIO MENSAL',         to: '/lab/relatorios' },
+    { num: 3, label: 'ALTERAR OS',              to: '/lab/ordens' },
+    { num: 4, label: 'RELATÓRIO MENSAL',        to: '/lab/relatorios' },
   ],
-  H: [],
-  I: [
-    { num: 1, label: 'FATURAMENTO',             to: '/lab/faturamento' },
-    { num: 2, label: 'CONSULTA/LISTAGEM',       to: '/lab/faturamento' },
+  H: [
+    { num: 1, label: 'LANÇAR FLUXO/INDIVIDUAL', to: '/lab/fluxo' },
+    { num: 2, label: 'LANÇAR FLUXO/SETOR',      to: '/lab/fluxo' },
+    { num: 4, label: 'CONSULTA/PRODUÇÃO',        to: '/lab/fluxo' },
   ],
+  I: [],
   J: [],
   K: [],
   L: [
@@ -79,6 +81,19 @@ export default function LabDashboard() {
   const { tenant } = useAuth();
   const [dark, setDark] = useState(() => localStorage.getItem('lab_dark') === '1');
   const [selected, setSelected] = useState<ModuleKey | null>(null);
+  const [stats, setStats] = useState({ aguardando: 0, em_producao: 0, pronto: 0, hoje: 0 });
+
+  useEffect(() => {
+    api.get<{ status: string }[]>('/lab/ordens').then(ordens => {
+      const hoje = new Date().toISOString().split('T')[0];
+      setStats({
+        aguardando: ordens.filter(o => o.status === 'aguardando').length,
+        em_producao: ordens.filter(o => o.status === 'em_producao').length,
+        pronto: ordens.filter(o => o.status === 'pronto').length,
+        hoje: ordens.filter((o: Record<string, unknown>) => (o.created_at as string)?.startsWith(hoje)).length,
+      });
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     const handler = () => setDark(localStorage.getItem('lab_dark') === '1');
@@ -227,14 +242,33 @@ export default function LabDashboard() {
               </div>
             </div>
 
+            {/* Stats de produção */}
+            <div style={{ background: panelBg, border: `2px inset ${dark ? '#444' : '#808080'}`, padding: '8px 10px', marginBottom: '8px' }}>
+              <div style={{ background: '#880000', color: '#ffcccc', fontSize: '10px', fontWeight: '700', padding: '3px 6px', marginBottom: '8px', letterSpacing: '1px' }}>PRODUÇÃO</div>
+              {[
+                { label: 'Hoje',       val: stats.hoje,        color: '#60a5fa' },
+                { label: 'Aguardando', val: stats.aguardando,  color: '#f59e0b' },
+                { label: 'Em Produção',val: stats.em_producao, color: '#3b82f6' },
+                { label: 'Prontos',    val: stats.pronto,      color: '#22c55e' },
+              ].map(({ label, val, color }) => (
+                <div key={label} onClick={() => navigate('/lab/ordens')} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 6px', marginBottom: '2px', cursor: 'pointer', borderRadius: '2px' }}
+                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#880000'}
+                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
+                  <span style={{ fontSize: '10px', color: dark ? '#aaa' : '#444', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</span>
+                  <span style={{ fontSize: '14px', fontWeight: '900', color, fontFamily: 'monospace' }}>{val}</span>
+                </div>
+              ))}
+            </div>
+
             <div style={{ background: panelBg, border: `2px outset ${dark ? '#555' : '#808080'}`, padding: '10px 12px', marginBottom: '8px' }}>
               <div style={{ background: '#880000', color: '#ffcccc', fontSize: '10px', fontWeight: '700', padding: '3px 6px', marginBottom: '8px', letterSpacing: '1px' }}>
                 ACESSO RÁPIDO
               </div>
               {[
-                { label: 'Nova OS',    to: '/lab/ordens/nova', icon: '➕' },
-                { label: 'Ver Ordens', to: '/lab/ordens',      icon: '📋' },
-                { label: 'Óticas',     to: '/lab/oticas',      icon: '🏪' },
+                { label: 'Nova OS',      to: '/lab/ordens/nova', icon: '➕' },
+                { label: 'Fila Produção',to: '/lab/fluxo',       icon: '⚡' },
+                { label: 'Ver Ordens',   to: '/lab/ordens',      icon: '📋' },
+                { label: 'Óticas',       to: '/lab/oticas',      icon: '🏪' },
               ].map(item => (
                 <button
                   key={item.to}
