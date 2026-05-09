@@ -73,9 +73,10 @@ const OPCOES: Record<ModuleKey, Opcao[]> = {
     { num: 2, label: 'CONTAS A PAGAR',   to: '/lab/contas-pagar'   },
   ],
   L: [
-    { num: 1, label: 'CONTROLE BANCÁRIO',       to: '/lab/bancario' },
-    { num: 2, label: 'LANÇAMENTOS',             to: '/lab/bancario' },
-    { num: 3, label: 'CONSULTA/LISTAGEM',       to: '/lab/bancario' },
+    { num: 1, label: 'LANÇAMENTOS',             to: '/lab/bancario-lab' },
+    { num: 2, label: 'CONSULTA/LISTAGEM',       to: '/lab/bancario-lab' },
+    { num: 3, label: 'CONTAS A RECEBER',        to: '/lab/contas-receber' },
+    { num: 4, label: 'CONTAS A PAGAR',          to: '/lab/contas-pagar' },
   ],
 };
 
