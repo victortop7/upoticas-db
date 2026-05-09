@@ -8,8 +8,15 @@ interface OticaRow {
   valor_total: number;
 }
 
+interface ServicoRow {
+  descricao: string;
+  qtd_total: number;
+  valor_total: number;
+}
+
 interface Dados {
   oticas: OticaRow[];
+  servicos: ServicoRow[];
   totais: { total_pedidos: number; valor_total: number } | null;
   meses: string[];
 }
@@ -167,6 +174,43 @@ export default function LabRelatorios() {
               </table>
             )}
           </div>
+          {/* Tabela de serviços */}
+          {(dados?.servicos?.length ?? 0) > 0 && (
+            <div style={{ ...CARD, marginTop: '16px' }}>
+              <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text)', marginBottom: '16px' }}>
+                Serviços Realizados — {fmtMes(mes)}
+              </div>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                    {['Serviço', 'Qtd', 'Valor Total'].map(h => (
+                      <th key={h} style={{ padding: '8px 12px', textAlign: h === 'Serviço' ? 'left' : 'right', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {dados!.servicos.map((s, i) => (
+                    <tr key={i} style={{ borderBottom: i < dados!.servicos.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                      <td style={{ padding: '11px 12px', fontSize: '13px', color: 'var(--text)', fontWeight: '500' }}>{s.descricao}</td>
+                      <td style={{ padding: '11px 12px', fontSize: '13px', color: 'var(--text)', textAlign: 'right', fontFamily: 'var(--mono)' }}>{s.qtd_total}</td>
+                      <td style={{ padding: '11px 12px', fontSize: '13px', color: 'var(--text)', textAlign: 'right', fontFamily: 'var(--mono)', fontWeight: '600' }}>{brl(s.valor_total)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr style={{ borderTop: '2px solid var(--border)' }}>
+                    <td style={{ padding: '11px 12px', fontSize: '13px', fontWeight: '700', color: 'var(--text)' }}>Total</td>
+                    <td style={{ padding: '11px 12px', fontSize: '13px', fontWeight: '700', color: 'var(--text)', textAlign: 'right', fontFamily: 'var(--mono)' }}>
+                      {dados!.servicos.reduce((a, s) => a + s.qtd_total, 0)}
+                    </td>
+                    <td style={{ padding: '11px 12px', fontSize: '13px', fontWeight: '700', color: '#cc0000', textAlign: 'right', fontFamily: 'var(--mono)' }}>
+                      {brl(dados!.servicos.reduce((a, s) => a + s.valor_total, 0))}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          )}
         </>
       )}
     </div>
