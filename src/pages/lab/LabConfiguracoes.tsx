@@ -151,6 +151,34 @@ function NumeracaoContent({ tab, config, onChange }: {
         <DotField label="PRÓXIMO FECHAMENTO A EMITIR"
           value={config.num_proximo_fechamento ?? '1'}
           onChange={v => onChange('num_proximo_fechamento', v)} />
+
+        <div style={{ marginTop: '14px', border: '1px solid #a0a098' }}>
+          <div style={{ background: '#880000', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', letterSpacing: '1px' }}>
+            PRÓXIMAS DATAS DE FECHAMENTO
+          </div>
+          <div style={{ padding: '10px', background: '#d4d0c8' }}>
+            <DotField label="PRÓXIMO FECHAMENTO SEMANAL"
+              value={config.fechamento_data_semanal ?? ''}
+              onChange={v => onChange('fechamento_data_semanal', v)}
+              type="date" />
+            <DotField label="PRÓXIMO FECHAMENTO DECENAL"
+              value={config.fechamento_data_decenal ?? ''}
+              onChange={v => onChange('fechamento_data_decenal', v)}
+              type="date" />
+            <DotField label="PRÓXIMO FECHAMENTO QUINZENAL"
+              value={config.fechamento_data_quinzenal ?? ''}
+              onChange={v => onChange('fechamento_data_quinzenal', v)}
+              type="date" />
+            <DotField label="PRÓXIMO FECHAMENTO VINTENAL"
+              value={config.fechamento_data_vintenal ?? ''}
+              onChange={v => onChange('fechamento_data_vintenal', v)}
+              type="date" />
+            <DotField label="PRÓXIMO FECHAMENTO MENSAL"
+              value={config.fechamento_data_mensal ?? ''}
+              onChange={v => onChange('fechamento_data_mensal', v)}
+              type="date" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -158,7 +186,7 @@ function NumeracaoContent({ tab, config, onChange }: {
   if (tab === 'notas') {
     return (
       <div>
-        <DotField label="PRÓXIMA NOTA FISCAL A EMITIR"
+        <DotField label="PRÓXIMA NF A EMITIR / SÉRIE I"
           value={config.num_proximo_nf ?? '1'}
           onChange={v => onChange('num_proximo_nf', v)} />
       </div>
@@ -171,15 +199,40 @@ function NumeracaoContent({ tab, config, onChange }: {
         <DotField label="PRÓXIMA FATURA A EMITIR"
           value={config.num_proximo_fatura ?? '1'}
           onChange={v => onChange('num_proximo_fatura', v)} />
+        <DotField label="PRÓXIMO FESP A EMITIR"
+          value={config.num_proximo_fesp ?? '1'}
+          onChange={v => onChange('num_proximo_fesp', v)} />
       </div>
     );
   }
 
+  // outros
   return (
     <div>
-      <DotField label="PRÓXIMO OUTRO DOCUMENTO"
-        value={config.num_proximo_outro ?? '1'}
-        onChange={v => onChange('num_proximo_outro', v)} />
+      <DotField label="PRÓXIMO CONTRATO A EMITIR"
+        value={config.num_proximo_contrato ?? '1'}
+        onChange={v => onChange('num_proximo_contrato', v)} />
+      <DotField label="PRÓXIMA DEVOLUÇÃO A EMITIR"
+        value={config.num_proximo_devolucao ?? '1'}
+        onChange={v => onChange('num_proximo_devolucao', v)} />
+      <DotField label="PRÓXIMA TROCA A EMITIR"
+        value={config.num_proximo_troca ?? '1'}
+        onChange={v => onChange('num_proximo_troca', v)} />
+      <DotField label="PRÓXIMO ORÇAMENTO A EMITIR"
+        value={config.num_proximo_orcamento ?? '1'}
+        onChange={v => onChange('num_proximo_orcamento', v)} />
+      <DotField label="PRÓXIMO MOSTRUÁRIO A EMITIR"
+        value={config.num_proximo_mostruario ?? '1'}
+        onChange={v => onChange('num_proximo_mostruario', v)} />
+      <DotField label="PRÓXIMO RECIBO A EMITIR"
+        value={config.num_proximo_recibo ?? '1'}
+        onChange={v => onChange('num_proximo_recibo', v)} />
+      <DotField label="PRÓXIMO PROTOCOLO DE RECEBIMENTO A EMITIR"
+        value={config.num_proximo_protocolo_rec ?? '1'}
+        onChange={v => onChange('num_proximo_protocolo_rec', v)} />
+      <DotField label="PRÓXIMO PROTOCOLO DE ENTREGA A EMITIR"
+        value={config.num_proximo_protocolo_ent ?? '1'}
+        onChange={v => onChange('num_proximo_protocolo_ent', v)} />
     </div>
   );
 }
