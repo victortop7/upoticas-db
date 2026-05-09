@@ -117,8 +117,11 @@ export default function LabOrdemDetalhe() {
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px' }}>
           <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text)', marginBottom: '12px' }}>Informações</div>
           {[
+            { label: 'Tipo', value: ordem.tipo ?? '—' },
             { label: 'Ótica', value: ordem.otica_nome },
             { label: 'Ref. Ótica', value: ordem.ref_otica ?? '—' },
+            { label: 'Cont. Interno', value: ordem.cont_interno ?? '—' },
+            { label: 'Caixa', value: ordem.caixa ?? '—' },
             { label: 'Operador', value: ordem.vendedor ?? '—' },
             { label: 'Médico', value: ordem.medico ?? '—' },
             { label: 'Previsão', value: ordem.previsao_entrega ?? '—' },
@@ -138,11 +141,18 @@ export default function LabOrdemDetalhe() {
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px' }}>
           <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text)', marginBottom: '12px' }}>Armação</div>
           {armacao ? [
-            { label: 'Material', value: armacao.material ?? '—' },
-            { label: 'Estojo', value: armacao.estojo ? 'Sim' : 'Não' },
+            { label: 'Tipo', value: armacao.tipo_material ?? armacao.material ?? '—' },
+            { label: 'Shape', value: armacao.shape ?? '—' },
+            { label: 'Largura', value: armacao.largura ? `${armacao.largura} mm` : '—' },
+            { label: 'Altura', value: armacao.altura ? `${armacao.altura} mm` : '—' },
             { label: 'Ponte', value: armacao.ponte ? `${armacao.ponte} mm` : '—' },
-            { label: 'Diâmetro', value: armacao.diametro ? `${armacao.diametro} mm` : '—' },
-            { label: 'DPLIP', value: armacao.dplip ?? '—' },
+            { label: 'Maior Diag.', value: armacao.maior_diagonal ? `${armacao.maior_diagonal} mm` : '—' },
+            { label: 'Diâmetro Final', value: armacao.diametro_final ? `${armacao.diametro_final} mm` : '—' },
+            { label: 'Tipo Lente', value: armacao.tipo_lente ?? '—' },
+            { label: 'Marca/Material', value: armacao.marca_material ?? '—' },
+            { label: 'O/D', value: armacao.lente_od ?? '—' },
+            { label: 'O/E', value: armacao.lente_oe ?? '—' },
+            { label: 'Estojo', value: armacao.estojo ? 'Sim' : 'Não' },
             { label: 'Info', value: armacao.informacoes ?? '—' },
           ].map(item => (
             <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>

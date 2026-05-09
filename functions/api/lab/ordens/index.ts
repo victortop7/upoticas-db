@@ -12,7 +12,8 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
     const q = url.searchParams.get('q');
 
     let query = `
-      SELECT o.id, o.numero, o.status, o.ref_otica, o.previsao_entrega, o.total, o.created_at,
+      SELECT o.id, o.numero, o.status, o.tipo, o.ref_otica, o.previsao_entrega, o.total, o.created_at,
+             o.cont_interno, o.caixa,
              ot.nome as otica_nome
       FROM lab_ordens o
       LEFT JOIN lab_oticas ot ON ot.id = o.otica_id
@@ -21,9 +22,9 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
     const params: unknown[] = [tenant_id];
 
     if (status) { query += ' AND o.status = ?'; params.push(status); }
-    if (q) { query += ' AND (ot.nome LIKE ? OR CAST(o.numero AS TEXT) LIKE ?)'; params.push(`%${q}%`, `%${q}%`); }
+    if (q) { query += ' AND (ot.nome LIKE ? OR CAST(o.numero AS TEXT) LIKE ? OR o.cont_interno LIKE ?)'; params.push(`%${q}%`, `%${q}%`, `%${q}%`); }
 
-    query += ' ORDER BY o.created_at DESC LIMIT 100';
+    query += ' ORDER BY o.created_at DESC LIMIT 200';
 
     const result = await env.DB.prepare(query).bind(...params).all();
     return json(result.results);
@@ -38,19 +39,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     if (auth instanceof Response) return auth;
     const { tenant_id } = auth;
 
-    const body = await request.json() as {
-      otica_id: string;
-      vendedor?: string;
-      ref_otica?: string;
-      previsao_entrega?: string;
-      condicao_pgto?: string;
-      texto_gravura?: string;
-      observacoes?: string;
-      total?: number;
-      receita?: { olho: string; esf_longe?: number; cil_longe?: number; eixo_longe?: number; dnp?: number; alt?: number; prisma?: string; adicao?: number; esf_perto?: number }[];
-      armacao?: { material?: string; estojo?: number; ponte?: number; diametro?: number; dplip?: number; informacoes?: string };
-      servicos?: { descricao: string; qtd: number; valor_unit: number; desconto: number; total: number }[];
-    };
+    const body = await request.json() as Record<string, unknown>;
 
     if (!body.otica_id) return json({ error: 'Ótica é obrigatória' }, 400);
 
@@ -61,35 +50,110 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     const id = crypto.randomUUID();
     const numero = numRow?.next ?? 1;
 
-    // Garante colunas novas
-    for (const col of ['medico TEXT', 'sinal REAL', 'rota TEXT']) {
+    // Ensure all columns exist
+    const newCols = [
+      'medico TEXT', 'sinal REAL', 'rota TEXT',
+      'tipo TEXT', 'cont_interno TEXT', 'caixa TEXT',
+      'etiq_garantia INTEGER', 'usuario_receita TEXT', 'fluxo_lab INTEGER',
+    ];
+    for (const col of newCols) {
       try { await env.DB.prepare(`ALTER TABLE lab_ordens ADD COLUMN ${col}`).run(); } catch {}
     }
 
-    const b = body as Record<string, unknown>;
+    const armCols = [
+      'tipo_material TEXT', 'shape TEXT',
+      'largura REAL', 'altura REAL', 'maior_diagonal REAL',
+      'eixo_maior_diagonal REAL', 'diametro_final REAL',
+      'tipo_lente TEXT', 'marca_material TEXT', 'lente_od TEXT', 'lente_oe TEXT',
+    ];
+    for (const col of armCols) {
+      try { await env.DB.prepare(`ALTER TABLE lab_armacao ADD COLUMN ${col}`).run(); } catch {}
+    }
+
+    const recCols = ['cil_perto REAL', 'dec_h REAL'];
+    for (const col of recCols) {
+      try { await env.DB.prepare(`ALTER TABLE lab_receita ADD COLUMN ${col}`).run(); } catch {}
+    }
+
     const stmts = [
-      env.DB.prepare(
-        'INSERT INTO lab_ordens (id, tenant_id, numero, otica_id, vendedor, medico, ref_otica, previsao_entrega, condicao_pgto, sinal, rota, texto_gravura, observacoes, total) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-      ).bind(id, tenant_id, numero, body.otica_id, b.operador ?? body.vendedor ?? null, b.medico ?? null, body.ref_otica ?? null, body.previsao_entrega ?? null, body.condicao_pgto ?? null, b.sinal ?? null, b.rota ?? null, body.texto_gravura ?? null, body.observacoes ?? null, body.total ?? 0),
+      env.DB.prepare(`
+        INSERT INTO lab_ordens (
+          id, tenant_id, numero, otica_id,
+          vendedor, medico, ref_otica, previsao_entrega, condicao_pgto, sinal, rota, texto_gravura, observacoes, total,
+          tipo, cont_interno, caixa, etiq_garantia, usuario_receita, fluxo_lab
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(
+        id, tenant_id, numero, body.otica_id,
+        body.operador ?? body.vendedor ?? null,
+        body.medico ?? null,
+        body.ref_otica ?? null,
+        body.previsao_entrega ?? null,
+        body.condicao_pgto ?? null,
+        body.sinal ?? null,
+        body.rota ?? null,
+        body.texto_gravura ?? null,
+        body.observacoes ?? null,
+        body.total ?? 0,
+        body.tipo ?? 'O',
+        body.cont_interno ?? null,
+        body.caixa ?? null,
+        body.etiq_garantia ?? 0,
+        body.usuario_receita ?? null,
+        body.fluxo_lab ?? 0,
+      ),
     ];
 
-    for (const r of body.receita ?? []) {
-      stmts.push(env.DB.prepare(
-        'INSERT INTO lab_receita (id, tenant_id, ordem_id, olho, esf_longe, cil_longe, eixo_longe, dnp, alt, prisma, adicao, esf_perto) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-      ).bind(crypto.randomUUID(), tenant_id, id, r.olho, r.esf_longe ?? null, r.cil_longe ?? null, r.eixo_longe ?? null, r.dnp ?? null, r.alt ?? null, r.prisma ?? null, r.adicao ?? null, r.esf_perto ?? null));
+    type RxItem = { olho: string; esf_longe?: number; cil_longe?: number; eixo_longe?: number; dnp?: number; alt?: number; prisma?: string; adicao?: number; esf_perto?: number; cil_perto?: number; dec_h?: number };
+    for (const r of (body.receita as RxItem[] ?? [])) {
+      stmts.push(env.DB.prepare(`
+        INSERT INTO lab_receita (id, tenant_id, ordem_id, olho, esf_longe, cil_longe, eixo_longe, dnp, alt, prisma, adicao, esf_perto, cil_perto, dec_h)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(
+        crypto.randomUUID(), tenant_id, id, r.olho,
+        r.esf_longe ?? null, r.cil_longe ?? null, r.eixo_longe ?? null,
+        r.dnp ?? null, r.alt ?? null, r.prisma ?? null,
+        r.adicao ?? null, r.esf_perto ?? null,
+        r.cil_perto ?? null, r.dec_h ?? null,
+      ));
     }
 
     if (body.armacao) {
-      const a = body.armacao;
-      stmts.push(env.DB.prepare(
-        'INSERT INTO lab_armacao (id, tenant_id, ordem_id, material, estojo, ponte, diametro, dplip, informacoes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
-      ).bind(crypto.randomUUID(), tenant_id, id, a.material ?? null, a.estojo ?? 0, a.ponte ?? null, a.diametro ?? null, a.dplip ?? null, a.informacoes ?? null));
+      const a = body.armacao as Record<string, unknown>;
+      stmts.push(env.DB.prepare(`
+        INSERT INTO lab_armacao (
+          id, tenant_id, ordem_id,
+          material, estojo, ponte, diametro, dplip, informacoes,
+          tipo_material, shape, largura, altura, maior_diagonal, eixo_maior_diagonal, diametro_final,
+          tipo_lente, marca_material, lente_od, lente_oe
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(
+        crypto.randomUUID(), tenant_id, id,
+        a.material ?? a.tipo_material ?? null,
+        a.estojo ?? 0,
+        a.ponte ?? null,
+        a.diametro ?? a.diametro_final ?? null,
+        a.dplip ?? null,
+        a.informacoes ?? null,
+        a.tipo_material ?? null,
+        a.shape ?? null,
+        a.largura ?? null,
+        a.altura ?? null,
+        a.maior_diagonal ?? null,
+        a.eixo_maior_diagonal ?? null,
+        a.diametro_final ?? null,
+        a.tipo_lente ?? null,
+        a.marca_material ?? null,
+        a.lente_od ?? null,
+        a.lente_oe ?? null,
+      ));
     }
 
-    for (const s of body.servicos ?? []) {
-      stmts.push(env.DB.prepare(
-        'INSERT INTO lab_servicos_os (id, tenant_id, ordem_id, descricao, qtd, valor_unit, desconto, total) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-      ).bind(crypto.randomUUID(), tenant_id, id, s.descricao, s.qtd, s.valor_unit, s.desconto, s.total));
+    type SvcItem = { descricao: string; qtd: number; valor_unit: number; desconto: number; total: number };
+    for (const s of (body.servicos as SvcItem[] ?? [])) {
+      stmts.push(env.DB.prepare(`
+        INSERT INTO lab_servicos_os (id, tenant_id, ordem_id, descricao, qtd, valor_unit, desconto, total)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(crypto.randomUUID(), tenant_id, id, s.descricao, s.qtd, s.valor_unit, s.desconto, s.total));
     }
 
     await env.DB.batch(stmts);

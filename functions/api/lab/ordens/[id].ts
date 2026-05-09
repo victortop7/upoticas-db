@@ -21,7 +21,7 @@ export const onRequestGet = async ({ request, env, params }: { request: Request;
         .bind(id).all<Record<string, unknown>>(),
 
       env.DB.prepare('SELECT * FROM lab_armacao WHERE ordem_id = ?')
-        .bind(id).first<Record<string, unknown>>(),
+        .bind(id).first<Record<string, unknown>>().catch(() => null),
 
       env.DB.prepare('SELECT * FROM lab_servicos_os WHERE ordem_id = ? ORDER BY rowid ASC')
         .bind(id).all<Record<string, unknown>>(),
