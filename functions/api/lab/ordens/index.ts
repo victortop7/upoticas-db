@@ -8,12 +8,16 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
     const { tenant_id } = auth;
 
     const url = new URL(request.url);
-    const status = url.searchParams.get('status');
-    const q = url.searchParams.get('q');
+    const status   = url.searchParams.get('status');
+    const tipo     = url.searchParams.get('tipo');
+    const q        = url.searchParams.get('q');
+    const oticaId  = url.searchParams.get('otica_id');
+    const dataIni  = url.searchParams.get('data_ini');
+    const dataFim  = url.searchParams.get('data_fim');
 
     let query = `
       SELECT o.id, o.numero, o.status, o.tipo, o.ref_otica, o.previsao_entrega, o.total, o.created_at,
-             o.cont_interno, o.caixa,
+             o.cont_interno, o.caixa, o.vendedor,
              ot.nome as otica_nome
       FROM lab_ordens o
       LEFT JOIN lab_oticas ot ON ot.id = o.otica_id
@@ -21,10 +25,17 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
     `;
     const params: unknown[] = [tenant_id];
 
-    if (status) { query += ' AND o.status = ?'; params.push(status); }
-    if (q) { query += ' AND (ot.nome LIKE ? OR CAST(o.numero AS TEXT) LIKE ? OR o.cont_interno LIKE ?)'; params.push(`%${q}%`, `%${q}%`, `%${q}%`); }
+    if (status)  { query += ' AND o.status = ?'; params.push(status); }
+    if (tipo)    { query += ' AND o.tipo = ?'; params.push(tipo); }
+    if (oticaId) { query += ' AND o.otica_id = ?'; params.push(oticaId); }
+    if (dataIni) { query += ' AND date(o.created_at) >= ?'; params.push(dataIni); }
+    if (dataFim) { query += ' AND date(o.created_at) <= ?'; params.push(dataFim); }
+    if (q) {
+      query += ' AND (ot.nome LIKE ? OR CAST(o.numero AS TEXT) LIKE ? OR o.cont_interno LIKE ? OR o.ref_otica LIKE ?)';
+      params.push(`%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`);
+    }
 
-    query += ' ORDER BY o.created_at DESC LIMIT 200';
+    query += ' ORDER BY o.created_at DESC LIMIT 500';
 
     const result = await env.DB.prepare(query).bind(...params).all();
     return json(result.results);

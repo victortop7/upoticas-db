@@ -127,18 +127,25 @@ export default function LabLayout() {
             }}>
               <button
                 onClick={() => navigate('/lab/dashboard')}
-                style={{
-                  padding: '2px 14px', fontSize: '11px', fontWeight: 'bold',
-                  background: dark ? '#660000' : '#880000',
-                  color: dark ? '#ffaaaa' : '#ffcccc',
-                  border: `1px outset ${hdrBorder}`, borderRadius: '2px',
-                  cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                }}
+                style={{ padding: '2px 14px', fontSize: '11px', fontWeight: 'bold', background: dark ? '#660000' : '#880000', color: dark ? '#ffaaaa' : '#ffcccc', border: `1px outset ${hdrBorder}`, borderRadius: '2px', cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '0.5px' }}
               >
-                ◀ Menu Principal
+                ◀ Menu
               </button>
-              <span style={{ fontSize: '11px', color: dark ? '#888888' : '#404040', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              {[
+                { path: '/lab/ordens', label: 'OS' },
+                { path: '/lab/fluxo', label: 'Fluxo' },
+                { path: '/lab/oticas', label: 'Óticas' },
+                { path: '/lab/relatorios', label: 'Relatórios' },
+                { path: '/lab/configuracoes', label: 'Config' },
+              ].map(({ path, label }) => {
+                const active = location.pathname.startsWith(path);
+                return (
+                  <button key={path} onClick={() => navigate(path)} style={{ padding: '2px 10px', fontSize: '11px', fontWeight: active ? 'bold' : 'normal', background: active ? (dark ? '#440000' : '#660000') : 'transparent', color: active ? (dark ? '#ffaaaa' : '#ffeeee') : (dark ? '#888888' : '#505050'), border: active ? `1px inset ${hdrBorder}` : '1px solid transparent', borderRadius: '2px', cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    {label}
+                  </button>
+                );
+              })}
+              <span style={{ marginLeft: 'auto', fontSize: '11px', color: dark ? '#888888' : '#404040', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 {location.pathname.replace('/lab/', '').replace('/', ' › ').toUpperCase()}
               </span>
             </div>

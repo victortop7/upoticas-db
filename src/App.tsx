@@ -16,6 +16,7 @@ import LabServicos from './pages/lab/LabServicos';
 import LabConfiguracoes from './pages/lab/LabConfiguracoes';
 import LabOperadores from './pages/lab/LabOperadores';
 import LabRelatorios from './pages/lab/LabRelatorios';
+import LabFluxo from './pages/lab/LabFluxo';
 import Dashboard from './pages/Dashboard';
 import Clientes from './pages/Clientes';
 import OrdensServico from './pages/OrdensServico';
@@ -95,6 +96,7 @@ export default function App() {
             <Route path="/lab/configuracoes" element={<LabConfiguracoes />} />
             <Route path="/lab/operadores" element={<LabOperadores />} />
             <Route path="/lab/relatorios" element={<LabRelatorios />} />
+            <Route path="/lab/fluxo" element={<LabFluxo />} />
             <Route path="/lab/fornecedores" element={<Fornecedores />} />
             <Route path="/lab/produtos" element={<Produtos />} />
             <Route path="/lab/faturamento" element={<Faturamento />} />
