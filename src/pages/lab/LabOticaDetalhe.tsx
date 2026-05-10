@@ -180,9 +180,31 @@ export default function LabOticaDetalhe() {
               <button onClick={() => setEditando(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '20px', cursor: 'pointer' }}>×</button>
             </div>
             <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-dim)', display: 'block', marginBottom: '5px' }}>Nome *</label>
-                <input required value={form.nome ?? ''} onChange={e => setForm((f: any) => ({ ...f, nome: e.target.value }))} style={inp} />
+              <div style={{ display: 'grid', gridTemplateColumns: '90px 1fr', gap: '10px' }}>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-dim)', display: 'block', marginBottom: '5px' }}>Código</label>
+                  <input value={form.codigo ?? ''} onChange={e => setForm((f: any) => ({ ...f, codigo: e.target.value }))} style={inp} placeholder="001" />
+                </div>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-dim)', display: 'block', marginBottom: '5px' }}>Nome *</label>
+                  <input required value={form.nome ?? ''} onChange={e => setForm((f: any) => ({ ...f, nome: e.target.value }))} style={inp} />
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-dim)', display: 'block', marginBottom: '5px' }}>Lista de Preço</label>
+                  <select value={form.lista_preco ?? 1} onChange={e => setForm((f: any) => ({ ...f, lista_preco: e.target.value }))} style={inp}>
+                    {[1,2,3,4,5].map(n => <option key={n} value={n}>Lista {n}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-dim)', display: 'block', marginBottom: '5px' }}>Cond. Pagamento</label>
+                  <input value={form.condicao_pgto ?? ''} onChange={e => setForm((f: any) => ({ ...f, condicao_pgto: e.target.value }))} style={inp} placeholder="VV, F30..." />
+                </div>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-dim)', display: 'block', marginBottom: '5px' }}>Desconto Padrão (%)</label>
+                  <input type="number" step="0.01" value={form.desconto_padrao ?? ''} onChange={e => setForm((f: any) => ({ ...f, desconto_padrao: e.target.value }))} style={inp} placeholder="0" />
+                </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
