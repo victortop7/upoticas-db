@@ -55,7 +55,6 @@ const LENTE_TIPOS = [
   { value: '42', label: '42 - HIDROP TOPO RETO' }, { value: '52', label: '52 - BIFOCAL KATRAL TOPORETO' },
 ];
 
-const SHAPES = [''].concat(Array.from({ length: 34 }, (_, i) => `SHAPE_${i + 1}`));
 
 const OLHO_INI: RxOlho = {
   esf_longe: '', cil_longe: '', eixo_longe: '', adicao: '',
