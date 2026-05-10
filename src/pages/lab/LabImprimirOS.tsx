@@ -303,7 +303,10 @@ export default function LabImprimirOS() {
       </div>
       <OSVia {...props} via="cliente" />
       <style>{`
-        @media print { body { margin: 0; background: #fff !important; } @page { margin: 6mm; size: A4; } }
+        @media print {
+          body { margin: 0; background: #fff !important; zoom: 0.62; }
+          @page { margin: 3mm; size: A4 portrait; }
+        }
         @media screen { body { background: #e5e7eb; } }
       `}</style>
     </div>
