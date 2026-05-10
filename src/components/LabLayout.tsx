@@ -1,17 +1,27 @@
 import { useState, useEffect } from 'react';
 import { Outlet, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import LabAltF1 from './LabAltF1';
 
 export default function LabLayout() {
   const { usuario, tenant, loading, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [dark, setDark] = useState(() => localStorage.getItem('lab_dark') === '1');
+  const [altF1, setAltF1] = useState(false);
 
   useEffect(() => {
     const handler = () => setDark(localStorage.getItem('lab_dark') === '1');
     window.addEventListener('labtheme', handler);
     return () => window.removeEventListener('labtheme', handler);
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.altKey && e.key === 'F1') { e.preventDefault(); setAltF1(v => !v); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
   }, []);
 
   if (loading) {
@@ -131,6 +141,13 @@ export default function LabLayout() {
               >
                 ◀ Menu
               </button>
+              <button
+                onClick={() => setAltF1(true)}
+                title="ALT+F1"
+                style={{ padding: '2px 10px', fontSize: '11px', fontWeight: 'bold', background: dark ? '#1a1a3e' : '#2a2a5e', color: '#aaaaff', border: '1px solid #4444aa', borderRadius: '2px', cursor: 'pointer', fontFamily: "'Courier New', monospace", letterSpacing: '0.5px' }}
+              >
+                🔍 ALT+F1
+              </button>
               {[
                 { path: '/lab/ordens', label: 'OS' },
                 { path: '/lab/fluxo', label: 'Fluxo' },
@@ -151,6 +168,7 @@ export default function LabLayout() {
             </div>
           )}
           <Outlet />
+          {altF1 && <LabAltF1 onClose={() => setAltF1(false)} />}
         </div>
       </div>
 
