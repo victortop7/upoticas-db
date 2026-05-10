@@ -2,261 +2,234 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { api } from '../../lib/api';
 
-function fmtGrau(v: number | null | undefined): string {
-  if (v == null || isNaN(Number(v))) return '—';
+function fg(v: number | null | undefined): string {
+  if (v == null || isNaN(Number(v))) return '';
   const n = Number(v);
   return (n >= 0 ? '+' : '') + n.toFixed(2);
 }
-function fmtData(s?: string | null): string {
-  if (!s) return '—';
-  const [y, m, d] = s.split('T')[0].split('-');
-  return `${d}/${m}/${y}`;
+function fd(s?: string | null): string {
+  if (!s) return '';
+  const p = s.split('T')[0].split('-');
+  return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : s;
 }
-function brl(v: number): string {
-  return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+function brl(v: unknown): string {
+  const n = Number(v ?? 0);
+  return isNaN(n) ? '0,00' : n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
-function nn(v: number | null | undefined, suf = ''): string {
-  return v != null && !isNaN(Number(v)) ? `${Number(v)}${suf}` : '—';
+function nn(v: unknown, suf = ''): string {
+  const n = Number(v);
+  return v != null && !isNaN(n) && n !== 0 ? `${n}${suf}` : '';
 }
 
-const C: Record<string, React.CSSProperties> = {
-  box: { border: '1px solid #bbb', borderRadius: '3px', marginBottom: '7px' },
-  title: { fontSize: '9px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', color: '#444', padding: '4px 8px', background: '#f0f0f0', borderBottom: '1px solid #ccc' },
-  th: { padding: '4px 5px', background: '#e8e8e8', border: '1px solid #ccc', fontWeight: '700', textAlign: 'center' as const, fontSize: '9px', whiteSpace: 'nowrap' as const },
-  td: { padding: '4px 5px', border: '1px solid #ddd', textAlign: 'center' as const, fontSize: '11px', fontWeight: '600' },
-  tdL: { padding: '4px 6px', border: '1px solid #ddd', textAlign: 'left' as const, fontSize: '11px' },
-  tdR: { padding: '4px 6px', border: '1px solid #ddd', textAlign: 'right' as const, fontSize: '11px' },
-  lbl: { fontSize: '8px', fontWeight: '700', color: '#777', textTransform: 'uppercase' as const, letterSpacing: '0.4px', display: 'block', marginBottom: '1px' },
-  val: { fontSize: '11px', color: '#111', fontWeight: '600' },
-};
+const B: React.CSSProperties = { border: '1px solid #000' };
+const TH: React.CSSProperties = { padding: '1px 3px', background: '#ddd', border: '1px solid #aaa', fontSize: '8px', fontWeight: '700', textAlign: 'center', whiteSpace: 'nowrap' };
+const TD: React.CSSProperties = { padding: '1px 3px', border: '1px solid #ddd', fontSize: '9px', textAlign: 'center', whiteSpace: 'nowrap' };
+const TDL: React.CSSProperties = { ...TD, textAlign: 'left' };
 
-function Field({ l, v, col = false }: { l: string; v: string; col?: boolean }) {
+interface Props {
+  ordem: Record<string, unknown>;
+  od: Record<string, unknown>;
+  oe: Record<string, unknown>;
+  armacao: Record<string, unknown> | null;
+  servicos: Record<string, unknown>[];
+  tenant: Record<string, unknown>;
+  via: 'LAB' | 'CLIENTE';
+}
+
+function OSSlip({ ordem, od, oe, armacao, servicos, tenant, via }: Props) {
+  const total = Number(ordem.total ?? 0);
+  const frete = Number(ordem.frete ?? 0);
+  const caixa = String(ordem.caixa || '—');
+  const condPgto = String(ordem.condicao_pgto || ordem.otica_cond_pgto || 'A VISTA');
+
   return (
-    <div style={col ? {} : { display: 'flex', gap: '4px', alignItems: 'baseline', marginBottom: '3px' }}>
-      <span style={{ ...C.lbl, display: 'inline', whiteSpace: 'nowrap' }}>{l}:&nbsp;</span>
-      <span style={{ ...C.val, fontSize: '11px' }}>{v}</span>
-    </div>
-  );
-}
+    <div style={{ width: '100%', fontFamily: 'Arial, Helvetica, sans-serif', fontSize: '9px', color: '#000', lineHeight: '1.2', boxSizing: 'border-box' }}>
 
-const TIPO_LABEL: Record<string, string> = {
-  O: 'OS NORMAL', F: 'OS FREEFORM', G: 'OS GARANTIA', U: 'VENDA/PEDIDO',
-  S: 'VENDA/PEDIDO S', E: 'ENCOMENDA', R: 'ROMANEIO', D: 'DEVOLUÇÃO',
-  W: 'CONTRATO', Z: 'RECIBO', L: 'PROTOCOLO', N: 'ORÇAMENTO', M: 'MOSTRUÁRIO',
-};
-
-interface OSViaProps {
-  ordem: Record<string, unknown>; od: Record<string, unknown>; oe: Record<string, unknown>;
-  armacao: Record<string, unknown> | null; servicos: Record<string, unknown>[];
-  total: number; tenant: Record<string, unknown>; via: 'laboratorio' | 'cliente';
-}
-
-function OSVia({ ordem, od, oe, armacao, servicos, total, tenant, via }: OSViaProps) {
-  return (
-    <div style={{ fontFamily: 'Arial, Helvetica, sans-serif', fontSize: '11px', color: '#111', background: '#fff' }}>
-
-      {/* Via badge */}
-      <div style={{ textAlign: 'right', fontSize: '8px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px', color: via === 'laboratorio' ? '#1e40af' : '#166534', marginBottom: '6px' }}>
-        ▣ VIA {via === 'laboratorio' ? 'DO LABORATÓRIO' : 'DO CLIENTE'}
-      </div>
-
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #111', paddingBottom: '7px', marginBottom: '7px' }}>
-        <div>
-          <div style={{ fontSize: '15px', fontWeight: '900', letterSpacing: '-0.3px' }}>{String(tenant?.nome || 'UpÓticas Lab')}</div>
-          <div style={{ fontSize: '8px', color: '#555', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Laboratório Óptico</div>
-          {tenant?.telefone ? <div style={{ fontSize: '9px', color: '#555', marginTop: '1px' }}>Tel: {String(tenant.telefone)}</div> : null}
+      {/* ── CABEÇALHO ── */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #000', paddingBottom: '2px', marginBottom: '3px' }}>
+        <div style={{ minWidth: '90px' }}>
+          <div style={{ fontSize: '13px', fontWeight: '900', letterSpacing: '-0.5px' }}>{String(tenant?.nome_reduzido || tenant?.nome || 'LABORATÓRIO')}</div>
+          <div style={{ fontSize: '7px', color: '#555', textTransform: 'uppercase' }}>Laboratório Óptico</div>
+          {tenant?.telefone ? <div style={{ fontSize: '7px', color: '#555' }}>{String(tenant.telefone)}</div> : null}
         </div>
-        <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: '8px', color: '#777', fontWeight: '700', textTransform: 'uppercase' }}>{TIPO_LABEL[String(ordem.tipo || 'O')] || 'ORDEM DE SERVIÇO'}</div>
-          <div style={{ fontSize: '28px', fontWeight: '900', letterSpacing: '-1px', lineHeight: 1 }}>#{String(Number(ordem.numero) || 0).padStart(6, '0')}</div>
-          <div style={{ fontSize: '9px', color: '#555' }}>Emitida: {fmtData(String(ordem.created_at || ''))}</div>
-          {ordem.previsao_entrega ? <div style={{ fontSize: '9px', color: '#c00', fontWeight: '700' }}>Previsão: {fmtData(String(ordem.previsao_entrega))}</div> : null}
+        <div style={{ textAlign: 'center', flex: 1, padding: '0 8px' }}>
+          <div style={{ fontSize: '11px', fontWeight: '900', letterSpacing: '1px' }}>SERVIÇO {String(Number(ordem.numero) || 0).padStart(6, '0')}</div>
+          <div style={{ fontSize: '8px' }}>USUÁRIO: {String(ordem.usuario_receita || ordem.vendedor || '—')}</div>
+          <div style={{ fontSize: '8px' }}>DATA: {fd(String(ordem.created_at || ''))} &nbsp; CAIXA: {caixa}</div>
+          <div style={{ fontSize: '8px' }}>PREVISÃO PRD: {fd(String(ordem.previsao_entrega || ''))}</div>
+        </div>
+        <div style={{ textAlign: 'right', fontSize: '8px', fontWeight: '700', color: '#555', minWidth: '60px' }}>
+          <div>VIA DO {via}</div>
+          <div style={{ fontSize: '11px', fontWeight: '900', color: '#000' }}>#{String(Number(ordem.numero) || 0).padStart(6, '0')}</div>
         </div>
       </div>
 
-      {/* Ótica + Info OS */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 0.8fr', gap: '7px', marginBottom: '7px' }}>
-        <div style={C.box}>
-          <div style={C.title}>Ótica Cliente</div>
-          <div style={{ padding: '5px 7px' }}>
-            <div style={{ fontSize: '12px', fontWeight: '800', marginBottom: '2px' }}>{String(ordem.otica_nome || '—')}</div>
-            {ordem.otica_telefone ? <div style={{ fontSize: '9px', color: '#555' }}>Tel: {String(ordem.otica_telefone)}</div> : null}
-          </div>
-        </div>
-        <div style={{ ...C.box }}>
-          <div style={C.title}>Dados da OS</div>
-          <div style={{ padding: '5px 7px' }}>
-            <Field l="Ref. Ótica" v={String(ordem.ref_otica || '—')} />
-            <Field l="Cont. Interno" v={String(ordem.cont_interno || '—')} />
-            <Field l="Caixa" v={String(ordem.caixa || '—')} />
-            <Field l="Operador" v={String(ordem.vendedor || '—')} />
-          </div>
-        </div>
-        <div style={{ ...C.box }}>
-          <div style={C.title}>Financeiro</div>
-          <div style={{ padding: '5px 7px' }}>
-            <Field l="Cond." v={String(ordem.condicao_pgto || '—')} />
-            <Field l="Sinal" v={ordem.sinal ? brl(Number(ordem.sinal)) : '—'} />
-            <Field l="Rota" v={String(ordem.rota || '—')} />
-            <Field l="Médico" v={String(ordem.medico || '—')} />
-          </div>
-        </div>
-      </div>
+      {/* ── CLIENTE + REFERÊNCIA + SERVIÇOS RESUMO ── */}
+      <div style={{ display: 'flex', gap: '4px', marginBottom: '3px' }}>
 
-      {/* RECEITA — tabela completa */}
-      <div style={C.box}>
-        <div style={C.title}>Receita das Lentes</div>
-        <div style={{ display: 'flex', gap: '6px', padding: '6px 7px' }}>
-          {/* Tabela graus */}
-          <table style={{ borderCollapse: 'collapse', flex: 1 }}>
+        {/* Box cliente */}
+        <div style={{ ...B, padding: '2px 4px', flex: '0 0 44%' }}>
+          <div style={{ fontSize: '9px', fontWeight: '700' }}>CLIENTE: {String(ordem.otica_nome || '—')}</div>
+          {String(ordem.otica_endereco || '') && <div>END: {String(ordem.otica_endereco)}</div>}
+          {String(ordem.otica_bairro || '') && <div>BAIRRO: {String(ordem.otica_bairro)}</div>}
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {String(ordem.otica_cidade || '') && <span>CIDADE: {String(ordem.otica_cidade)}</span>}
+            {String(ordem.otica_uf || '') && <span>UF: {String(ordem.otica_uf)}</span>}
+            {String(ordem.otica_cep || '') && <span>CEP: {String(ordem.otica_cep)}</span>}
+          </div>
+        </div>
+
+        {/* Referência + tabela serviços resumo */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', fontSize: '8px' }}>
+            <span>REF.CLI: <b>{String(ordem.ref_otica || '—')}</b></span>
+            <span>ENTREGA: <b>{fd(String(ordem.previsao_entrega || ''))}</b></span>
+            <span>CONT.INT: <b>{String(ordem.cont_interno || '—')}</b></span>
+          </div>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', fontSize: '8px' }}>
+            <span>VENDEDOR: {String(ordem.vendedor || '—')}</span>
+            <span>CONDIÇÃO PGTO: <b>{condPgto}</b></span>
+          </div>
+          {/* Tabela resumo de serviços */}
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1px' }}>
             <thead>
               <tr>
-                <th style={C.th}></th>
-                <th style={{ ...C.th }} colSpan={2}>GRAU LONGE</th>
-                <th style={C.th}>EIXO</th>
-                <th style={C.th}>ADIC</th>
-                <th style={{ ...C.th }} colSpan={2}>GRAU PERTO</th>
-              </tr>
-              <tr>
-                <th style={C.th}>OLHO</th>
-                <th style={C.th}>ESF</th><th style={C.th}>CIL</th>
-                <th style={C.th}></th>
-                <th style={C.th}></th>
-                <th style={C.th}>ESF</th><th style={C.th}>CIL</th>
+                <th style={TH}>QTD</th>
+                <th style={TH}>V.UNIT</th>
+                <th style={TH}>%DESC</th>
+                <th style={TH}>TOTAL</th>
               </tr>
             </thead>
             <tbody>
-              {([['O/D', od], ['O/E', oe]] as const).map(([l, r]) => (
-                <tr key={l}>
-                  <td style={{ ...C.td, fontWeight: '800', background: '#fafafa' }}>{l}</td>
-                  <td style={C.td}>{fmtGrau(r?.esf_longe as number)}</td>
-                  <td style={C.td}>{fmtGrau(r?.cil_longe as number)}</td>
-                  <td style={C.td}>{nn(r?.eixo_longe as number)}</td>
-                  <td style={C.td}>{fmtGrau(r?.adicao as number)}</td>
-                  <td style={C.td}>{fmtGrau(r?.esf_perto as number)}</td>
-                  <td style={C.td}>{fmtGrau(r?.cil_perto as number)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {/* Tabela DNP/PRISMA */}
-          <table style={{ borderCollapse: 'collapse' }}>
-            <thead>
-              <tr>
-                <th style={C.th}></th>
-                <th style={{ ...C.th }} colSpan={2}>DNP</th>
-                <th style={C.th}>ALT</th>
-                <th style={C.th}>DEC H</th>
-                <th style={{ ...C.th }} colSpan={2}>PRISMA</th>
-              </tr>
-              <tr>
-                <th style={C.th}>OLHO</th>
-                <th style={C.th}>LONGE</th><th style={C.th}>PERTO</th>
-                <th style={C.th}></th><th style={C.th}></th>
-                <th style={C.th}>VALOR</th><th style={C.th}>EIXO</th>
-              </tr>
-            </thead>
-            <tbody>
-              {([['O/D', od], ['O/E', oe]] as const).map(([l, r]) => (
-                <tr key={l}>
-                  <td style={{ ...C.td, fontWeight: '800', background: '#fafafa' }}>{l}</td>
-                  <td style={C.td}>{nn(r?.dnp as number)}</td>
-                  <td style={C.td}>{nn(r?.dnp_perto as number)}</td>
-                  <td style={C.td}>{nn(r?.alt as number)}</td>
-                  <td style={C.td}>{nn(r?.dec_h as number)}</td>
-                  <td style={C.td}>{String(r?.prisma || '—')}</td>
-                  <td style={C.td}>—</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Armação + Lentes */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '7px', marginBottom: '0' }}>
-        <div style={C.box}>
-          <div style={C.title}>Dados da Armação</div>
-          <div style={{ padding: '5px 7px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px 10px' }}>
-            <Field l="Tipo" v={String(armacao?.tipo_material || armacao?.material || '—')} />
-            <Field l="Shape" v={String(armacao?.shape || '—')} />
-            <Field l="Largura" v={nn(armacao?.largura as number, ' mm')} />
-            <Field l="Altura" v={nn(armacao?.altura as number, ' mm')} />
-            <Field l="Ponte" v={nn(armacao?.ponte as number, ' mm')} />
-            <Field l="Maior Diag." v={nn(armacao?.maior_diagonal as number, ' mm')} />
-            <Field l="Eixo M.Diag." v={nn(armacao?.eixo_maior_diagonal as number)} />
-            <Field l="Diâm. Final" v={nn(armacao?.diametro_final as number, ' mm')} />
-          </div>
-        </div>
-        <div style={C.box}>
-          <div style={C.title}>Dados das Lentes e Tratamentos</div>
-          <div style={{ padding: '5px 7px' }}>
-            <Field l="Tipo de Lente" v={String(armacao?.tipo_lente || '—')} />
-            <Field l="Marca / Material" v={String(armacao?.marca_material || '—')} />
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px 10px', marginTop: '4px' }}>
-              <Field l="O/D" v={String(armacao?.lente_od || '—')} />
-              <Field l="O/E" v={String(armacao?.lente_oe || '—')} />
-            </div>
-            {(armacao?.etiq_garantia || armacao?.caixa) ? (
-              <div style={{ marginTop: '6px', display: 'flex', gap: '10px' }}>
-                {armacao?.caixa ? <Field l="Caixa" v={String(armacao.caixa)} /> : null}
-                {armacao?.etiq_garantia ? <span style={{ fontSize: '9px', fontWeight: '700', color: '#166534', background: '#dcfce7', padding: '1px 5px', borderRadius: '3px' }}>GARANTIA</span> : null}
-              </div>
-            ) : null}
-          </div>
-          {/* Obs */}
-          <div style={{ ...C.title, borderTop: '1px solid #ccc' }}>Observações</div>
-          <div style={{ padding: '4px 7px', minHeight: '28px', fontSize: '10px', color: '#333' }}>
-            {ordem.texto_gravura ? <div><b>Gravura:</b> {String(ordem.texto_gravura)}</div> : null}
-            {ordem.observacoes ? <div>{String(ordem.observacoes)}</div> : null}
-            {!ordem.texto_gravura && !ordem.observacoes ? <span style={{ color: '#bbb' }}>—</span> : null}
-          </div>
-        </div>
-      </div>
-
-      {/* Serviços */}
-      {servicos?.length > 0 && (
-        <div style={{ ...C.box, marginTop: '7px' }}>
-          <div style={C.title}>Cobrança / Serviços</div>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr>
-                <th style={{ ...C.th, textAlign: 'left' as const }}>Descrição</th>
-                <th style={C.th}>Qtd</th>
-                <th style={C.th}>Valor Unit.</th>
-                <th style={C.th}>Desconto</th>
-                <th style={C.th}>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {servicos.map((s, i) => (
+              {servicos.filter(s => s.descricao).map((s, i) => (
                 <tr key={i}>
-                  <td style={C.tdL}>{String(s.descricao)}</td>
-                  <td style={C.td}>{String(s.qtd)}</td>
-                  <td style={C.tdR}>{brl(Number(s.valor_unit))}</td>
-                  <td style={C.tdR}>{Number(s.desconto) > 0 ? brl(Number(s.desconto)) : '—'}</td>
-                  <td style={{ ...C.tdR, fontWeight: '700' }}>{brl(Number(s.total))}</td>
+                  <td style={TD}>{String(s.qtd || '')}</td>
+                  <td style={TD}>{brl(s.valor_unit)}</td>
+                  <td style={TD}>{s.perc_desc ? `${Number(s.perc_desc).toFixed(2)}` : '—'}</td>
+                  <td style={{ ...TD, fontWeight: '700' }}>{brl(s.total || s.total_liq)}</td>
                 </tr>
               ))}
             </tbody>
-            <tfoot>
-              <tr>
-                <td colSpan={4} style={{ ...C.tdR, fontWeight: '700', background: '#f5f5f5', fontSize: '12px' }}>TOTAL</td>
-                <td style={{ ...C.tdR, fontWeight: '900', fontSize: '13px', background: '#ebebeb' }}>{brl(total)}</td>
-              </tr>
-            </tfoot>
           </table>
         </div>
-      )}
+      </div>
 
-      {/* Assinatura */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '8px', borderTop: '1px dashed #aaa', marginTop: '8px' }}>
-        {['Responsável pelo Laboratório', 'Recebido pela Ótica', 'Data'].map(l => (
-          <div key={l} style={{ textAlign: 'center', minWidth: '150px' }}>
-            <div style={{ borderTop: '1px solid #111', marginTop: '22px', paddingTop: '3px', fontSize: '8px', color: '#666' }}>{l}</div>
+      {/* ── TABELA PRODUTOS ── */}
+      <table style={{ width: '100%', borderCollapse: 'collapse', ...B, marginBottom: '3px' }}>
+        <thead>
+          <tr style={{ background: '#ddd', borderBottom: '1px solid #000' }}>
+            <th style={{ ...TH, width: '50px', textAlign: 'left', paddingLeft: '4px' }}>CÓDIGO</th>
+            <th style={{ ...TH, textAlign: 'left', paddingLeft: '4px' }}>DESCRIÇÃO</th>
+            <th style={{ ...TH, width: '35px' }}>QTD.</th>
+          </tr>
+        </thead>
+        <tbody>
+          {servicos.filter(s => s.descricao).map((s, i) => (
+            <tr key={i} style={{ borderBottom: '1px solid #eee' }}>
+              <td style={{ ...TDL, paddingLeft: '4px', fontSize: '8px', color: '#333' }}>{String(s.codigo || '')}</td>
+              <td style={{ ...TDL, paddingLeft: '4px' }}>{String(s.descricao)}</td>
+              <td style={TD}>{String(s.qtd || '')}</td>
+            </tr>
+          ))}
+          {servicos.filter(s => s.descricao).length === 0 && (
+            <tr><td colSpan={3} style={{ ...TDL, paddingLeft: '4px', color: '#aaa' }}>—</td></tr>
+          )}
+        </tbody>
+      </table>
+
+      {/* ── TOTAIS ── */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px', fontSize: '9px', fontWeight: '700' }}>
+        <div>
+          Frete|Total: &nbsp;{brl(frete)} | {brl(total)}
+          &nbsp;&nbsp; QTD.: {servicos.filter(s => s.descricao).reduce((a, s) => a + (Number(s.qtd) || 0), 0).toFixed(2)}
+        </div>
+        <div style={{ fontSize: '10px', border: '1px solid #000', padding: '1px 6px' }}>
+          TOTAL LÍQUIDO: <span style={{ fontSize: '11px' }}>{brl(total)}</span>
+        </div>
+      </div>
+
+      {/* ── RECEITA: OD + OE LADO A LADO ── */}
+      <div style={{ display: 'flex', gap: '4px', marginBottom: '3px' }}>
+        {([['D', od, 'OLHO DIREITO'], ['E', oe, 'OLHO ESQUERDO']] as const).map(([side, r, label]) => (
+          <div key={side} style={{ flex: 1, ...B }}>
+            <div style={{ textAlign: 'center', fontWeight: '700', fontSize: '8px', background: '#ddd', borderBottom: '1px solid #aaa', padding: '1px' }}>{label}</div>
+            <div style={{ textAlign: 'center', fontSize: '7px', borderBottom: '1px solid #ddd', padding: '1px' }}>
+              LENTE PARA ÓCULOS {armacao?.tipo_lente ? `| ${String(armacao.tipo_lente)}` : ''}
+            </div>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '8px' }}>
+              <thead>
+                <tr>
+                  <th style={TH}></th>
+                  <th style={TH}>ESF</th>
+                  <th style={TH}>CIL</th>
+                  <th style={TH}>EIXO</th>
+                  <th style={TH}>D.N.P</th>
+                  <th style={TH}>ALT</th>
+                  <th style={TH}>PRISMA</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style={{ ...TDL, fontWeight: '700', fontSize: '7px', paddingLeft: '3px' }}>LONGE</td>
+                  <td style={TD}>{fg(r.esf_longe as number)}</td>
+                  <td style={TD}>{fg(r.cil_longe as number)}</td>
+                  <td style={TD}>{nn(r.eixo_longe)}</td>
+                  <td style={TD}>{nn(r.dnp)}</td>
+                  <td style={TD}>{nn(r.alt)}</td>
+                  <td style={{ ...TD, rowSpan: 3 } as React.CSSProperties} rowSpan={3}>{String(r.prisma || '')}</td>
+                </tr>
+                <tr>
+                  <td style={{ ...TDL, fontWeight: '700', fontSize: '7px', paddingLeft: '3px' }}>ADIÇÃO</td>
+                  <td style={TD}>{fg(r.adicao as number)}</td>
+                  <td style={TD}></td>
+                  <td style={TD}></td>
+                  <td style={TD}></td>
+                  <td style={TD}></td>
+                </tr>
+                <tr>
+                  <td style={{ ...TDL, fontWeight: '700', fontSize: '7px', paddingLeft: '3px' }}>PERTO</td>
+                  <td style={TD}>{fg(r.esf_perto as number)}</td>
+                  <td style={TD}>{fg(r.cil_perto as number)}</td>
+                  <td style={TD}>{nn(r.eixo_longe)}</td>
+                  <td style={TD}></td>
+                  <td style={TD}>{nn(r.alt)}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         ))}
+      </div>
+
+      {/* ── ARMAÇÃO ── */}
+      <div style={{ ...B, padding: '2px 4px', marginBottom: '3px', fontSize: '8px' }}>
+        <div style={{ fontWeight: '700', fontSize: '8px', borderBottom: '1px solid #ccc', marginBottom: '2px' }}>ARMAÇÃO</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '2px' }}>
+          <span>MATERIAL: {String(armacao?.tipo_material || armacao?.material || '—')}</span>
+          <span>SHAPE: {String(armacao?.shape || '—')}</span>
+          <span>ESTOJO: {armacao?.estojo ? 'Sim' : 'Não'}</span>
+          <span>Ø: {nn(armacao?.diametro_final, ' mm')}</span>
+          <span>LENTE O/D: {String(armacao?.lente_od || '—')}</span>
+          <span>LENTE O/E: {String(armacao?.lente_oe || '—')}</span>
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+          <span>LARGURA: {nn(armacao?.largura, ' mm')}</span>
+          <span>ALTURA: {nn(armacao?.altura, ' mm')}</span>
+          <span>PONTE: {nn(armacao?.ponte, ' mm')}</span>
+          <span>MAIOR DIAG: {nn(armacao?.maior_diagonal, ' mm')}</span>
+          <span>DIÂM. FINAL: {nn(armacao?.diametro_final, ' mm')}</span>
+        </div>
+        {(armacao?.informacoes || armacao?.marca_material || ordem.texto_gravura) ? (
+          <div style={{ marginTop: '2px', borderTop: '1px solid #eee', paddingTop: '2px' }}>
+            {armacao?.informacoes ? <span>INFO: {String(armacao.informacoes)} &nbsp;</span> : null}
+            {armacao?.marca_material ? <span>MARCA: {String(armacao.marca_material)} &nbsp;</span> : null}
+            {ordem.texto_gravura ? <span>GRAVURA: {String(ordem.texto_gravura)}</span> : null}
+          </div>
+        ) : null}
+      </div>
+
+      {/* ── OBS RECEITA ── */}
+      <div style={{ ...B, padding: '2px 4px', minHeight: '14px', fontSize: '8px' }}>
+        <b>OBS. RECEITA:</b> {String(ordem.observacoes || '')}
       </div>
     </div>
   );
@@ -275,7 +248,7 @@ export default function LabImprimirOS() {
     ]).then(([osData, tenantData]) => {
       setData(osData);
       setTenant(tenantData);
-      setTimeout(() => window.print(), 700);
+      setTimeout(() => window.print(), 800);
     }).finally(() => setLoading(false));
   }, [id]);
 
@@ -288,26 +261,36 @@ export default function LabImprimirOS() {
     armacao: Record<string, unknown> | null;
     servicos: Record<string, unknown>[];
   };
+
   const od = receita?.find(r => r.olho === 'D') ?? {};
   const oe = receita?.find(r => r.olho === 'E') ?? {};
-  const total = Number(ordem.total ?? 0);
-  const props = { ordem, od, oe, armacao: armacao ?? null, servicos: servicos ?? [], total, tenant: tenant ?? {} };
+  const props = { ordem, od, oe, armacao: armacao ?? null, servicos: servicos ?? [], tenant: tenant ?? {} };
 
   return (
-    <div style={{ maxWidth: '780px', margin: '0 auto', padding: '16px', background: '#fff' }}>
-      <OSVia {...props} via="laboratorio" />
-      <div style={{ margin: '14px 0', borderTop: '2px dashed #999', position: 'relative', textAlign: 'center' }}>
-        <span style={{ position: 'absolute', top: '-8px', left: '50%', transform: 'translateX(-50%)', background: '#fff', padding: '0 12px', fontSize: '8px', color: '#999', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px', whiteSpace: 'nowrap' }}>
+    <div style={{ background: '#fff', margin: 0, padding: 0 }}>
+      {/* VIA DO LABORATÓRIO */}
+      <div style={{ padding: '5mm 6mm 4mm', boxSizing: 'border-box' }}>
+        <OSSlip {...props} via="LAB" />
+      </div>
+
+      {/* LINHA DE CORTE */}
+      <div style={{ margin: '0 6mm', borderTop: '1px dashed #666', position: 'relative', textAlign: 'center' }}>
+        <span style={{ position: 'absolute', top: '-7px', left: '50%', transform: 'translateX(-50%)', background: '#fff', padding: '0 10px', fontSize: '7px', color: '#888', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px', whiteSpace: 'nowrap' }}>
           ✂ destacar aqui
         </span>
       </div>
-      <OSVia {...props} via="cliente" />
+
+      {/* VIA DO CLIENTE */}
+      <div style={{ padding: '4mm 6mm 5mm', boxSizing: 'border-box' }}>
+        <OSSlip {...props} via="CLIENTE" />
+      </div>
+
       <style>{`
         @media print {
-          body { margin: 0; background: #fff !important; zoom: 0.62; }
-          @page { margin: 3mm; size: A4 portrait; }
+          body { margin: 0; background: #fff !important; }
+          @page { margin: 0; size: A4 portrait; }
         }
-        @media screen { body { background: #e5e7eb; } }
+        @media screen { body { background: #ccc; } }
       `}</style>
     </div>
   );

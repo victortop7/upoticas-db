@@ -11,7 +11,9 @@ export const onRequestGet = async ({ request, env, params }: { request: Request;
     const [ordem, receita, armacao, servicos] = await Promise.all([
       env.DB.prepare(`
         SELECT o.*, ot.nome as otica_nome, ot.cnpj as otica_cnpj, ot.telefone as otica_telefone,
-               ot.cidade as otica_cidade, ot.uf as otica_uf
+               ot.cidade as otica_cidade, ot.uf as otica_uf,
+               ot.endereco as otica_endereco, ot.bairro as otica_bairro, ot.cep as otica_cep,
+               ot.codigo as otica_codigo, ot.condicao_pgto as otica_cond_pgto
         FROM lab_ordens o
         LEFT JOIN lab_oticas ot ON ot.id = o.otica_id
         WHERE o.id = ? AND o.tenant_id = ?
