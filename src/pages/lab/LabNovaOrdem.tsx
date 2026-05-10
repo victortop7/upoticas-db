@@ -128,6 +128,7 @@ export default function LabNovaOrdem() {
   const [vendedores, setVendedores] = useState<Vendedor[]>([]);
   const [saving, setSaving] = useState(false);
   const [erro, setErro] = useState('');
+  const [step, setStep] = useState(1);
 
   // TIPO
   const [tipo, setTipo] = useState('O');
@@ -394,8 +395,16 @@ export default function LabNovaOrdem() {
           </div>
         ))}
         <div style={{ flex: 1 }} />
-        <div style={{ padding: '12px 14px', borderTop: '1px solid var(--border)' }}>
-          <button type="button" onClick={() => navigate('/lab/ordens')} style={{ width: '100%', padding: '7px', fontSize: '11px', background: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit' }}>
+        <div style={{ padding: '10px 14px', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <div style={{ display: 'flex', gap: '4px' }}>
+            {[1, 2].map(s => (
+              <div key={s} style={{ flex: 1, height: '4px', borderRadius: '2px', background: step >= s ? '#880000' : 'var(--border)' }} />
+            ))}
+          </div>
+          <div style={{ fontSize: '10px', color: 'var(--text-muted)', textAlign: 'center' }}>
+            {step === 1 ? 'Etapa 1 — Cabeçalho' : 'Etapa 2 — Receita / Cobrança'}
+          </div>
+          <button type="button" onClick={() => navigate('/lab/ordens')} style={{ width: '100%', padding: '6px', fontSize: '11px', background: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit' }}>
             ← Voltar
           </button>
         </div>
@@ -531,6 +540,28 @@ export default function LabNovaOrdem() {
             </label>
           </div>
         </div>
+
+        {/* ===== BOTÃO PRÓXIMO (step 1) ===== */}
+        {step === 1 && (
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', paddingBottom: '20px' }}>
+            <button type="button" onClick={() => navigate('/lab/ordens')}
+              style={{ padding: '10px 22px', fontSize: '13px', background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
+              Desistir
+            </button>
+            <button type="button" onClick={() => {
+              if (!oticaId) { setErro('Selecione a ótica antes de continuar'); return; }
+              setErro('');
+              setStep(2);
+              setTimeout(() => window.scrollTo({ top: 0 }), 50);
+            }}
+              style={{ padding: '10px 32px', fontSize: '14px', fontWeight: '700', background: '#880000', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '0.3px' }}>
+              Próximo →
+            </button>
+          </div>
+        )}
+
+        {/* ===== ETAPA 2: RECEITA, ARMAÇÃO, COBRANÇA ===== */}
+        {step === 2 && <>
 
         {/* ===== RECEITA ===== */}
         <div style={card}>
@@ -810,10 +841,14 @@ export default function LabNovaOrdem() {
             style={{ ...INP, fontFamily: 'var(--sans)', resize: 'vertical' }} placeholder="Observações gerais..." />
         </div>
 
-        {/* ===== AÇÕES ===== */}
+        {/* ===== AÇÕES (step 2) ===== */}
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', paddingBottom: '20px' }}>
-          <button type="button" onClick={() => navigate('/lab/ordens')}
+          <button type="button" onClick={() => { setStep(1); setErro(''); }}
             style={{ padding: '10px 22px', fontSize: '13px', background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
+            ← Etapa anterior
+          </button>
+          <button type="button" onClick={() => navigate('/lab/ordens')}
+            style={{ padding: '10px 18px', fontSize: '13px', background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
             Desistir
           </button>
           <button type="button" disabled={saving} onClick={handleSubmit as unknown as React.MouseEventHandler}
@@ -821,10 +856,12 @@ export default function LabNovaOrdem() {
             Gravar
           </button>
           <button type="submit" disabled={saving}
-            style={{ padding: '10px 28px', fontSize: '13px', fontWeight: '600', background: saving ? 'var(--text-muted)' : '#880000', color: 'white', border: 'none', borderRadius: '8px', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
+            style={{ padding: '10px 28px', fontSize: '13px', fontWeight: '700', background: saving ? 'var(--text-muted)' : '#880000', color: 'white', border: 'none', borderRadius: '8px', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
             {saving ? 'Salvando...' : 'Gravar + Imprimir →'}
           </button>
         </div>
+
+        </>}
 
       </div>
     </form>
