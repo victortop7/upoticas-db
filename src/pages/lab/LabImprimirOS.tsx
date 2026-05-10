@@ -65,13 +65,13 @@ function OSVia({ ordem, od, oe, armacao, servicos, total, tenant, via }: OSViaPr
         <div>
           <div style={{ fontSize: '15px', fontWeight: '900', letterSpacing: '-0.3px' }}>{String(tenant?.nome || 'UpÓticas Lab')}</div>
           <div style={{ fontSize: '8px', color: '#555', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Laboratório Óptico</div>
-          {tenant?.telefone && <div style={{ fontSize: '9px', color: '#555', marginTop: '1px' }}>Tel: {String(tenant.telefone)}</div>}
+          {tenant?.telefone ? <div style={{ fontSize: '9px', color: '#555', marginTop: '1px' }}>Tel: {String(tenant.telefone)}</div> : null}
         </div>
         <div style={{ textAlign: 'right' }}>
           <div style={{ fontSize: '8px', color: '#777', fontWeight: '700', textTransform: 'uppercase' }}>{TIPO_LABEL[String(ordem.tipo || 'O')] || 'ORDEM DE SERVIÇO'}</div>
           <div style={{ fontSize: '28px', fontWeight: '900', letterSpacing: '-1px', lineHeight: 1 }}>#{String(Number(ordem.numero) || 0).padStart(6, '0')}</div>
           <div style={{ fontSize: '9px', color: '#555' }}>Emitida: {fmtData(String(ordem.created_at || ''))}</div>
-          {ordem.previsao_entrega && <div style={{ fontSize: '9px', color: '#c00', fontWeight: '700' }}>Previsão: {fmtData(String(ordem.previsao_entrega))}</div>}
+          {ordem.previsao_entrega ? <div style={{ fontSize: '9px', color: '#c00', fontWeight: '700' }}>Previsão: {fmtData(String(ordem.previsao_entrega))}</div> : null}
         </div>
       </div>
 
@@ -81,7 +81,7 @@ function OSVia({ ordem, od, oe, armacao, servicos, total, tenant, via }: OSViaPr
           <div style={C.title}>Ótica Cliente</div>
           <div style={{ padding: '5px 7px' }}>
             <div style={{ fontSize: '12px', fontWeight: '800', marginBottom: '2px' }}>{String(ordem.otica_nome || '—')}</div>
-            {ordem.otica_telefone && <div style={{ fontSize: '9px', color: '#555' }}>Tel: {String(ordem.otica_telefone)}</div>}
+            {ordem.otica_telefone ? <div style={{ fontSize: '9px', color: '#555' }}>Tel: {String(ordem.otica_telefone)}</div> : null}
           </div>
         </div>
         <div style={{ ...C.box }}>
@@ -198,19 +198,19 @@ function OSVia({ ordem, od, oe, armacao, servicos, total, tenant, via }: OSViaPr
               <Field l="O/D" v={String(armacao?.lente_od || '—')} />
               <Field l="O/E" v={String(armacao?.lente_oe || '—')} />
             </div>
-            {(armacao?.etiq_garantia || armacao?.caixa) && (
+            {(armacao?.etiq_garantia || armacao?.caixa) ? (
               <div style={{ marginTop: '6px', display: 'flex', gap: '10px' }}>
-                {armacao?.caixa && <Field l="Caixa" v={String(armacao.caixa)} />}
-                {armacao?.etiq_garantia && <span style={{ fontSize: '9px', fontWeight: '700', color: '#166534', background: '#dcfce7', padding: '1px 5px', borderRadius: '3px' }}>GARANTIA</span>}
+                {armacao?.caixa ? <Field l="Caixa" v={String(armacao.caixa)} /> : null}
+                {armacao?.etiq_garantia ? <span style={{ fontSize: '9px', fontWeight: '700', color: '#166534', background: '#dcfce7', padding: '1px 5px', borderRadius: '3px' }}>GARANTIA</span> : null}
               </div>
-            )}
+            ) : null}
           </div>
           {/* Obs */}
           <div style={{ ...C.title, borderTop: '1px solid #ccc' }}>Observações</div>
           <div style={{ padding: '4px 7px', minHeight: '28px', fontSize: '10px', color: '#333' }}>
-            {ordem.texto_gravura && <div><b>Gravura:</b> {String(ordem.texto_gravura)}</div>}
-            {ordem.observacoes && <div>{String(ordem.observacoes)}</div>}
-            {!ordem.texto_gravura && !ordem.observacoes && <span style={{ color: '#bbb' }}>—</span>}
+            {ordem.texto_gravura ? <div><b>Gravura:</b> {String(ordem.texto_gravura)}</div> : null}
+            {ordem.observacoes ? <div>{String(ordem.observacoes)}</div> : null}
+            {!ordem.texto_gravura && !ordem.observacoes ? <span style={{ color: '#bbb' }}>—</span> : null}
           </div>
         </div>
       </div>
