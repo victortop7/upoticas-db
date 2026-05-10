@@ -98,6 +98,9 @@ export default function LabOticaDetalhe() {
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', alignSelf: 'start' }}>
           <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text)', marginBottom: '14px' }}>Informações</div>
           {[
+            { label: 'Código', value: otica.codigo },
+            { label: 'Lista de Preço', value: otica.lista_preco ? `Lista ${otica.lista_preco}` : null },
+            { label: 'Cond. Pagamento', value: otica.condicao_pgto },
             { label: 'CNPJ', value: otica.cnpj },
             { label: 'Telefone', value: otica.telefone },
             { label: 'E-mail', value: otica.email },

@@ -51,11 +51,14 @@ export const onRequestPut = async ({ request, env, params }: { request: Request;
     if (!body.nome) return json({ error: 'Nome é obrigatório' }, 400);
 
     await env.DB.prepare(
-      "UPDATE lab_oticas SET nome=?, cnpj=?, telefone=?, email=?, endereco=?, cidade=?, uf=?, cep=?, observacao=?, updated_at=datetime('now') WHERE id=? AND tenant_id=?"
+      "UPDATE lab_oticas SET codigo=?, nome=?, cnpj=?, telefone=?, email=?, endereco=?, cidade=?, uf=?, cep=?, observacao=?, lista_preco=?, condicao_pgto=?, desconto_padrao=?, updated_at=datetime('now') WHERE id=? AND tenant_id=?"
     ).bind(
-      body.nome, body.cnpj ?? null, body.telefone ?? null, body.email ?? null,
+      body.codigo ?? null, body.nome, body.cnpj ?? null, body.telefone ?? null, body.email ?? null,
       body.endereco ?? null, body.cidade ?? null, body.uf ?? null,
       body.cep ?? null, body.observacao ?? null,
+      body.lista_preco ? parseInt(body.lista_preco) : 1,
+      body.condicao_pgto ?? null,
+      body.desconto_padrao ? parseFloat(body.desconto_padrao) : null,
       params.id, tenant_id,
     ).run();
 

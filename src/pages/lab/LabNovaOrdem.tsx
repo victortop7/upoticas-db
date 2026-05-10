@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../../lib/api';
 
-interface Otica { id: string; nome: string; }
+interface Otica { id: string; codigo?: string; nome: string; lista_preco?: number; condicao_pgto?: string; }
 interface Produto { id: string; codigo?: string; nome: string; unidade?: string; valor_padrao: number; estoque_atual?: number; }
 interface Usuario { id: string; nome: string; }
 interface Vendedor { id: string; codigo: string; nome: string; }
@@ -134,6 +134,9 @@ export default function LabNovaOrdem() {
 
   // Cabeçalho
   const [oticaId, setOticaId] = useState(searchParams.get('otica') ?? '');
+  const [oticaCod, setOticaCod] = useState('');
+  const [oticaNome, setOticaNome] = useState('');
+  const [oticaErro, setOticaErro] = useState(false);
   const [refOtica, setRefOtica] = useState('');
   const [classificacao, setClassificacao] = useState('N');
   const [listaPreco, setListaPreco] = useState('1');
@@ -187,11 +190,42 @@ export default function LabNovaOrdem() {
   ]);
 
   useEffect(() => {
-    api.get<Otica[]>('/lab/oticas').then(setOticas).catch(() => {});
+    api.get<Otica[]>('/lab/oticas').then(list => {
+      setOticas(list);
+      // Se veio otica_id na URL, preenche código e nome
+      const presel = searchParams.get('otica');
+      if (presel) {
+        const found = list.find(o => o.id === presel);
+        if (found) { setOticaCod(found.codigo || found.nome); setOticaNome(found.nome); }
+      }
+    }).catch(() => {});
     api.get<Produto[]>('/lab/servicos').then(setProdutos).catch(() => {});
     api.get<{ usuarios: Usuario[] }>('/usuarios').then(d => setOperadores(d.usuarios)).catch(() => {});
     api.get<Vendedor[]>('/lab/vendedores').then(setVendedores).catch(() => {});
-  }, []);
+  }, [searchParams]);
+
+  function handleOticaLookup(cod: string) {
+    const t = cod.trim().toLowerCase();
+    if (!t) { setOticaId(''); setOticaNome(''); setOticaErro(false); return; }
+    const found = oticas.find(o =>
+      (o.codigo && o.codigo.toLowerCase() === t) ||
+      o.nome.toLowerCase().startsWith(t) ||
+      o.nome.toLowerCase().includes(t)
+    );
+    if (found) {
+      setOticaId(found.id);
+      setOticaNome(found.nome);
+      setOticaCod(found.codigo || cod);
+      setOticaErro(false);
+      // Auto-fill lista de preço e condição de pagamento
+      if (found.lista_preco) setListaPreco(String(found.lista_preco));
+      if (found.condicao_pgto) setCondPgto(found.condicao_pgto);
+    } else {
+      setOticaId('');
+      setOticaNome('NÃO ENCONTRADO');
+      setOticaErro(true);
+    }
+  }
 
   function updateOlho(olho: 'od' | 'oe', k: keyof RxOlho, v: string) {
     if (olho === 'od') setOd(p => ({ ...p, [k]: v }));
@@ -377,13 +411,23 @@ export default function LabNovaOrdem() {
           <div style={secTitle}>Cabeçalho da OS</div>
 
           {/* Row 1: Ótica + Ref + Classificação + Lista + Previsão */}
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 80px 80px 1fr', gap: '8px', marginBottom: '8px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr 1fr 80px 80px 1fr', gap: '8px', marginBottom: '8px' }}>
             <div>
-              <label style={LBL}>Cliente / Ótica *</label>
-              <select value={oticaId} onChange={e => setOticaId(e.target.value)} required style={{ ...INP, fontFamily: 'var(--sans)' }}>
-                <option value="">Selecionar ótica...</option>
-                {oticas.map(o => <option key={o.id} value={o.id}>{o.nome}</option>)}
-              </select>
+              <label style={LBL}>Cód. Ótica *</label>
+              <input
+                value={oticaCod}
+                onChange={e => { setOticaCod(e.target.value); setOticaErro(false); }}
+                onBlur={e => handleOticaLookup(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' || e.key === 'Tab') handleOticaLookup(oticaCod); }}
+                style={{ ...INP, borderColor: oticaErro ? 'var(--red)' : undefined }}
+                placeholder="Cód."
+              />
+            </div>
+            <div>
+              <label style={LBL}>Nome da Ótica</label>
+              <div style={{ ...INP, background: 'var(--surface)', color: oticaErro ? 'var(--red)' : oticaNome ? 'var(--text)' : 'var(--text-muted)', fontFamily: 'var(--sans)', minHeight: '32px', display: 'flex', alignItems: 'center' }}>
+                {oticaNome || <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>Digite o código ou nome acima...</span>}
+              </div>
             </div>
             <div>
               <label style={LBL}>Ref. Ótica</label>
