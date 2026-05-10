@@ -66,10 +66,32 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       'medico TEXT', 'sinal REAL', 'rota TEXT',
       'tipo TEXT', 'cont_interno TEXT', 'caixa TEXT',
       'etiq_garantia INTEGER', 'usuario_receita TEXT', 'fluxo_lab INTEGER',
+      'classificacao TEXT', 'lista_preco INTEGER',
+      'vendedor1_id TEXT', 'vendedor2_id TEXT',
+      'num_vias INTEGER', 'cobranca_tipo TEXT', 'fechamento_ref TEXT',
+      'frete REAL', 'desconto_geral REAL',
     ];
     for (const col of newCols) {
       try { await env.DB.prepare(`ALTER TABLE lab_ordens ADD COLUMN ${col}`).run(); } catch {}
     }
+
+    // Ensure lab_servicos_os extra columns
+    const svcCols = ['codigo TEXT', 'produto_id TEXT', 'perc_desc REAL', 'total_bruto REAL'];
+    for (const col of svcCols) {
+      try { await env.DB.prepare(`ALTER TABLE lab_servicos_os ADD COLUMN ${col}`).run(); } catch {}
+    }
+
+    // Ensure baixa_estoque table
+    try {
+      await env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS lab_baixa_estoque (
+          id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL, ordem_id TEXT NOT NULL,
+          codigo TEXT, produto_id TEXT, descricao TEXT NOT NULL,
+          un TEXT, qtd REAL NOT NULL DEFAULT 1,
+          created_at TEXT DEFAULT (datetime('now'))
+        )
+      `).run();
+    } catch {}
 
     const armCols = [
       'tipo_material TEXT', 'shape TEXT',
@@ -91,8 +113,10 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
         INSERT INTO lab_ordens (
           id, tenant_id, numero, otica_id,
           vendedor, medico, ref_otica, previsao_entrega, condicao_pgto, sinal, rota, texto_gravura, observacoes, total,
-          tipo, cont_interno, caixa, etiq_garantia, usuario_receita, fluxo_lab
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          tipo, cont_interno, caixa, etiq_garantia, usuario_receita, fluxo_lab,
+          classificacao, lista_preco, vendedor1_id, vendedor2_id,
+          num_vias, cobranca_tipo, fechamento_ref, frete, desconto_geral
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).bind(
         id, tenant_id, numero, body.otica_id,
         body.operador ?? body.vendedor ?? null,
@@ -111,6 +135,15 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
         body.etiq_garantia ?? 0,
         body.usuario_receita ?? null,
         body.fluxo_lab ?? 0,
+        body.classificacao ?? 'N',
+        body.lista_preco ?? 1,
+        body.vendedor1_id ?? null,
+        body.vendedor2_id ?? null,
+        body.num_vias ?? 1,
+        body.cobranca_tipo ?? null,
+        body.fechamento_ref ?? null,
+        body.frete ?? null,
+        body.desconto_geral ?? null,
       ),
     ];
 
@@ -159,12 +192,20 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       ));
     }
 
-    type SvcItem = { descricao: string; qtd: number; valor_unit: number; desconto: number; total: number };
+    type SvcItem = { codigo?: string; produto_id?: string; descricao: string; qtd: number; valor_unit: number; perc_desc?: number; total_bruto?: number; total: number };
     for (const s of (body.servicos as SvcItem[] ?? [])) {
       stmts.push(env.DB.prepare(`
-        INSERT INTO lab_servicos_os (id, tenant_id, ordem_id, descricao, qtd, valor_unit, desconto, total)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      `).bind(crypto.randomUUID(), tenant_id, id, s.descricao, s.qtd, s.valor_unit, s.desconto, s.total));
+        INSERT INTO lab_servicos_os (id, tenant_id, ordem_id, codigo, produto_id, descricao, qtd, valor_unit, perc_desc, total_bruto, desconto, total)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(crypto.randomUUID(), tenant_id, id, s.codigo ?? null, s.produto_id ?? null, s.descricao, s.qtd, s.valor_unit, s.perc_desc ?? 0, s.total_bruto ?? s.total, 0, s.total));
+    }
+
+    type EstItem = { codigo?: string; produto_id?: string; descricao: string; qtd: number };
+    for (const e of (body.baixa_estoque as EstItem[] ?? [])) {
+      stmts.push(env.DB.prepare(`
+        INSERT INTO lab_baixa_estoque (id, tenant_id, ordem_id, codigo, produto_id, descricao, qtd)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `).bind(crypto.randomUUID(), tenant_id, id, e.codigo ?? null, e.produto_id ?? null, e.descricao, e.qtd));
     }
 
     await env.DB.batch(stmts);
