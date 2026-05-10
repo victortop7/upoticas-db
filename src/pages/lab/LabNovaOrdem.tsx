@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../../lib/api';
+import LabShapePicker from '../../components/LabShapePicker';
 
 interface Otica { id: string; codigo?: string; nome: string; lista_preco?: number; condicao_pgto?: string; }
 interface Produto { id: string; codigo?: string; nome: string; unidade?: string; valor_padrao: number; estoque_atual?: number; }
@@ -164,6 +165,7 @@ export default function LabNovaOrdem() {
   const [oe, setOe] = useState<RxOlho>({ ...OLHO_INI });
 
   // Armação
+  const [showShapePicker, setShowShapePicker] = useState(false);
   const [armTipo, setArmTipo] = useState('');
   const [armShape, setArmShape] = useState('');
   const [armLargura, setArmLargura] = useState('');
@@ -648,9 +650,11 @@ export default function LabNovaOrdem() {
               </div>
               <div>
                 <label style={LBL}>Shape</label>
-                <select value={armShape} onChange={e => setArmShape(e.target.value)} style={{ ...INP, fontFamily: 'var(--mono)' }}>
-                  {SHAPES.map(s => <option key={s} value={s}>{s || '— Shape'}</option>)}
-                </select>
+                <button type="button" onClick={() => setShowShapePicker(true)}
+                  style={{ ...INP, textAlign: 'left', cursor: 'pointer', color: armShape ? 'var(--text)' : 'var(--text-muted)', fontWeight: armShape ? '700' : '400', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between' }}>
+                  <span>{armShape || '— Shape'}</span>
+                  <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>▼</span>
+                </button>
               </div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '8px' }}>
@@ -864,6 +868,9 @@ export default function LabNovaOrdem() {
         </>}
 
       </div>
+      {showShapePicker && (
+        <LabShapePicker value={armShape} onChange={setArmShape} onClose={() => setShowShapePicker(false)} />
+      )}
     </form>
   );
 }
