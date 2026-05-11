@@ -23,9 +23,9 @@ const MODULOS: { letra: ModuleKey; nome: string; icon: string; ativo: boolean }[
 
 const OPCOES: Record<ModuleKey, Opcao[]> = {
   A: [
-    { num: 1, label: 'NUMERAÇÃO DE DOCUMENTOS',    to: '/lab/configuracoes' },
-    { num: 3, label: 'PARÂMETROS DO SISTEMA',       to: '/lab/configuracoes' },
-    { num: 4, label: 'TABELAS DO SISTEMA',          to: '/lab/configuracoes' },
+    { num: 1, label: 'NUMERAÇÃO DE DOCUMENTOS',    to: '/lab/configuracoes?opcao=numeracao' },
+    { num: 3, label: 'PARÂMETROS DO SISTEMA',       to: '/lab/configuracoes?opcao=parametros' },
+    { num: 4, label: 'TABELAS DO SISTEMA',          to: '/lab/configuracoes?opcao=tabelas' },
     { num: 5, label: 'CADASTRO DE TRANSPORTADORAS', to: '/lab/transportadoras' },
     { num: 6, label: 'CADASTRO DE OPERADORES',      to: '/lab/operadores' },
   ],
@@ -239,7 +239,12 @@ export default function LabLayout() {
             </div>
             <div style={{ border: `2px inset ${dark ? '#444' : '#808080'}` }}>
               {opcoes.map((op, i) => {
-                const isCurrentRoute = !!(op.to && location.pathname.startsWith(op.to));
+                const currentFull = location.pathname + location.search;
+                const isCurrentRoute = !!(op.to && (
+                  op.to.includes('?')
+                    ? currentFull === op.to
+                    : location.pathname.startsWith(op.to)
+                ));
                 const rowBg = isCurrentRoute ? '#880000' : (i % 2 === 0 ? (dark ? '#1c1c1c' : '#d4d0c8') : (dark ? '#222' : '#dedad2'));
                 return (
                   <div key={op.num} onClick={() => clickOpcao(op)}

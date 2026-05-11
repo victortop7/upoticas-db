@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 type Opcao = 'numeracao' | 'parametros' | 'tabelas' | 'transportadoras' | 'vendedores' | null;
 type TabNum = 'pedidos' | 'fechamentos' | 'notas' | 'faturas' | 'outros';
@@ -6,13 +7,6 @@ type TabParam = 'estoque' | 'pedidos' | 'fluxo' | 'recibos' | 'notas' | 'faturam
 type TabTabela = 'movimentos_estoque' | 'fornecedores' | 'cobrancas' | 'despesas' | 'movimentos' | 'documentos' | 'bancos' | 'quebras_perdas' | 'listas' | 'taxas_icms' | 'feriados' | 'remarcacoes';
 type Config = Record<string, string>;
 
-const OPCOES = [
-  { num: 1, label: 'NUMERAÇÃO DE DOCUMENTOS',    key: 'numeracao'       as Opcao },
-  { num: 3, label: 'PARÂMETROS DO SISTEMA',       key: 'parametros'      as Opcao },
-  { num: 4, label: 'TABELAS DO SISTEMA',           key: 'tabelas'         as Opcao },
-  { num: 5, label: 'CADASTRO DE TRANSPORTADORAS',  key: 'transportadoras' as Opcao },
-  { num: 6, label: 'CADASTRO DE VENDEDORES',      key: 'vendedores'      as Opcao },
-];
 
 const TABS_NUM: { num: number; label: string; key: TabNum }[] = [
   { num: 1, label: 'PEDIDOS/OSS',   key: 'pedidos'     },
@@ -840,7 +834,8 @@ function TabelaContent({ tabela, config, onChange }: {
 }
 
 export default function LabConfiguracoes() {
-  const [opcao, setOpcao] = useState<Opcao>(null);
+  const [searchParams] = useSearchParams();
+  const opcao = (searchParams.get('opcao') ?? null) as Opcao;
   const [tabNum, setTabNum] = useState<TabNum>('pedidos');
   const [tabParam, setTabParam] = useState<TabParam>('estoque');
   const [tabTabela, setTabTabela] = useState<TabTabela | null>(null);
@@ -854,6 +849,12 @@ export default function LabConfiguracoes() {
       .then((d: Config) => setConfig(d))
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    setTabNum('pedidos');
+    setTabParam('estoque');
+    setTabTabela(null);
+  }, [opcao]);
 
   const handleChange = useCallback((k: string, v: string) => {
     setConfig(prev => ({ ...prev, [k]: v }));
@@ -876,7 +877,6 @@ export default function LabConfiguracoes() {
   }
 
   const font: React.CSSProperties = { fontFamily: "'Courier New', Courier, monospace" };
-  const ENABLED = ['numeracao', 'parametros', 'tabelas'];
 
   const SaveBar = () => (
     <div style={{ marginTop: '12px', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
@@ -916,36 +916,6 @@ export default function LabConfiguracoes() {
   return (
     <div style={{ ...font, padding: '16px', minHeight: '100%', background: '#c8c4b0' }}>
       <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
-
-        {/* ===== OPÇÕES ===== */}
-        <div style={{ width: '260px', flexShrink: 0 }}>
-          <div style={S.panelHeader()}>OPÇÕES</div>
-          <div style={S.panelBody()}>
-            {OPCOES.map((op, i) => {
-              const active = opcao === op.key;
-              const enabled = ENABLED.includes(op.key ?? '');
-              return (
-                <div
-                  key={op.key}
-                  onClick={() => {
-                    if (enabled) {
-                      setOpcao(active ? null : op.key);
-                      setTabNum('pedidos');
-                      setTabParam('estoque');
-                      setTabTabela(null);
-                    }
-                  }}
-                  style={{ ...S.row(active, i), opacity: enabled ? 1 : 0.45, cursor: enabled ? 'pointer' : 'default', borderBottom: i < OPCOES.length - 1 ? '1px solid #b0acA4' : 'none' }}
-                  onMouseEnter={e => { if (enabled && !active) (e.currentTarget as HTMLElement).style.background = '#a0a4c8'; }}
-                  onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = i % 2 === 0 ? '#d4d0c8' : '#dedad2'; }}
-                >
-                  <span style={S.label()}>{op.label}</span>
-                  <span style={S.num(active)}>{op.num}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
 
         {/* ===== NUMERAÇÃO ===== */}
         {opcao === 'numeracao' && (
