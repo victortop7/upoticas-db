@@ -40,9 +40,9 @@ const OPCOES: Record<ModuleKey, Opcao[]> = {
     { num: 4, label: 'CONSULTA/LISTAGEM',  to: '/lab/fornecedores' },
   ],
   D: [
-    { num: 1, label: 'INCLUIR PRODUTO/SERVIÇO', to: '/lab/produtos' },
-    { num: 2, label: 'ALTERAR DADOS',           to: '/lab/produtos' },
-    { num: 4, label: 'CONSULTA/LISTAGEM',       to: '/lab/produtos' },
+    { num: 1, label: 'INCLUIR PRODUTO/SERVIÇO', to: '/lab/servicos' },
+    { num: 2, label: 'ALTERAR DADOS',           to: '/lab/servicos' },
+    { num: 4, label: 'CONSULTA/LISTAGEM',       to: '/lab/servicos' },
   ],
   E: [
     { num: 1, label: 'INCLUIR ITEM DE ESTOQUE', to: '/lab/estoque' },
@@ -95,7 +95,7 @@ function detectModule(path: string): ModuleKey | null {
   if (path.includes('/lab/fluxo')) return 'H';
   if (path.includes('/lab/faturamento')) return 'J';
   if (path.includes('/lab/vendedores')) return 'J';
-  if (path.includes('/lab/servicos')) return 'D';
+  if (path.includes('/lab/servicos') || path.includes('/lab/produtos')) return 'D';
   if (path.includes('/lab/contas-receber')) return 'K';
   if (path.includes('/lab/contas-pagar')) return 'K';
   if (path.includes('/lab/bancario')) return 'L';
