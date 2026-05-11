@@ -12,12 +12,12 @@ interface Ordem {
 }
 
 const STATUS_FLOW = [
-  { value: '', label: 'Todas', color: 'var(--text-dim)' },
-  { value: 'aguardando', label: 'Aguardando', color: 'var(--amber)' },
-  { value: 'em_producao', label: 'Em Produção', color: 'var(--accent)' },
-  { value: 'pronto', label: 'Pronto', color: 'var(--green)' },
-  { value: 'entregue', label: 'Entregue', color: 'var(--text-muted)' },
-  { value: 'cancelado', label: 'Cancelado', color: 'var(--red)' },
+  { value: '', label: 'Todos' },
+  { value: 'aguardando', label: 'Aguardando' },
+  { value: 'em_producao', label: 'Em Produção' },
+  { value: 'pronto', label: 'Pronto' },
+  { value: 'entregue', label: 'Entregue' },
+  { value: 'cancelado', label: 'Cancelado' },
 ];
 
 const TIPOS_OS = [
@@ -28,31 +28,24 @@ const TIPOS_OS = [
   { value: 'N', label: 'Orçamento' }, { value: 'M', label: 'Mostruário' },
 ];
 
-function statusColor(s: string) {
-  return STATUS_FLOW.find(x => x.value === s)?.color ?? 'var(--text-dim)';
-}
-function statusLabel(s: string) {
-  return STATUS_FLOW.find(x => x.value === s)?.label ?? s;
-}
-function brl(v: number) {
-  return v > 0 ? `R$ ${v.toFixed(2).replace('.', ',')}` : '—';
-}
+function statusLabel(s: string) { return STATUS_FLOW.find(x => x.value === s)?.label ?? s; }
+function brl(v: number) { return v > 0 ? `R$ ${v.toFixed(2).replace('.', ',')}` : '—'; }
 function fmtDate(s: string | null) {
   if (!s) return '—';
   const [y, m, d] = s.slice(0, 10).split('-');
   return `${d}/${m}/${y}`;
 }
-function tipoLabel(t: string) {
-  return TIPOS_OS.find(x => x.value === t)?.label ?? t ?? 'OS';
-}
+function tipoLabel(t: string) { return TIPOS_OS.find(x => x.value === t)?.label ?? t ?? 'OS'; }
+
+const R = { bg:'#c8c4b0', panel:'#d4d0c8', alt:'#dedad2', bdr:'#b0aca4', hdr:'linear-gradient(90deg,#880000,#cc0000)', hdrTxt:'#ffcccc', hdrBdr:'#aa2222', txt:'#000', inp:'#fff' };
+const INP: React.CSSProperties = { padding:'5px 8px', fontSize:'12px', background:R.inp, border:'1px solid #999', color:R.txt, outline:'none', boxSizing:'border-box', fontFamily:"'Courier New', monospace" };
+const LBL: React.CSSProperties = { fontSize:'10px', fontWeight:'700', color:'#444', textTransform:'uppercase', letterSpacing:'0.5px' };
 
 export default function LabOrdens() {
   const navigate = useNavigate();
   const [ordens, setOrdens] = useState<Ordem[]>([]);
   const [oticas, setOticas] = useState<Otica[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Filtros
   const [status, setStatus] = useState('');
   const [tipo, setTipo] = useState('');
   const [busca, setBusca] = useState('');
@@ -77,200 +70,152 @@ export default function LabOrdens() {
   useEffect(() => { load(); }, [load]);
   useEffect(() => { api.get<Otica[]>('/lab/oticas').then(setOticas).catch(() => {}); }, []);
 
-  // Stats por status
-  const stats = STATUS_FLOW.slice(1).map(s => ({
-    ...s, count: ordens.filter(o => o.status === s.value).length,
-  }));
-
-  const INP: React.CSSProperties = {
-    padding: '7px 10px', fontSize: '12px',
-    background: 'var(--surface)', border: '1px solid var(--border)',
-    borderRadius: '7px', color: 'var(--text)', outline: 'none',
+  const statusBadge = (s: string) => {
+    const colors: Record<string, { bg: string; color: string; border: string }> = {
+      aguardando: { bg: '#fff8cc', color: '#886600', border: '#886600' },
+      em_producao: { bg: '#cce0ff', color: '#003388', border: '#003388' },
+      pronto: { bg: '#ccffcc', color: '#006600', border: '#006600' },
+      entregue: { bg: '#e0e0e0', color: '#444', border: '#888' },
+      cancelado: { bg: '#ffcccc', color: '#880000', border: '#880000' },
+    };
+    const c = colors[s] ?? { bg: '#ddd', color: '#444', border: '#888' };
+    return (
+      <span style={{ fontSize:'10px', fontWeight:'700', color:c.color, background:c.bg, padding:'2px 7px', border:`1px solid ${c.border}` }}>
+        {statusLabel(s).toUpperCase()}
+      </span>
+    );
   };
 
   return (
-    <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
+    <div style={{ padding:'12px', height:'100%', display:'flex', flexDirection:'column', background:R.bg, fontFamily:"'Montserrat', sans-serif" }}>
 
-      {/* ===== PAINEL ESQUERDO — FILTROS ===== */}
-      <div style={{ width: '200px', flexShrink: 0, background: 'var(--surface)', borderRight: '1px solid var(--border)', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-
-        <div style={{ padding: '14px', borderBottom: '1px solid var(--border)' }}>
-          <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Status</div>
-          {STATUS_FLOW.map(s => (
-            <div
-              key={s.value}
-              onClick={() => setStatus(s.value)}
-              style={{
-                padding: '7px 10px', borderRadius: '7px', cursor: 'pointer', marginBottom: '2px',
-                fontSize: '12px', fontWeight: status === s.value ? '700' : '400',
-                background: status === s.value ? `${s.color}18` : 'transparent',
-                color: status === s.value ? s.color : 'var(--text-dim)',
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              }}
-            >
-              <span>{s.label}</span>
-              {s.value && <span style={{ fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--text-muted)' }}>
-                {ordens.filter(o => o.status === s.value).length}
-              </span>}
-            </div>
-          ))}
+      {/* Header */}
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'8px', flexWrap:'wrap', gap:'6px' }}>
+        <div style={{ background:R.hdr, color:R.hdrTxt, padding:'5px 14px', fontSize:'13px', fontWeight:'700', letterSpacing:'1px', border:`2px outset ${R.hdrBdr}` }}>
+          ORDENS DE SERVIÇO — {ordens.length} registro(s)
         </div>
-
-        <div style={{ padding: '14px', borderBottom: '1px solid var(--border)' }}>
-          <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Tipo</div>
-          {TIPOS_OS.map(t => (
-            <div
-              key={t.value}
-              onClick={() => setTipo(t.value)}
-              style={{
-                padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', marginBottom: '2px',
-                fontSize: '12px', fontWeight: tipo === t.value ? '700' : '400',
-                background: tipo === t.value ? 'var(--surface-alt)' : 'transparent',
-                color: tipo === t.value ? 'var(--text)' : 'var(--text-dim)',
-              }}
-            >
-              {t.label}
-            </div>
-          ))}
-        </div>
-
-        <div style={{ flex: 1 }} />
-        <div style={{ padding: '14px' }}>
-          <button
-            onClick={() => navigate('/lab/ordens/nova')}
-            style={{ width: '100%', padding: '9px', fontSize: '13px', fontWeight: '600', background: '#880000', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}
-          >
-            + Nova OS
+        <div style={{ display:'flex', gap:'6px', alignItems:'center', flexWrap:'wrap' }}>
+          <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar OS#, ref., cont. interno..." style={{ ...INP, width:'220px' }} />
+          <button onClick={() => navigate('/lab/ordens/nova')}
+            style={{ padding:'5px 16px', fontSize:'12px', fontWeight:'700', background:'#880000', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+            + NOVA OS
           </button>
         </div>
       </div>
 
-      {/* ===== ÁREA PRINCIPAL ===== */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-
-        {/* Header */}
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', background: 'var(--surface)', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <h1 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: 'var(--text)', marginRight: '8px' }}>Ordens de Serviço</h1>
-
-          {/* Busca */}
-          <input
-            value={busca}
-            onChange={e => setBusca(e.target.value)}
-            placeholder="Buscar OS#, ref., cont. interno..."
-            style={{ ...INP, width: '220px' }}
-          />
-
-          {/* Ótica */}
-          <select value={oticaId} onChange={e => setOticaId(e.target.value)} style={{ ...INP, fontFamily: 'var(--sans)', maxWidth: '180px' }}>
-            <option value="">Todas as óticas</option>
-            {oticas.map(o => <option key={o.id} value={o.id}>{o.nome}</option>)}
-          </select>
-
-          {/* Período */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>De</span>
-            <input type="date" value={dataIni} onChange={e => setDataIni(e.target.value)} style={{ ...INP, width: '130px' }} />
-            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>até</span>
-            <input type="date" value={dataFim} onChange={e => setDataFim(e.target.value)} style={{ ...INP, width: '130px' }} />
-          </div>
-
-          {/* Limpar */}
-          {(busca || oticaId || dataIni || dataFim || tipo || status) && (
-            <button
-              onClick={() => { setBusca(''); setOticaId(''); setDataIni(''); setDataFim(''); setTipo(''); setStatus(''); }}
-              style={{ fontSize: '12px', color: 'var(--red)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '600' }}
-            >
-              ✕ Limpar filtros
-            </button>
-          )}
-
-          <div style={{ marginLeft: 'auto', fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'var(--mono)' }}>
-            {loading ? 'Carregando...' : `${ordens.length} resultado${ordens.length !== 1 ? 's' : ''}`}
-          </div>
-        </div>
-
-        {/* Stats bar */}
-        {!loading && (
-          <div style={{ padding: '10px 20px', borderBottom: '1px solid var(--border)', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-            {stats.map(s => (
-              <div key={s.value} style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }} onClick={() => setStatus(s.value)}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: s.color, flexShrink: 0 }} />
-                <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{s.label}</span>
-                <span style={{ fontSize: '12px', fontWeight: '700', fontFamily: 'var(--mono)', color: s.count > 0 ? s.color : 'var(--text-muted)' }}>{s.count}</span>
-              </div>
+      {/* Filtros */}
+      <div style={{ background:R.panel, border:`2px outset ${R.bdr}`, padding:'8px 12px', marginBottom:'8px', display:'flex', gap:'16px', alignItems:'flex-end', flexWrap:'wrap' }}>
+        <div>
+          <div style={LBL}>Status</div>
+          <div style={{ display:'flex', gap:'3px' }}>
+            {STATUS_FLOW.map(s => (
+              <button key={s.value} onClick={() => setStatus(s.value)}
+                style={{ padding:'3px 9px', fontSize:'11px', fontWeight:'700', cursor:'pointer', fontFamily:'inherit',
+                  background: status === s.value ? '#880000' : R.alt,
+                  color: status === s.value ? R.hdrTxt : R.txt,
+                  border: status === s.value ? `1px inset ${R.hdrBdr}` : `1px outset ${R.bdr}` }}>
+                {s.label}
+              </button>
             ))}
           </div>
-        )}
-
-        {/* Tabela */}
-        <div style={{ flex: 1, overflowY: 'auto' }}>
-          {loading ? (
-            <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>Carregando...</div>
-          ) : ordens.length === 0 ? (
-            <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>
-              Nenhuma ordem encontrada.{' '}
-              <button onClick={() => navigate('/lab/ordens/nova')} style={{ color: '#880000', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '14px', fontWeight: '600' }}>
-                Criar OS →
-              </button>
-            </div>
-          ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead style={{ position: 'sticky', top: 0, zIndex: 1 }}>
-                <tr style={{ background: 'var(--surface-alt)', borderBottom: '1px solid var(--border)' }}>
-                  {['Nº OS', 'Tipo', 'Data', 'Ótica', 'Ref. Ótica', 'Cont. Int.', 'Operador', 'Total', 'Previsão', 'Status'].map(h => (
-                    <th key={h} style={{ padding: '9px 12px', textAlign: 'left', fontSize: '10px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {ordens.map(o => (
-                  <tr
-                    key={o.id}
-                    onClick={() => navigate(`/lab/ordens/${o.id}`)}
-                    style={{ borderBottom: '1px solid var(--border)', cursor: 'pointer' }}
-                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-alt)')}
-                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                  >
-                    <td style={{ padding: '10px 12px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '700', color: 'var(--text)', whiteSpace: 'nowrap' }}>
-                      #{String(o.numero).padStart(4, '0')}
-                    </td>
-                    <td style={{ padding: '10px 12px' }}>
-                      <span style={{ fontSize: '11px', padding: '2px 7px', borderRadius: '4px', background: 'var(--surface-alt)', color: 'var(--text-dim)', fontFamily: 'var(--mono)', fontWeight: '600' }}>
-                        {tipoLabel(o.tipo)}
-                      </span>
-                    </td>
-                    <td style={{ padding: '10px 12px', fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--text-dim)', whiteSpace: 'nowrap' }}>
-                      {fmtDate(o.created_at)}
-                    </td>
-                    <td style={{ padding: '10px 12px', fontSize: '13px', color: 'var(--text)', maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {o.otica_nome}
-                    </td>
-                    <td style={{ padding: '10px 12px', fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>
-                      {o.ref_otica ?? '—'}
-                    </td>
-                    <td style={{ padding: '10px 12px', fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>
-                      {o.cont_interno ?? '—'}
-                    </td>
-                    <td style={{ padding: '10px 12px', fontSize: '12px', color: 'var(--text-dim)' }}>
-                      {o.vendedor ?? '—'}
-                    </td>
-                    <td style={{ padding: '10px 12px', fontSize: '13px', fontFamily: 'var(--mono)', color: 'var(--text)', fontWeight: '600', textAlign: 'right' }}>
-                      {brl(o.total)}
-                    </td>
-                    <td style={{ padding: '10px 12px', fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--text-dim)', whiteSpace: 'nowrap' }}>
-                      {fmtDate(o.previsao_entrega)}
-                    </td>
-                    <td style={{ padding: '10px 12px' }}>
-                      <span style={{ fontSize: '11px', fontWeight: '600', color: statusColor(o.status), background: `${statusColor(o.status)}18`, padding: '3px 8px', borderRadius: '20px', whiteSpace: 'nowrap' }}>
-                        {statusLabel(o.status)}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
         </div>
+
+        <div>
+          <div style={LBL}>Tipo</div>
+          <select value={tipo} onChange={e => setTipo(e.target.value)}
+            style={{ ...INP, width:'130px' }}>
+            {TIPOS_OS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+          </select>
+        </div>
+
+        <div>
+          <div style={LBL}>Ótica</div>
+          <select value={oticaId} onChange={e => setOticaId(e.target.value)}
+            style={{ ...INP, width:'180px' }}>
+            <option value="">Todas</option>
+            {oticas.map(o => <option key={o.id} value={o.id}>{o.nome}</option>)}
+          </select>
+        </div>
+
+        <div>
+          <div style={LBL}>Período</div>
+          <div style={{ display:'flex', gap:'4px', alignItems:'center' }}>
+            <input type="date" value={dataIni} onChange={e => setDataIni(e.target.value)} style={{ ...INP, width:'120px' }} />
+            <span style={{ fontSize:'11px', color:'#555' }}>até</span>
+            <input type="date" value={dataFim} onChange={e => setDataFim(e.target.value)} style={{ ...INP, width:'120px' }} />
+          </div>
+        </div>
+
+        {(busca || oticaId || dataIni || dataFim || tipo || status) && (
+          <button onClick={() => { setBusca(''); setOticaId(''); setDataIni(''); setDataFim(''); setTipo(''); setStatus(''); }}
+            style={{ padding:'3px 10px', fontSize:'11px', fontWeight:'700', background:R.alt, color:'#880000', border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', alignSelf:'flex-end' }}>
+            ✕ LIMPAR
+          </button>
+        )}
+      </div>
+
+      {/* Tabela */}
+      <div style={{ flex:1, overflowY:'auto', border:`2px inset ${R.bdr}` }}>
+        {loading ? (
+          <div style={{ padding:'40px', textAlign:'center', color:'#444', fontFamily:"'Courier New', monospace" }}>Carregando...</div>
+        ) : ordens.length === 0 ? (
+          <div style={{ padding:'40px', textAlign:'center', color:'#444' }}>
+            Nenhuma ordem encontrada.{' '}
+            <button onClick={() => navigate('/lab/ordens/nova')}
+              style={{ color:'#880000', background:'none', border:'none', cursor:'pointer', fontFamily:'inherit', fontSize:'13px', fontWeight:'700' }}>
+              Criar OS →
+            </button>
+          </div>
+        ) : (
+          <table style={{ width:'100%', borderCollapse:'collapse' }}>
+            <thead style={{ position:'sticky', top:0 }}>
+              <tr style={{ background:R.hdr }}>
+                {['Nº OS','Tipo','Data','Ótica','Ref. Ótica','Cont. Int.','Operador','Total','Previsão','Status'].map(h => (
+                  <th key={h} style={{ padding:'6px 10px', textAlign:'left', fontSize:'10px', fontWeight:'700', color:R.hdrTxt, letterSpacing:'0.5px', border:`1px solid ${R.hdrBdr}`, whiteSpace:'nowrap' }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {ordens.map((o, i) => (
+                <tr key={o.id} onClick={() => navigate(`/lab/ordens/${o.id}`)}
+                  style={{ background: i % 2 === 0 ? R.panel : R.alt, cursor:'pointer', borderBottom:`1px solid ${R.bdr}` }}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#880000')}
+                  onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 0 ? R.panel : R.alt)}>
+                  <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'700', color:R.txt, whiteSpace:'nowrap' }}>
+                    #{String(o.numero).padStart(4, '0')}
+                  </td>
+                  <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#333' }}>
+                    {tipoLabel(o.tipo)}
+                  </td>
+                  <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#333', whiteSpace:'nowrap' }}>
+                    {fmtDate(o.created_at)}
+                  </td>
+                  <td style={{ padding:'6px 10px', fontSize:'12px', fontWeight:'700', color:R.txt, maxWidth:'160px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                    {o.otica_nome}
+                  </td>
+                  <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#333' }}>
+                    {o.ref_otica ?? '—'}
+                  </td>
+                  <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#333' }}>
+                    {o.cont_interno ?? '—'}
+                  </td>
+                  <td style={{ padding:'6px 10px', fontSize:'11px', color:'#333' }}>
+                    {o.vendedor ?? '—'}
+                  </td>
+                  <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', color:R.txt, fontWeight:'700', textAlign:'right', whiteSpace:'nowrap' }}>
+                    {brl(o.total)}
+                  </td>
+                  <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#333', whiteSpace:'nowrap' }}>
+                    {fmtDate(o.previsao_entrega)}
+                  </td>
+                  <td style={{ padding:'6px 10px' }}>
+                    {statusBadge(o.status)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );
