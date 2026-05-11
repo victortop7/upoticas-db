@@ -1,5 +1,3 @@
-import React from 'react';
-
 // SVG paths for each shape (viewBox 0 0 90 65, center ~45,32)
 // Each function returns a SVG path `d` string
 
