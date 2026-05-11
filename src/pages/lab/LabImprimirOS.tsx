@@ -64,7 +64,7 @@ function OSSlip({ ordem, od, oe, armacao, servicos, tenant, via }: Props) {
 
   return (
     <div style={{
-      width: '100%', height: '148mm', overflow: 'hidden',
+      width: '100%', height: '142mm', overflow: 'hidden',
       fontFamily: 'Arial, Helvetica, sans-serif', fontSize: '10px',
       color: '#000', lineHeight: '1.3', boxSizing: 'border-box',
       display: 'flex', flexDirection: 'column', gap: '3px',
@@ -289,10 +289,22 @@ export default function LabImprimirOS() {
   const props = { ordem, od, oe, armacao: armacao ?? null, servicos: servicos ?? [], tenant: tenant ?? {} };
 
   return (
-    <div style={{ width: '210mm', margin: '0 auto', background: '#fff', boxSizing: 'border-box' }}>
+    <div style={{ width: '210mm', height: '297mm', margin: '0 auto', background: '#fff', boxSizing: 'border-box', overflow: 'hidden' }}>
       {/* VIA DO LABORATÓRIO */}
-      <div style={{ padding: '4mm 5mm', height: '297mm', boxSizing: 'border-box' }}>
+      <div style={{ padding: '3mm 5mm', height: '148mm', boxSizing: 'border-box' }}>
         <OSSlip {...props} via="LAB" />
+      </div>
+
+      {/* LINHA DE CORTE */}
+      <div style={{ margin: '0 5mm', borderTop: '1px dashed #999', height: '1mm', position: 'relative', textAlign: 'center' }}>
+        <span style={{ position: 'absolute', top: '-5px', left: '50%', transform: 'translateX(-50%)', background: '#fff', padding: '0 8px', fontSize: '7px', color: '#aaa', fontWeight: '700', letterSpacing: '1px', whiteSpace: 'nowrap' }}>
+          ✂ destacar aqui
+        </span>
+      </div>
+
+      {/* VIA DO CLIENTE */}
+      <div style={{ padding: '3mm 5mm', height: '148mm', boxSizing: 'border-box' }}>
+        <OSSlip {...props} via="CLIENTE" />
       </div>
 
       <style>{`
