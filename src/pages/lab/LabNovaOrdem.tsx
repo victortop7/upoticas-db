@@ -83,34 +83,49 @@ function calcItem(s: ItemCobranca) {
   return { bruto, liq };
 }
 
-const INP: React.CSSProperties = {
-  width: '100%', padding: '6px 8px', fontSize: '12px',
-  background: 'var(--surface-alt)', border: '1px solid var(--border)',
-  borderRadius: '6px', color: 'var(--text)', outline: 'none',
-  boxSizing: 'border-box', fontFamily: 'var(--mono)',
-};
-const LBL: React.CSSProperties = {
-  fontSize: '10px', fontWeight: '600', color: 'var(--text-muted)',
-  textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '3px',
-};
-const TH: React.CSSProperties = {
-  padding: '5px 6px', fontSize: '10px', fontWeight: '600', color: 'var(--text-muted)',
-  textTransform: 'uppercase', textAlign: 'center', borderBottom: '1px solid var(--border)',
-  background: 'var(--surface-alt)', whiteSpace: 'nowrap',
-};
-const TD: React.CSSProperties = { padding: '3px 4px', verticalAlign: 'middle' };
-const RX_INP: React.CSSProperties = {
-  width: '100%', padding: '4px 5px', fontSize: '12px', textAlign: 'center',
-  background: 'var(--surface-alt)', border: '1px solid var(--border)',
-  borderRadius: '5px', color: 'var(--text)', outline: 'none', fontFamily: 'var(--mono)',
-};
-const COB_INP: React.CSSProperties = {
-  width: '100%', padding: '4px 5px', fontSize: '12px',
-  background: 'var(--surface-alt)', border: '1px solid var(--border)',
-  borderRadius: '4px', color: 'var(--text)', outline: 'none', fontFamily: 'var(--mono)',
+// ── Paleta retro igual aos painéis MÓDULOS/OPÇÕES ──
+const R = {
+  bg:       '#c8c4b0',
+  panel:    '#d4d0c8',
+  panelAlt: '#dedad2',
+  border:   '#b0aca4',
+  hdrBg:    'linear-gradient(90deg,#880000,#cc0000)',
+  hdrTxt:   '#ffcccc',
+  hdrBorder:'#aa2222',
+  txt:      '#000000',
+  accent:   '#880000',
+  dim:      '#444444',
+  inpBg:    '#ffffff',
+  inpBdr:   '1px solid #999',
 };
 
-// Components defined OUTSIDE the main component to avoid focus loss on re-render
+const INP: React.CSSProperties = {
+  width: '100%', padding: '4px 7px', fontSize: '12px',
+  background: R.inpBg, border: R.inpBdr,
+  color: R.txt, outline: 'none',
+  boxSizing: 'border-box', fontFamily: "'Courier New', monospace",
+};
+const LBL: React.CSSProperties = {
+  fontSize: '10px', fontWeight: '700', color: R.dim,
+  textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '2px',
+};
+const TH: React.CSSProperties = {
+  padding: '4px 6px', fontSize: '10px', fontWeight: '700', color: R.hdrTxt,
+  textTransform: 'uppercase', textAlign: 'center',
+  background: '#880000', whiteSpace: 'nowrap', border: '1px solid #6a1a1a',
+};
+const TD: React.CSSProperties = { padding: '2px 3px', verticalAlign: 'middle' };
+const RX_INP: React.CSSProperties = {
+  width: '100%', padding: '3px 4px', fontSize: '12px', textAlign: 'center',
+  background: R.inpBg, border: R.inpBdr,
+  color: R.txt, outline: 'none', fontFamily: "'Courier New', monospace",
+};
+const COB_INP: React.CSSProperties = {
+  width: '100%', padding: '3px 4px', fontSize: '12px',
+  background: R.inpBg, border: R.inpBdr,
+  color: R.txt, outline: 'none', fontFamily: "'Courier New', monospace",
+};
+
 function RxInput({ value, onChange, width = 62 }: { value: string; onChange: (v: string) => void; width?: number }) {
   return <input value={value} onChange={e => onChange(e.target.value)} style={{ ...RX_INP, width: `${width}px` }} />;
 }
@@ -371,50 +386,56 @@ export default function LabNovaOrdem() {
   }
 
   const card: React.CSSProperties = {
-    background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px',
+    background: R.panel, border: `2px inset ${R.border}`, padding: '10px 12px', marginBottom: '8px',
   };
   const secTitle: React.CSSProperties = {
-    fontSize: '11px', fontWeight: '700', color: '#880000', marginBottom: '10px',
-    textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '1px solid var(--border)', paddingBottom: '6px',
+    background: R.hdrBg, color: R.hdrTxt, fontSize: '11px', fontWeight: '700',
+    padding: '4px 10px', marginBottom: '8px', letterSpacing: '1px', textTransform: 'uppercase',
+    border: `2px outset ${R.hdrBorder}`,
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
+    <form onSubmit={handleSubmit} style={{ display: 'flex', height: '100%', overflow: 'hidden', background: R.bg, fontFamily: "'Montserrat', sans-serif" }}>
 
-      {/* ===== TIPO PANEL ===== */}
-      <div style={{ width: '170px', flexShrink: 0, background: 'var(--surface)', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--border)', fontSize: '10px', fontWeight: '700', color: '#880000', textTransform: 'uppercase', letterSpacing: '1px' }}>Tipo de OS</div>
-        {TIPOS.map(t => (
-          <div key={t.key} onClick={() => setTipo(t.key)} style={{
-            padding: '8px 14px', cursor: 'pointer', fontSize: '11px', fontWeight: tipo === t.key ? '700' : '400',
-            color: tipo === t.key ? '#fff' : 'var(--text-dim)',
-            background: tipo === t.key ? '#880000' : 'transparent',
-            borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between',
-          }}>
-            <span>{t.label}</span>
-            <span style={{ color: tipo === t.key ? '#ffaaaa' : 'var(--text-muted)', fontFamily: 'var(--mono)', fontWeight: '700' }}>{t.key}</span>
-          </div>
-        ))}
+      {/* ===== TIPO PANEL — mesmo estilo MÓDULOS ===== */}
+      <div style={{ width: '180px', flexShrink: 0, background: R.panel, borderRight: `2px solid ${R.border}`, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ background: R.hdrBg, color: R.hdrTxt, textAlign: 'center', padding: '5px 8px', fontSize: '11px', fontWeight: '700', letterSpacing: '2px', border: `2px outset ${R.hdrBorder}`, borderBottom: 'none' }}>TIPO DE OS</div>
+        <div style={{ border: `2px inset ${R.border}` }}>
+          {TIPOS.map((t, i) => {
+            const isActive = tipo === t.key;
+            const rowBg = isActive ? '#880000' : (i % 2 === 0 ? R.panel : R.panelAlt);
+            return (
+              <div key={t.key} onClick={() => setTipo(t.key)}
+                style={{ padding: '6px 10px', cursor: 'pointer', fontSize: '11px', fontWeight: '700', color: isActive ? R.hdrTxt : R.txt, background: rowBg, borderBottom: `1px solid ${R.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'background 0.08s', userSelect: 'none' }}
+                onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = '#660000'; (e.currentTarget as HTMLElement).style.color = R.hdrTxt; } }}
+                onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = rowBg; (e.currentTarget as HTMLElement).style.color = R.txt; } }}>
+                <span style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t.label}</span>
+                <span style={{ fontFamily: "'Courier New', monospace", fontWeight: '700', color: isActive ? '#ffaaaa' : R.accent }}>{t.key}</span>
+              </div>
+            );
+          })}
+        </div>
         <div style={{ flex: 1 }} />
-        <div style={{ padding: '10px 14px', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <div style={{ display: 'flex', gap: '4px' }}>
+        <div style={{ padding: '8px 10px', borderTop: `2px solid ${R.border}`, display: 'flex', flexDirection: 'column', gap: '5px' }}>
+          <div style={{ display: 'flex', gap: '3px' }}>
             {[1, 2].map(s => (
-              <div key={s} style={{ flex: 1, height: '4px', borderRadius: '2px', background: step >= s ? '#880000' : 'var(--border)' }} />
+              <div key={s} style={{ flex: 1, height: '5px', background: step >= s ? '#880000' : R.border, border: `1px inset ${R.border}` }} />
             ))}
           </div>
-          <div style={{ fontSize: '10px', color: 'var(--text-muted)', textAlign: 'center' }}>
-            {step === 1 ? 'Etapa 1 — Cabeçalho' : 'Etapa 2 — Receita / Cobrança'}
+          <div style={{ fontSize: '9px', color: R.dim, textAlign: 'center', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            {step === 1 ? 'ETAPA 1 — CABEÇALHO' : 'ETAPA 2 — RECEITA'}
           </div>
-          <button type="button" onClick={() => navigate('/lab/ordens')} style={{ width: '100%', padding: '6px', fontSize: '11px', background: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit' }}>
-            ← Voltar
+          <button type="button" onClick={() => navigate('/lab/ordens')}
+            style={{ width: '100%', padding: '5px', fontSize: '11px', background: R.panelAlt, color: R.txt, border: `1px outset ${R.border}`, cursor: 'pointer', fontFamily: 'inherit', fontWeight: '700' }}>
+            ← VOLTAR
           </button>
         </div>
       </div>
 
       {/* ===== MAIN FORM ===== */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px', display: 'flex', flexDirection: 'column', gap: '0', background: R.bg }}>
 
-        {erro && <div style={{ background: 'var(--red-dim)', border: '1px solid var(--red)', borderRadius: '8px', padding: '10px 14px', fontSize: '13px', color: 'var(--red)' }}>{erro}</div>}
+        {erro && <div style={{ background: '#ffdddd', border: '1px solid #cc0000', padding: '8px 12px', fontSize: '12px', color: '#880000', marginBottom: '8px', fontWeight: '700' }}>{erro}</div>}
 
         {/* ===== CABEÇALHO ===== */}
         <div style={card}>
@@ -544,19 +565,18 @@ export default function LabNovaOrdem() {
 
         {/* ===== BOTÃO PRÓXIMO (step 1) ===== */}
         {step === 1 && (
-          <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', paddingBottom: '20px' }}>
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', padding: '10px 0 16px' }}>
             <button type="button" onClick={() => navigate('/lab/ordens')}
-              style={{ padding: '10px 22px', fontSize: '13px', background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
-              Desistir
+              style={{ padding: '6px 18px', fontSize: '12px', fontWeight: '700', background: R.panelAlt, color: R.txt, border: `1px outset ${R.border}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
+              DESISTIR
             </button>
             <button type="button" onClick={() => {
               if (!oticaId) { setErro('Selecione a ótica antes de continuar'); return; }
-              setErro('');
-              setStep(2);
+              setErro(''); setStep(2);
               setTimeout(() => window.scrollTo({ top: 0 }), 50);
             }}
-              style={{ padding: '10px 32px', fontSize: '14px', fontWeight: '700', background: '#880000', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '0.3px' }}>
-              Próximo →
+              style={{ padding: '6px 28px', fontSize: '12px', fontWeight: '700', background: '#880000', color: R.hdrTxt, border: `1px outset ${R.hdrBorder}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '1px' }}>
+              PRÓXIMO →
             </button>
           </div>
         )}
@@ -845,22 +865,22 @@ export default function LabNovaOrdem() {
         </div>
 
         {/* ===== AÇÕES (step 2) ===== */}
-        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', paddingBottom: '20px' }}>
+        <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end', padding: '10px 0 16px' }}>
           <button type="button" onClick={() => { setStep(1); setErro(''); }}
-            style={{ padding: '10px 22px', fontSize: '13px', background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
-            ← Etapa anterior
+            style={{ padding: '6px 16px', fontSize: '11px', fontWeight: '700', background: R.panelAlt, color: R.txt, border: `1px outset ${R.border}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
+            ← ANTERIOR
           </button>
           <button type="button" onClick={() => navigate('/lab/ordens')}
-            style={{ padding: '10px 18px', fontSize: '13px', background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
-            Desistir
+            style={{ padding: '6px 14px', fontSize: '11px', fontWeight: '700', background: R.panelAlt, color: R.txt, border: `1px outset ${R.border}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
+            DESISTIR
           </button>
           <button type="button" disabled={saving} onClick={handleSubmit as unknown as React.MouseEventHandler}
-            style={{ padding: '10px 22px', fontSize: '13px', fontWeight: '600', background: saving ? 'var(--text-muted)' : 'var(--surface-alt)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '8px', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
-            Gravar
+            style={{ padding: '6px 20px', fontSize: '11px', fontWeight: '700', background: R.panelAlt, color: R.txt, border: `1px outset ${R.border}`, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
+            GRAVAR
           </button>
           <button type="submit" disabled={saving}
-            style={{ padding: '10px 28px', fontSize: '13px', fontWeight: '700', background: saving ? 'var(--text-muted)' : '#880000', color: 'white', border: 'none', borderRadius: '8px', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
-            {saving ? 'Salvando...' : 'Gravar + Imprimir →'}
+            style={{ padding: '6px 24px', fontSize: '11px', fontWeight: '700', background: '#880000', color: R.hdrTxt, border: `1px outset ${R.hdrBorder}`, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            {saving ? 'SALVANDO...' : 'GRAVAR + IMPRIMIR'}
           </button>
         </div>
 
