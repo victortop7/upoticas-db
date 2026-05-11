@@ -88,13 +88,16 @@ function detectModule(path: string): ModuleKey | null {
   if (path.includes('/lab/configuracoes') || path.includes('/lab/transportadoras') || path.includes('/lab/operadores')) return 'A';
   if (path.includes('/lab/oticas')) return 'B';
   if (path.includes('/lab/fornecedores')) return 'C';
-  if (path.includes('/lab/produtos') && !path.includes('/lab/faturamento')) return 'D';
+  if (path.includes('/lab/produtos')) return 'D';
   if (path.includes('/lab/estoque')) return 'E';
   if (path.includes('/lab/ordens')) return 'G';
+  if (path.includes('/lab/relatorios')) return 'G';
   if (path.includes('/lab/fluxo')) return 'H';
   if (path.includes('/lab/faturamento')) return 'J';
   if (path.includes('/lab/vendedores')) return 'J';
-  if (path.includes('/lab/contas')) return 'K';
+  if (path.includes('/lab/servicos')) return 'D';
+  if (path.includes('/lab/contas-receber')) return 'K';
+  if (path.includes('/lab/contas-pagar')) return 'K';
   if (path.includes('/lab/bancario')) return 'L';
   return null;
 }
