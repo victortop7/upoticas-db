@@ -195,17 +195,25 @@ function ParamContent({ tab, config, onChange }: { tab: TabParam; config: Config
         <SelectField label="PERMITIR LANÇAR NÚMERO DE CAIXA" value={c.param_fluxo_num_caixa ?? 'N'} onChange={v => o('param_fluxo_num_caixa', v)} options={SN} minW={280} />
         <SelectField label="FECHAR EXPEDIÇÃO NA SAÍDA DA OS" value={c.param_fluxo_fechar_expedicao ?? 'N'} onChange={v => o('param_fluxo_fechar_expedicao', v)} options={SN} minW={280} />
       </Secao>
-      <Secao title="DEFINIÇÃO DE SETORES">
-        <div style={{ display: 'grid', gridTemplateColumns: '30px 1fr 1fr', gap: '4px', marginBottom: '4px' }}>
+      <Secao title="DEFINIÇÃO DE SETORES E STATUS DE LEITURA">
+        <div style={{ display: 'grid', gridTemplateColumns: '28px 1fr 70px 1fr', gap: '4px', marginBottom: '4px' }}>
           <span style={{ fontSize: '10px', fontWeight: 'bold' }}>#</span>
-          <span style={{ fontSize: '10px', fontWeight: 'bold' }}>NOME</span>
-          <span style={{ fontSize: '10px', fontWeight: 'bold' }}>TEMPO (min)</span>
+          <span style={{ fontSize: '10px', fontWeight: 'bold' }}>NOME DO SETOR</span>
+          <span style={{ fontSize: '10px', fontWeight: 'bold' }}>TEMPO</span>
+          <span style={{ fontSize: '10px', fontWeight: 'bold' }}>STATUS AO ESCANEAR</span>
         </div>
         {[1,2,3,4,5,6,7,8,9].map(n => (
-          <div key={n} style={{ display: 'grid', gridTemplateColumns: '30px 1fr 1fr', gap: '4px', marginBottom: '4px' }}>
-            <span style={{ fontSize: '11px', fontWeight: 'bold', paddingTop: '3px' }}>{n}</span>
+          <div key={n} style={{ display: 'grid', gridTemplateColumns: '28px 1fr 70px 1fr', gap: '4px', marginBottom: '4px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 'bold', paddingTop: '3px', color: '#880000' }}>{n}</span>
             <input value={c[`param_setor_${n}_nome`] ?? ''} onChange={e => o(`param_setor_${n}_nome`, e.target.value)} style={{ padding: '2px 4px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: '#fff', border: '2px inset #808080' }} />
             <input type="number" value={c[`param_setor_${n}_tempo`] ?? ''} onChange={e => o(`param_setor_${n}_tempo`, e.target.value)} style={{ padding: '2px 4px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: '#fff', border: '2px inset #808080' }} />
+            <select value={c[`param_setor_${n}_status`] ?? ''} onChange={e => o(`param_setor_${n}_status`, e.target.value)} style={{ padding: '2px 4px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: '#fff', border: '2px inset #808080' }}>
+              <option value="">— não mudar status —</option>
+              <option value="aguardando">AGUARDANDO</option>
+              <option value="em_producao">EM PRODUÇÃO</option>
+              <option value="pronto">PRONTO</option>
+              <option value="entregue">ENTREGUE</option>
+            </select>
           </div>
         ))}
       </Secao>

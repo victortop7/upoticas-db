@@ -17,6 +17,7 @@ import LabConfiguracoes from './pages/lab/LabConfiguracoes';
 import LabOperadores from './pages/lab/LabOperadores';
 import LabRelatorios from './pages/lab/LabRelatorios';
 import LabFluxo from './pages/lab/LabFluxo';
+import LabFluxoScan from './pages/lab/LabFluxoScan';
 import LabTransportadoras from './pages/lab/LabTransportadoras';
 import LabVendedores from './pages/lab/LabVendedores';
 import LabContasReceber from './pages/lab/LabContasReceber';
@@ -103,6 +104,7 @@ export default function App() {
             <Route path="/lab/operadores" element={<LabOperadores />} />
             <Route path="/lab/relatorios" element={<LabRelatorios />} />
             <Route path="/lab/fluxo" element={<LabFluxo />} />
+            <Route path="/lab/fluxo/scan" element={<LabFluxoScan />} />
             <Route path="/lab/transportadoras" element={<LabTransportadoras />} />
             <Route path="/lab/vendedores" element={<LabVendedores />} />
             <Route path="/lab/contas-receber" element={<LabContasReceber />} />

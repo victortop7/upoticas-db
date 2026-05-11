@@ -2,6 +2,19 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { api } from '../../lib/api';
 
+// Injects Libre Barcode 128 font for scannable Code128 barcodes
+function useBarcodeFont() {
+  useEffect(() => {
+    const id = 'barcode-font-link';
+    if (document.getElementById(id)) return;
+    const link = document.createElement('link');
+    link.id = id;
+    link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=Libre+Barcode+128+Text&display=swap';
+    document.head.appendChild(link);
+  }, []);
+}
+
 function fg(v: number | null | undefined): string {
   if (v == null || isNaN(Number(v))) return '';
   const n = Number(v);
@@ -76,9 +89,13 @@ function OSSlip({ ordem, od, oe, armacao, servicos, tenant, via }: Props) {
           </div>
           <div style={{ fontSize: '9px' }}>PREVISÃO PRD: {fd(String(ordem.previsao_entrega || ''))}</div>
         </div>
-        <div style={{ textAlign: 'right', fontSize: '9px', fontWeight: '700', minWidth: '70px' }}>
-          <div style={{ fontSize: '8px', color: '#666' }}>VIA DO {via}</div>
-          <div style={{ fontSize: '14px', fontWeight: '900' }}>#{String(Number(ordem.numero) || 0).padStart(6, '0')}</div>
+        <div style={{ textAlign: 'center', minWidth: '80px' }}>
+          <div style={{ fontFamily: "'Libre Barcode 128 Text'", fontSize: '38px', lineHeight: '1', letterSpacing: '0', color: '#000' }}>
+            {String(Number(ordem.numero) || 0).padStart(4, '0')}
+          </div>
+          <div style={{ fontSize: '8px', color: '#444', fontWeight: '700', marginTop: '1px' }}>
+            VIA {via} — OS#{String(Number(ordem.numero) || 0).padStart(4, '0')}
+          </div>
         </div>
       </div>
 
@@ -240,6 +257,7 @@ function OSSlip({ ordem, od, oe, armacao, servicos, tenant, via }: Props) {
 }
 
 export default function LabImprimirOS() {
+  useBarcodeFont();
   const { id } = useParams<{ id: string }>();
   const [data, setData] = useState<Record<string, unknown> | null>(null);
   const [tenant, setTenant] = useState<Record<string, unknown> | null>(null);

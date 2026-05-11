@@ -61,9 +61,10 @@ const OPCOES: Record<ModuleKey, Opcao[]> = {
     { num: 4, label: 'RELATÓRIO MENSAL',    to: '/lab/relatorios' },
   ],
   H: [
-    { num: 1, label: 'LANÇAR FLUXO/INDIVIDUAL', to: '/lab/fluxo' },
-    { num: 2, label: 'LANÇAR FLUXO/SETOR',      to: '/lab/fluxo' },
-    { num: 4, label: 'CONSULTA/PRODUÇÃO',        to: '/lab/fluxo' },
+    { num: 1, label: 'LANÇAR FLUXO/INDIVIDUAL',  to: '/lab/fluxo' },
+    { num: 2, label: 'LANÇAR FLUXO/SETOR',       to: '/lab/fluxo' },
+    { num: 3, label: 'LEITURA CÓDIGO DE BARRAS',  to: '/lab/fluxo/scan' },
+    { num: 4, label: 'CONSULTA/PRODUÇÃO',         to: '/lab/fluxo' },
   ],
   I: [],
   J: [
