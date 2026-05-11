@@ -6,19 +6,19 @@ import LabAltF1 from './LabAltF1';
 type ModuleKey = 'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'|'K'|'L';
 type Opcao = { num: number; label: string; to?: string; disabled?: boolean };
 
-const MODULOS: { letra: ModuleKey; nome: string; ativo: boolean }[] = [
-  { letra: 'A', nome: 'CONFIGURAÇÕES',             ativo: true  },
-  { letra: 'B', nome: 'ÓTICAS CLIENTES',           ativo: true  },
-  { letra: 'C', nome: 'FORNECEDORES/OFTALMOS',     ativo: true  },
-  { letra: 'D', nome: 'CADASTRO DE PRODUTOS',      ativo: true  },
-  { letra: 'E', nome: 'CADASTRO DE ESTOQUE',       ativo: true  },
-  { letra: 'F', nome: 'MOVIMENTAÇÃO DE ESTOQUE',   ativo: true  },
-  { letra: 'G', nome: 'VENDAS/ORDENS DE SERVIÇOS', ativo: true  },
-  { letra: 'H', nome: 'CONTROLE DE FLUXO',         ativo: true  },
-  { letra: 'I', nome: 'NOTAS FISCAIS/FECHAMENTOS', ativo: false },
-  { letra: 'J', nome: 'FATURAMENTO',               ativo: true  },
-  { letra: 'K', nome: 'CONTAS A RECEBER/PAGAR',    ativo: true  },
-  { letra: 'L', nome: 'CONTROLE BANCÁRIO',         ativo: true  },
+const MODULOS: { letra: ModuleKey; nome: string; icon: string; ativo: boolean }[] = [
+  { letra: 'A', nome: 'CONFIGURAÇÕES',             icon: '⚙',  ativo: true  },
+  { letra: 'B', nome: 'ÓTICAS CLIENTES',           icon: '🏪', ativo: true  },
+  { letra: 'C', nome: 'FORNECEDORES/OFTALMOS',     icon: '🏭', ativo: true  },
+  { letra: 'D', nome: 'CADASTRO DE PRODUTOS',      icon: '📦', ativo: true  },
+  { letra: 'E', nome: 'CADASTRO DE ESTOQUE',       icon: '🗂️', ativo: true  },
+  { letra: 'F', nome: 'MOVIMENTAÇÃO DE ESTOQUE',   icon: '🔄', ativo: true  },
+  { letra: 'G', nome: 'VENDAS/ORDENS DE SERVIÇOS', icon: '📋', ativo: true  },
+  { letra: 'H', nome: 'CONTROLE DE FLUXO',         icon: '⚡', ativo: true  },
+  { letra: 'I', nome: 'NOTAS FISCAIS/FECHAMENTOS', icon: '🧾', ativo: false },
+  { letra: 'J', nome: 'FATURAMENTO',               icon: '💰', ativo: true  },
+  { letra: 'K', nome: 'CONTAS A RECEBER/PAGAR',    icon: '📥', ativo: true  },
+  { letra: 'L', nome: 'CONTROLE BANCÁRIO',         icon: '🏛️', ativo: true  },
 ];
 
 const OPCOES: Record<ModuleKey, Opcao[]> = {
@@ -162,8 +162,6 @@ export default function LabLayout() {
   const mainBg    = dark ? '#111111' : '#c8c4b0';
   const modBg     = dark ? 'linear-gradient(180deg,#1a0000,#2a0000)' : 'linear-gradient(180deg,#880000,#660000)';
   const modBorder = dark ? '#3a1a1a' : '#5a2a2a';
-  const optBg     = dark ? '#1c1c1c' : '#d4d0c8';
-  const optBorder = dark ? '#333' : '#a0a098';
 
   const opcoes = activeModule ? OPCOES[activeModule] : [];
 
@@ -199,63 +197,58 @@ export default function LabLayout() {
         </div>
 
         {/* ── MÓDULOS ── */}
-        <div style={{ width: '220px', background: modBg, borderRight: `2px solid ${modBorder}`, display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto' }}>
-          <div style={{ padding: '6px 12px', background: 'rgba(0,0,0,0.4)', borderBottom: `1px solid ${modBorder}`, fontSize: '10px', fontWeight: '700', color: hdrTxt, letterSpacing: '2px', textTransform: 'uppercase', textAlign: 'center' }}>
+        <div style={{ width: '240px', background: dark ? '#1c1c1c' : '#d4d0c8', borderRight: `2px solid ${modBorder}`, display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto' }}>
+          {/* Header */}
+          <div style={{ background: 'linear-gradient(90deg,#880000,#cc0000)', color: '#ffcccc', textAlign: 'center', padding: '5px 12px', fontSize: '12px', fontWeight: '700', letterSpacing: '2px', border: `2px outset #aa2222`, borderBottom: 'none' }}>
             MÓDULOS
           </div>
-          {/* Dashboard */}
-          <div onClick={() => { setActiveModule(null); navigate('/lab/dashboard'); }}
-            style={{ padding: '7px 12px', cursor: 'pointer', fontSize: '11px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${modBorder}`, background: isDashboard ? 'rgba(255,255,255,0.15)' : 'transparent', color: isDashboard ? '#fff' : dark ? '#ff9999' : '#ffdddd' }}>
-            <span>🏠 PAINEL PRINCIPAL</span>
+          <div style={{ border: `2px inset ${dark ? '#444' : '#808080'}` }}>
+            {/* Painel Principal */}
+            <div onClick={() => { setActiveModule(null); navigate('/lab/dashboard'); }}
+              style={{ display: 'flex', alignItems: 'center', padding: '6px 10px', borderBottom: `1px solid ${dark ? '#333' : '#b0aca4'}`, background: isDashboard ? '#880000' : (dark ? '#1c1c1c' : '#d4d0c8'), color: isDashboard ? '#ffcccc' : (dark ? '#d8d8d8' : '#000'), cursor: 'pointer', userSelect: 'none' }}
+              onMouseEnter={e => { if (!isDashboard) (e.currentTarget as HTMLElement).style.background = '#660000'; (e.currentTarget as HTMLElement).style.color = '#ffcccc'; }}
+              onMouseLeave={e => { if (!isDashboard) { (e.currentTarget as HTMLElement).style.background = dark ? '#1c1c1c' : '#d4d0c8'; (e.currentTarget as HTMLElement).style.color = dark ? '#d8d8d8' : '#000'; } }}>
+              <span style={{ fontSize: '15px', width: '26px', textAlign: 'center', flexShrink: 0 }}>🏠</span>
+              <span style={{ flex: 1, fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', textTransform: 'uppercase' }}>PAINEL PRINCIPAL</span>
+            </div>
+            {MODULOS.map((m, i) => {
+              const isActive = activeModule === m.letra && !isDashboard;
+              const rowBg = isActive ? '#880000' : (i % 2 === 0 ? (dark ? '#1c1c1c' : '#d4d0c8') : (dark ? '#222' : '#dedad2'));
+              return (
+                <div key={m.letra} onClick={() => clickModule(m.letra, m.ativo)}
+                  style={{ display: 'flex', alignItems: 'center', padding: '6px 10px', borderBottom: `1px solid ${dark ? '#333' : '#b0aca4'}`, background: rowBg, color: isActive ? '#ffcccc' : (m.ativo ? (dark ? '#d8d8d8' : '#000') : (dark ? '#555' : '#aaa')), cursor: m.ativo ? 'pointer' : 'default', opacity: m.ativo ? 1 : 0.5, userSelect: 'none', transition: 'background 0.08s' }}
+                  onMouseEnter={e => { if (m.ativo && !isActive) { (e.currentTarget as HTMLElement).style.background = '#660000'; (e.currentTarget as HTMLElement).style.color = '#ffcccc'; } }}
+                  onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = rowBg; (e.currentTarget as HTMLElement).style.color = isActive ? '#ffcccc' : (m.ativo ? (dark ? '#d8d8d8' : '#000') : (dark ? '#555' : '#aaa')); } }}>
+                  <span style={{ fontSize: '15px', width: '26px', textAlign: 'center', flexShrink: 0 }}>{m.icon}</span>
+                  <span style={{ flex: 1, fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', textTransform: 'uppercase' }}>{m.nome}</span>
+                  <span style={{ fontSize: '12px', fontWeight: '700', color: isActive ? '#ffaaaa' : (dark ? '#ff6666' : '#880000'), width: '18px', textAlign: 'right', flexShrink: 0 }}>{m.letra}</span>
+                </div>
+              );
+            })}
           </div>
-          {MODULOS.map(m => {
-            const isActive = activeModule === m.letra && !isDashboard;
-            return (
-              <div key={m.letra}
-                onClick={() => clickModule(m.letra, m.ativo)}
-                style={{
-                  padding: '7px 12px', cursor: m.ativo ? 'pointer' : 'default',
-                  fontSize: '11px', fontWeight: isActive ? '700' : '400',
-                  color: !m.ativo ? 'rgba(255,255,255,0.3)' : isActive ? '#fff' : dark ? '#ff9999' : '#ffdddd',
-                  background: isActive ? 'rgba(0,0,0,0.35)' : 'transparent',
-                  borderBottom: `1px solid ${modBorder}`,
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  borderLeft: isActive ? '3px solid #ffaaaa' : '3px solid transparent',
-                }}>
-                <span>{m.nome}</span>
-                <span style={{ fontFamily: "'Courier New', monospace", fontWeight: '700', fontSize: '12px', opacity: m.ativo ? 1 : 0.4 }}>{m.letra}</span>
-              </div>
-            );
-          })}
         </div>
 
         {/* ── OPÇÕES ── */}
         {activeModule && opcoes.length > 0 && (
-          <div style={{ width: '230px', background: optBg, borderRight: `1px solid ${optBorder}`, display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto' }}>
-            <div style={{ padding: '6px 12px', background: '#880000', borderBottom: `1px solid ${hdrBorder}`, fontSize: '10px', fontWeight: '700', color: '#fff', letterSpacing: '2px', textTransform: 'uppercase', textAlign: 'center' }}>
+          <div style={{ width: '240px', background: dark ? '#1c1c1c' : '#d4d0c8', borderRight: `2px solid ${modBorder}`, display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto' }}>
+            <div style={{ background: 'linear-gradient(90deg,#880000,#cc0000)', color: '#ffcccc', textAlign: 'center', padding: '5px 12px', fontSize: '12px', fontWeight: '700', letterSpacing: '2px', border: `2px outset #aa2222`, borderBottom: 'none' }}>
               OPÇÕES
             </div>
-            {opcoes.map(op => {
-              const isCurrentRoute = op.to && location.pathname.startsWith(op.to);
-              return (
-                <div key={op.num}
-                  onClick={() => clickOpcao(op)}
-                  style={{
-                    padding: '8px 12px', cursor: op.disabled ? 'default' : 'pointer',
-                    fontSize: '11px', fontWeight: isCurrentRoute ? '700' : '400',
-                    color: op.disabled ? '#aaa' : isCurrentRoute ? '#880000' : dark ? '#ccc' : '#222',
-                    background: isCurrentRoute ? (dark ? '#2a2a1a' : '#e8e4d8') : 'transparent',
-                    borderBottom: `1px solid ${optBorder}`,
-                    display: 'flex', gap: '8px', alignItems: 'center',
-                    borderLeft: isCurrentRoute ? '3px solid #880000' : '3px solid transparent',
-                  }}
-                  onMouseEnter={e => { if (!op.disabled && !isCurrentRoute) (e.currentTarget as HTMLDivElement).style.background = dark ? '#252510' : '#dddad0'; }}
-                  onMouseLeave={e => { if (!isCurrentRoute) (e.currentTarget as HTMLDivElement).style.background = 'transparent'; }}>
-                  <span style={{ fontFamily: "'Courier New', monospace", fontWeight: '700', fontSize: '11px', color: '#888', minWidth: '14px' }}>{op.num}</span>
-                  <span>{op.label}</span>
-                </div>
-              );
-            })}
+            <div style={{ border: `2px inset ${dark ? '#444' : '#808080'}` }}>
+              {opcoes.map((op, i) => {
+                const isCurrentRoute = !!(op.to && location.pathname.startsWith(op.to));
+                const rowBg = isCurrentRoute ? '#880000' : (i % 2 === 0 ? (dark ? '#1c1c1c' : '#d4d0c8') : (dark ? '#222' : '#dedad2'));
+                return (
+                  <div key={op.num} onClick={() => clickOpcao(op)}
+                    style={{ display: 'flex', alignItems: 'center', padding: '6px 10px', borderBottom: `1px solid ${dark ? '#333' : '#b0aca4'}`, background: rowBg, color: isCurrentRoute ? '#ffcccc' : (op.disabled ? (dark ? '#555' : '#aaa') : (dark ? '#d8d8d8' : '#000')), cursor: op.disabled ? 'default' : 'pointer', userSelect: 'none', transition: 'background 0.08s' }}
+                    onMouseEnter={e => { if (!op.disabled && !isCurrentRoute) { (e.currentTarget as HTMLElement).style.background = '#660000'; (e.currentTarget as HTMLElement).style.color = '#ffcccc'; } }}
+                    onMouseLeave={e => { if (!isCurrentRoute) { (e.currentTarget as HTMLElement).style.background = rowBg; (e.currentTarget as HTMLElement).style.color = op.disabled ? (dark ? '#555' : '#aaa') : (dark ? '#d8d8d8' : '#000'); } }}>
+                    <span style={{ fontFamily: "'Courier New', monospace", fontWeight: '700', fontSize: '12px', color: isCurrentRoute ? '#ffaaaa' : (dark ? '#ff6666' : '#880000'), width: '20px', flexShrink: 0 }}>{op.num}</span>
+                    <span style={{ flex: 1, fontSize: '11px', fontWeight: '700', letterSpacing: '0.5px', textTransform: 'uppercase' }}>{op.label}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 
