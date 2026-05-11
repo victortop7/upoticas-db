@@ -116,11 +116,16 @@ export default function LabLayout() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.altKey && e.key === 'F1') { e.preventDefault(); setAltF1(v => !v); }
+      if (e.altKey && e.key === 'F1') { e.preventDefault(); setAltF1(v => !v); return; }
+      if (e.key === 'Escape') {
+        if (altF1) { setAltF1(false); return; }
+        // ESC: se tem módulo ativo, deseleciona e volta ao dashboard
+        if (activeModule) { setActiveModule(null); navigate('/lab/dashboard'); }
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  }, [altF1, activeModule, navigate]);
 
   // Auto-detect module from route
   useEffect(() => {
