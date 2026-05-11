@@ -1,16 +1,31 @@
 import type { Env } from '../../../lib/types';
 import { requireAuth, json } from '../../../lib/auth-middleware';
 
+async function ensureCols(env: Env) {
+  for (const col of ['codigo TEXT', 'unidade TEXT', 'valor_lista2 REAL']) {
+    try { await env.DB.prepare(`ALTER TABLE lab_servicos_catalogo ADD COLUMN ${col}`).run(); } catch {}
+  }
+}
+
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   try {
     const auth = await requireAuth(request, env);
     if (auth instanceof Response) return auth;
     const { tenant_id } = auth;
+    await ensureCols(env);
 
-    const result = await env.DB.prepare(
-      'SELECT * FROM lab_servicos_catalogo WHERE tenant_id = ? ORDER BY nome ASC'
-    ).bind(tenant_id).all();
+    const url = new URL(request.url);
+    const q = url.searchParams.get('q');
 
+    let query = 'SELECT * FROM lab_servicos_catalogo WHERE tenant_id = ?';
+    const params: unknown[] = [tenant_id];
+    if (q) {
+      query += ' AND (nome LIKE ? OR codigo LIKE ?)';
+      params.push(`%${q}%`, `%${q}%`);
+    }
+    query += ' ORDER BY codigo ASC, nome ASC';
+
+    const result = await env.DB.prepare(query).bind(...params).all();
     return json(result.results);
   } catch (err) {
     return json({ error: 'Erro interno', detail: String(err) }, 500);
@@ -22,14 +37,31 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     const auth = await requireAuth(request, env);
     if (auth instanceof Response) return auth;
     const { tenant_id } = auth;
+    await ensureCols(env);
 
-    const body = await request.json() as { nome: string; valor_padrao?: number };
+    const body = await request.json() as Record<string, unknown>;
+
+    // Seed bulk insert
+    if (body.seed && Array.isArray(body.items)) {
+      type Item = { codigo: string; nome: string; unidade: string; preco1: number; preco2: number };
+      const items = body.items as Item[];
+      const stmts = items.map(it =>
+        env.DB.prepare(
+          'INSERT OR IGNORE INTO lab_servicos_catalogo (id, tenant_id, codigo, nome, unidade, valor_padrao, valor_lista2, ativo) VALUES (?, ?, ?, ?, ?, ?, ?, 1)'
+        ).bind(crypto.randomUUID(), tenant_id, it.codigo, it.nome, it.unidade || null, it.preco1 || 0, it.preco2 || null)
+      );
+      // batch in chunks of 100
+      for (let i = 0; i < stmts.length; i += 100) {
+        await env.DB.batch(stmts.slice(i, i + 100));
+      }
+      return json({ ok: true, inserted: items.length }, 201);
+    }
+
     if (!body.nome) return json({ error: 'Nome é obrigatório' }, 400);
-
     const id = crypto.randomUUID();
     await env.DB.prepare(
-      'INSERT INTO lab_servicos_catalogo (id, tenant_id, nome, valor_padrao) VALUES (?, ?, ?, ?)'
-    ).bind(id, tenant_id, body.nome, body.valor_padrao ?? 0).run();
+      'INSERT INTO lab_servicos_catalogo (id, tenant_id, codigo, nome, unidade, valor_padrao, valor_lista2, ativo) VALUES (?, ?, ?, ?, ?, ?, ?, 1)'
+    ).bind(id, tenant_id, body.codigo ?? null, body.nome, body.unidade ?? null, body.valor_padrao ?? 0, body.valor_lista2 ?? null).run();
 
     return json({ id }, 201);
   } catch (err) {
