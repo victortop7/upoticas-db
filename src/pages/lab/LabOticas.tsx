@@ -2,101 +2,86 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 
-interface Otica {
-  id: string;
-  nome: string;
-  cnpj?: string;
-  telefone?: string;
-  email?: string;
-  cidade?: string;
-  uf?: string;
-  ativo: number;
-}
+interface Otica { id: string; codigo?: string; nome: string; cnpj?: string; telefone?: string; email?: string; cidade?: string; uf?: string; ativo: number; }
+
+const R = { bg:'#c8c4b0', panel:'#d4d0c8', alt:'#dedad2', bdr:'#b0aca4', hdr:'linear-gradient(90deg,#880000,#cc0000)', hdrTxt:'#ffcccc', hdrBdr:'#aa2222', txt:'#000', inp:'#fff' };
+const INP: React.CSSProperties = { width:'100%', padding:'5px 8px', fontSize:'12px', background:R.inp, border:'1px solid #999', color:R.txt, outline:'none', boxSizing:'border-box', fontFamily:"'Courier New', monospace" };
+const LBL: React.CSSProperties = { fontSize:'10px', fontWeight:'700', color:'#444', textTransform:'uppercase', letterSpacing:'0.5px', display:'block', marginBottom:'3px' };
 
 export default function LabOticas() {
   const navigate = useNavigate();
   const [oticas, setOticas] = useState<Otica[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(false);
-  const [form, setForm] = useState({ nome: '', cnpj: '', telefone: '', email: '', endereco: '', cidade: '', uf: '', cep: '', observacao: '' });
+  const [busca, setBusca] = useState('');
+  const [form, setForm] = useState({ nome: '', cnpj: '', telefone: '', email: '', endereco: '', cidade: '', uf: '', cep: '' });
   const [saving, setSaving] = useState(false);
   const [erro, setErro] = useState('');
 
   function load() {
     setLoading(true);
-    api.get<Otica[]>('/lab/oticas')
-      .then(setOticas)
-      .catch(() => setOticas([]))
-      .finally(() => setLoading(false));
+    api.get<Otica[]>('/lab/oticas').then(setOticas).catch(() => setOticas([])).finally(() => setLoading(false));
   }
-
   useEffect(() => { load(); }, []);
 
   async function handleSave(e: React.FormEvent) {
-    e.preventDefault();
-    setSaving(true);
-    setErro('');
+    e.preventDefault(); setSaving(true); setErro('');
     try {
       await api.post('/lab/oticas', form);
-      setModal(false);
-      setForm({ nome: '', cnpj: '', telefone: '', email: '', endereco: '', cidade: '', uf: '', cep: '', observacao: '' });
-      load();
-    } catch (err: unknown) {
-      setErro(err instanceof Error ? err.message : 'Erro ao salvar');
-    } finally {
-      setSaving(false);
-    }
+      setModal(false); setForm({ nome:'', cnpj:'', telefone:'', email:'', endereco:'', cidade:'', uf:'', cep:'' }); load();
+    } catch (err: unknown) { setErro(err instanceof Error ? err.message : 'Erro ao salvar'); }
+    setSaving(false);
   }
 
-  const inp: React.CSSProperties = { width: '100%', padding: '8px 10px', fontSize: '13px', background: 'var(--surface-alt)', border: '1px solid var(--border)', borderRadius: '7px', color: 'var(--text)', outline: 'none', boxSizing: 'border-box' };
+  const filtradas = oticas.filter(o => !busca || o.nome.toLowerCase().includes(busca.toLowerCase()) || (o.codigo || '').includes(busca));
 
   return (
-    <div style={{ padding: '32px', maxWidth: '1000px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
-        <div>
-          <h1 style={{ margin: '0 0 4px', fontSize: '22px', fontWeight: '700', color: 'var(--text)' }}>Óticas Clientes</h1>
-          <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-dim)' }}>Óticas que enviam OS para seu laboratório</p>
+    <div style={{ padding: '12px', height: '100%', display: 'flex', flexDirection: 'column', background: R.bg, fontFamily: "'Montserrat', sans-serif" }}>
+
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '6px' }}>
+        <div style={{ background: R.hdr, color: R.hdrTxt, padding: '5px 14px', fontSize: '13px', fontWeight: '700', letterSpacing: '1px', border: `2px outset ${R.hdrBdr}` }}>
+          ÓTICAS CLIENTES — {filtradas.length} cadastrada(s)
         </div>
-        <button
-          onClick={() => setModal(true)}
-          style={{ padding: '10px 20px', fontSize: '14px', fontWeight: '600', background: '#a855f7', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}
-        >
-          + Nova Ótica
-        </button>
+        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+          <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar por nome ou código..." style={{ ...INP, width: '220px' }} />
+          <button onClick={() => setModal(true)}
+            style={{ padding: '5px 16px', fontSize: '12px', fontWeight: '700', background: '#880000', color: R.hdrTxt, border: `1px outset ${R.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
+            + NOVA ÓTICA
+          </button>
+        </div>
       </div>
 
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px' }}>
+      {/* Tabela */}
+      <div style={{ flex: 1, overflowY: 'auto', border: `2px inset ${R.bdr}` }}>
         {loading ? (
-          <div style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>Carregando...</div>
-        ) : oticas.length === 0 ? (
-          <div style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>
-            Nenhuma ótica cadastrada ainda.
-          </div>
+          <div style={{ padding: '40px', textAlign: 'center', color: '#444', fontFamily: "'Courier New', monospace" }}>Carregando...</div>
+        ) : filtradas.length === 0 ? (
+          <div style={{ padding: '40px', textAlign: 'center', color: '#444' }}>Nenhuma ótica cadastrada.</div>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                {['Nome', 'CNPJ', 'Telefone', 'E-mail', 'Cidade/UF', 'Status'].map(h => (
-                  <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
+            <thead style={{ position: 'sticky', top: 0 }}>
+              <tr style={{ background: R.hdr }}>
+                {['CÓD', 'NOME', 'CNPJ', 'TELEFONE', 'E-MAIL', 'CIDADE/UF', 'STATUS'].map(h => (
+                  <th key={h} style={{ padding: '6px 12px', textAlign: 'left', fontSize: '10px', fontWeight: '700', color: R.hdrTxt, letterSpacing: '0.5px', border: `1px solid ${R.hdrBdr}`, whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {oticas.map(o => (
-                <tr key={o.id}
-                  onClick={() => navigate(`/lab/oticas/${o.id}`)}
-                  style={{ borderBottom: '1px solid var(--border)', cursor: 'pointer', transition: 'background 0.1s' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-alt)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                >
-                  <td style={{ padding: '12px 16px', fontSize: '13px', fontWeight: '600', color: 'var(--text)' }}>{o.nome}</td>
-                  <td style={{ padding: '12px 16px', fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{o.cnpj ?? '—'}</td>
-                  <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>{o.telefone ?? '—'}</td>
-                  <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>{o.email ?? '—'}</td>
-                  <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>{o.cidade && o.uf ? `${o.cidade}/${o.uf}` : o.cidade ?? '—'}</td>
-                  <td style={{ padding: '12px 16px' }}>
-                    <span style={{ fontSize: '11px', fontWeight: '600', color: o.ativo ? 'var(--green)' : 'var(--text-muted)', background: o.ativo ? 'var(--green-dim)' : 'var(--surface-alt)', padding: '3px 8px', borderRadius: '20px' }}>
-                      {o.ativo ? 'Ativa' : 'Inativa'}
+              {filtradas.map((o, i) => (
+                <tr key={o.id} onClick={() => navigate(`/lab/oticas/${o.id}`)}
+                  style={{ background: i % 2 === 0 ? R.panel : R.alt, cursor: 'pointer', borderBottom: `1px solid ${R.bdr}` }}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#880000')}
+                  onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 0 ? R.panel : R.alt)}>
+                  <td style={{ padding: '7px 12px', fontFamily: "'Courier New', monospace", fontSize: '11px', color: '#555' }}>{o.codigo || '—'}</td>
+                  <td style={{ padding: '7px 12px', fontSize: '12px', fontWeight: '700', color: R.txt }}>{o.nome}</td>
+                  <td style={{ padding: '7px 12px', fontFamily: "'Courier New', monospace", fontSize: '11px', color: '#333' }}>{o.cnpj || '—'}</td>
+                  <td style={{ padding: '7px 12px', fontSize: '11px', color: '#333' }}>{o.telefone || '—'}</td>
+                  <td style={{ padding: '7px 12px', fontSize: '11px', color: '#333' }}>{o.email || '—'}</td>
+                  <td style={{ padding: '7px 12px', fontSize: '11px', color: '#333' }}>{o.cidade && o.uf ? `${o.cidade}/${o.uf}` : o.cidade || '—'}</td>
+                  <td style={{ padding: '7px 12px' }}>
+                    <span style={{ fontSize: '10px', fontWeight: '700', color: o.ativo ? '#006600' : '#880000', background: o.ativo ? '#ccffcc' : '#ffcccc', padding: '2px 7px', border: `1px solid ${o.ativo ? '#006600' : '#880000'}` }}>
+                      {o.ativo ? 'ATIVA' : 'INATIVA'}
                     </span>
                   </td>
                 </tr>
@@ -109,60 +94,34 @@ export default function LabOticas() {
       {/* Modal Nova Ótica */}
       {modal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px', padding: '28px', width: '100%', maxWidth: '520px', maxHeight: '90vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: 'var(--text)' }}>Nova Ótica Cliente</h2>
-              <button onClick={() => setModal(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '20px', cursor: 'pointer' }}>×</button>
+          <div style={{ background: R.panel, border: `2px outset ${R.bdr}`, padding: '0', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ background: R.hdr, color: R.hdrTxt, padding: '6px 14px', fontSize: '12px', fontWeight: '700', letterSpacing: '1px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>INCLUIR ÓTICA CLIENTE</span>
+              <button onClick={() => setModal(false)} style={{ background: 'none', border: '1px solid #ff9999', color: '#ff9999', padding: '1px 6px', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '700' }}>✕</button>
             </div>
-
-            {erro && <div style={{ background: 'var(--red-dim)', border: '1px solid var(--red)', borderRadius: '7px', padding: '9px 12px', marginBottom: '14px', fontSize: '13px', color: 'var(--red)' }}>{erro}</div>}
-
-            <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-dim)', display: 'block', marginBottom: '5px' }}>Nome *</label>
-                <input required value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} placeholder="Nome da ótica" style={inp} />
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <div>
-                  <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-dim)', display: 'block', marginBottom: '5px' }}>CNPJ</label>
-                  <input value={form.cnpj} onChange={e => setForm(f => ({ ...f, cnpj: e.target.value }))} placeholder="00.000.000/0000-00" style={inp} />
+            <div style={{ padding: '16px' }}>
+              {erro && <div style={{ background: '#ffdddd', border: '1px solid #880000', padding: '7px 10px', marginBottom: '10px', fontSize: '11px', color: '#880000', fontWeight: '700' }}>{erro}</div>}
+              <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div><label style={LBL}>Nome *</label><input required value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} style={INP} /></div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                  <div><label style={LBL}>CNPJ</label><input value={form.cnpj} onChange={e => setForm(f => ({ ...f, cnpj: e.target.value }))} style={INP} /></div>
+                  <div><label style={LBL}>Telefone</label><input value={form.telefone} onChange={e => setForm(f => ({ ...f, telefone: e.target.value }))} style={INP} /></div>
                 </div>
-                <div>
-                  <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-dim)', display: 'block', marginBottom: '5px' }}>Telefone</label>
-                  <input value={form.telefone} onChange={e => setForm(f => ({ ...f, telefone: e.target.value }))} placeholder="(00) 00000-0000" style={inp} />
+                <div><label style={LBL}>E-mail</label><input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} style={INP} /></div>
+                <div><label style={LBL}>Endereço</label><input value={form.endereco} onChange={e => setForm(f => ({ ...f, endereco: e.target.value }))} style={INP} /></div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 50px 90px', gap: '8px' }}>
+                  <div><label style={LBL}>Cidade</label><input value={form.cidade} onChange={e => setForm(f => ({ ...f, cidade: e.target.value }))} style={INP} /></div>
+                  <div><label style={LBL}>UF</label><input value={form.uf} onChange={e => setForm(f => ({ ...f, uf: e.target.value }))} maxLength={2} style={INP} /></div>
+                  <div><label style={LBL}>CEP</label><input value={form.cep} onChange={e => setForm(f => ({ ...f, cep: e.target.value }))} style={INP} /></div>
                 </div>
-              </div>
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-dim)', display: 'block', marginBottom: '5px' }}>E-mail</label>
-                <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="contato@otica.com" style={inp} />
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '10px' }}>
-                <div>
-                  <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-dim)', display: 'block', marginBottom: '5px' }}>Cidade</label>
-                  <input value={form.cidade} onChange={e => setForm(f => ({ ...f, cidade: e.target.value }))} style={inp} />
+                <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                  <button type="button" onClick={() => setModal(false)} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: R.alt, color: R.txt, border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>CANCELAR</button>
+                  <button type="submit" disabled={saving} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: '#880000', color: R.hdrTxt, border: `1px outset ${R.hdrBdr}`, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
+                    {saving ? 'SALVANDO...' : 'GRAVAR'}
+                  </button>
                 </div>
-                <div>
-                  <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-dim)', display: 'block', marginBottom: '5px' }}>UF</label>
-                  <input value={form.uf} onChange={e => setForm(f => ({ ...f, uf: e.target.value }))} maxLength={2} style={inp} />
-                </div>
-                <div>
-                  <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-dim)', display: 'block', marginBottom: '5px' }}>CEP</label>
-                  <input value={form.cep} onChange={e => setForm(f => ({ ...f, cep: e.target.value }))} style={inp} />
-                </div>
-              </div>
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-dim)', display: 'block', marginBottom: '5px' }}>Observação</label>
-                <input value={form.observacao} onChange={e => setForm(f => ({ ...f, observacao: e.target.value }))} style={inp} />
-              </div>
-              <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
-                <button type="button" onClick={() => setModal(false)} style={{ flex: 1, padding: '10px', fontSize: '13px', background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
-                  Cancelar
-                </button>
-                <button type="submit" disabled={saving} style={{ flex: 1, padding: '10px', fontSize: '13px', fontWeight: '600', background: '#a855f7', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
-                  {saving ? 'Salvando...' : 'Salvar'}
-                </button>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
         </div>
       )}
