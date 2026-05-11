@@ -57,23 +57,25 @@ const CATEGORIAS: Categoria[] = [
     ],
   },
   {
-    key: 'servicos_codigo', label: 'SERVIÇOS/CÓDIGO', shortcut: '7',
+    key: 'servicos_codigo', label: 'PRODUTO/CÓDIGO', shortcut: '7',
     endpoint: '/lab/servicos',
     colunas: [
-      { label: 'CÓDIGO', field: 'codigo', mono: true },
+      { label: 'CÓDIGO',    field: 'codigo',        mono: true },
       { label: 'DESCRIÇÃO', field: 'nome' },
-      { label: 'UN', field: 'unidade' },
-      { label: 'PREÇO 1', field: 'valor_padrao', mono: true },
+      { label: 'UN',        field: 'unidade',       mono: true },
+      { label: 'PREÇO 1',   field: 'valor_padrao',  mono: true },
+      { label: 'PREÇO 2',   field: 'valor_lista2',  mono: true },
     ],
   },
   {
-    key: 'servicos_desc', label: 'SERVIÇOS/DESCRIÇÃO', shortcut: 'D',
+    key: 'servicos_desc', label: 'PRODUTO/DESCRIÇÃO', shortcut: 'D',
     endpoint: '/lab/servicos',
     colunas: [
-      { label: 'CÓDIGO', field: 'codigo', mono: true },
+      { label: 'CÓDIGO',    field: 'codigo',        mono: true },
       { label: 'DESCRIÇÃO', field: 'nome' },
-      { label: 'UN', field: 'unidade' },
-      { label: 'PREÇO 1', field: 'valor_padrao', mono: true },
+      { label: 'UN',        field: 'unidade',       mono: true },
+      { label: 'PREÇO 1',   field: 'valor_padrao',  mono: true },
+      { label: 'PREÇO 2',   field: 'valor_lista2',  mono: true },
     ],
   },
 ];
@@ -210,11 +212,22 @@ export default function LabAltF1({ onClose }: Props) {
                       <tr key={i}
                         onClick={() => { selectRow(row); setRowIdx(i); }}
                         style={{ background: i === rowIdx ? '#880000' : i % 2 === 0 ? '#0e0e1e' : '#131325', cursor: 'pointer', borderBottom: '1px solid #1a1a2e' }}>
-                        {cat.colunas.map(col => (
-                          <td key={col.field} style={{ padding: '5px 10px', fontSize: '12px', color: i === rowIdx ? '#fff' : '#ccccee', fontFamily: col.mono ? "'Courier New', monospace" : 'inherit', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '250px' }}>
-                            {row[col.field] != null && row[col.field] !== '' ? String(row[col.field]) : ''}
-                          </td>
-                        ))}
+                        {cat.colunas.map(col => {
+                          const val = row[col.field];
+                          let display = '';
+                          if (val != null && val !== '' && val !== 0) {
+                            if ((col.field === 'valor_padrao' || col.field === 'valor_lista2') && Number(val) > 0) {
+                              display = Number(val).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                            } else {
+                              display = String(val);
+                            }
+                          }
+                          return (
+                            <td key={col.field} style={{ padding: '5px 10px', fontSize: '12px', color: i === rowIdx ? '#fff' : (col.field.includes('preco') || col.field.includes('valor') ? '#aaffaa' : '#ccccee'), fontFamily: col.mono ? "'Courier New', monospace" : 'inherit', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '250px', textAlign: col.field.includes('valor') ? 'right' : 'left' }}>
+                              {display}
+                            </td>
+                          );
+                        })}
                       </tr>
                     ))}
                   </tbody>
