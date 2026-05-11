@@ -291,20 +291,8 @@ export default function LabImprimirOS() {
   return (
     <div style={{ width: '210mm', margin: '0 auto', background: '#fff', boxSizing: 'border-box' }}>
       {/* VIA DO LABORATÓRIO */}
-      <div style={{ padding: '4mm 5mm', height: '148.5mm', boxSizing: 'border-box' }}>
+      <div style={{ padding: '4mm 5mm', height: '297mm', boxSizing: 'border-box' }}>
         <OSSlip {...props} via="LAB" />
-      </div>
-
-      {/* LINHA DE CORTE */}
-      <div style={{ margin: '0 5mm', borderTop: '1px dashed #666', position: 'relative', textAlign: 'center', height: '0' }}>
-        <span style={{ position: 'absolute', top: '-7px', left: '50%', transform: 'translateX(-50%)', background: '#fff', padding: '0 10px', fontSize: '7px', color: '#888', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px', whiteSpace: 'nowrap' }}>
-          ✂ destacar aqui
-        </span>
-      </div>
-
-      {/* VIA DO CLIENTE */}
-      <div style={{ padding: '4mm 5mm', height: '148.5mm', boxSizing: 'border-box' }}>
-        <OSSlip {...props} via="CLIENTE" />
       </div>
 
       <style>{`
