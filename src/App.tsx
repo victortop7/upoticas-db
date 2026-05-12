@@ -20,6 +20,7 @@ import LabFluxo from './pages/lab/LabFluxo';
 import LabFluxoScan from './pages/lab/LabFluxoScan';
 import LabAdmin from './pages/lab/LabAdmin';
 import LicencaBloqueada from './pages/LicencaBloqueada';
+import LabFornecedores from './pages/lab/LabFornecedores';
 import LabTransportadoras from './pages/lab/LabTransportadoras';
 import LabVendedores from './pages/lab/LabVendedores';
 import LabContasReceber from './pages/lab/LabContasReceber';
@@ -115,7 +116,7 @@ export default function App() {
             <Route path="/lab/contas-pagar" element={<LabContasPagar />} />
             <Route path="/lab/bancario-lab" element={<LabBancario />} />
             <Route path="/lab/faturamento-lab" element={<LabFaturamento />} />
-            <Route path="/lab/fornecedores" element={<Fornecedores />} />
+            <Route path="/lab/fornecedores" element={<LabFornecedores />} />
             <Route path="/lab/produtos" element={<Produtos />} />
             <Route path="/lab/faturamento" element={<Faturamento />} />
             <Route path="/lab/bancario" element={<Bancario />} />

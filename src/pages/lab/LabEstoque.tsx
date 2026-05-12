@@ -9,7 +9,6 @@ interface Produto {
 const INDICES = ['1.50', '1.53', '1.56', '1.59', '1.61', '1.67', '1.74'];
 const TIPOS = ['visao_simples', 'monofocal', 'bifocal', 'progressivo', 'ocupacional'];
 const TRATAMENTOS = ['Sem tratamento', 'Antirreflexo', 'Blue Cut', 'Fotossensível', 'UV400', 'Antirreflexo + Blue Cut', 'Antirreflexo + Fotossensível'];
-
 const TIPO_LABEL: Record<string, string> = {
   visao_simples: 'Visão Simples', monofocal: 'Monofocal', bifocal: 'Bifocal',
   progressivo: 'Progressivo', ocupacional: 'Ocupacional',
@@ -18,19 +17,21 @@ const TIPO_LABEL: Record<string, string> = {
 const FORM_VAZIO = { marca: '', tratamento: 'Sem tratamento', indice: '1.56', tipo: 'monofocal', descricao: '', quantidade: '0', quantidade_minima: '5' };
 const MOV_VAZIO = { tipo: 'entrada' as 'entrada' | 'saida', quantidade: '', motivo: '' };
 
+const R = { bg:'#c8c4b0', panel:'#d4d0c8', alt:'#dedad2', bdr:'#b0aca4', hdr:'linear-gradient(90deg,#880000,#cc0000)', hdrTxt:'#ffcccc', hdrBdr:'#aa2222', txt:'#000', inp:'#fff' };
+const INP: React.CSSProperties = { width:'100%', padding:'5px 8px', fontSize:'12px', background:R.inp, border:'1px solid #999', color:R.txt, outline:'none', boxSizing:'border-box', fontFamily:"'Courier New', monospace" };
+const LBL: React.CSSProperties = { fontSize:'10px', fontWeight:'700', color:'#444', textTransform:'uppercase', letterSpacing:'0.5px', display:'block', marginBottom:'3px' };
+
 export default function LabEstoque() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtroMarca, setFiltroMarca] = useState('');
   const [filtroIndice, setFiltroIndice] = useState('');
   const [filtroTipo, setFiltroTipo] = useState('');
-
   const [modalProd, setModalProd] = useState(false);
   const [editando, setEditando] = useState<Produto | null>(null);
   const [form, setForm] = useState({ ...FORM_VAZIO });
   const [saving, setSaving] = useState(false);
   const [erroProd, setErroProd] = useState('');
-
   const [modalMov, setModalMov] = useState(false);
   const [produtoMov, setProdutoMov] = useState<Produto | null>(null);
   const [mov, setMov] = useState({ ...MOV_VAZIO });
@@ -50,47 +51,23 @@ export default function LabEstoque() {
 
   useEffect(() => { load(); }, [filtroMarca, filtroIndice, filtroTipo]);
 
-  function abrirNovo() {
-    setEditando(null);
-    setForm({ ...FORM_VAZIO });
-    setErroProd('');
-    setModalProd(true);
-  }
-
+  function abrirNovo() { setEditando(null); setForm({ ...FORM_VAZIO }); setErroProd(''); setModalProd(true); }
   function abrirEditar(p: Produto) {
     setEditando(p);
     setForm({ marca: p.marca, tratamento: p.tratamento, indice: p.indice, tipo: p.tipo, descricao: p.descricao ?? '', quantidade: String(p.quantidade), quantidade_minima: String(p.quantidade_minima) });
-    setErroProd('');
-    setModalProd(true);
+    setErroProd(''); setModalProd(true);
   }
-
-  function abrirMov(p: Produto) {
-    setProdutoMov(p);
-    setMov({ ...MOV_VAZIO });
-    setErroMov('');
-    setModalMov(true);
-  }
+  function abrirMov(p: Produto) { setProdutoMov(p); setMov({ ...MOV_VAZIO }); setErroMov(''); setModalMov(true); }
 
   async function salvarProduto(e: React.FormEvent) {
-    e.preventDefault();
-    setSaving(true); setErroProd('');
+    e.preventDefault(); setSaving(true); setErroProd('');
     try {
-      const payload = {
-        marca: form.marca, tratamento: form.tratamento, indice: form.indice,
-        tipo: form.tipo, descricao: form.descricao || null,
-        quantidade: parseInt(form.quantidade) || 0,
-        quantidade_minima: parseInt(form.quantidade_minima) || 5,
-      };
-      if (editando) {
-        await api.put(`/lab/estoque/${editando.id}`, payload);
-      } else {
-        await api.post('/lab/estoque', payload);
-      }
-      setModalProd(false);
-      load();
-    } catch (err: unknown) {
-      setErroProd(err instanceof Error ? err.message : 'Erro ao salvar');
-    } finally { setSaving(false); }
+      const payload = { marca: form.marca, tratamento: form.tratamento, indice: form.indice, tipo: form.tipo, descricao: form.descricao || null, quantidade: parseInt(form.quantidade) || 0, quantidade_minima: parseInt(form.quantidade_minima) || 5 };
+      if (editando) await api.put(`/lab/estoque/${editando.id}`, payload);
+      else await api.post('/lab/estoque', payload);
+      setModalProd(false); load();
+    } catch (err: unknown) { setErroProd(err instanceof Error ? err.message : 'Erro ao salvar'); }
+    setSaving(false);
   }
 
   async function salvarMovimentacao(e: React.FormEvent) {
@@ -98,121 +75,91 @@ export default function LabEstoque() {
     if (!produtoMov) return;
     setSavingMov(true); setErroMov('');
     try {
-      await api.post(`/lab/estoque/${produtoMov.id}`, {
-        tipo: mov.tipo,
-        quantidade: parseInt(mov.quantidade) || 0,
-        motivo: mov.motivo || null,
-      });
-      setModalMov(false);
-      load();
-    } catch (err: unknown) {
-      setErroMov(err instanceof Error ? err.message : 'Erro ao registrar');
-    } finally { setSavingMov(false); }
+      await api.post(`/lab/estoque/${produtoMov.id}`, { tipo: mov.tipo, quantidade: parseInt(mov.quantidade) || 0, motivo: mov.motivo || null });
+      setModalMov(false); load();
+    } catch (err: unknown) { setErroMov(err instanceof Error ? err.message : 'Erro ao registrar'); }
+    setSavingMov(false);
   }
 
   const marcasUnicas = [...new Set(produtos.map(p => p.marca))].sort();
   const baixoEstoque = produtos.filter(p => p.quantidade <= p.quantidade_minima);
 
-  const inp: React.CSSProperties = { width: '100%', padding: '8px 10px', fontSize: '13px', background: 'var(--surface-alt)', border: '1px solid var(--border)', borderRadius: '7px', color: 'var(--text)', outline: 'none', boxSizing: 'border-box' };
-  const lbl = (t: string) => <label style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', display: 'block', marginBottom: '4px', textTransform: 'uppercase' as const, letterSpacing: '0.5px' }}>{t}</label>;
+  const modalStyle: React.CSSProperties = { position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:200, display:'flex', alignItems:'center', justifyContent:'center', padding:'16px' };
+  const panelStyle: React.CSSProperties = { background:R.panel, border:`2px outset ${R.bdr}`, width:'100%', maxWidth:'500px', maxHeight:'90vh', overflowY:'auto' };
 
   return (
-    <div style={{ padding: '32px', maxWidth: '1100px' }}>
+    <div style={{ padding:'12px', height:'100%', display:'flex', flexDirection:'column', background:R.bg, fontFamily:"'Montserrat', sans-serif" }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
-        <div>
-          <h1 style={{ margin: '0 0 4px', fontSize: '22px', fontWeight: '700', color: 'var(--text)' }}>Estoque de Lentes</h1>
-          <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-dim)' }}>Blocos de lentes por marca, índice e tratamento</p>
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'8px', flexWrap:'wrap', gap:'6px' }}>
+        <div style={{ background:R.hdr, color:R.hdrTxt, padding:'5px 14px', fontSize:'13px', fontWeight:'700', letterSpacing:'1px', border:`2px outset ${R.hdrBdr}` }}>
+          ESTOQUE DE LENTES — {produtos.length} produto(s)
         </div>
-        <button onClick={abrirNovo} style={{ padding: '10px 20px', fontSize: '14px', fontWeight: '600', background: '#a855f7', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
-          + Novo Produto
+        <button onClick={abrirNovo} style={{ padding:'5px 16px', fontSize:'12px', fontWeight:'700', background:'#880000', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+          + NOVO PRODUTO
         </button>
       </div>
 
       {/* Alerta baixo estoque */}
       {baixoEstoque.length > 0 && (
-        <div style={{ background: 'var(--red-dim)', border: '1px solid var(--red)', borderRadius: '10px', padding: '12px 16px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ color: 'var(--red)', fontSize: '16px' }}>⚠</span>
-          <span style={{ fontSize: '13px', color: 'var(--red)', fontWeight: '600' }}>
-            {baixoEstoque.length} produto(s) com estoque abaixo do mínimo:{' '}
-            {baixoEstoque.map(p => `${p.marca} ${p.indice}`).join(', ')}
-          </span>
+        <div style={{ background:'#ffdddd', border:'1px solid #880000', padding:'6px 12px', marginBottom:'8px', fontSize:'11px', color:'#880000', fontWeight:'700', fontFamily:"'Courier New', monospace" }}>
+          ⚠ {baixoEstoque.length} produto(s) abaixo do mínimo: {baixoEstoque.map(p => `${p.marca} ${p.indice}`).join(', ')}
         </div>
       )}
 
       {/* Filtros */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '16px', flexWrap: 'wrap' }}>
-        <select value={filtroMarca} onChange={e => setFiltroMarca(e.target.value)}
-          style={{ ...inp, width: 'auto', minWidth: '150px', fontFamily: 'inherit' }}>
-          <option value="">Todas as marcas</option>
-          {marcasUnicas.map(m => <option key={m} value={m}>{m}</option>)}
-        </select>
-        <select value={filtroIndice} onChange={e => setFiltroIndice(e.target.value)}
-          style={{ ...inp, width: 'auto', fontFamily: 'inherit' }}>
-          <option value="">Todos os índices</option>
-          {INDICES.map(i => <option key={i} value={i}>{i}</option>)}
-        </select>
-        <select value={filtroTipo} onChange={e => setFiltroTipo(e.target.value)}
-          style={{ ...inp, width: 'auto', fontFamily: 'inherit' }}>
-          <option value="">Todos os tipos</option>
-          {TIPOS.map(t => <option key={t} value={t}>{TIPO_LABEL[t]}</option>)}
-        </select>
+      <div style={{ background:R.panel, border:`2px outset ${R.bdr}`, padding:'6px 12px', marginBottom:'8px', display:'flex', gap:'8px', alignItems:'center', flexWrap:'wrap' }}>
+        {[
+          { val: filtroMarca, set: setFiltroMarca, label: 'Marca', opts: marcasUnicas.map(m => ({ v: m, l: m })) },
+          { val: filtroIndice, set: setFiltroIndice, label: 'Índice', opts: INDICES.map(i => ({ v: i, l: i })) },
+          { val: filtroTipo, set: setFiltroTipo, label: 'Tipo', opts: TIPOS.map(t => ({ v: t, l: TIPO_LABEL[t] })) },
+        ].map(({ val, set, label, opts }) => (
+          <select key={label} value={val} onChange={e => set(e.target.value)}
+            style={{ ...INP, width:'auto', minWidth:'130px' }}>
+            <option value="">Todos {label}s</option>
+            {opts.map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
+          </select>
+        ))}
         {(filtroMarca || filtroIndice || filtroTipo) && (
           <button onClick={() => { setFiltroMarca(''); setFiltroIndice(''); setFiltroTipo(''); }}
-            style={{ fontSize: '12px', color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-            Limpar filtros ×
+            style={{ padding:'4px 10px', fontSize:'11px', fontWeight:'700', background:R.alt, color:'#880000', border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>
+            ✕ LIMPAR
           </button>
         )}
       </div>
 
       {/* Tabela */}
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px' }}>
+      <div style={{ flex:1, overflowY:'auto', border:`2px inset ${R.bdr}` }}>
         {loading ? (
-          <div style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>Carregando...</div>
+          <div style={{ padding:'40px', textAlign:'center', color:'#444', fontFamily:"'Courier New', monospace" }}>Carregando...</div>
         ) : produtos.length === 0 ? (
-          <div style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>
-            Nenhum produto cadastrado.
-          </div>
+          <div style={{ padding:'40px', textAlign:'center', color:'#444' }}>Nenhum produto cadastrado.</div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                {['Marca', 'Índice', 'Tipo', 'Tratamento', 'Descrição', 'Qtd', 'Mínimo', ''].map(h => (
-                  <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
+          <table style={{ width:'100%', borderCollapse:'collapse' }}>
+            <thead style={{ position:'sticky', top:0 }}>
+              <tr style={{ background:R.hdr }}>
+                {['MARCA','ÍNDICE','TIPO','TRATAMENTO','DESCRIÇÃO','QTD','MÍN',''].map(h => (
+                  <th key={h} style={{ padding:'6px 10px', textAlign:'left', fontSize:'10px', fontWeight:'700', color:R.hdrTxt, letterSpacing:'0.5px', border:`1px solid ${R.hdrBdr}`, whiteSpace:'nowrap' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {produtos.map(p => {
+              {produtos.map((p, i) => {
                 const baixo = p.quantidade <= p.quantidade_minima;
                 return (
-                  <tr key={p.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td style={{ padding: '11px 14px', fontSize: '13px', fontWeight: '700', color: 'var(--text)' }}>{p.marca}</td>
-                    <td style={{ padding: '11px 14px', fontSize: '13px', fontFamily: 'var(--mono)', color: 'var(--accent)' }}>{p.indice}</td>
-                    <td style={{ padding: '11px 14px', fontSize: '12px', color: 'var(--text-dim)' }}>{TIPO_LABEL[p.tipo] ?? p.tipo}</td>
-                    <td style={{ padding: '11px 14px', fontSize: '12px', color: 'var(--text-dim)' }}>{p.tratamento}</td>
-                    <td style={{ padding: '11px 14px', fontSize: '12px', color: 'var(--text-muted)' }}>{p.descricao ?? '—'}</td>
-                    <td style={{ padding: '11px 14px' }}>
-                      <span style={{
-                        fontSize: '15px', fontWeight: '800', fontFamily: 'var(--mono)',
-                        color: baixo ? 'var(--red)' : p.quantidade > p.quantidade_minima * 2 ? 'var(--green)' : 'var(--amber)',
-                      }}>
-                        {p.quantidade}
-                      </span>
+                  <tr key={p.id} style={{ background: i % 2 === 0 ? R.panel : R.alt, borderBottom:`1px solid ${R.bdr}` }}>
+                    <td style={{ padding:'6px 10px', fontSize:'12px', fontWeight:'700', color:R.txt }}>{p.marca}</td>
+                    <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', color:'#003388', fontWeight:'700' }}>{p.indice}</td>
+                    <td style={{ padding:'6px 10px', fontSize:'11px', color:'#333' }}>{TIPO_LABEL[p.tipo] ?? p.tipo}</td>
+                    <td style={{ padding:'6px 10px', fontSize:'11px', color:'#333' }}>{p.tratamento}</td>
+                    <td style={{ padding:'6px 10px', fontSize:'11px', color:'#555' }}>{p.descricao ?? '—'}</td>
+                    <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'14px', fontWeight:'900', color: baixo ? '#880000' : p.quantidade > p.quantidade_minima * 2 ? '#006600' : '#886600', textAlign:'center' }}>
+                      {p.quantidade}
                     </td>
-                    <td style={{ padding: '11px 14px', fontSize: '13px', fontFamily: 'var(--mono)', color: 'var(--text-muted)' }}>{p.quantidade_minima}</td>
-                    <td style={{ padding: '11px 14px' }}>
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        <button onClick={() => abrirMov(p)}
-                          style={{ fontSize: '11px', fontWeight: '600', padding: '4px 10px', background: '#a855f720', color: '#a855f7', border: '1px solid #a855f740', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit' }}>
-                          +/−
-                        </button>
-                        <button onClick={() => abrirEditar(p)}
-                          style={{ fontSize: '11px', padding: '4px 10px', background: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit' }}>
-                          Editar
-                        </button>
-                      </div>
+                    <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#555', textAlign:'center' }}>{p.quantidade_minima}</td>
+                    <td style={{ padding:'6px 10px', whiteSpace:'nowrap' }}>
+                      <button onClick={() => abrirMov(p)} style={{ fontSize:'11px', fontWeight:'700', padding:'2px 8px', background:'#d4d0c8', color:'#000', border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', marginRight:'4px' }}>+/−</button>
+                      <button onClick={() => abrirEditar(p)} style={{ fontSize:'11px', padding:'2px 8px', background:R.alt, color:'#333', border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>Editar</button>
                     </td>
                   </tr>
                 );
@@ -224,114 +171,92 @@ export default function LabEstoque() {
 
       {/* Modal Produto */}
       {modalProd && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px', padding: '28px', width: '100%', maxWidth: '540px', maxHeight: '90vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: 'var(--text)' }}>{editando ? 'Editar Produto' : 'Novo Produto'}</h2>
-              <button onClick={() => setModalProd(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '20px', cursor: 'pointer' }}>×</button>
+        <div style={modalStyle}>
+          <div style={panelStyle}>
+            <div style={{ background:R.hdr, color:R.hdrTxt, padding:'6px 14px', fontSize:'12px', fontWeight:'700', letterSpacing:'1px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <span>{editando ? 'EDITAR PRODUTO' : 'INCLUIR PRODUTO'}</span>
+              <button onClick={() => setModalProd(false)} style={{ background:'none', border:'1px solid #ff9999', color:'#ff9999', padding:'1px 6px', cursor:'pointer', fontFamily:'inherit', fontWeight:'700' }}>✕</button>
             </div>
-            {erroProd && <div style={{ background: 'var(--red-dim)', border: '1px solid var(--red)', borderRadius: '7px', padding: '9px 12px', marginBottom: '14px', fontSize: '13px', color: 'var(--red)' }}>{erroProd}</div>}
-            <form onSubmit={salvarProduto} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div>
-                {lbl('Marca *')}
-                <input required value={form.marca} onChange={e => setForm(f => ({ ...f, marca: e.target.value }))} placeholder="Ex: Zeiss, Essilor, Hoya, Shamir..." style={inp} />
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <div>
-                  {lbl('Índice de Refração *')}
-                  <select required value={form.indice} onChange={e => setForm(f => ({ ...f, indice: e.target.value }))} style={{ ...inp, fontFamily: 'inherit' }}>
-                    {INDICES.map(i => <option key={i} value={i}>{i}</option>)}
+            <div style={{ padding:'16px' }}>
+              {erroProd && <div style={{ background:'#ffdddd', border:'1px solid #880000', padding:'6px 10px', marginBottom:'10px', fontSize:'11px', color:'#880000', fontWeight:'700' }}>{erroProd}</div>}
+              <form onSubmit={salvarProduto} style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
+                <div><label style={LBL}>Marca *</label><input required value={form.marca} onChange={e => setForm(f => ({ ...f, marca: e.target.value }))} style={INP} placeholder="Ex: Zeiss, Essilor, Hoya..." /></div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px' }}>
+                  <div><label style={LBL}>Índice *</label>
+                    <select required value={form.indice} onChange={e => setForm(f => ({ ...f, indice: e.target.value }))} style={INP}>
+                      {INDICES.map(i => <option key={i} value={i}>{i}</option>)}
+                    </select>
+                  </div>
+                  <div><label style={LBL}>Tipo</label>
+                    <select value={form.tipo} onChange={e => setForm(f => ({ ...f, tipo: e.target.value }))} style={INP}>
+                      {TIPOS.map(t => <option key={t} value={t}>{TIPO_LABEL[t]}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div><label style={LBL}>Tratamento</label>
+                  <select value={form.tratamento} onChange={e => setForm(f => ({ ...f, tratamento: e.target.value }))} style={INP}>
+                    {TRATAMENTOS.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
-                <div>
-                  {lbl('Tipo')}
-                  <select value={form.tipo} onChange={e => setForm(f => ({ ...f, tipo: e.target.value }))} style={{ ...inp, fontFamily: 'inherit' }}>
-                    {TIPOS.map(t => <option key={t} value={t}>{TIPO_LABEL[t]}</option>)}
-                  </select>
+                <div><label style={LBL}>Descrição</label><input value={form.descricao} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} style={INP} placeholder="Detalhes..." /></div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px' }}>
+                  <div><label style={LBL}>Quantidade</label><input type="number" min="0" value={form.quantidade} onChange={e => setForm(f => ({ ...f, quantidade: e.target.value }))} style={INP} /></div>
+                  <div><label style={LBL}>Qtd mínima (alerta)</label><input type="number" min="0" value={form.quantidade_minima} onChange={e => setForm(f => ({ ...f, quantidade_minima: e.target.value }))} style={INP} /></div>
                 </div>
-              </div>
-              <div>
-                {lbl('Tratamento')}
-                <select value={form.tratamento} onChange={e => setForm(f => ({ ...f, tratamento: e.target.value }))} style={{ ...inp, fontFamily: 'inherit' }}>
-                  {TRATAMENTOS.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-              </div>
-              <div>
-                {lbl('Descrição')}
-                <input value={form.descricao} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} placeholder="Detalhes adicionais..." style={inp} />
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <div>
-                  {lbl('Quantidade inicial')}
-                  <input type="number" min="0" value={form.quantidade} onChange={e => setForm(f => ({ ...f, quantidade: e.target.value }))} style={inp} />
+                <div style={{ display:'flex', gap:'8px', marginTop:'4px' }}>
+                  <button type="button" onClick={() => setModalProd(false)} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:R.alt, color:R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>CANCELAR</button>
+                  <button type="submit" disabled={saving} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:'#880000', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:saving?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+                    {saving ? 'SALVANDO...' : 'GRAVAR'}
+                  </button>
                 </div>
-                <div>
-                  {lbl('Qtd mínima (alerta)')}
-                  <input type="number" min="0" value={form.quantidade_minima} onChange={e => setForm(f => ({ ...f, quantidade_minima: e.target.value }))} style={inp} />
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
-                <button type="button" onClick={() => setModalProd(false)} style={{ flex: 1, padding: '10px', fontSize: '13px', background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
-                <button type="submit" disabled={saving} style={{ flex: 1, padding: '10px', fontSize: '13px', fontWeight: '600', background: '#a855f7', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
-                  {saving ? 'Salvando...' : 'Salvar'}
-                </button>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
         </div>
       )}
 
       {/* Modal Movimentação */}
       {modalMov && produtoMov && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px', padding: '28px', width: '100%', maxWidth: '400px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: 'var(--text)' }}>Movimentar Estoque</h2>
-              <button onClick={() => setModalMov(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '20px', cursor: 'pointer' }}>×</button>
+        <div style={modalStyle}>
+          <div style={{ ...panelStyle, maxWidth:'380px' }}>
+            <div style={{ background:R.hdr, color:R.hdrTxt, padding:'6px 14px', fontSize:'12px', fontWeight:'700', letterSpacing:'1px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <span>MOVIMENTAR ESTOQUE</span>
+              <button onClick={() => setModalMov(false)} style={{ background:'none', border:'1px solid #ff9999', color:'#ff9999', padding:'1px 6px', cursor:'pointer', fontFamily:'inherit', fontWeight:'700' }}>✕</button>
             </div>
-
-            <div style={{ background: 'var(--surface-alt)', borderRadius: '8px', padding: '10px 14px', marginBottom: '16px' }}>
-              <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text)' }}>{produtoMov.marca} — {produtoMov.indice}</div>
-              <div style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{produtoMov.tratamento} · {TIPO_LABEL[produtoMov.tipo]}</div>
-              <div style={{ fontSize: '13px', fontFamily: 'var(--mono)', color: 'var(--accent)', marginTop: '4px' }}>
-                Estoque atual: <strong>{produtoMov.quantidade}</strong>
-              </div>
-            </div>
-
-            {erroMov && <div style={{ background: 'var(--red-dim)', border: '1px solid var(--red)', borderRadius: '7px', padding: '9px 12px', marginBottom: '14px', fontSize: '13px', color: 'var(--red)' }}>{erroMov}</div>}
-
-            <form onSubmit={salvarMovimentacao} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div>
-                {lbl('Tipo de movimentação')}
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  {(['entrada', 'saida'] as const).map(t => (
-                    <button key={t} type="button" onClick={() => setMov(m => ({ ...m, tipo: t }))}
-                      style={{
-                        flex: 1, padding: '9px', fontSize: '13px', fontWeight: '600', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit',
-                        background: mov.tipo === t ? (t === 'entrada' ? 'var(--green-dim)' : 'var(--red-dim)') : 'transparent',
-                        color: mov.tipo === t ? (t === 'entrada' ? 'var(--green)' : 'var(--red)') : 'var(--text-muted)',
-                        border: `1px solid ${mov.tipo === t ? (t === 'entrada' ? 'var(--green)' : 'var(--red)') : 'var(--border)'}`,
-                      }}>
-                      {t === 'entrada' ? '+ Entrada' : '− Saída'}
-                    </button>
-                  ))}
+            <div style={{ padding:'14px' }}>
+              <div style={{ background:R.alt, border:`1px inset ${R.bdr}`, padding:'8px 12px', marginBottom:'12px' }}>
+                <div style={{ fontSize:'12px', fontWeight:'700', color:R.txt }}>{produtoMov.marca} — {produtoMov.indice}</div>
+                <div style={{ fontSize:'11px', color:'#555' }}>{produtoMov.tratamento} · {TIPO_LABEL[produtoMov.tipo]}</div>
+                <div style={{ fontSize:'13px', fontFamily:"'Courier New', monospace", color:'#003388', marginTop:'4px', fontWeight:'700' }}>
+                  Estoque atual: {produtoMov.quantidade}
                 </div>
               </div>
-              <div>
-                {lbl('Quantidade')}
-                <input required type="number" min="1" value={mov.quantidade} onChange={e => setMov(m => ({ ...m, quantidade: e.target.value }))} style={inp} placeholder="0" />
-              </div>
-              <div>
-                {lbl('Motivo')}
-                <input value={mov.motivo} onChange={e => setMov(m => ({ ...m, motivo: e.target.value }))} style={inp} placeholder={mov.tipo === 'entrada' ? 'Ex: Compra fornecedor' : 'Ex: Uso em OS #0001'} />
-              </div>
-              <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
-                <button type="button" onClick={() => setModalMov(false)} style={{ flex: 1, padding: '10px', fontSize: '13px', background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
-                <button type="submit" disabled={savingMov} style={{ flex: 1, padding: '10px', fontSize: '13px', fontWeight: '600', background: mov.tipo === 'entrada' ? 'var(--green)' : 'var(--red)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
-                  {savingMov ? 'Salvando...' : mov.tipo === 'entrada' ? 'Registrar Entrada' : 'Registrar Saída'}
-                </button>
-              </div>
-            </form>
+              {erroMov && <div style={{ background:'#ffdddd', border:'1px solid #880000', padding:'6px 10px', marginBottom:'10px', fontSize:'11px', color:'#880000', fontWeight:'700' }}>{erroMov}</div>}
+              <form onSubmit={salvarMovimentacao} style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
+                <div>
+                  <label style={LBL}>Tipo de movimentação</label>
+                  <div style={{ display:'flex', gap:'6px' }}>
+                    {(['entrada','saida'] as const).map(t => (
+                      <button key={t} type="button" onClick={() => setMov(m => ({ ...m, tipo: t }))}
+                        style={{ flex:1, padding:'6px', fontSize:'12px', fontWeight:'700', cursor:'pointer', fontFamily:'inherit',
+                          background: mov.tipo === t ? (t==='entrada' ? '#ccffcc' : '#ffcccc') : R.alt,
+                          color: mov.tipo === t ? (t==='entrada' ? '#006600' : '#880000') : '#333',
+                          border: mov.tipo === t ? `2px inset ${t==='entrada' ? '#006600' : '#880000'}` : `1px outset ${R.bdr}` }}>
+                        {t === 'entrada' ? '+ ENTRADA' : '− SAÍDA'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div><label style={LBL}>Quantidade</label><input required type="number" min="1" value={mov.quantidade} onChange={e => setMov(m => ({ ...m, quantidade: e.target.value }))} style={INP} placeholder="0" /></div>
+                <div><label style={LBL}>Motivo</label><input value={mov.motivo} onChange={e => setMov(m => ({ ...m, motivo: e.target.value }))} style={INP} placeholder={mov.tipo === 'entrada' ? 'Ex: Compra fornecedor' : 'Ex: Uso em OS #0001'} /></div>
+                <div style={{ display:'flex', gap:'8px', marginTop:'4px' }}>
+                  <button type="button" onClick={() => setModalMov(false)} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:R.alt, color:R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>CANCELAR</button>
+                  <button type="submit" disabled={savingMov} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background: mov.tipo==='entrada' ? '#006600' : '#880000', color:'#fff', border:`1px outset ${mov.tipo==='entrada' ? '#006600' : R.hdrBdr}`, cursor:savingMov?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+                    {savingMov ? 'SALVANDO...' : mov.tipo === 'entrada' ? 'REGISTRAR ENTRADA' : 'REGISTRAR SAÍDA'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}
