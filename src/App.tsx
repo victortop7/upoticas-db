@@ -18,6 +18,8 @@ import LabOperadores from './pages/lab/LabOperadores';
 import LabRelatorios from './pages/lab/LabRelatorios';
 import LabFluxo from './pages/lab/LabFluxo';
 import LabFluxoScan from './pages/lab/LabFluxoScan';
+import LabAdmin from './pages/lab/LabAdmin';
+import LicencaBloqueada from './pages/LicencaBloqueada';
 import LabTransportadoras from './pages/lab/LabTransportadoras';
 import LabVendedores from './pages/lab/LabVendedores';
 import LabContasReceber from './pages/lab/LabContasReceber';
@@ -63,6 +65,7 @@ export default function App() {
           <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/os/:id/imprimir" element={<ImprimirOS />} />
           <Route path="/lab/ordens/:id/imprimir" element={<LabImprimirOS />} />
+          <Route path="/licenca-bloqueada" element={<LicencaBloqueada />} />
           <Route element={<Layout />}>
             <Route path="/inicio" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<Dashboard />} />
@@ -105,6 +108,7 @@ export default function App() {
             <Route path="/lab/relatorios" element={<LabRelatorios />} />
             <Route path="/lab/fluxo" element={<LabFluxo />} />
             <Route path="/lab/fluxo/scan" element={<LabFluxoScan />} />
+            <Route path="/lab/admin" element={<LabAdmin />} />
             <Route path="/lab/transportadoras" element={<LabTransportadoras />} />
             <Route path="/lab/vendedores" element={<LabVendedores />} />
             <Route path="/lab/contas-receber" element={<LabContasReceber />} />
