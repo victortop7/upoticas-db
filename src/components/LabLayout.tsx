@@ -151,8 +151,16 @@ export default function LabLayout() {
 
   function clickModule(letra: ModuleKey, ativo: boolean) {
     if (!ativo) return;
-    // Toggle: clicar no módulo já ativo fecha as opções
-    setActiveModule(prev => prev === letra ? null : letra);
+    if (activeModule === letra) {
+      // Toggle: fecha opções e volta ao dashboard
+      setActiveModule(null);
+      navigate('/lab/dashboard');
+    } else {
+      setActiveModule(letra);
+      // Navega para a primeira opção do módulo
+      const firstOp = OPCOES[letra]?.find(op => op.to && !op.disabled);
+      if (firstOp?.to) navigate(firstOp.to);
+    }
   }
 
   function clickOpcao(op: Opcao) {
