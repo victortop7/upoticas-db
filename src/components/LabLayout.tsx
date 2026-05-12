@@ -131,10 +131,9 @@ export default function LabLayout() {
     return () => window.removeEventListener('keydown', onKey);
   }, [altF1, activeModule, navigate]);
 
-  // Auto-detect module from route
+  // Auto-detect module from route — always update, even to null
   useEffect(() => {
-    const detected = detectModule(location.pathname);
-    if (detected) setActiveModule(detected);
+    setActiveModule(detectModule(location.pathname));
   }, [location.pathname]);
 
   if (loading) {
@@ -152,7 +151,8 @@ export default function LabLayout() {
 
   function clickModule(letra: ModuleKey, ativo: boolean) {
     if (!ativo) return;
-    setActiveModule(letra);
+    // Toggle: clicar no módulo já ativo fecha as opções
+    setActiveModule(prev => prev === letra ? null : letra);
   }
 
   function clickOpcao(op: Opcao) {
