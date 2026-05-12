@@ -1,6 +1,101 @@
 import { useState, useEffect, useCallback } from 'react';
 import { adminRequest } from '../../lib/api';
 
+const PIN_CORRETO = '2423';
+
+function PinScreen({ onOk }: { onOk: () => void }) {
+  const [pin, setPin] = useState('');
+  const [erro, setErro] = useState(false);
+  const [shake, setShake] = useState(false);
+
+  function press(d: string) {
+    if (pin.length >= 4) return;
+    const novo = pin + d;
+    setPin(novo);
+    setErro(false);
+    if (novo.length === 4) {
+      setTimeout(() => {
+        if (novo === PIN_CORRETO) {
+          sessionStorage.setItem('admin_pin_ok', '1');
+          onOk();
+        } else {
+          setErro(true);
+          setShake(true);
+          setTimeout(() => { setPin(''); setShake(false); }, 700);
+        }
+      }, 200);
+    }
+  }
+
+  function del() { setPin(p => p.slice(0, -1)); setErro(false); }
+
+  const digits = [['1','2','3'],['4','5','6'],['7','8','9'],['←','0','✓']];
+
+  return (
+    <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#c8c4b0' }}>
+      <div style={{ background: '#d4d0c8', border: '2px outset #b0aca4', width: '280px' }}>
+        <div style={{ background: 'linear-gradient(90deg,#880000,#cc0000)', color: '#ffcccc', padding: '8px 14px', fontWeight: '700', fontSize: '13px', letterSpacing: '1px', border: '2px outset #aa2222', borderBottom: 'none', textAlign: 'center' }}>
+          ACESSO RESTRITO
+        </div>
+        <div style={{ border: '2px inset #b0aca4', padding: '20px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '16px', fontSize: '11px', color: '#444', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            Digite o PIN de 4 dígitos
+          </div>
+
+          {/* Display */}
+          <div style={{
+            display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '16px',
+            animation: shake ? 'shake 0.5s' : 'none',
+          }}>
+            {[0,1,2,3].map(i => (
+              <div key={i} style={{
+                width: '36px', height: '44px', border: `2px inset ${erro ? '#880000' : '#808080'}`,
+                background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '22px', fontFamily: "'Courier New', monospace", fontWeight: '900',
+                color: erro ? '#880000' : '#000',
+              }}>
+                {pin[i] ? '●' : ''}
+              </div>
+            ))}
+          </div>
+
+          {erro && (
+            <div style={{ textAlign: 'center', color: '#880000', fontSize: '11px', fontWeight: '700', marginBottom: '10px', fontFamily: "'Courier New', monospace" }}>
+              PIN INCORRETO
+            </div>
+          )}
+
+          {/* Keypad */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px' }}>
+            {digits.flat().map(d => (
+              <button key={d} onClick={() => d === '←' ? del() : d === '✓' ? undefined : press(d)}
+                style={{
+                  padding: '12px', fontSize: d === '←' || d === '✓' ? '16px' : '18px',
+                  fontWeight: '700', fontFamily: "'Courier New', monospace",
+                  background: d === '←' ? '#dedad2' : '#d4d0c8',
+                  color: d === '✓' ? '#888' : '#000',
+                  border: '2px outset #b0aca4', cursor: 'pointer',
+                  lineHeight: '1',
+                }}>
+                {d}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+      <style>{`
+        @keyframes shake {
+          0%,100%{transform:translateX(0)}
+          20%{transform:translateX(-8px)}
+          40%{transform:translateX(8px)}
+          60%{transform:translateX(-6px)}
+          80%{transform:translateX(6px)}
+        }
+      `}</style>
+    </div>
+  );
+}
+
 interface Tenant {
   id: string;
   nome: string;
@@ -40,6 +135,7 @@ function fmtDate(s: string | null) {
 }
 
 export default function LabAdmin() {
+  const [pinOk, setPinOk] = useState(() => sessionStorage.getItem('admin_pin_ok') === '1');
   const [secret, setSecret] = useState(() => sessionStorage.getItem('admin_secret') || '');
   const [authed, setAuthed] = useState(false);
   const [tenants, setTenants] = useState<Tenant[]>([]);
@@ -110,6 +206,8 @@ export default function LabAdmin() {
     !busca || t.nome.toLowerCase().includes(busca.toLowerCase()) ||
     t.email.toLowerCase().includes(busca.toLowerCase())
   );
+
+  if (!pinOk) return <PinScreen onOk={() => setPinOk(true)} />;
 
   // Login screen
   if (!authed) {
