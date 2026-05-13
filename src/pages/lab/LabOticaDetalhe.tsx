@@ -125,6 +125,7 @@ export default function LabOticaDetalhe() {
   if (loading) return <div style={{ padding: '48px', color: 'var(--text-muted)', fontSize: '14px' }}>Carregando...</div>;
   if (!data) return <div style={{ padding: '48px', color: 'var(--red)', fontSize: '14px' }}>Ótica não encontrada.</div>;
 
+  const [filtroOS, setFiltroOS] = useState('');
   const { otica, ordens, stats } = data;
 
   // ===== MODO EDIÇÃO =====
@@ -478,45 +479,74 @@ export default function LabOticaDetalhe() {
 
         {/* OS History */}
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px' }}>
-          <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text)' }}>Histórico de Ordens</span>
-            <button onClick={() => navigate(`/lab/ordens/nova?otica=${id}`)} style={{ fontSize: '12px', color: '#880000', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '600' }}>
-              + Nova OS →
-            </button>
+          <div style={{ padding: '12px 18px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text)' }}>Histórico de Ordens — {ordens.length} OS</span>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <input
+                value={filtroOS}
+                onChange={e => setFiltroOS(e.target.value)}
+                placeholder="Buscar Nº OS, ref., cont. interno..."
+                style={{ padding: '5px 10px', fontSize: '12px', background: 'var(--surface-alt)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', outline: 'none', fontFamily: 'var(--mono)', width: '220px' }}
+              />
+              {filtroOS && (
+                <button onClick={() => setFiltroOS('')}
+                  style={{ fontSize: '12px', color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
+              )}
+              <button onClick={() => navigate(`/lab/ordens/nova?otica=${id}`)}
+                style={{ fontSize: '12px', color: '#880000', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '600', whiteSpace: 'nowrap' }}>
+                + Nova OS →
+              </button>
+            </div>
           </div>
-          {ordens.length === 0 ? (
-            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>Nenhuma OS para esta ótica.</div>
-          ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                  {['Nº OS', 'Ref.', 'Serviços', 'Total', 'Previsão', 'Status'].map(h => (
-                    <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: '10px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                {ordens.map((o: any) => (
-                  <tr key={o.id} onClick={() => navigate(`/lab/ordens/${o.id}`)}
-                    style={{ borderBottom: '1px solid var(--border)', cursor: 'pointer' }}
-                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-alt)')}
-                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                    <td style={{ padding: '10px 12px', fontFamily: 'var(--mono)', fontSize: '12px', fontWeight: '600', color: 'var(--text)' }}>#{String(o.numero).padStart(4, '0')}</td>
-                    <td style={{ padding: '10px 12px', fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{o.ref_otica ?? '—'}</td>
-                    <td style={{ padding: '10px 12px', fontSize: '11px', color: 'var(--text-dim)' }}>{o.servicos_count} serv.</td>
-                    <td style={{ padding: '10px 12px', fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--text)' }}>{brl(o.total)}</td>
-                    <td style={{ padding: '10px 12px', fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{o.previsao_entrega ?? '—'}</td>
-                    <td style={{ padding: '10px 12px' }}>
-                      <span style={{ fontSize: '10px', fontWeight: '600', color: STATUS_COLOR[o.status] ?? 'var(--text-dim)', background: `${STATUS_COLOR[o.status] ?? 'var(--text-dim)'}18`, padding: '2px 7px', borderRadius: '20px' }}>
-                        {STATUS_LABEL[o.status] ?? o.status}
-                      </span>
-                    </td>
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          {(() => {
+            const f = filtroOS.trim().toLowerCase();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const filtradas = f ? ordens.filter((o: any) =>
+              String(o.numero).padStart(4,'0').includes(f) ||
+              String(o.numero).includes(f) ||
+              (o.ref_otica ?? '').toLowerCase().includes(f) ||
+              (o.cont_interno ?? '').toLowerCase().includes(f)
+            ) : ordens;
+            if (filtradas.length === 0) return (
+              <div style={{ padding: '32px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
+                {filtroOS ? `Nenhuma OS encontrada para "${filtroOS}"` : 'Nenhuma OS para esta ótica.'}
+              </div>
+            );
+            return (
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                    {['Nº OS', 'Data', 'Ref.', 'Cont. Int.', 'Serviços', 'Total', 'Previsão', 'Status'].map(h => (
+                      <th key={h} style={{ padding: '8px 10px', textAlign: 'left', fontSize: '10px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+                </thead>
+                <tbody>
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                  {filtradas.map((o: any) => (
+                    <tr key={o.id} onClick={() => navigate(`/lab/ordens/${o.id}`)}
+                      style={{ borderBottom: '1px solid var(--border)', cursor: 'pointer' }}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-alt)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                      <td style={{ padding: '9px 10px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '700', color: '#880000' }}>#{String(o.numero).padStart(4, '0')}</td>
+                      <td style={{ padding: '9px 10px', fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{o.created_at ? o.created_at.slice(0,10).split('-').reverse().join('/') : '—'}</td>
+                      <td style={{ padding: '9px 10px', fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{o.ref_otica ?? '—'}</td>
+                      <td style={{ padding: '9px 10px', fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{o.cont_interno ?? '—'}</td>
+                      <td style={{ padding: '9px 10px', fontSize: '11px', color: 'var(--text-dim)' }}>{o.servicos_count} serv.</td>
+                      <td style={{ padding: '9px 10px', fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--text)', fontWeight: '600' }}>{brl(o.total)}</td>
+                      <td style={{ padding: '9px 10px', fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{o.previsao_entrega ? o.previsao_entrega.slice(0,10).split('-').reverse().join('/') : '—'}</td>
+                      <td style={{ padding: '9px 10px' }}>
+                        <span style={{ fontSize: '10px', fontWeight: '600', color: STATUS_COLOR[o.status] ?? 'var(--text-dim)', background: `${STATUS_COLOR[o.status] ?? 'var(--text-dim)'}18`, padding: '2px 7px', borderRadius: '20px' }}>
+                          {STATUS_LABEL[o.status] ?? o.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            );
+          })()}
         </div>
       </div>
     </div>
