@@ -75,6 +75,8 @@ export default function LabOticaDetalhe() {
   const [condicoes, setCondicoes] = useState<string[]>(Array(9).fill(''));
   const [saving, setSaving] = useState(false);
   const [filtroOS, setFiltroOS] = useState('');
+  const [filtroDataIni, setFiltroDataIni] = useState('');
+  const [filtroDataFim, setFiltroDataFim] = useState('');
 
   function load() {
     setLoading(true);
@@ -411,142 +413,189 @@ export default function LabOticaDetalhe() {
     );
   }
 
-  // ===== MODO VISUALIZAÇÃO =====
+  // ===== MODO VISUALIZAÇÃO — RETRO =====
+  const RV = { bg:'#c8c4b0', panel:'#d4d0c8', alt:'#dedad2', bdr:'#b0aca4', hdr:'linear-gradient(90deg,#880000,#cc0000)', hdrTxt:'#ffcccc', hdrBdr:'#aa2222', txt:'#000' };
+  const RINP: React.CSSProperties = { padding:'5px 8px', fontSize:'12px', background:'#fff', border:'1px solid #999', color:'#000', outline:'none', fontFamily:"'Courier New', monospace", boxSizing:'border-box' };
+
+  const ST_BADGE: Record<string, { bg: string; color: string; label: string }> = {
+    aguardando: { bg:'#fff8cc', color:'#886600', label:'AGUARDANDO' },
+    em_producao:{ bg:'#cce0ff', color:'#003388', label:'EM PRODUÇÃO' },
+    pronto:     { bg:'#ccffcc', color:'#006600', label:'PRONTO' },
+    entregue:   { bg:'#e0e0e0', color:'#444',    label:'ENTREGUE' },
+    cancelado:  { bg:'#ffcccc', color:'#880000', label:'CANCELADO' },
+  };
+
+  function fmtD(s: string | null) {
+    if (!s) return '—';
+    return s.slice(0,10).split('-').reverse().join('/');
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ordensFiltradas = ordens.filter((o: any) => {
+    const txt = filtroOS.trim().toLowerCase();
+    const data = o.created_at ? o.created_at.slice(0,10) : '';
+    if (txt && !String(o.numero).padStart(4,'0').includes(txt) && !String(o.numero).includes(txt) &&
+        !(o.ref_otica ?? '').toLowerCase().includes(txt) && !(o.cont_interno ?? '').toLowerCase().includes(txt)) return false;
+    if (filtroDataIni && data < filtroDataIni) return false;
+    if (filtroDataFim && data > filtroDataFim) return false;
+    return true;
+  });
+
+  const temFiltro = filtroOS || filtroDataIni || filtroDataFim;
+
   return (
-    <div style={{ padding: '24px', maxWidth: '1100px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <button onClick={() => navigate('/lab/oticas')} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '20px' }}>←</button>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {otica.codigo && <span style={{ fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--text-muted)', background: 'var(--surface-alt)', padding: '2px 8px', borderRadius: '4px', border: '1px solid var(--border)' }}>{otica.codigo}</span>}
-              <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: 'var(--text)' }}>{otica.nome}</h1>
-              {otica.nome_reduzido && <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>({otica.nome_reduzido})</span>}
-            </div>
-            <p style={{ margin: '2px 0 0', fontSize: '12px', color: 'var(--text-dim)' }}>
-              {[otica.cidade, otica.uf].filter(Boolean).join('/') || 'Ótica Cliente'}
-              {otica.lista_preco ? ` · Lista ${otica.lista_preco}` : ''}
-              {otica.condicao_pgto ? ` · ${otica.condicao_pgto}` : ''}
-            </p>
+    <div style={{ padding:'12px', height:'100%', display:'flex', flexDirection:'column', background:RV.bg, fontFamily:"'Montserrat', sans-serif" }}>
+      <style>{`@media print{.no-print{display:none!important}body{background:#fff!important}}`}</style>
+
+      {/* Header */}
+      <div className="no-print" style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'8px', gap:'8px', flexWrap:'wrap' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+          <button onClick={() => navigate('/lab/oticas')}
+            style={{ padding:'4px 10px', fontSize:'11px', fontWeight:'700', background:RV.alt, color:RV.txt, border:`1px outset ${RV.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>
+            ← VOLTAR
+          </button>
+          <div style={{ background:RV.hdr, color:RV.hdrTxt, padding:'5px 14px', fontSize:'13px', fontWeight:'700', letterSpacing:'1px', border:`2px outset ${RV.hdrBdr}` }}>
+            {otica.codigo && <span style={{ fontFamily:"'Courier New', monospace", marginRight:'8px', opacity:0.8 }}>{otica.codigo}</span>}
+            {otica.nome}
+            {otica.nome_reduzido && <span style={{ fontSize:'11px', opacity:0.8, marginLeft:'8px' }}>({otica.nome_reduzido})</span>}
           </div>
+          <span style={{ fontSize:'11px', color:'#555' }}>{[otica.cidade, otica.uf].filter(Boolean).join('/')}{otica.lista_preco ? ` · Lista ${otica.lista_preco}` : ''}</span>
         </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button onClick={() => setEditando(true)} style={{ padding: '8px 16px', fontSize: '13px', background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>
+        <div style={{ display:'flex', gap:'6px' }}>
+          <button onClick={() => setEditando(true)}
+            style={{ padding:'5px 12px', fontSize:'11px', fontWeight:'700', background:RV.alt, color:RV.txt, border:`1px outset ${RV.bdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
             Editar
           </button>
-          <button onClick={() => navigate(`/lab/ordens/nova?otica=${id}`)} style={{ padding: '8px 18px', fontSize: '13px', fontWeight: '600', background: '#880000', color: 'white', border: 'none', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>
-            + Nova OS
+          <button onClick={() => navigate(`/lab/ordens/nova?otica=${id}`)}
+            style={{ padding:'5px 14px', fontSize:'12px', fontWeight:'700', background:'#880000', color:RV.hdrTxt, border:`1px outset ${RV.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+            + NOVA OS
           </button>
         </div>
       </div>
 
       {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '16px' }}>
+      <div style={{ display:'flex', gap:'8px', marginBottom:'8px', flexWrap:'wrap' }}>
         {[
-          { label: 'Total de OS', value: stats?.total_ordens ?? 0, color: 'var(--text)' },
-          { label: 'Em Aberto', value: stats?.em_aberto ?? 0, color: 'var(--amber)' },
-          { label: 'Prontos', value: stats?.prontos ?? 0, color: 'var(--green)' },
-          { label: 'Valor Total', value: brl(stats?.valor_total ?? 0), color: 'var(--accent)', mono: true },
-        ].map((k, i) => (
-          <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', padding: '14px' }}>
-            <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '5px' }}>{k.label}</div>
-            <div style={{ fontSize: '18px', fontWeight: '800', color: k.color, fontFamily: 'var(--mono)' }}>{k.value}</div>
+          { label:'TOTAL DE OS', val: stats?.total_ordens ?? 0, color:'#000' },
+          { label:'EM ABERTO',   val: stats?.em_aberto ?? 0,   color:'#886600' },
+          { label:'PRONTOS',     val: stats?.prontos ?? 0,      color:'#006600' },
+          { label:'VALOR TOTAL', val: brl(stats?.valor_total ?? 0), color:'#880000', str:true },
+        ].map(({ label, val, color, str }) => (
+          <div key={label} style={{ background:RV.panel, border:`2px outset ${RV.bdr}`, padding:'6px 16px', flexShrink:0 }}>
+            <div style={{ fontSize:'10px', fontWeight:'700', color:'#666', textTransform:'uppercase', letterSpacing:'0.5px' }}>{label}</div>
+            <div style={{ fontSize:str ? '16px' : '22px', fontWeight:'900', color, fontFamily:"'Courier New', monospace", lineHeight:'1.2' }}>{val}</div>
           </div>
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: '14px' }}>
+      <div style={{ flex:1, display:'grid', gridTemplateColumns:'200px 1fr', gap:'8px', overflow:'hidden', minHeight:0 }}>
+
         {/* Info */}
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px', alignSelf: 'start' }}>
-          <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text)', marginBottom: '12px' }}>Informações</div>
-          <Field l="Código" v={otica.codigo} />
-          <Field l="Lista de Preços" v={otica.lista_preco ? `Lista ${otica.lista_preco}` : null} />
-          <Field l="Cond. Pagamento" v={otica.condicao_pgto} />
-          <Field l="Classificação" v={otica.classificacao_cli} />
-          <Field l="Tipo Fechamento" v={otica.tipo_fechamento} />
-          <Field l="Via Transporte" v={otica.via_transporte} />
-          <Field l="CNPJ" v={otica.cnpj} />
-          <Field l="Insc. Estadual" v={otica.inscricao_estadual} />
-          <Field l="Telefone" v={otica.telefone} />
-          <Field l="E-mail" v={otica.email} />
-          <Field l="Endereço" v={otica.endereco} />
-          <Field l="Bairro" v={otica.bairro} />
-          <Field l="Cidade/UF" v={[otica.cidade, otica.uf].filter(Boolean).join('/')} />
-          <Field l="CEP" v={otica.cep} />
-          <Field l="Observação" v={otica.observacao} />
-          {otica.limite_credito && <Field l="Limite Crédito" v={brl(Number(otica.limite_credito))} />}
+        <div style={{ background:RV.panel, border:`2px inset ${RV.bdr}`, padding:'10px', overflowY:'auto', alignSelf:'start' }}>
+          <div style={{ background:RV.hdr, color:RV.hdrTxt, padding:'3px 8px', fontSize:'10px', fontWeight:'700', letterSpacing:'1px', marginBottom:'8px', border:`1px outset ${RV.hdrBdr}` }}>INFORMAÇÕES</div>
+          {[
+            ['CÓDIGO', otica.codigo],
+            ['LISTA DE PREÇOS', otica.lista_preco ? `Lista ${otica.lista_preco}` : null],
+            ['COND. PAGAMENTO', otica.condicao_pgto],
+            ['CNPJ', otica.cnpj],
+            ['IE', otica.inscricao_estadual],
+            ['TELEFONE', otica.telefone],
+            ['E-MAIL', otica.email],
+            ['ENDEREÇO', otica.endereco],
+            ['BAIRRO', otica.bairro],
+            ['CIDADE/UF', [otica.cidade, otica.uf].filter(Boolean).join('/')],
+            ['CEP', otica.cep],
+            ['OBSERVAÇÃO', otica.observacao],
+          ].filter(([, v]) => v).map(([l, v]) => (
+            <div key={String(l)} style={{ marginBottom:'6px', borderBottom:`1px solid ${RV.bdr}`, paddingBottom:'4px' }}>
+              <div style={{ fontSize:'9px', fontWeight:'700', color:'#666', textTransform:'uppercase', letterSpacing:'0.5px' }}>{l}</div>
+              <div style={{ fontSize:'11px', color:RV.txt, fontFamily:"'Courier New', monospace", wordBreak:'break-all' }}>{v}</div>
+            </div>
+          ))}
         </div>
 
         {/* OS History */}
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px' }}>
-          <div style={{ padding: '12px 18px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text)' }}>Histórico de Ordens — {ordens.length} OS</span>
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <input
-                value={filtroOS}
-                onChange={e => setFiltroOS(e.target.value)}
-                placeholder="Buscar Nº OS, ref., cont. interno..."
-                style={{ padding: '5px 10px', fontSize: '12px', background: 'var(--surface-alt)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', outline: 'none', fontFamily: 'var(--mono)', width: '220px' }}
-              />
-              {filtroOS && (
-                <button onClick={() => setFiltroOS('')}
-                  style={{ fontSize: '12px', color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
-              )}
-              <button onClick={() => navigate(`/lab/ordens/nova?otica=${id}`)}
-                style={{ fontSize: '12px', color: '#880000', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '600', whiteSpace: 'nowrap' }}>
-                + Nova OS →
+        <div style={{ display:'flex', flexDirection:'column', overflow:'hidden', minHeight:0 }}>
+
+          {/* Filtros */}
+          <div className="no-print" style={{ background:RV.panel, border:`2px outset ${RV.bdr}`, padding:'7px 12px', marginBottom:'6px', display:'flex', gap:'8px', alignItems:'center', flexWrap:'wrap' }}>
+            <input value={filtroOS} onChange={e => setFiltroOS(e.target.value)}
+              placeholder="Buscar Nº OS, ref., cont. int..." style={{ ...RINP, width:'190px' }} />
+            <input type="date" value={filtroDataIni} onChange={e => setFiltroDataIni(e.target.value)} style={{ ...RINP, width:'120px' }} />
+            <span style={{ fontSize:'11px', color:'#555' }}>até</span>
+            <input type="date" value={filtroDataFim} onChange={e => setFiltroDataFim(e.target.value)} style={{ ...RINP, width:'120px' }} />
+            {temFiltro && (
+              <button onClick={() => { setFiltroOS(''); setFiltroDataIni(''); setFiltroDataFim(''); }}
+                style={{ padding:'4px 10px', fontSize:'11px', fontWeight:'700', background:RV.alt, color:'#880000', border:`1px outset ${RV.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>
+                ✕ LIMPAR
               </button>
+            )}
+            <button onClick={() => window.print()}
+              style={{ padding:'4px 12px', fontSize:'11px', fontWeight:'700', background:'#003388', color:'#fff', border:'1px outset #003388', cursor:'pointer', fontFamily:'inherit', marginLeft:'auto' }}>
+              🖨️ IMPRIMIR
+            </button>
+          </div>
+
+          {/* Título de impressão */}
+          <div style={{ display:'none' }} className="print-only">
+            <div style={{ textAlign:'center', marginBottom:'8px', fontFamily:"'Courier New', monospace", fontWeight:'700', fontSize:'14px' }}>
+              HISTÓRICO DE OS — {otica.nome} {filtroDataIni||filtroDataFim ? `| ${fmtD(filtroDataIni)} a ${fmtD(filtroDataFim)}` : ''}
             </div>
           </div>
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          {(() => {
-            const f = filtroOS.trim().toLowerCase();
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const filtradas = f ? ordens.filter((o: any) =>
-              String(o.numero).padStart(4,'0').includes(f) ||
-              String(o.numero).includes(f) ||
-              (o.ref_otica ?? '').toLowerCase().includes(f) ||
-              (o.cont_interno ?? '').toLowerCase().includes(f)
-            ) : ordens;
-            if (filtradas.length === 0) return (
-              <div style={{ padding: '32px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
-                {filtroOS ? `Nenhuma OS encontrada para "${filtroOS}"` : 'Nenhuma OS para esta ótica.'}
+
+          {/* Tabela */}
+          <div style={{ background:RV.hdr, color:RV.hdrTxt, padding:'4px 10px', fontSize:'11px', fontWeight:'700', letterSpacing:'0.5px', border:`2px outset ${RV.hdrBdr}`, borderBottom:'none' }}>
+            HISTÓRICO DE ORDENS — {ordensFiltradas.length} OS{temFiltro ? ` (filtrado de ${ordens.length})` : ''}
+          </div>
+          <div style={{ flex:1, overflowY:'auto', border:`2px inset ${RV.bdr}` }}>
+            {ordensFiltradas.length === 0 ? (
+              <div style={{ padding:'32px', textAlign:'center', color:'#555', fontFamily:"'Courier New', monospace" }}>
+                {temFiltro ? 'Nenhuma OS encontrada com esse filtro.' : 'Nenhuma OS para esta ótica.'}
               </div>
-            );
-            return (
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    {['Nº OS', 'Data', 'Ref.', 'Cont. Int.', 'Serviços', 'Total', 'Previsão', 'Status'].map(h => (
-                      <th key={h} style={{ padding: '8px 10px', textAlign: 'left', fontSize: '10px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
+            ) : (
+              <table style={{ width:'100%', borderCollapse:'collapse' }}>
+                <thead style={{ position:'sticky', top:0 }}>
+                  <tr style={{ background:RV.hdr }}>
+                    {['Nº OS','DATA','REF.','CONT. INT.','SERV.','TOTAL','PREVISÃO','STATUS'].map(h => (
+                      <th key={h} style={{ padding:'5px 8px', textAlign: h==='TOTAL'?'right':'left', fontSize:'10px', fontWeight:'700', color:RV.hdrTxt, border:`1px solid ${RV.hdrBdr}`, whiteSpace:'nowrap', letterSpacing:'0.5px' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  {filtradas.map((o: any) => (
-                    <tr key={o.id} onClick={() => navigate(`/lab/ordens/${o.id}`)}
-                      style={{ borderBottom: '1px solid var(--border)', cursor: 'pointer' }}
-                      onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-alt)')}
-                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                      <td style={{ padding: '9px 10px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '700', color: '#880000' }}>#{String(o.numero).padStart(4, '0')}</td>
-                      <td style={{ padding: '9px 10px', fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{o.created_at ? o.created_at.slice(0,10).split('-').reverse().join('/') : '—'}</td>
-                      <td style={{ padding: '9px 10px', fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{o.ref_otica ?? '—'}</td>
-                      <td style={{ padding: '9px 10px', fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{o.cont_interno ?? '—'}</td>
-                      <td style={{ padding: '9px 10px', fontSize: '11px', color: 'var(--text-dim)' }}>{o.servicos_count} serv.</td>
-                      <td style={{ padding: '9px 10px', fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--text)', fontWeight: '600' }}>{brl(o.total)}</td>
-                      <td style={{ padding: '9px 10px', fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{o.previsao_entrega ? o.previsao_entrega.slice(0,10).split('-').reverse().join('/') : '—'}</td>
-                      <td style={{ padding: '9px 10px' }}>
-                        <span style={{ fontSize: '10px', fontWeight: '600', color: STATUS_COLOR[o.status] ?? 'var(--text-dim)', background: `${STATUS_COLOR[o.status] ?? 'var(--text-dim)'}18`, padding: '2px 7px', borderRadius: '20px' }}>
-                          {STATUS_LABEL[o.status] ?? o.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                  {ordensFiltradas.map((o: any, i: number) => {
+                    const st = ST_BADGE[o.status] || { bg:'#eee', color:'#333', label: String(o.status).toUpperCase() };
+                    return (
+                      <tr key={o.id} onClick={() => navigate(`/lab/ordens/${o.id}`)}
+                        style={{ background: i%2===0 ? RV.panel : RV.alt, borderBottom:`1px solid ${RV.bdr}`, cursor:'pointer' }}
+                        onMouseEnter={e => (e.currentTarget.style.background='#880000')}
+                        onMouseLeave={e => (e.currentTarget.style.background= i%2===0 ? RV.panel : RV.alt)}>
+                        <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'900', color:'#880000' }}>#{String(o.numero).padStart(4,'0')}</td>
+                        <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#333', whiteSpace:'nowrap' }}>{fmtD(o.created_at)}</td>
+                        <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#333' }}>{o.ref_otica||'—'}</td>
+                        <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#333' }}>{o.cont_interno||'—'}</td>
+                        <td style={{ padding:'6px 8px', fontSize:'11px', color:'#333', textAlign:'center' }}>{o.servicos_count}</td>
+                        <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'700', color:RV.txt, textAlign:'right', whiteSpace:'nowrap' }}>{brl(o.total)}</td>
+                        <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#333', whiteSpace:'nowrap' }}>{fmtD(o.previsao_entrega)}</td>
+                        <td style={{ padding:'6px 8px' }}>
+                          <span style={{ fontSize:'10px', fontWeight:'700', color:st.color, background:st.bg, padding:'2px 6px', border:`1px solid ${st.color}`, whiteSpace:'nowrap' }}>{st.label}</span>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
+                <tfoot>
+                  <tr style={{ background:RV.hdr }}>
+                    <td colSpan={5} style={{ padding:'5px 8px', fontSize:'11px', fontWeight:'700', color:RV.hdrTxt }}>TOTAL</td>
+                    <td style={{ padding:'5px 8px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'900', color:RV.hdrTxt, textAlign:'right' }}>
+                      {brl(ordensFiltradas.reduce((a: number, o: any) => a + (o.total||0), 0))}
+                    </td>
+                    <td colSpan={2} />
+                  </tr>
+                </tfoot>
               </table>
-            );
-          })()}
+            )}
+          </div>
         </div>
       </div>
     </div>
