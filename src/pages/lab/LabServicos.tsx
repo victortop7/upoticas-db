@@ -2,9 +2,14 @@ import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
 
 interface Servico {
-  id: string; codigo: string; nome: string;
-  unidade: string; valor_padrao: number; valor_lista2: number; ativo: number;
+  id: string; codigo: string; nome: string; unidade: string;
+  valor_padrao: number; valor_lista2: number;
+  valor_lista3: number; valor_lista4: number; valor_lista5: number;
+  ativo: number;
 }
+
+const LISTA_FIELDS = ['valor_padrao','valor_lista2','valor_lista3','valor_lista4','valor_lista5'] as const;
+type ListaField = typeof LISTA_FIELDS[number];
 
 const SEED_PRODUTOS = [
   { codigo:'0300', nome:'ACCLIMATES UHD DIGITAL',                   unidade:'UN', preco1:0,      preco2:0 },
@@ -78,28 +83,70 @@ export default function LabServicos() {
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(false);
   const [editItem, setEditItem] = useState<Servico | null>(null);
-  const [form, setForm] = useState({ codigo: '', nome: '', unidade: '', valor_padrao: '', valor_lista2: '' });
+  const [form, setForm] = useState({ codigo: '', nome: '', unidade: '', valor_padrao: '', valor_lista2: '', valor_lista3: '', valor_lista4: '', valor_lista5: '' });
   const [saving, setSaving] = useState(false);
   const [seeding, setSeeding] = useState(false);
   const [busca, setBusca] = useState('');
   const [erro, setErro] = useState('');
+  const [listaNomes, setListaNomes] = useState<string[]>(['PREÇO 1','PREÇO 2','PREÇO 3','PREÇO 4','PREÇO 5']);
+  const [listasAtivas, setListasAtivas] = useState(2);
 
   function load() {
     setLoading(true);
     api.get<Servico[]>('/lab/servicos').then(setServicos).catch(() => setServicos([])).finally(() => setLoading(false));
   }
-  useEffect(() => { load(); }, []);
 
-  function openNovo() { setEditItem(null); setForm({ codigo:'', nome:'', unidade:'UN', valor_padrao:'', valor_lista2:'' }); setErro(''); setModal(true); }
+  useEffect(() => {
+    load();
+    // Carrega nomes e quantidade de listas da configuração
+    api.get<Record<string, string>>('/lab/configuracoes').then(cfg => {
+      const nomes = [
+        cfg['tab_lista_1'] || 'PREÇO 1',
+        cfg['tab_lista_2'] || 'PREÇO 2',
+        cfg['tab_lista_3'] || 'PREÇO 3',
+        cfg['tab_lista_4'] || 'PREÇO 4',
+        cfg['tab_lista_5'] || 'PREÇO 5',
+      ];
+      setListaNomes(nomes);
+      // Conta quantas listas têm nome configurado (mínimo 2)
+      let ativas = 2;
+      for (let i = 2; i < 5; i++) {
+        if (cfg[`tab_lista_${i + 1}`]) ativas = i + 1;
+      }
+      setListasAtivas(Math.max(2, ativas));
+    }).catch(() => {});
+  }, []);
+
+  function fv(v: string) { const n = parseFloat(v.replace(',','.')); return isNaN(n) || n === 0 ? null : n; }
+
+  function openNovo() {
+    setEditItem(null);
+    setForm({ codigo:'', nome:'', unidade:'UN', valor_padrao:'', valor_lista2:'', valor_lista3:'', valor_lista4:'', valor_lista5:'' });
+    setErro(''); setModal(true);
+  }
   function openEdit(s: Servico) {
     setEditItem(s);
-    setForm({ codigo: s.codigo||'', nome: s.nome, unidade: s.unidade||'', valor_padrao: s.valor_padrao>0 ? String(s.valor_padrao) : '', valor_lista2: s.valor_lista2>0 ? String(s.valor_lista2) : '' });
+    setForm({
+      codigo: s.codigo||'', nome: s.nome, unidade: s.unidade||'',
+      valor_padrao: s.valor_padrao>0 ? String(s.valor_padrao) : '',
+      valor_lista2: s.valor_lista2>0 ? String(s.valor_lista2) : '',
+      valor_lista3: s.valor_lista3>0 ? String(s.valor_lista3) : '',
+      valor_lista4: s.valor_lista4>0 ? String(s.valor_lista4) : '',
+      valor_lista5: s.valor_lista5>0 ? String(s.valor_lista5) : '',
+    });
     setErro(''); setModal(true);
   }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault(); setSaving(true); setErro('');
-    const payload = { codigo: form.codigo||null, nome: form.nome, unidade: form.unidade||null, valor_padrao: parseFloat(form.valor_padrao.replace(',','.'))||0, valor_lista2: parseFloat(form.valor_lista2.replace(',','.'))||null };
+    const payload = {
+      codigo: form.codigo||null, nome: form.nome, unidade: form.unidade||null,
+      valor_padrao: fv(form.valor_padrao) ?? 0,
+      valor_lista2: fv(form.valor_lista2),
+      valor_lista3: fv(form.valor_lista3),
+      valor_lista4: fv(form.valor_lista4),
+      valor_lista5: fv(form.valor_lista5),
+    };
     try {
       if (editItem) await api.put(`/lab/servicos/${editItem.id}`, payload);
       else await api.post('/lab/servicos', payload);
@@ -161,9 +208,13 @@ export default function LabServicos() {
           <table style={{ width:'100%', borderCollapse:'collapse' }}>
             <thead style={{ position:'sticky', top:0 }}>
               <tr style={{ background:R.hdr }}>
-                {['CÓDIGO','DESCRIÇÃO','UN','PREÇO 1','PREÇO 2',''].map(h => (
-                  <th key={h} style={{ padding:'6px 10px', textAlign: h==='PREÇO 1'||h==='PREÇO 2' ? 'right' : 'left', fontSize:'10px', fontWeight:'700', color:R.hdrTxt, letterSpacing:'0.5px', border:`1px solid ${R.hdrBdr}`, whiteSpace:'nowrap' }}>{h}</th>
+                {['CÓDIGO','DESCRIÇÃO','UN'].map(h => (
+                  <th key={h} style={{ padding:'6px 10px', textAlign:'left', fontSize:'10px', fontWeight:'700', color:R.hdrTxt, letterSpacing:'0.5px', border:`1px solid ${R.hdrBdr}`, whiteSpace:'nowrap' }}>{h}</th>
                 ))}
+                {LISTA_FIELDS.slice(0, listasAtivas).map((_, i) => (
+                  <th key={i} style={{ padding:'6px 10px', textAlign:'right', fontSize:'10px', fontWeight:'700', color:R.hdrTxt, letterSpacing:'0.5px', border:`1px solid ${R.hdrBdr}`, whiteSpace:'nowrap' }}>{listaNomes[i]}</th>
+                ))}
+                <th style={{ padding:'6px 10px', border:`1px solid ${R.hdrBdr}` }}></th>
               </tr>
             </thead>
             <tbody>
@@ -174,8 +225,11 @@ export default function LabServicos() {
                   <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', color:'#555', whiteSpace:'nowrap' }}>{s.codigo||'—'}</td>
                   <td style={{ padding:'6px 10px', fontSize:'12px', fontWeight:'700', color:R.txt }}>{s.nome}</td>
                   <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#555', textAlign:'center' }}>{s.unidade||'—'}</td>
-                  <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', color:R.txt, textAlign:'right' }}>{brl(s.valor_padrao)}</td>
-                  <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', color:'#003388', textAlign:'right' }}>{brl(s.valor_lista2)}</td>
+                  {LISTA_FIELDS.slice(0, listasAtivas).map((field, li) => (
+                    <td key={field} style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', color: li===0 ? R.txt : '#003388', textAlign:'right' }}>
+                      {brl(s[field as ListaField] as number)}
+                    </td>
+                  ))}
                   <td style={{ padding:'6px 10px', whiteSpace:'nowrap' }}>
                     <button onClick={() => openEdit(s)} style={{ fontSize:'11px', padding:'2px 8px', background:R.alt, color:'#333', border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', marginRight:'4px' }}>Editar</button>
                     <button onClick={() => handleDelete(s.id)} style={{ fontSize:'11px', padding:'2px 8px', background:'#ffcccc', color:'#880000', border:'1px outset #880000', cursor:'pointer', fontFamily:'inherit' }}>✕</button>
@@ -203,10 +257,23 @@ export default function LabServicos() {
                   <div><label style={LBL}>Descrição *</label><input required value={form.nome} onChange={e => setForm(f=>({...f,nome:e.target.value}))} style={{ ...INP, fontFamily:"'Montserrat', sans-serif" }} /></div>
                   <div><label style={LBL}>UN</label><input value={form.unidade} onChange={e => setForm(f=>({...f,unidade:e.target.value}))} style={INP} placeholder="UN" /></div>
                 </div>
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px' }}>
-                  <div><label style={LBL}>PREÇO 1 (Lista 1) R$</label><input value={form.valor_padrao} onChange={e => setForm(f=>({...f,valor_padrao:e.target.value}))} style={INP} placeholder="0,00" /></div>
-                  <div><label style={LBL}>PREÇO 2 (Lista 2) R$</label><input value={form.valor_lista2} onChange={e => setForm(f=>({...f,valor_lista2:e.target.value}))} style={INP} placeholder="0,00" /></div>
+                <div style={{ display:'grid', gridTemplateColumns: listasAtivas <= 2 ? '1fr 1fr' : listasAtivas === 3 ? '1fr 1fr 1fr' : '1fr 1fr', gap:'8px' }}>
+                  {LISTA_FIELDS.slice(0, listasAtivas).map((field, i) => (
+                    <div key={field}>
+                      <label style={LBL}>{listaNomes[i]} R$</label>
+                      <input
+                        value={form[field as keyof typeof form]}
+                        onChange={e => setForm(f => ({ ...f, [field]: e.target.value }))}
+                        style={INP} placeholder="0,00"
+                      />
+                    </div>
+                  ))}
                 </div>
+                {listasAtivas < 5 && (
+                  <div style={{ fontSize:'10px', color:'#666', fontFamily:"'Courier New', monospace", borderTop:`1px solid ${R.bdr}`, paddingTop:'6px' }}>
+                    Para adicionar mais listas: A → Tabelas → Listas de Preços (configure LISTA {listasAtivas + 1})
+                  </div>
+                )}
                 <div style={{ display:'flex', gap:'8px', marginTop:'4px' }}>
                   <button type="button" onClick={() => setModal(false)} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:R.alt, color:R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>CANCELAR</button>
                   <button type="submit" disabled={saving} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:'#880000', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:saving?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>

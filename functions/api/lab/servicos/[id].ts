@@ -8,8 +8,15 @@ export const onRequestPut = async ({ request, env, params }: { request: Request;
     const { tenant_id } = auth;
     const b = await request.json() as Record<string, unknown>;
     await env.DB.prepare(
-      "UPDATE lab_servicos_catalogo SET codigo=?, nome=?, unidade=?, valor_padrao=?, valor_lista2=? WHERE id=? AND tenant_id=?"
-    ).bind(b.codigo ?? null, b.nome, b.unidade ?? null, b.valor_padrao ?? 0, b.valor_lista2 ?? null, params.id, tenant_id).run();
+      `UPDATE lab_servicos_catalogo
+       SET codigo=?, nome=?, unidade=?, valor_padrao=?, valor_lista2=?, valor_lista3=?, valor_lista4=?, valor_lista5=?
+       WHERE id=? AND tenant_id=?`
+    ).bind(
+      b.codigo ?? null, b.nome, b.unidade ?? null,
+      b.valor_padrao ?? 0, b.valor_lista2 ?? null,
+      b.valor_lista3 ?? null, b.valor_lista4 ?? null, b.valor_lista5 ?? null,
+      params.id, tenant_id
+    ).run();
     return json({ ok: true });
   } catch (err) { return json({ error: String(err) }, 500); }
 };
