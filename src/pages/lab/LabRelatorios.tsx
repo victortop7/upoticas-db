@@ -56,6 +56,32 @@ export default function LabRelatorios() {
   const [ordens, setOrdens]     = useState<Ordem[]>([]);
   const [loadingOS, setLoadingOS] = useState(false);
 
+  // Busca por número de OS
+  const [buscaOS, setBuscaOS]     = useState('');
+  const [buscandoOS, setBuscandoOS] = useState(false);
+  const [erroBuscaOS, setErroBuscaOS] = useState('');
+
+  async function buscarPorNumero() {
+    const num = buscaOS.trim().replace(/^#+/, '');
+    if (!num) return;
+    setBuscandoOS(true); setErroBuscaOS('');
+    try {
+      const r = await api.get<Ordem[]>(`/lab/ordens?q=${encodeURIComponent(num)}`);
+      const found = r.find(o => String(o.numero) === num || String(o.numero).padStart(4,'0') === num.padStart(4,'0'));
+      if (found) {
+        navigate(`/lab/ordens/${found.id}`);
+      } else if (r.length === 1) {
+        navigate(`/lab/ordens/${r[0].id}`);
+      } else if (r.length > 0) {
+        // Múltiplos resultados — mostra drill-down da primeira ótica encontrada
+        setErroBuscaOS(`${r.length} OS encontradas. Refine o número.`);
+      } else {
+        setErroBuscaOS(`OS #${num.padStart(4,'0')} não encontrada`);
+      }
+    } catch { setErroBuscaOS('Erro ao buscar'); }
+    setBuscandoOS(false);
+  }
+
   const buscarResumo = useCallback(async () => {
     setLoading(true); setOticaSel(null); setOrdens([]);
     try {
@@ -93,9 +119,10 @@ export default function LabRelatorios() {
   if (oticaSel) {
     return (
       <div style={{ padding:'12px', height:'100%', display:'flex', flexDirection:'column', background:R.bg, fontFamily:"'Montserrat', sans-serif" }}>
+        <style>{`@media print{.no-print{display:none!important}body{background:#fff!important}}`}</style>
 
         {/* Header */}
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'8px', gap:'6px', flexWrap:'wrap' }}>
+        <div className="no-print" style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'8px', gap:'6px', flexWrap:'wrap' }}>
           <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
             <button onClick={() => setOticaSel(null)}
               style={{ padding:'5px 12px', fontSize:'11px', fontWeight:'700', background:R.alt, color:R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>
@@ -105,8 +132,22 @@ export default function LabRelatorios() {
               {oticaSel.nome} — {ordens.length} OS
             </div>
           </div>
-          <div style={{ fontSize:'11px', color:'#555', fontFamily:"'Courier New', monospace" }}>
-            {fmtDate(dataIni)} até {fmtDate(dataFim)}
+          <div style={{ display:'flex', gap:'8px', alignItems:'center' }}>
+            <div style={{ fontSize:'11px', color:'#555', fontFamily:"'Courier New', monospace" }}>
+              {fmtDate(dataIni)} até {fmtDate(dataFim)}
+            </div>
+            <button onClick={() => window.print()}
+              style={{ padding:'5px 14px', fontSize:'11px', fontWeight:'700', background:'#003388', color:'#fff', border:'1px outset #003388', cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+              🖨️ IMPRIMIR
+            </button>
+          </div>
+        </div>
+
+        {/* Título de impressão */}
+        <div style={{ display:'none' }} className="print-only">
+          <div style={{ textAlign:'center', marginBottom:'8px', fontFamily:"'Courier New', monospace" }}>
+            <div style={{ fontSize:'16px', fontWeight:'900' }}>RELATÓRIO DE OS — {oticaSel.nome}</div>
+            <div style={{ fontSize:'12px' }}>Período: {fmtDate(dataIni)} até {fmtDate(dataFim)} &nbsp;|&nbsp; Total: {ordens.length} OS</div>
           </div>
         </div>
 
@@ -194,14 +235,44 @@ export default function LabRelatorios() {
   // ─── RESUMO GERAL ──────────────────────────────────────────────────────────
   return (
     <div style={{ padding:'12px', height:'100%', display:'flex', flexDirection:'column', background:R.bg, fontFamily:"'Montserrat', sans-serif" }}>
+      <style>{`@media print{.no-print{display:none!important}.print-only{display:block!important}body{background:#fff!important}}`}</style>
 
       {/* Header */}
-      <div style={{ background:R.hdr, color:R.hdrTxt, padding:'5px 14px', fontSize:'13px', fontWeight:'700', letterSpacing:'1px', border:`2px outset ${R.hdrBdr}`, marginBottom:'8px' }}>
-        RELATÓRIO DE ORDENS DE SERVIÇO
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'8px', gap:'8px', flexWrap:'wrap' }}>
+        <div style={{ background:R.hdr, color:R.hdrTxt, padding:'5px 14px', fontSize:'13px', fontWeight:'700', letterSpacing:'1px', border:`2px outset ${R.hdrBdr}` }}>
+          RELATÓRIO DE ORDENS DE SERVIÇO
+        </div>
+        {buscado && (
+          <button onClick={() => window.print()} className="no-print"
+            style={{ padding:'5px 14px', fontSize:'11px', fontWeight:'700', background:'#003388', color:'#fff', border:'1px outset #003388', cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+            🖨️ IMPRIMIR RELATÓRIO
+          </button>
+        )}
+      </div>
+
+      {/* Busca rápida por número de OS */}
+      <div className="no-print" style={{ background:R.panel, border:`2px outset ${R.bdr}`, padding:'8px 14px', marginBottom:'8px', display:'flex', gap:'8px', alignItems:'center', flexWrap:'wrap' }}>
+        <div style={{ fontSize:'10px', fontWeight:'700', color:'#444', textTransform:'uppercase', whiteSpace:'nowrap' }}>Busca rápida por OS:</div>
+        <input
+          value={buscaOS}
+          onChange={e => { setBuscaOS(e.target.value); setErroBuscaOS(''); }}
+          onKeyDown={e => e.key === 'Enter' && buscarPorNumero()}
+          placeholder="Nº da OS (ex: 42 ou 0042)..."
+          style={{ ...INP, width:'180px' }}
+        />
+        <button onClick={buscarPorNumero} disabled={buscandoOS}
+          style={{ padding:'5px 14px', fontSize:'11px', fontWeight:'700', background:'#880000', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+          {buscandoOS ? 'BUSCANDO...' : '🔍 IR PARA OS'}
+        </button>
+        {erroBuscaOS && (
+          <span style={{ fontSize:'11px', color:'#880000', fontWeight:'700', fontFamily:"'Courier New', monospace" }}>
+            ✕ {erroBuscaOS}
+          </span>
+        )}
       </div>
 
       {/* Filtros */}
-      <div style={{ background:R.panel, border:`2px outset ${R.bdr}`, padding:'10px 14px', marginBottom:'8px' }}>
+      <div className="no-print" style={{ background:R.panel, border:`2px outset ${R.bdr}`, padding:'10px 14px', marginBottom:'8px' }}>
         <div style={{ display:'flex', gap:'8px', flexWrap:'wrap', alignItems:'flex-end' }}>
           <div>
             <div style={{ fontSize:'10px', fontWeight:'700', color:'#444', textTransform:'uppercase', marginBottom:'3px' }}>Período</div>
@@ -228,6 +299,14 @@ export default function LabRelatorios() {
           ))}
         </div>
       </div>
+
+      {/* Título apenas na impressão */}
+      {buscado && (
+        <div className="print-only" style={{ display:'none', textAlign:'center', marginBottom:'10px', fontFamily:"'Courier New', monospace" }}>
+          <div style={{ fontSize:'16px', fontWeight:'900' }}>RELATÓRIO DE ORDENS DE SERVIÇO</div>
+          <div style={{ fontSize:'12px' }}>Período: {fmtDate(dataIni)} até {fmtDate(dataFim)}</div>
+        </div>
+      )}
 
       {/* Totais gerais */}
       {buscado && totais && (
