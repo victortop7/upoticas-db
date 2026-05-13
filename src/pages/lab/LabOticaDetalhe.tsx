@@ -61,68 +61,103 @@ export default function LabOticaDetalhe() {
   const [filtroDataFim, setFiltroDataFim] = useState('');
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function imprimirRelatorio(nomeOtica: string, lista: any[]) {
-    const ST: Record<string, string> = {
-      aguardando:'AGUARDANDO', em_producao:'EM PRODUÇÃO',
-      pronto:'PRONTO', entregue:'ENTREGUE', cancelado:'CANCELADO',
+  async function imprimirRelatorio(oticaId: string, nomeOtica: string, lista: any[]) {
+    const ST: Record<string, { label: string; color: string }> = {
+      aguardando:  { label:'AGUARDANDO',   color:'#886600' },
+      em_producao: { label:'EM PRODUÇÃO',  color:'#003388' },
+      pronto:      { label:'PRONTO',       color:'#006600' },
+      entregue:    { label:'ENTREGUE',     color:'#444' },
+      cancelado:   { label:'CANCELADO',    color:'#880000' },
     };
     function fd(s: string | null) { return s ? s.slice(0,10).split('-').reverse().join('/') : '—'; }
     function mb(v: number) { return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
 
-    const linhas = lista.map((o, i) => `
-      <tr style="background:${i%2===0?'#d4d0c8':'#dedad2'}">
-        <td style="padding:5px 8px;font-family:monospace;font-weight:900;color:#880000">#${String(o.numero).padStart(4,'0')}</td>
-        <td style="padding:5px 8px;font-family:monospace">${fd(o.created_at)}</td>
-        <td style="padding:5px 8px;font-family:monospace">${o.ref_otica||'—'}</td>
-        <td style="padding:5px 8px;font-family:monospace">${o.cont_interno||'—'}</td>
-        <td style="padding:5px 8px;text-align:center">${o.servicos_count||0}</td>
-        <td style="padding:5px 8px;font-family:monospace;text-align:right;font-weight:700">${mb(o.total)}</td>
-        <td style="padding:5px 8px;font-family:monospace">${fd(o.previsao_entrega)}</td>
-        <td style="padding:5px 8px;font-weight:700;color:${
-          o.status==='entregue'?'#444':o.status==='pronto'?'#006600':o.status==='cancelado'?'#880000':'#886600'
-        }">${ST[o.status]||o.status}</td>
-      </tr>`).join('');
+    // Carrega serviços detalhados
+    const p = new URLSearchParams({ otica_id: oticaId });
+    if (filtroDataIni) p.set('data_ini', filtroDataIni);
+    if (filtroDataFim) p.set('data_fim', filtroDataFim);
 
-    const total = lista.reduce((a, o) => a + (o.total||0), 0);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let servicosPorOS: Record<string, any[]> = {};
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const r = await api.get<{ ordens: any[]; servicos: any[] }>(`/lab/relatorios/servicos?${p}`);
+      r.servicos.forEach(s => {
+        if (!servicosPorOS[s.ordem_id]) servicosPorOS[s.ordem_id] = [];
+        servicosPorOS[s.ordem_id].push(s);
+      });
+    } catch { servicosPorOS = {}; }
+
     const periodo = filtroDataIni||filtroDataFim
-      ? `Período: ${fd(filtroDataIni)} a ${fd(filtroDataFim)}`
+      ? `${fd(filtroDataIni)} a ${fd(filtroDataFim)}`
       : 'Todos os períodos';
 
+    const blocos = lista.map(o => {
+      const svcs = servicosPorOS[o.id] || [];
+      const st = ST[o.status] || { label: String(o.status).toUpperCase(), color:'#333' };
+
+      const svcsHtml = svcs.length > 0
+        ? svcs.map(s => `
+          <tr style="background:#f0ede8">
+            <td style="padding:3px 8px 3px 28px;font-family:monospace;font-size:10px;color:#555">${s.codigo||''}</td>
+            <td style="padding:3px 8px;font-size:10px;color:#333" colspan="2">${s.descricao||''}</td>
+            <td style="padding:3px 8px;font-family:monospace;font-size:10px;text-align:center">${Number(s.qtd||0).toFixed(2)}</td>
+            <td style="padding:3px 8px;font-family:monospace;font-size:10px;text-align:right">${mb(s.valor_unit||0)}</td>
+            <td style="padding:3px 8px;font-family:monospace;font-size:10px;text-align:center">${s.perc_desc>0?Number(s.perc_desc).toFixed(1)+'%':'—'}</td>
+            <td style="padding:3px 8px;font-family:monospace;font-size:10px;text-align:right;font-weight:700">${mb(s.total||0)}</td>
+          </tr>`).join('')
+        : `<tr style="background:#f0ede8"><td colspan="7" style="padding:3px 28px;font-size:10px;color:#aaa;font-style:italic">Sem serviços registrados</td></tr>`;
+
+      return `
+        <tr style="background:#880000;page-break-inside:avoid">
+          <td style="padding:5px 8px;font-family:monospace;font-weight:900;color:#fff;font-size:12px">#${String(o.numero).padStart(4,'0')}</td>
+          <td style="padding:5px 8px;font-family:monospace;color:#ffcccc;font-size:10px">${fd(o.created_at)}</td>
+          <td style="padding:5px 8px;font-family:monospace;color:#ffcccc;font-size:10px">Ref: ${o.ref_otica||'—'}</td>
+          <td style="padding:5px 8px;font-family:monospace;color:#ffcccc;font-size:10px">CI: ${o.cont_interno||'—'}</td>
+          <td colspan="2" style="padding:5px 8px;font-size:10px;font-weight:700;color:${st.color};background:#fff3e0">${st.label}</td>
+          <td style="padding:5px 8px;font-family:monospace;font-weight:900;color:#fff;text-align:right">${mb(o.total||0)}</td>
+        </tr>
+        ${svcsHtml}
+        <tr><td colspan="7" style="height:4px;background:#c8c4b0"></td></tr>`;
+    }).join('');
+
+    const totalGeral = lista.reduce((a, o) => a + (o.total||0), 0);
+
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
-      <title>OS — ${nomeOtica}</title>
+      <title>Relatório — ${nomeOtica}</title>
       <style>
-        body{margin:16px;font-family:'Montserrat',Arial,sans-serif;font-size:11px;color:#000}
+        *{box-sizing:border-box}
+        body{margin:12px;font-family:Arial,sans-serif;font-size:11px;color:#000;background:#fff}
         table{width:100%;border-collapse:collapse}
-        th{background:#880000;color:#fff;padding:6px 8px;text-align:left;font-size:10px;letter-spacing:0.5px;white-space:nowrap}
-        th.r,td.r{text-align:right}
-        tr.foot{background:linear-gradient(90deg,#880000,#cc0000)}
-        tr.foot td{color:#fff;font-weight:900;padding:6px 8px;font-family:monospace}
-        @media print{@page{margin:10mm}}
+        .hdr th{background:#880000;color:#fff;padding:5px 8px;text-align:left;font-size:10px;letter-spacing:0.5px;white-space:nowrap}
+        .hdr th.r{text-align:right}
+        @page{margin:8mm}
+        @media print{body{margin:0}}
       </style>
     </head><body>
-      <div style="text-align:center;margin-bottom:12px">
-        <div style="font-size:15px;font-weight:900;text-transform:uppercase">${nomeOtica}</div>
-        <div style="font-size:11px;color:#555">HISTÓRICO DE ORDENS DE SERVIÇO — ${lista.length} OS</div>
-        <div style="font-size:10px;color:#888">${periodo}</div>
+      <div style="text-align:center;margin-bottom:12px;border-bottom:2px solid #880000;padding-bottom:8px">
+        <div style="font-size:16px;font-weight:900;text-transform:uppercase;color:#880000">${nomeOtica}</div>
+        <div style="font-size:11px;color:#333;margin-top:2px">RELATÓRIO DETALHADO DE ORDENS DE SERVIÇO</div>
+        <div style="font-size:10px;color:#666">Período: ${periodo} &nbsp;|&nbsp; ${lista.length} OS &nbsp;|&nbsp; Total: ${mb(totalGeral)}</div>
+        <div style="font-size:9px;color:#aaa">Emitido em ${new Date().toLocaleString('pt-BR')} — UpÓticas Lab</div>
       </div>
       <table>
-        <thead><tr>
-          <th>Nº OS</th><th>DATA</th><th>REF. ÓTICA</th><th>CONT. INT.</th>
-          <th style="text-align:center">SERV.</th><th class="r">TOTAL</th><th>PREVISÃO</th><th>STATUS</th>
+        <thead class="hdr"><tr>
+          <th>Nº OS</th><th>DATA</th><th>REF. ÓTICA</th><th>CONT. INTERNO</th>
+          <th>CÓD</th><th>DESCRIÇÃO / SERVIÇO</th><th>QTD</th><th>V.UNIT</th><th>DESC%</th><th class="r">TOTAL</th>
         </tr></thead>
-        <tbody>${linhas}</tbody>
-        <tfoot><tr class="foot">
-          <td colspan="5">TOTAL GERAL — ${lista.length} OS</td>
-          <td class="r">${mb(total)}</td><td colspan="2"></td>
-        </tr></tfoot>
+        <tbody>${blocos}</tbody>
+        <tfoot>
+          <tr style="background:#880000">
+            <td colspan="9" style="padding:6px 8px;font-weight:900;color:#fff;font-size:12px">TOTAL GERAL — ${lista.length} OS</td>
+            <td style="padding:6px 8px;font-family:monospace;font-weight:900;color:#fff;text-align:right;font-size:13px">${mb(totalGeral)}</td>
+          </tr>
+        </tfoot>
       </table>
-      <div style="margin-top:8px;font-size:9px;color:#aaa;text-align:right">
-        Emitido em ${new Date().toLocaleString('pt-BR')} — UpÓticas Lab
-      </div>
       <script>window.onload=function(){window.print();window.close()}<\/script>
     </body></html>`;
 
-    const w = window.open('','_blank','width=900,height=650');
+    const w = window.open('','_blank','width=1000,height=700');
     if (w) { w.document.write(html); w.document.close(); }
   }
 
@@ -576,7 +611,7 @@ export default function LabOticaDetalhe() {
                 ✕ LIMPAR
               </button>
             )}
-            <button onClick={() => imprimirRelatorio(otica.nome, ordensFiltradas)}
+            <button onClick={() => imprimirRelatorio(id!, otica.nome, ordensFiltradas)}
               style={{ padding:'4px 12px', fontSize:'11px', fontWeight:'700', background:'#003388', color:'#fff', border:'1px outset #003388', cursor:'pointer', fontFamily:'inherit', marginLeft:'auto' }}>
               🖨️ IMPRIMIR RELATÓRIO
             </button>
