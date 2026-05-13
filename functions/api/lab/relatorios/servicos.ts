@@ -33,9 +33,9 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
                COALESCE(s.codigo, sc.codigo, '')               AS codigo,
                COALESCE(s.descricao, sc.nome, 'Serviço')       AS descricao,
                COALESCE(s.qtd, 1)                              AS qtd,
-               COALESCE(s.valor_unit, s.valor_padrao, sc.valor_padrao, 0) AS valor_unit,
+               COALESCE(s.valor_unit, sc.valor_padrao, 0)          AS valor_unit,
                COALESCE(s.perc_desc, 0)                        AS perc_desc,
-               COALESCE(s.total_liq, s.total, 0)               AS total
+               COALESCE(s.total, s.valor_unit * COALESCE(s.qtd, 1), 0) AS total
         FROM lab_servicos_os s
         LEFT JOIN lab_servicos_catalogo sc ON sc.id = s.produto_id AND sc.tenant_id = ?
         JOIN lab_ordens o ON o.id = s.ordem_id
