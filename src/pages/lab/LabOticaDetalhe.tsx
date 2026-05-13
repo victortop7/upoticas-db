@@ -60,6 +60,72 @@ export default function LabOticaDetalhe() {
   const [filtroDataIni, setFiltroDataIni] = useState('');
   const [filtroDataFim, setFiltroDataFim] = useState('');
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function imprimirRelatorio(nomeOtica: string, lista: any[]) {
+    const ST: Record<string, string> = {
+      aguardando:'AGUARDANDO', em_producao:'EM PRODUÇÃO',
+      pronto:'PRONTO', entregue:'ENTREGUE', cancelado:'CANCELADO',
+    };
+    function fd(s: string | null) { return s ? s.slice(0,10).split('-').reverse().join('/') : '—'; }
+    function mb(v: number) { return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+
+    const linhas = lista.map((o, i) => `
+      <tr style="background:${i%2===0?'#d4d0c8':'#dedad2'}">
+        <td style="padding:5px 8px;font-family:monospace;font-weight:900;color:#880000">#${String(o.numero).padStart(4,'0')}</td>
+        <td style="padding:5px 8px;font-family:monospace">${fd(o.created_at)}</td>
+        <td style="padding:5px 8px;font-family:monospace">${o.ref_otica||'—'}</td>
+        <td style="padding:5px 8px;font-family:monospace">${o.cont_interno||'—'}</td>
+        <td style="padding:5px 8px;text-align:center">${o.servicos_count||0}</td>
+        <td style="padding:5px 8px;font-family:monospace;text-align:right;font-weight:700">${mb(o.total)}</td>
+        <td style="padding:5px 8px;font-family:monospace">${fd(o.previsao_entrega)}</td>
+        <td style="padding:5px 8px;font-weight:700;color:${
+          o.status==='entregue'?'#444':o.status==='pronto'?'#006600':o.status==='cancelado'?'#880000':'#886600'
+        }">${ST[o.status]||o.status}</td>
+      </tr>`).join('');
+
+    const total = lista.reduce((a, o) => a + (o.total||0), 0);
+    const periodo = filtroDataIni||filtroDataFim
+      ? `Período: ${fd(filtroDataIni)} a ${fd(filtroDataFim)}`
+      : 'Todos os períodos';
+
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
+      <title>OS — ${nomeOtica}</title>
+      <style>
+        body{margin:16px;font-family:'Montserrat',Arial,sans-serif;font-size:11px;color:#000}
+        table{width:100%;border-collapse:collapse}
+        th{background:#880000;color:#fff;padding:6px 8px;text-align:left;font-size:10px;letter-spacing:0.5px;white-space:nowrap}
+        th.r,td.r{text-align:right}
+        tr.foot{background:linear-gradient(90deg,#880000,#cc0000)}
+        tr.foot td{color:#fff;font-weight:900;padding:6px 8px;font-family:monospace}
+        @media print{@page{margin:10mm}}
+      </style>
+    </head><body>
+      <div style="text-align:center;margin-bottom:12px">
+        <div style="font-size:15px;font-weight:900;text-transform:uppercase">${nomeOtica}</div>
+        <div style="font-size:11px;color:#555">HISTÓRICO DE ORDENS DE SERVIÇO — ${lista.length} OS</div>
+        <div style="font-size:10px;color:#888">${periodo}</div>
+      </div>
+      <table>
+        <thead><tr>
+          <th>Nº OS</th><th>DATA</th><th>REF. ÓTICA</th><th>CONT. INT.</th>
+          <th style="text-align:center">SERV.</th><th class="r">TOTAL</th><th>PREVISÃO</th><th>STATUS</th>
+        </tr></thead>
+        <tbody>${linhas}</tbody>
+        <tfoot><tr class="foot">
+          <td colspan="5">TOTAL GERAL — ${lista.length} OS</td>
+          <td class="r">${mb(total)}</td><td colspan="2"></td>
+        </tr></tfoot>
+      </table>
+      <div style="margin-top:8px;font-size:9px;color:#aaa;text-align:right">
+        Emitido em ${new Date().toLocaleString('pt-BR')} — UpÓticas Lab
+      </div>
+      <script>window.onload=function(){window.print();window.close()}<\/script>
+    </body></html>`;
+
+    const w = window.open('','_blank','width=900,height=650');
+    if (w) { w.document.write(html); w.document.close(); }
+  }
+
   function load() {
     setLoading(true);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -427,10 +493,8 @@ export default function LabOticaDetalhe() {
 
   return (
     <div style={{ padding:'12px', height:'100%', display:'flex', flexDirection:'column', background:RV.bg, fontFamily:"'Montserrat', sans-serif" }}>
-      <style>{`@media print{.no-print{display:none!important}body{background:#fff!important}}`}</style>
-
       {/* Header */}
-      <div className="no-print" style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'8px', gap:'8px', flexWrap:'wrap' }}>
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'8px', gap:'8px', flexWrap:'wrap' }}>
         <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
           <button onClick={() => navigate('/lab/oticas')}
             style={{ padding:'4px 10px', fontSize:'11px', fontWeight:'700', background:RV.alt, color:RV.txt, border:`1px outset ${RV.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>
@@ -512,17 +576,10 @@ export default function LabOticaDetalhe() {
                 ✕ LIMPAR
               </button>
             )}
-            <button onClick={() => window.print()}
+            <button onClick={() => imprimirRelatorio(otica.nome, ordensFiltradas)}
               style={{ padding:'4px 12px', fontSize:'11px', fontWeight:'700', background:'#003388', color:'#fff', border:'1px outset #003388', cursor:'pointer', fontFamily:'inherit', marginLeft:'auto' }}>
-              🖨️ IMPRIMIR
+              🖨️ IMPRIMIR RELATÓRIO
             </button>
-          </div>
-
-          {/* Título de impressão */}
-          <div style={{ display:'none' }} className="print-only">
-            <div style={{ textAlign:'center', marginBottom:'8px', fontFamily:"'Courier New', monospace", fontWeight:'700', fontSize:'14px' }}>
-              HISTÓRICO DE OS — {otica.nome} {filtroDataIni||filtroDataFim ? `| ${fmtD(filtroDataIni)} a ${fmtD(filtroDataFim)}` : ''}
-            </div>
           </div>
 
           {/* Tabela */}
