@@ -19,7 +19,6 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
     if (dataIni) { where += ' AND date(o.created_at) >= ?'; params.push(dataIni); }
     if (dataFim) { where += ' AND date(o.created_at) <= ?'; params.push(dataFim); }
 
-    // Retorna OS com seus serviços agrupados
     const [ordensRes, servicosRes] = await Promise.all([
       env.DB.prepare(`
         SELECT o.id, o.numero, o.status, o.tipo, o.total,
@@ -30,19 +29,23 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
       `).bind(...params).all(),
 
       env.DB.prepare(`
-        SELECT s.ordem_id, s.codigo, s.descricao, s.qtd, s.valor_unit,
-               COALESCE(s.perc_desc, 0) as perc_desc,
-               COALESCE(s.total_liq, s.total, s.valor_unit * s.qtd) as total
+        SELECT s.ordem_id,
+               COALESCE(s.codigo, sc.codigo, '')               AS codigo,
+               COALESCE(s.descricao, sc.nome, 'Serviço')       AS descricao,
+               COALESCE(s.qtd, 1)                              AS qtd,
+               COALESCE(s.valor_unit, s.valor_padrao, sc.valor_padrao, 0) AS valor_unit,
+               COALESCE(s.perc_desc, 0)                        AS perc_desc,
+               COALESCE(s.total_liq, s.total, 0)               AS total
         FROM lab_servicos_os s
+        LEFT JOIN lab_servicos_catalogo sc ON sc.id = s.produto_id AND sc.tenant_id = ?
         JOIN lab_ordens o ON o.id = s.ordem_id
         ${where}
-        AND s.descricao IS NOT NULL AND s.descricao != ''
         ORDER BY o.numero DESC, s.rowid
-      `).bind(...params).all(),
+      `).bind(tenant_id, ...params).all(),
     ]);
 
     return json({
-      ordens: ordensRes.results,
+      ordens:   ordensRes.results,
       servicos: servicosRes.results,
     });
   } catch (err) {
