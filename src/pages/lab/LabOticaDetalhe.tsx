@@ -74,6 +74,7 @@ export default function LabOticaDetalhe() {
   const [contatosMfe, setContatosMfe] = useState<Contato[]>(Array.from({ length: 3 }, () => ({ ...CONTATO_INI })));
   const [condicoes, setCondicoes] = useState<string[]>(Array(9).fill(''));
   const [saving, setSaving] = useState(false);
+  const [filtroOS, setFiltroOS] = useState('');
 
   function load() {
     setLoading(true);
@@ -125,7 +126,6 @@ export default function LabOticaDetalhe() {
   if (loading) return <div style={{ padding: '48px', color: 'var(--text-muted)', fontSize: '14px' }}>Carregando...</div>;
   if (!data) return <div style={{ padding: '48px', color: 'var(--red)', fontSize: '14px' }}>Ótica não encontrada.</div>;
 
-  const [filtroOS, setFiltroOS] = useState('');
   const { otica, ordens, stats } = data;
 
   // ===== MODO EDIÇÃO =====
