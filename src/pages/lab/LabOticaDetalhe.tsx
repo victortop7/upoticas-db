@@ -2,14 +2,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../../lib/api';
 
-const STATUS_COLOR: Record<string, string> = {
-  aguardando: 'var(--amber)', em_producao: 'var(--accent)',
-  pronto: 'var(--green)', entregue: 'var(--text-dim)', cancelado: 'var(--red)',
-};
-const STATUS_LABEL: Record<string, string> = {
-  aguardando: 'Aguardando', em_producao: 'Em Produção',
-  pronto: 'Pronto', entregue: 'Entregue', cancelado: 'Cancelado',
-};
 
 function brl(v: number) {
   return Number(v ?? 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -50,16 +42,6 @@ const TINP: React.CSSProperties = {
   outline: 'none', fontFamily: 'var(--mono)',
 };
 
-function Field({ l, v }: { l: string; v: unknown }) {
-  const val = v != null && v !== '' ? String(v) : null;
-  if (!val) return null;
-  return (
-    <div style={{ marginBottom: '8px' }}>
-      <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '2px' }}>{l}</div>
-      <div style={{ fontSize: '12px', color: 'var(--text)' }}>{val}</div>
-    </div>
-  );
-}
 
 export default function LabOticaDetalhe() {
   const { id } = useParams<{ id: string }>();
