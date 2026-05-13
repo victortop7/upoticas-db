@@ -1,218 +1,317 @@
-import { useEffect, useState } from 'react';
+import { useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 
 interface OticaRow {
-  otica_id: string;
+  otica_id: string; otica_nome: string; otica_codigo: string;
+  total_os: number; entregues: number; canceladas: number; em_aberto: number;
+  valor_total: number;
+}
+interface Totais { total_os: number; valor_total: number; }
+interface Ordem {
+  id: string; numero: number; status: string; tipo: string; total: number;
+  ref_otica: string | null; cont_interno: string | null;
+  previsao_entrega: string | null; created_at: string; vendedor: string | null;
   otica_nome: string;
-  total_pedidos: number;
-  valor_total: number;
 }
 
-interface ServicoRow {
-  descricao: string;
-  qtd_total: number;
-  valor_total: number;
+function brl(v: number) { return Number(v||0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' }); }
+function fmtDate(s: string | null) {
+  if (!s) return '—';
+  return s.slice(0,10).split('-').reverse().join('/');
+}
+function today() { return new Date().toISOString().slice(0,10); }
+function diasAtras(n: number) {
+  const d = new Date(); d.setDate(d.getDate() - n);
+  return d.toISOString().slice(0,10);
 }
 
-interface Dados {
-  oticas: OticaRow[];
-  servicos: ServicoRow[];
-  totais: { total_pedidos: number; valor_total: number } | null;
-  meses: string[];
-}
+const STATUS_STYLE: Record<string, { bg: string; color: string; label: string }> = {
+  aguardando: { bg:'#fff8cc', color:'#886600', label:'AGUARDANDO' },
+  em_producao:{ bg:'#cce0ff', color:'#003388', label:'EM PRODUÇÃO' },
+  pronto:     { bg:'#ccffcc', color:'#006600', label:'PRONTO' },
+  entregue:   { bg:'#e0e0e0', color:'#444',    label:'ENTREGUE' },
+  cancelado:  { bg:'#ffcccc', color:'#880000', label:'CANCELADO' },
+};
 
-function brl(v: number) {
-  return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-}
+const TIPOS: Record<string, string> = {
+  O:'OS Normal', F:'Freeform', G:'Garantia', U:'Venda/Pedido',
+  E:'Encomenda', Z:'Recibo',   N:'Orçamento', M:'Mostruário',
+};
 
-function fmtMes(m: string) {
-  const [y, mo] = m.split('-');
-  const nomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  return `${nomes[parseInt(mo) - 1]}/${y}`;
-}
-
-function mesAtual() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-}
+const R = { bg:'#c8c4b0', panel:'#d4d0c8', alt:'#dedad2', bdr:'#b0aca4', hdr:'linear-gradient(90deg,#880000,#cc0000)', hdrTxt:'#ffcccc', hdrBdr:'#aa2222', txt:'#000', inp:'#fff' };
+const INP: React.CSSProperties = { padding:'5px 8px', fontSize:'12px', background:R.inp, border:'1px solid #999', color:R.txt, outline:'none', fontFamily:"'Courier New', monospace", boxSizing:'border-box' };
 
 export default function LabRelatorios() {
-  const [mes, setMes] = useState(mesAtual());
-  const [dados, setDados] = useState<Dados | null>(null);
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const [dataIni, setDataIni] = useState(diasAtras(30));
+  const [dataFim, setDataFim]  = useState(today());
+  const [loading, setLoading]  = useState(false);
+  const [oticas, setOticas]    = useState<OticaRow[]>([]);
+  const [totais, setTotais]    = useState<Totais | null>(null);
+  const [buscado, setBuscado]  = useState(false);
 
-  useEffect(() => {
-    setLoading(true);
-    api.get<Dados>(`/lab/relatorios/mensal?mes=${mes}`)
-      .then(setDados)
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [mes]);
+  // Drill-down
+  const [oticaSel, setOticaSel] = useState<{id:string; nome:string} | null>(null);
+  const [ordens, setOrdens]     = useState<Ordem[]>([]);
+  const [loadingOS, setLoadingOS] = useState(false);
 
-  const CARD: React.CSSProperties = {
-    background: 'var(--surface)', border: '1px solid var(--border)',
-    borderRadius: '12px', padding: '20px 24px',
-  };
+  const buscarResumo = useCallback(async () => {
+    setLoading(true); setOticaSel(null); setOrdens([]);
+    try {
+      const p = new URLSearchParams({ data_ini: dataIni, data_fim: dataFim });
+      const r = await api.get<{ oticas: OticaRow[]; totais: Totais }>(`/lab/relatorios/periodo?${p}`);
+      setOticas(r.oticas || []);
+      setTotais(r.totais || null);
+      setBuscado(true);
+    } catch {}
+    setLoading(false);
+  }, [dataIni, dataFim]);
 
-  const maiorValor = dados?.oticas.reduce((m, o) => Math.max(m, o.valor_total), 0) || 1;
-  const totalPedidos = dados?.totais?.total_pedidos ?? 0;
-  const totalValor = dados?.totais?.valor_total ?? 0;
+  async function verOtica(o: OticaRow) {
+    setOticaSel({ id: o.otica_id, nome: o.otica_nome });
+    setLoadingOS(true);
+    try {
+      const p = new URLSearchParams({ data_ini: dataIni, data_fim: dataFim, otica_id: o.otica_id });
+      const r = await api.get<{ ordens: Ordem[] }>(`/lab/relatorios/periodo?${p}`);
+      setOrdens(r.ordens || []);
+    } catch {}
+    setLoadingOS(false);
+  }
 
+  const PRESETS = [
+    { label:'Hoje', ini: today(), fim: today() },
+    { label:'7 dias', ini: diasAtras(7), fim: today() },
+    { label:'15 dias', ini: diasAtras(15), fim: today() },
+    { label:'30 dias', ini: diasAtras(30), fim: today() },
+    { label:'Este mês', ini: new Date().toISOString().slice(0,7)+'-01', fim: today() },
+  ];
+
+  const maiorValor = oticas.reduce((m, o) => Math.max(m, o.valor_total), 1);
+
+  // ─── DRILL-DOWN: OS da ótica ───────────────────────────────────────────────
+  if (oticaSel) {
+    return (
+      <div style={{ padding:'12px', height:'100%', display:'flex', flexDirection:'column', background:R.bg, fontFamily:"'Montserrat', sans-serif" }}>
+
+        {/* Header */}
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'8px', gap:'6px', flexWrap:'wrap' }}>
+          <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+            <button onClick={() => setOticaSel(null)}
+              style={{ padding:'5px 12px', fontSize:'11px', fontWeight:'700', background:R.alt, color:R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>
+              ← VOLTAR
+            </button>
+            <div style={{ background:R.hdr, color:R.hdrTxt, padding:'5px 14px', fontSize:'13px', fontWeight:'700', letterSpacing:'1px', border:`2px outset ${R.hdrBdr}` }}>
+              {oticaSel.nome} — {ordens.length} OS
+            </div>
+          </div>
+          <div style={{ fontSize:'11px', color:'#555', fontFamily:"'Courier New', monospace" }}>
+            {fmtDate(dataIni)} até {fmtDate(dataFim)}
+          </div>
+        </div>
+
+        {/* Totalizador rápido */}
+        {ordens.length > 0 && (
+          <div style={{ background:R.panel, border:`2px outset ${R.bdr}`, padding:'8px 16px', marginBottom:'8px', display:'flex', gap:'24px', flexWrap:'wrap' }}>
+            {[
+              { label:'TOTAL OS', val: ordens.length, mono: true },
+              { label:'ENTREGUES', val: ordens.filter(o=>o.status==='entregue').length, mono: true },
+              { label:'EM ABERTO', val: ordens.filter(o=>!['entregue','cancelado'].includes(o.status)).length, mono: true },
+              { label:'VALOR TOTAL', val: brl(ordens.reduce((a,o)=>a+o.total,0)), mono: false },
+            ].map(({ label, val, mono }) => (
+              <div key={label}>
+                <div style={{ fontSize:'10px', fontWeight:'700', color:'#666', textTransform:'uppercase', letterSpacing:'0.5px' }}>{label}</div>
+                <div style={{ fontSize:'18px', fontWeight:'900', color:'#880000', fontFamily: mono ? "'Courier New', monospace" : 'inherit' }}>{val}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Tabela de OS */}
+        <div style={{ flex:1, overflowY:'auto', border:`2px inset ${R.bdr}` }}>
+          {loadingOS ? (
+            <div style={{ padding:'40px', textAlign:'center', color:'#444', fontFamily:"'Courier New', monospace" }}>Carregando...</div>
+          ) : ordens.length === 0 ? (
+            <div style={{ padding:'40px', textAlign:'center', color:'#444' }}>Nenhuma OS no período.</div>
+          ) : (
+            <table style={{ width:'100%', borderCollapse:'collapse' }}>
+              <thead style={{ position:'sticky', top:0 }}>
+                <tr style={{ background:R.hdr }}>
+                  {['Nº OS','DATA','TIPO','STATUS','REF. ÓTICA','CONT. INT.','VENDEDOR','TOTAL','PREVISÃO',''].map(h => (
+                    <th key={h} style={{ padding:'6px 10px', textAlign: h==='TOTAL' ? 'right' : 'left', fontSize:'10px', fontWeight:'700', color:R.hdrTxt, border:`1px solid ${R.hdrBdr}`, whiteSpace:'nowrap', letterSpacing:'0.5px' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {ordens.map((o, i) => {
+                  const st = STATUS_STYLE[o.status] || { bg:'#eee', color:'#333', label: o.status };
+                  return (
+                    <tr key={o.id} style={{ background: i%2===0 ? R.panel : R.alt, borderBottom:`1px solid ${R.bdr}`, cursor:'pointer' }}
+                      onMouseEnter={e => (e.currentTarget.style.background='#880000')}
+                      onMouseLeave={e => (e.currentTarget.style.background= i%2===0 ? R.panel : R.alt)}>
+                      <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'900', color:'#880000' }}
+                        onClick={() => navigate(`/lab/ordens/${o.id}`)}>
+                        #{String(o.numero).padStart(4,'0')}
+                      </td>
+                      <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt }}>{fmtDate(o.created_at)}</td>
+                      <td style={{ padding:'6px 10px', fontSize:'11px', color:'#333' }}>{TIPOS[o.tipo] || o.tipo}</td>
+                      <td style={{ padding:'6px 10px' }}>
+                        <span style={{ fontSize:'10px', fontWeight:'700', color:st.color, background:st.bg, padding:'2px 6px', border:`1px solid ${st.color}`, whiteSpace:'nowrap' }}>{st.label}</span>
+                      </td>
+                      <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#333' }}>{o.ref_otica||'—'}</td>
+                      <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#333' }}>{o.cont_interno||'—'}</td>
+                      <td style={{ padding:'6px 10px', fontSize:'11px', color:'#333' }}>{o.vendedor||'—'}</td>
+                      <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'700', color:R.txt, textAlign:'right', whiteSpace:'nowrap' }}>
+                        {o.total > 0 ? brl(o.total) : '—'}
+                      </td>
+                      <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#333', whiteSpace:'nowrap' }}>{fmtDate(o.previsao_entrega)}</td>
+                      <td style={{ padding:'6px 10px' }}>
+                        <button onClick={() => navigate(`/lab/ordens/${o.id}`)}
+                          style={{ padding:'2px 8px', fontSize:'11px', fontWeight:'700', background:'#880000', color:'#fff', border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}>
+                          VER OS →
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot>
+                <tr style={{ background:R.hdr }}>
+                  <td colSpan={7} style={{ padding:'7px 10px', fontSize:'12px', fontWeight:'700', color:R.hdrTxt }}>TOTAL</td>
+                  <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'13px', fontWeight:'900', color:R.hdrTxt, textAlign:'right' }}>
+                    {brl(ordens.reduce((a,o)=>a+o.total,0))}
+                  </td>
+                  <td colSpan={2} />
+                </tr>
+              </tfoot>
+            </table>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ─── RESUMO GERAL ──────────────────────────────────────────────────────────
   return (
-    <div style={{ padding: '32px', maxWidth: '900px' }}>
-      <style>{`@media print { .no-print { display: none !important; } }`}</style>
+    <div style={{ padding:'12px', height:'100%', display:'flex', flexDirection:'column', background:R.bg, fontFamily:"'Montserrat', sans-serif" }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
-        <div>
-          <h1 style={{ margin: 0, fontSize: '22px', fontWeight: '700', color: 'var(--text)' }}>Relatório Mensal</h1>
-          <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--text-dim)' }}>Pedidos e valores por ótica cliente — {fmtMes(mes)}</p>
-        </div>
-        <button
-          className="no-print"
-          onClick={() => window.print()}
-          style={{ padding: '9px 20px', fontSize: '13px', fontWeight: '600', background: '#880000', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}
-        >
-          🖨️ Imprimir / Salvar PDF
-        </button>
+      <div style={{ background:R.hdr, color:R.hdrTxt, padding:'5px 14px', fontSize:'13px', fontWeight:'700', letterSpacing:'1px', border:`2px outset ${R.hdrBdr}`, marginBottom:'8px' }}>
+        RELATÓRIO DE ORDENS DE SERVIÇO
       </div>
 
-      {/* Filtro de mês */}
-      <div className="no-print" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '24px', alignItems: 'center' }}>
-        {(dados?.meses ?? []).map(m => (
-          <button
-            key={m}
-            onClick={() => setMes(m)}
-            style={{
-              padding: '6px 14px', fontSize: '12px', fontWeight: '600',
-              borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit',
-              background: mes === m ? '#880000' : 'var(--surface-alt)',
-              color: mes === m ? '#ffffff' : 'var(--text-dim)',
-              border: mes === m ? 'none' : '1px solid var(--border)',
-            }}
-          >
-            {fmtMes(m)}
+      {/* Filtros */}
+      <div style={{ background:R.panel, border:`2px outset ${R.bdr}`, padding:'10px 14px', marginBottom:'8px' }}>
+        <div style={{ display:'flex', gap:'8px', flexWrap:'wrap', alignItems:'flex-end' }}>
+          <div>
+            <div style={{ fontSize:'10px', fontWeight:'700', color:'#444', textTransform:'uppercase', marginBottom:'3px' }}>Período</div>
+            <div style={{ display:'flex', gap:'6px', alignItems:'center' }}>
+              <input type="date" value={dataIni} onChange={e => setDataIni(e.target.value)} style={{ ...INP, width:'130px' }} />
+              <span style={{ fontSize:'11px', color:'#555' }}>até</span>
+              <input type="date" value={dataFim} onChange={e => setDataFim(e.target.value)} style={{ ...INP, width:'130px' }} />
+            </div>
+          </div>
+
+          <button onClick={buscarResumo} disabled={loading}
+            style={{ padding:'5px 18px', fontSize:'12px', fontWeight:'700', background:'#880000', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:loading?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase', alignSelf:'flex-end' }}>
+            {loading ? 'BUSCANDO...' : '🔍 GERAR RELATÓRIO'}
           </button>
-        ))}
-        <input
-          type="month"
-          value={mes}
-          onChange={e => setMes(e.target.value)}
-          style={{
-            padding: '5px 10px', fontSize: '12px', borderRadius: '8px',
-            background: 'var(--surface-alt)', border: '1px solid var(--border)',
-            color: 'var(--text)', fontFamily: 'inherit', cursor: 'pointer',
-          }}
-        />
+        </div>
+
+        {/* Atalhos de período */}
+        <div style={{ display:'flex', gap:'4px', marginTop:'8px', flexWrap:'wrap' }}>
+          {PRESETS.map(p => (
+            <button key={p.label} onClick={() => { setDataIni(p.ini); setDataFim(p.fim); }}
+              style={{ padding:'3px 10px', fontSize:'11px', fontWeight:'700', background: dataIni===p.ini && dataFim===p.fim ? '#880000' : R.alt, color: dataIni===p.ini && dataFim===p.fim ? R.hdrTxt : R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>
+              {p.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {loading ? (
-        <div style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Carregando...</div>
-      ) : (
-        <>
-          {/* Cards totais */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
-            <div style={CARD}>
-              <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Total de Pedidos</div>
-              <div style={{ fontSize: '36px', fontWeight: '800', color: 'var(--text)', fontFamily: 'var(--mono)' }}>{totalPedidos}</div>
-              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>em {fmtMes(mes)}</div>
+      {/* Totais gerais */}
+      {buscado && totais && (
+        <div style={{ display:'flex', gap:'10px', marginBottom:'8px', flexWrap:'wrap' }}>
+          {[
+            { label:'TOTAL DE OS', val: String(totais.total_os), sub: `de ${fmtDate(dataIni)} a ${fmtDate(dataFim)}` },
+            { label:'ÓTICAS ATENDIDAS', val: String(oticas.length), sub: 'no período' },
+            { label:'VALOR TOTAL', val: brl(totais.valor_total), sub: 'soma de todas as OS' },
+            { label:'TICKET MÉDIO', val: totais.total_os > 0 ? brl(totais.valor_total / totais.total_os) : '—', sub: 'por OS' },
+          ].map(({ label, val, sub }) => (
+            <div key={label} style={{ background:R.panel, border:`2px outset ${R.bdr}`, padding:'8px 16px', flexShrink:0 }}>
+              <div style={{ fontSize:'10px', fontWeight:'700', color:'#666', textTransform:'uppercase', letterSpacing:'0.5px' }}>{label}</div>
+              <div style={{ fontSize:'20px', fontWeight:'900', color:'#880000', fontFamily:"'Courier New', monospace", lineHeight:'1.2' }}>{val}</div>
+              <div style={{ fontSize:'10px', color:'#888', marginTop:'2px' }}>{sub}</div>
             </div>
-            <div style={CARD}>
-              <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Valor Total</div>
-              <div style={{ fontSize: '30px', fontWeight: '800', color: '#cc0000', fontFamily: 'var(--mono)' }}>{brl(totalValor)}</div>
-              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>em {fmtMes(mes)}</div>
-            </div>
-          </div>
-
-          {/* Tabela */}
-          <div style={CARD}>
-            <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text)', marginBottom: '16px' }}>
-              Pedidos por Ótica — {fmtMes(mes)}
-            </div>
-
-            {!dados?.oticas.length ? (
-              <div style={{ textAlign: 'center', padding: '32px', color: 'var(--text-muted)', fontSize: '13px' }}>
-                Nenhum pedido encontrado neste período
-              </div>
-            ) : (
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    {['Ótica', 'Pedidos', 'Valor Total', 'Participação'].map(h => (
-                      <th key={h} style={{ padding: '8px 12px', textAlign: h === 'Ótica' ? 'left' : 'right', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {dados.oticas.map((o, i) => {
-                    const pct = Math.round((o.valor_total / (totalValor || 1)) * 100);
-                    return (
-                      <tr key={o.otica_id} style={{ borderBottom: i < dados.oticas.length - 1 ? '1px solid var(--border)' : 'none' }}>
-                        <td style={{ padding: '12px 12px', fontSize: '13px', fontWeight: '600', color: 'var(--text)' }}>{o.otica_nome}</td>
-                        <td style={{ padding: '12px 12px', fontSize: '13px', color: 'var(--text)', textAlign: 'right', fontFamily: 'var(--mono)' }}>{o.total_pedidos}</td>
-                        <td style={{ padding: '12px 12px', fontSize: '13px', color: 'var(--text)', textAlign: 'right', fontFamily: 'var(--mono)', fontWeight: '600' }}>{brl(o.valor_total)}</td>
-                        <td style={{ padding: '12px 12px', textAlign: 'right' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
-                            <div style={{ width: '80px', height: '6px', background: 'var(--border)', borderRadius: '3px', overflow: 'hidden' }}>
-                              <div style={{ width: `${Math.round((o.valor_total / maiorValor) * 100)}%`, height: '100%', background: '#cc0000', borderRadius: '3px' }} />
-                            </div>
-                            <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'var(--mono)', width: '32px', textAlign: 'right' }}>{pct}%</span>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-                <tfoot>
-                  <tr style={{ borderTop: '2px solid var(--border)' }}>
-                    <td style={{ padding: '12px 12px', fontSize: '13px', fontWeight: '700', color: 'var(--text)' }}>Total</td>
-                    <td style={{ padding: '12px 12px', fontSize: '13px', fontWeight: '700', color: 'var(--text)', textAlign: 'right', fontFamily: 'var(--mono)' }}>{totalPedidos}</td>
-                    <td style={{ padding: '12px 12px', fontSize: '13px', fontWeight: '700', color: '#cc0000', textAlign: 'right', fontFamily: 'var(--mono)' }}>{brl(totalValor)}</td>
-                    <td />
-                  </tr>
-                </tfoot>
-              </table>
-            )}
-          </div>
-          {/* Tabela de serviços */}
-          {(dados?.servicos?.length ?? 0) > 0 && (
-            <div style={{ ...CARD, marginTop: '16px' }}>
-              <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text)', marginBottom: '16px' }}>
-                Serviços Realizados — {fmtMes(mes)}
-              </div>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    {['Serviço', 'Qtd', 'Valor Total'].map(h => (
-                      <th key={h} style={{ padding: '8px 12px', textAlign: h === 'Serviço' ? 'left' : 'right', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {dados!.servicos.map((s, i) => (
-                    <tr key={i} style={{ borderBottom: i < dados!.servicos.length - 1 ? '1px solid var(--border)' : 'none' }}>
-                      <td style={{ padding: '11px 12px', fontSize: '13px', color: 'var(--text)', fontWeight: '500' }}>{s.descricao}</td>
-                      <td style={{ padding: '11px 12px', fontSize: '13px', color: 'var(--text)', textAlign: 'right', fontFamily: 'var(--mono)' }}>{s.qtd_total}</td>
-                      <td style={{ padding: '11px 12px', fontSize: '13px', color: 'var(--text)', textAlign: 'right', fontFamily: 'var(--mono)', fontWeight: '600' }}>{brl(s.valor_total)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr style={{ borderTop: '2px solid var(--border)' }}>
-                    <td style={{ padding: '11px 12px', fontSize: '13px', fontWeight: '700', color: 'var(--text)' }}>Total</td>
-                    <td style={{ padding: '11px 12px', fontSize: '13px', fontWeight: '700', color: 'var(--text)', textAlign: 'right', fontFamily: 'var(--mono)' }}>
-                      {dados!.servicos.reduce((a, s) => a + s.qtd_total, 0)}
-                    </td>
-                    <td style={{ padding: '11px 12px', fontSize: '13px', fontWeight: '700', color: '#cc0000', textAlign: 'right', fontFamily: 'var(--mono)' }}>
-                      {brl(dados!.servicos.reduce((a, s) => a + s.valor_total, 0))}
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          )}
-        </>
+          ))}
+        </div>
       )}
+
+      {/* Tabela por ótica */}
+      <div style={{ flex:1, overflowY:'auto', border:`2px inset ${R.bdr}` }}>
+        {!buscado ? (
+          <div style={{ padding:'60px', textAlign:'center', color:'#666', fontSize:'12px', fontFamily:"'Courier New', monospace" }}>
+            SELECIONE O PERÍODO E CLIQUE EM "GERAR RELATÓRIO"
+          </div>
+        ) : loading ? (
+          <div style={{ padding:'40px', textAlign:'center', color:'#444', fontFamily:"'Courier New', monospace" }}>Carregando...</div>
+        ) : oticas.length === 0 ? (
+          <div style={{ padding:'40px', textAlign:'center', color:'#444' }}>Nenhuma OS no período selecionado.</div>
+        ) : (
+          <table style={{ width:'100%', borderCollapse:'collapse' }}>
+            <thead style={{ position:'sticky', top:0 }}>
+              <tr style={{ background:R.hdr }}>
+                {['CÓD','ÓTICA CLIENTE','TOTAL OS','ENTREGUES','EM ABERTO','CANCELADAS','VALOR TOTAL',''].map(h => (
+                  <th key={h} style={{ padding:'6px 10px', textAlign: h==='VALOR TOTAL' ? 'right' : 'left', fontSize:'10px', fontWeight:'700', color:R.hdrTxt, border:`1px solid ${R.hdrBdr}`, whiteSpace:'nowrap', letterSpacing:'0.5px' }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {oticas.map((o, i) => {
+                const pct = Math.round((o.valor_total / maiorValor) * 100);
+                return (
+                  <tr key={o.otica_id} style={{ background: i%2===0 ? R.panel : R.alt, borderBottom:`1px solid ${R.bdr}`, cursor:'pointer' }}
+                    onMouseEnter={e => (e.currentTarget.style.background='#880000')}
+                    onMouseLeave={e => (e.currentTarget.style.background= i%2===0 ? R.panel : R.alt)}>
+                    <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#555' }}>{o.otica_codigo||'—'}</td>
+                    <td style={{ padding:'7px 10px', fontSize:'13px', fontWeight:'700', color:R.txt }}>{o.otica_nome}</td>
+                    <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'14px', fontWeight:'900', color:'#000' }}>{o.total_os}</td>
+                    <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'700', color:'#006600' }}>{o.entregues}</td>
+                    <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'700', color:'#003388' }}>{o.em_aberto}</td>
+                    <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', color:'#880000' }}>{o.canceladas}</td>
+                    <td style={{ padding:'7px 10px', textAlign:'right' }}>
+                      <div style={{ fontFamily:"'Courier New', monospace", fontSize:'13px', fontWeight:'700', color:R.txt, marginBottom:'3px' }}>{brl(o.valor_total)}</div>
+                      <div style={{ display:'flex', alignItems:'center', gap:'4px', justifyContent:'flex-end' }}>
+                        <div style={{ width:'60px', height:'5px', background:'#b0aca4', borderRadius:'2px', overflow:'hidden' }}>
+                          <div style={{ width:`${pct}%`, height:'100%', background:'#880000' }} />
+                        </div>
+                        <span style={{ fontSize:'10px', color:'#666', fontFamily:"'Courier New', monospace" }}>{pct}%</span>
+                      </div>
+                    </td>
+                    <td style={{ padding:'7px 10px' }}>
+                      <button onClick={() => verOtica(o)}
+                        style={{ padding:'3px 10px', fontSize:'11px', fontWeight:'700', background:'#880000', color:'#fff', border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}>
+                        VER OS →
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+            <tfoot>
+              <tr style={{ background:R.hdr }}>
+                <td colSpan={2} style={{ padding:'7px 10px', fontSize:'12px', fontWeight:'700', color:R.hdrTxt }}>TOTAL GERAL</td>
+                <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'14px', fontWeight:'900', color:R.hdrTxt }}>{totais?.total_os}</td>
+                <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'13px', fontWeight:'700', color:'#ccffcc' }}>{oticas.reduce((a,o)=>a+o.entregues,0)}</td>
+                <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'13px', color:'#cce0ff' }}>{oticas.reduce((a,o)=>a+o.em_aberto,0)}</td>
+                <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'13px', color:'#ffcccc' }}>{oticas.reduce((a,o)=>a+o.canceladas,0)}</td>
+                <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'14px', fontWeight:'900', color:R.hdrTxt, textAlign:'right' }}>{brl(totais?.valor_total||0)}</td>
+                <td />
+              </tr>
+            </tfoot>
+          </table>
+        )}
+      </div>
     </div>
   );
 }
