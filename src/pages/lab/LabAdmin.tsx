@@ -287,6 +287,13 @@ export default function LabAdmin() {
     } catch {}
   }
 
+  async function handleExcluirLead(id: string) {
+    try {
+      await adminRequest(`/admin/leads?id=${id}`, secret, { method: 'DELETE' });
+      setLeads(ls => ls.filter(l => l.id !== id));
+    } catch {}
+  }
+
   if (!pinOk) return <PinScreen onOk={() => setPinOk(true)} />;
 
   // Login screen
@@ -441,6 +448,10 @@ export default function LabAdmin() {
                             DESCARTAR
                           </button>
                         )}
+                        <button onClick={() => { if (confirm(`Excluir lead de ${l.nome}?`)) handleExcluirLead(l.id); }}
+                          style={{ padding: '3px 8px', fontSize: '10px', fontWeight: '700', background: '#ffdddd', color: '#880000', border: '1px outset #cc8888', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+                          EXCLUIR
+                        </button>
                       </div>
                     </td>
                   </tr>

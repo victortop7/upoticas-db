@@ -104,3 +104,19 @@ export const onRequestPatch = async ({ request, env }: { request: Request; env: 
     return json({ error: 'Erro interno', detail: String(err) }, 500);
   }
 };
+
+// DELETE /api/admin/leads?id=xxx — exclui lead
+export const onRequestDelete = async ({ request, env }: { request: Request; env: Env }) => {
+  if (!isAdmin(request, env)) return json({ error: 'Não autorizado' }, 401);
+
+  try {
+    const url = new URL(request.url);
+    const id = url.searchParams.get('id');
+    if (!id) return json({ error: 'id obrigatório' }, 400);
+
+    await env.DB.prepare('DELETE FROM leads WHERE id = ?').bind(id).run();
+    return json({ ok: true });
+  } catch (err) {
+    return json({ error: 'Erro interno', detail: String(err) }, 500);
+  }
+};
