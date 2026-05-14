@@ -1,9 +1,8 @@
-import type { PagesFunction } from '@cloudflare/workers-types';
 import type { Env } from '../../lib/types';
 import { verifyPassword, signJWT } from '../../lib/jwt';
 import { json } from '../../lib/auth-middleware';
 
-export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
+export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
   try {
     const body = await request.json() as { email: string; senha: string };
 
@@ -12,7 +11,9 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     }
 
     const usuario = await env.DB.prepare(
-      'SELECT u.*, t.nome as tenant_nome, t.tipo as tenant_tipo, t.plano, t.trial_expira, t.ativo as tenant_ativo FROM usuarios u JOIN tenants t ON t.id = u.tenant_id WHERE u.email = ? AND u.ativo = 1'
+      `SELECT u.*, t.nome as tenant_nome, t.tipo as tenant_tipo, t.plano, t.trial_expira,
+              t.ativo as tenant_ativo, COALESCE(t.bloqueado, 0) as bloqueado, t.licenca_expira
+       FROM usuarios u JOIN tenants t ON t.id = u.tenant_id WHERE u.email = ? AND u.ativo = 1`
     ).bind(body.email).first<Record<string, unknown>>();
 
     if (!usuario) {
@@ -38,6 +39,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       email: usuario.email,
       plano: usuario.plano,
       trial_expira: usuario.trial_expira,
+      licenca_expira: usuario.licenca_expira,
+      bloqueado: Boolean(usuario.bloqueado),
       ativo: Boolean(usuario.tenant_ativo),
     };
 

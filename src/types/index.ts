@@ -5,6 +5,8 @@ export interface Tenant {
   tipo: 'otica' | 'lab';
   plano: 'trial' | 'basico' | 'pro';
   trial_expira?: string;
+  licenca_expira?: string;
+  bloqueado?: boolean;
   ativo: boolean;
   created_at: string;
 }

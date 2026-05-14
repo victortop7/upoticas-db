@@ -15,6 +15,30 @@ function licenseBlock(error: string, blocked = false, expired = false): Response
   });
 }
 
+// Valida JWT sem checar licença — usado em /auth/me para o frontend sempre receber o status
+export async function requireAuthBasic(request: Request, env: Env): Promise<AuthData | Response> {
+  const cookie = request.headers.get('cookie') || '';
+  const match = cookie.match(/up_token=([^;]+)/);
+  const token = match?.[1];
+
+  if (!token) {
+    return new Response(JSON.stringify({ error: 'Não autenticado' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const payload = await verifyJWT(token, env.JWT_SECRET);
+  if (!payload) {
+    return new Response(JSON.stringify({ error: 'Token inválido ou expirado' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  return payload as unknown as AuthData;
+}
+
 export async function requireAuth(request: Request, env: Env): Promise<AuthData | Response> {
   const cookie = request.headers.get('cookie') || '';
   const match = cookie.match(/up_token=([^;]+)/);

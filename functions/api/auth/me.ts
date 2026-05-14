@@ -1,13 +1,18 @@
 import type { Env } from '../../lib/types';
-import { requireAuth, json } from '../../lib/auth-middleware';
+import { requireAuthBasic, json } from '../../lib/auth-middleware';
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
-  const auth = await requireAuth(request, env);
+  const auth = await requireAuthBasic(request, env);
   if (auth instanceof Response) return auth;
 
   try {
     const usuario = await env.DB.prepare(
-      'SELECT u.id, u.tenant_id, u.nome, u.email, u.perfil, u.ativo, t.nome as tenant_nome, t.tipo as tenant_tipo, t.plano, t.trial_expira, t.ativo as tenant_ativo FROM usuarios u JOIN tenants t ON t.id = u.tenant_id WHERE u.id = ?'
+      `SELECT u.id, u.tenant_id, u.nome, u.email, u.perfil, u.ativo,
+              t.nome as tenant_nome, t.tipo as tenant_tipo, t.plano,
+              t.trial_expira, t.ativo as tenant_ativo,
+              COALESCE(t.bloqueado, 0) as bloqueado,
+              t.licenca_expira
+       FROM usuarios u JOIN tenants t ON t.id = u.tenant_id WHERE u.id = ?`
     ).bind(auth.usuario_id).first<Record<string, unknown>>();
 
     if (!usuario) return json({ error: 'Usuário não encontrado' }, 404);
@@ -29,6 +34,8 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
         email: usuario.email,
         plano: usuario.plano,
         trial_expira: usuario.trial_expira,
+        licenca_expira: usuario.licenca_expira,
+        bloqueado: Boolean(usuario.bloqueado),
         ativo: Boolean(usuario.tenant_ativo),
       },
     });

@@ -103,6 +103,29 @@ function detectModule(path: string): ModuleKey | null {
   return null;
 }
 
+function calcLicenseStatus(tenant: { plano?: string; trial_expira?: string; licenca_expira?: string; bloqueado?: boolean; ativo?: boolean } | null) {
+  if (!tenant) return { blocked: false, expired: false, daysLeft: null, message: '' };
+
+  if (!tenant.ativo || tenant.bloqueado) {
+    return { blocked: true, expired: false, daysLeft: null, message: 'Acesso bloqueado. Entre em contato com o suporte.' };
+  }
+
+  const expira = tenant.plano === 'trial' ? tenant.trial_expira : tenant.licenca_expira;
+  if (!expira) return { blocked: false, expired: false, daysLeft: null, message: '' };
+
+  const now = new Date();
+  const exp = new Date(expira);
+  const diffMs = exp.getTime() - now.getTime();
+  const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+  if (daysLeft <= 0) {
+    const label = tenant.plano === 'trial' ? 'Período de teste expirado.' : 'Licença expirada.';
+    return { blocked: false, expired: true, daysLeft: 0, message: `${label} Entre em contato para renovar.` };
+  }
+
+  return { blocked: false, expired: false, daysLeft, message: '' };
+}
+
 export default function LabLayout() {
   const { usuario, tenant, loading, logout } = useAuth();
   const navigate = useNavigate();
@@ -111,6 +134,7 @@ export default function LabLayout() {
   const [altF1, setAltF1] = useState(false);
   const [activeModule, setActiveModule] = useState<ModuleKey | null>(() => detectModule(location.pathname));
   const isDashboard = location.pathname === '/lab/dashboard';
+  const licStatus = calcLicenseStatus(tenant);
 
   useEffect(() => {
     const handler = () => setDark(localStorage.getItem('lab_dark') === '1');
@@ -198,6 +222,13 @@ export default function LabLayout() {
         </div>
       </div>
 
+      {/* ── AVISO DE VENCIMENTO ── */}
+      {!licStatus.blocked && !licStatus.expired && licStatus.daysLeft !== null && licStatus.daysLeft <= 3 && (
+        <div style={{ background: licStatus.daysLeft === 1 ? '#cc0000' : licStatus.daysLeft === 2 ? '#aa4400' : '#886600', color: '#fff', padding: '5px 16px', fontSize: '12px', fontWeight: '700', textAlign: 'center', letterSpacing: '1px', fontFamily: "'Courier New', monospace", flexShrink: 0 }}>
+          ⚠ ATENÇÃO: {licStatus.daysLeft === 1 ? 'ÚLTIMO DIA' : `${licStatus.daysLeft} DIAS RESTANTES`} — ENTRE EM CONTATO PARA RENOVAR SUA LICENÇA ⚠
+        </div>
+      )}
+
       {/* ── BODY ── */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
 
@@ -281,6 +312,28 @@ export default function LabLayout() {
         <span>▶ SELECIONE A OPÇÃO DESEJADA</span>
         <span style={{ color: dark ? '#ff4444' : '#cc8888' }}>UpÓticas Lab v1.0</span>
       </div>
+
+      {/* ── OVERLAY BLOQUEIO/EXPIRADO ── */}
+      {(licStatus.blocked || licStatus.expired) && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.88)', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: "'Courier New', monospace" }}>
+          <div style={{ background: 'linear-gradient(180deg,#1a0000,#2a0000)', border: '3px outset #880000', borderRadius: '4px', padding: '40px 60px', maxWidth: '500px', textAlign: 'center' }}>
+            <div style={{ fontSize: '48px', marginBottom: '12px' }}>🔒</div>
+            <div style={{ color: '#ff4444', fontSize: '20px', fontWeight: '700', letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '16px' }}>
+              {licStatus.blocked ? 'SISTEMA BLOQUEADO' : 'LICENÇA EXPIRADA'}
+            </div>
+            <div style={{ color: '#ffcccc', fontSize: '13px', lineHeight: '1.8', marginBottom: '24px' }}>
+              {licStatus.message}
+            </div>
+            <div style={{ color: '#ffaaaa', fontSize: '12px', padding: '12px', background: 'rgba(136,0,0,0.3)', border: '1px solid #880000', borderRadius: '2px', marginBottom: '20px' }}>
+              Entre em contato com o suporte para regularizar o acesso ao sistema.
+            </div>
+            <button onClick={handleLogout}
+              style={{ padding: '8px 24px', fontSize: '12px', fontWeight: 'bold', background: '#880000', color: '#ffcccc', border: '2px outset #aa2222', borderRadius: '2px', cursor: 'pointer', letterSpacing: '1px', textTransform: 'uppercase' }}>
+              SAIR DO SISTEMA
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

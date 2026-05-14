@@ -12,12 +12,8 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
   const data = await res.json();
 
-  // Licença expirada ou acesso bloqueado
+  // Licença expirada ou acesso bloqueado — lança erro, overlay no LabLayout trata
   if (res.status === 402 || res.status === 403) {
-    const reason = data.blocked ? 'blocked' : 'expired';
-    if (typeof window !== 'undefined' && !window.location.pathname.includes('licenca-bloqueada')) {
-      window.location.href = `/licenca-bloqueada?reason=${reason}`;
-    }
     throw new Error(data.error || 'Acesso bloqueado');
   }
 
