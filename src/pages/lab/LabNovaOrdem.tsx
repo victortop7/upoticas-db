@@ -301,6 +301,25 @@ export default function LabNovaOrdem() {
   const totalFrete = parseFloat(frete.replace(',', '.')) || 0;
   const totalFinal = Math.max(0, totalGeral - totalDesc + totalFrete);
 
+  function handleFormKeyDown(e: React.KeyboardEvent<HTMLFormElement>) {
+    if (e.key !== 'Enter') return;
+    const target = e.target as HTMLElement;
+    // Não interceptar: textarea, checkbox, radio, submit/button
+    if (target.tagName === 'TEXTAREA') return;
+    if (target instanceof HTMLInputElement && (target.type === 'checkbox' || target.type === 'radio' || target.type === 'submit')) return;
+    if (target instanceof HTMLButtonElement) return;
+
+    e.preventDefault();
+    const form = e.currentTarget;
+    const focusable = Array.from(
+      form.querySelectorAll<HTMLElement>('input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select, textarea')
+    ).filter(el => !el.hasAttribute('disabled') && !el.hasAttribute('readonly'));
+    const idx = focusable.indexOf(target);
+    if (idx > -1 && idx < focusable.length - 1) {
+      focusable[idx + 1].focus();
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErro('');
@@ -395,7 +414,7 @@ export default function LabNovaOrdem() {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', height: '100%', overflow: 'hidden', background: R.bg, fontFamily: "'Montserrat', sans-serif" }}>
+    <form onSubmit={handleSubmit} onKeyDown={handleFormKeyDown} style={{ display: 'flex', height: '100%', overflow: 'hidden', background: R.bg, fontFamily: "'Montserrat', sans-serif" }}>
 
       {/* ===== TIPO PANEL — mesmo estilo MÓDULOS ===== */}
       <div style={{ width: '180px', flexShrink: 0, background: R.panel, borderRight: `2px solid ${R.border}`, display: 'flex', flexDirection: 'column' }}>
