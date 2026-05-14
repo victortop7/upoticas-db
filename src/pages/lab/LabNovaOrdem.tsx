@@ -6,7 +6,6 @@ import LabShapePicker from '../../components/LabShapePicker';
 interface Otica { id: string; codigo?: string; nome: string; lista_preco?: number; condicao_pgto?: string; }
 interface Produto { id: string; codigo?: string; nome: string; unidade?: string; valor_padrao: number; estoque_atual?: number; }
 interface Usuario { id: string; nome: string; }
-interface Vendedor { id: string; codigo: string; nome: string; }
 
 interface RxOlho {
   esf_longe: string; cil_longe: string; eixo_longe: string; adicao: string;
@@ -140,7 +139,6 @@ export default function LabNovaOrdem() {
   const [oticas, setOticas] = useState<Otica[]>([]);
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [operadores, setOperadores] = useState<Usuario[]>([]);
-  const [vendedores, setVendedores] = useState<Vendedor[]>([]);
   const [saving, setSaving] = useState(false);
   const [erro, setErro] = useState('');
   const [step, setStep] = useState(1);
@@ -172,7 +170,6 @@ export default function LabNovaOrdem() {
   const [fluxoLab, setFluxoLab] = useState(true);
   const [observacoes, setObservacoes] = useState('');
   const [vendedor1Id, setVendedor1Id] = useState('');
-  const [vendedor2Id, setVendedor2Id] = useState('');
 
   // Receita
   const [od, setOd] = useState<RxOlho>({ ...OLHO_INI });
@@ -218,7 +215,6 @@ export default function LabNovaOrdem() {
     }).catch(() => {});
     api.get<Produto[]>('/lab/servicos').then(setProdutos).catch(() => {});
     api.get<{ usuarios: Usuario[] }>('/usuarios').then(d => setOperadores(d.usuarios)).catch(() => {});
-    api.get<Vendedor[]>('/lab/vendedores').then(setVendedores).catch(() => {});
   }, [searchParams]);
 
   function handleOticaLookup(cod: string) {
@@ -378,7 +374,6 @@ export default function LabNovaOrdem() {
         fluxo_lab: fluxoLab ? 1 : 0,
         observacoes: observacoes || null,
         vendedor1_id: vendedor1Id || null,
-        vendedor2_id: vendedor2Id || null,
         total: totalFinal,
         receita: receitaPayload,
         armacao: {
@@ -524,8 +519,8 @@ export default function LabNovaOrdem() {
             </div>
           </div>
 
-          {/* Row 3: Operador + Vendedor 1 + Vendedor 2 + Médico + Usuário Receita */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '8px', marginBottom: '8px' }}>
+          {/* Row 3: Operador + Vendedor + Médico + Usuário Receita */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '8px', marginBottom: '8px' }}>
             <div>
               <label style={LBL}>Operador</label>
               <select value={operador} onChange={e => setOperador(e.target.value)} style={{ ...INP, fontFamily: 'var(--sans)' }}>
@@ -534,18 +529,8 @@ export default function LabNovaOrdem() {
               </select>
             </div>
             <div>
-              <label style={LBL}>Vendedor 1</label>
-              <select value={vendedor1Id} onChange={e => setVendedor1Id(e.target.value)} style={{ ...INP, fontFamily: 'var(--sans)' }}>
-                <option value="">— Vendedor</option>
-                {vendedores.map(v => <option key={v.id} value={v.id}>{v.nome}</option>)}
-              </select>
-            </div>
-            <div>
-              <label style={LBL}>Vendedor 2</label>
-              <select value={vendedor2Id} onChange={e => setVendedor2Id(e.target.value)} style={{ ...INP, fontFamily: 'var(--sans)' }}>
-                <option value="">— Vendedor</option>
-                {vendedores.map(v => <option key={v.id} value={v.id}>{v.nome}</option>)}
-              </select>
+              <label style={LBL}>Vendedor (da ótica)</label>
+              <input value={vendedor1Id} onChange={e => setVendedor1Id(e.target.value)} style={INP} placeholder="Nome do vendedor..." />
             </div>
             <div>
               <label style={LBL}>Médico / Oftalmo</label>
