@@ -1,17 +1,40 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-  <!-- Fundo quadrado arredondado vermelho -->
-  <rect width="48" height="48" rx="10" fill="#cc0000"/>
+  <!-- Fundo verde com gradiente -->
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#005500"/>
+      <stop offset="100%" style="stop-color:#008833"/>
+    </linearGradient>
+    <linearGradient id="iris" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#004400"/>
+      <stop offset="100%" style="stop-color:#006622"/>
+    </linearGradient>
+  </defs>
 
-  <!-- Forma de olho (arco superior e inferior) -->
-  <path d="M6 24 C10 14, 38 14, 42 24 C38 34, 10 34, 6 24 Z"
-        fill="none" stroke="white" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- Fundo arredondado -->
+  <rect width="48" height="48" rx="11" fill="url(#bg)"/>
+
+  <!-- Olho - contorno -->
+  <path d="M5 24 C10 13, 38 13, 43 24 C38 35, 10 35, 5 24 Z"
+        fill="none" stroke="white" stroke-width="2.2" stroke-linejoin="round"/>
 
   <!-- Íris -->
-  <circle cx="24" cy="24" r="7" fill="white"/>
+  <circle cx="24" cy="24" r="7.5" fill="white"/>
+  <circle cx="24" cy="24" r="5.5" fill="url(#iris)"/>
 
   <!-- Pupila -->
-  <circle cx="24" cy="24" r="3.5" fill="#cc0000"/>
+  <circle cx="24" cy="24" r="3" fill="#001a00"/>
 
-  <!-- Brilho -->
-  <circle cx="27" cy="21" r="1.5" fill="white" opacity="0.8"/>
+  <!-- Brilho principal -->
+  <circle cx="27" cy="20.5" r="1.8" fill="white" opacity="0.9"/>
+  <!-- Brilho secundário -->
+  <circle cx="21" cy="27" r="0.8" fill="white" opacity="0.4"/>
+
+  <!-- Nós de conexão (esquerda e direita do olho) -->
+  <circle cx="7" cy="24" r="2" fill="white" opacity="0.85"/>
+  <circle cx="41" cy="24" r="2" fill="white" opacity="0.85"/>
+
+  <!-- Linha de conexão tracejada sutil -->
+  <line x1="9" y1="24" x2="14" y2="24" stroke="white" stroke-width="1" opacity="0.4" stroke-dasharray="2,2"/>
+  <line x1="34" y1="24" x2="39" y2="24" stroke="white" stroke-width="1" opacity="0.4" stroke-dasharray="2,2"/>
 </svg>
