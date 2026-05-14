@@ -110,6 +110,19 @@ interface Tenant {
   status: string;
 }
 
+interface Lead {
+  id: string;
+  tipo: string;
+  nome: string;
+  laboratorio: string | null;
+  email: string;
+  whatsapp: string | null;
+  cidade: string | null;
+  mensagem: string | null;
+  status: string;
+  created_at: string;
+}
+
 const R = {
   bg: '#c8c4b0', panel: '#d4d0c8', alt: '#dedad2', bdr: '#b0aca4',
   hdr: 'linear-gradient(90deg,#880000,#cc0000)', hdrTxt: '#ffcccc', hdrBdr: '#aa2222',
@@ -134,23 +147,40 @@ function fmtDate(s: string | null) {
   return s.slice(0, 10).split('-').reverse().join('/');
 }
 
+const LEAD_STATUS_STYLE: Record<string, { bg: string; color: string; label: string }> = {
+  novo:       { bg: '#cce0ff', color: '#003388', label: 'NOVO' },
+  contatado:  { bg: '#fff0cc', color: '#886600', label: 'CONTATADO' },
+  convertido: { bg: '#ccffcc', color: '#006600', label: 'CONVERTIDO' },
+  descartado: { bg: '#e0e0e0', color: '#444',    label: 'DESCARTADO' },
+};
+
 export default function LabAdmin() {
   const [pinOk, setPinOk] = useState(() => sessionStorage.getItem('admin_pin_ok') === '1');
   const [secret, setSecret] = useState(() => sessionStorage.getItem('admin_secret') || '');
   const [authed, setAuthed] = useState(false);
+  const [aba, setAba] = useState<'licencas' | 'leads'>('licencas');
   const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState('');
   const [editId, setEditId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ plano: '', licenca_expira: '', bloqueado: false, ativo: true });
   const [saving, setSaving] = useState(false);
   const [busca, setBusca] = useState('');
+  const [criarLead, setCriarLead] = useState<Lead | null>(null);
+  const [criarForm, setCriarForm] = useState({ nome_lab: '', nome_responsavel: '', email: '', senha: '', plano: 'trial', dias_trial: '14', licenca_expira: '' });
+  const [criarErro, setCriarErro] = useState('');
+  const [criarSucesso, setCriarSucesso] = useState<null | { email: string; senha: string; nome_lab: string }>(null);
 
   const load = useCallback(async (s: string) => {
     setLoading(true); setErro('');
     try {
-      const data = await adminRequest<Tenant[]>('/admin/licencas', s);
-      setTenants(data);
+      const [tenantsData, leadsData] = await Promise.all([
+        adminRequest<Tenant[]>('/admin/licencas', s),
+        adminRequest<Lead[]>('/admin/leads', s),
+      ]);
+      setTenants(tenantsData);
+      setLeads(leadsData);
       setAuthed(true);
       sessionStorage.setItem('admin_secret', s);
     } catch {
@@ -207,6 +237,56 @@ export default function LabAdmin() {
     t.email.toLowerCase().includes(busca.toLowerCase())
   );
 
+  function abrirCriarConta(lead: Lead) {
+    setCriarLead(lead);
+    setCriarErro('');
+    setCriarSucesso(null);
+    setCriarForm({
+      nome_lab: lead.laboratorio || lead.nome,
+      nome_responsavel: lead.nome,
+      email: lead.email,
+      senha: '',
+      plano: 'trial',
+      dias_trial: '14',
+      licenca_expira: '',
+    });
+  }
+
+  async function handleCriarConta() {
+    if (!criarLead) return;
+    setCriarErro(''); setSaving(true);
+    try {
+      const res = await adminRequest<{ email: string; nome_lab: string }>('/admin/leads', secret, {
+        method: 'POST',
+        body: JSON.stringify({
+          lead_id: criarLead.id,
+          nome_lab: criarForm.nome_lab,
+          nome_responsavel: criarForm.nome_responsavel,
+          email: criarForm.email,
+          senha: criarForm.senha,
+          plano: criarForm.plano,
+          dias_trial: Number(criarForm.dias_trial),
+          licenca_expira: criarForm.licenca_expira || undefined,
+        }),
+      });
+      setCriarSucesso({ email: res.email, senha: criarForm.senha, nome_lab: res.nome_lab });
+      load(secret);
+    } catch (e: unknown) {
+      setCriarErro(e instanceof Error ? e.message : 'Erro ao criar conta');
+    }
+    setSaving(false);
+  }
+
+  async function handleLeadStatus(id: string, status: string) {
+    try {
+      await adminRequest('/admin/leads', secret, {
+        method: 'PATCH',
+        body: JSON.stringify({ id, status }),
+      });
+      setLeads(ls => ls.map(l => l.id === id ? { ...l, status } : l));
+    } catch {}
+  }
+
   if (!pinOk) return <PinScreen onOk={() => setPinOk(true)} />;
 
   // Login screen
@@ -237,79 +317,224 @@ export default function LabAdmin() {
     );
   }
 
+  const novosLeads = leads.filter(l => l.status === 'novo').length;
+
   return (
     <div style={{ padding: '12px', height: '100%', display: 'flex', flexDirection: 'column', background: R.bg, fontFamily: "'Montserrat', sans-serif" }}>
 
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', gap: '8px', flexWrap: 'wrap' }}>
-        <div style={{ background: R.hdr, color: R.hdrTxt, padding: '5px 14px', fontSize: '13px', fontWeight: '700', letterSpacing: '1px', border: `2px outset ${R.hdrBdr}` }}>
-          LICENÇAS — {tenants.length} cliente(s)
+        <div style={{ display: 'flex', gap: '4px' }}>
+          {(['licencas', 'leads'] as const).map(a => (
+            <button key={a} onClick={() => setAba(a)}
+              style={{ padding: '5px 14px', fontSize: '12px', fontWeight: '700', letterSpacing: '0.5px', cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase', border: `2px outset ${R.hdrBdr}`, background: aba === a ? R.hdr : R.alt, color: aba === a ? R.hdrTxt : '#000' }}>
+              {a === 'licencas' ? `LICENÇAS (${tenants.length})` : `LEADS${novosLeads > 0 ? ` ★${novosLeads} NOVOS` : ` (${leads.length})`}`}
+            </button>
+          ))}
         </div>
         <div style={{ display: 'flex', gap: '6px' }}>
-          <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar..." style={{ ...INP, width: '200px' }} />
+          {aba === 'licencas' && <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar..." style={{ ...INP, width: '180px' }} />}
           <button onClick={() => load(secret)} style={{ padding: '5px 14px', fontSize: '11px', fontWeight: '700', background: R.alt, color: '#000', border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit' }}>
             ↺ ATUALIZAR
           </button>
         </div>
       </div>
 
-      {/* Stats */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
-        {Object.entries(STATUS_STYLE).map(([k, v]) => {
-          const count = tenants.filter(t => t.status === k).length;
-          if (!count) return null;
-          return (
-            <span key={k} style={{ fontSize: '11px', fontWeight: '700', padding: '3px 10px', background: v.bg, color: v.color, border: `1px solid ${v.color}`, fontFamily: "'Courier New', monospace" }}>
-              {v.label}: {count}
-            </span>
-          );
-        })}
-      </div>
-
       {erro && <div style={{ background: '#ffdddd', border: '1px solid #880000', padding: '7px 10px', marginBottom: '8px', fontSize: '11px', color: '#880000', fontWeight: '700' }}>{erro}</div>}
 
-      {/* Table */}
-      <div style={{ flex: 1, overflowY: 'auto', border: `2px inset ${R.bdr}` }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead style={{ position: 'sticky', top: 0 }}>
-            <tr style={{ background: R.hdr }}>
-              {['NOME / EMAIL', 'TIPO', 'STATUS', 'TRIAL ATÉ', 'LICENÇA ATÉ', 'CRIADO EM', 'AÇÕES'].map(h => (
-                <th key={h} style={{ padding: '6px 10px', textAlign: 'left', fontSize: '10px', fontWeight: '700', color: R.hdrTxt, letterSpacing: '0.5px', border: `1px solid ${R.hdrBdr}`, whiteSpace: 'nowrap' }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {filtrados.map((t, i) => {
-              const st = STATUS_STYLE[t.status] || STATUS_STYLE.desativado;
-              return (
-                <tr key={t.id} style={{ background: i % 2 === 0 ? R.panel : R.alt, borderBottom: `1px solid ${R.bdr}` }}>
-                  <td style={{ padding: '7px 10px' }}>
-                    <div style={{ fontSize: '12px', fontWeight: '700', color: '#000' }}>{t.nome}</div>
-                    <div style={{ fontSize: '10px', color: '#555', fontFamily: "'Courier New', monospace" }}>{t.email}</div>
-                  </td>
-                  <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace', color: '#333'" }}>
-                    {t.tipo.toUpperCase()}
-                  </td>
-                  <td style={{ padding: '7px 10px' }}>
-                    <span style={{ fontSize: '10px', fontWeight: '700', color: st.color, background: st.bg, padding: '2px 7px', border: `1px solid ${st.color}` }}>
-                      {st.label}
-                    </span>
-                  </td>
-                  <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#333' }}>{fmtDate(t.trial_expira)}</td>
-                  <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#333' }}>{fmtDate(t.licenca_expira)}</td>
-                  <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#555' }}>{fmtDate(t.created_at)}</td>
-                  <td style={{ padding: '7px 10px' }}>
-                    <button onClick={() => openEdit(t)}
-                      style={{ padding: '3px 10px', fontSize: '11px', fontWeight: '700', background: '#880000', color: '#fff', border: `1px outset ${R.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit' }}>
-                      EDITAR
+      {/* ── ABA LICENÇAS ── */}
+      {aba === 'licencas' && (<>
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
+          {Object.entries(STATUS_STYLE).map(([k, v]) => {
+            const count = tenants.filter(t => t.status === k).length;
+            if (!count) return null;
+            return (
+              <span key={k} style={{ fontSize: '11px', fontWeight: '700', padding: '3px 10px', background: v.bg, color: v.color, border: `1px solid ${v.color}`, fontFamily: "'Courier New', monospace" }}>
+                {v.label}: {count}
+              </span>
+            );
+          })}
+        </div>
+        <div style={{ flex: 1, overflowY: 'auto', border: `2px inset ${R.bdr}` }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead style={{ position: 'sticky', top: 0 }}>
+              <tr style={{ background: R.hdr }}>
+                {['NOME / EMAIL', 'TIPO', 'STATUS', 'TRIAL ATÉ', 'LICENÇA ATÉ', 'CRIADO EM', 'AÇÕES'].map(h => (
+                  <th key={h} style={{ padding: '6px 10px', textAlign: 'left', fontSize: '10px', fontWeight: '700', color: R.hdrTxt, letterSpacing: '0.5px', border: `1px solid ${R.hdrBdr}`, whiteSpace: 'nowrap' }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtrados.map((t, i) => {
+                const st = STATUS_STYLE[t.status] || STATUS_STYLE.desativado;
+                return (
+                  <tr key={t.id} style={{ background: i % 2 === 0 ? R.panel : R.alt, borderBottom: `1px solid ${R.bdr}` }}>
+                    <td style={{ padding: '7px 10px' }}>
+                      <div style={{ fontSize: '12px', fontWeight: '700', color: '#000' }}>{t.nome}</div>
+                      <div style={{ fontSize: '10px', color: '#555', fontFamily: "'Courier New', monospace" }}>{t.email}</div>
+                    </td>
+                    <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#333' }}>{t.tipo.toUpperCase()}</td>
+                    <td style={{ padding: '7px 10px' }}>
+                      <span style={{ fontSize: '10px', fontWeight: '700', color: st.color, background: st.bg, padding: '2px 7px', border: `1px solid ${st.color}` }}>{st.label}</span>
+                    </td>
+                    <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#333' }}>{fmtDate(t.trial_expira)}</td>
+                    <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#333' }}>{fmtDate(t.licenca_expira)}</td>
+                    <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#555' }}>{fmtDate(t.created_at)}</td>
+                    <td style={{ padding: '7px 10px' }}>
+                      <button onClick={() => openEdit(t)}
+                        style={{ padding: '3px 10px', fontSize: '11px', fontWeight: '700', background: '#880000', color: '#fff', border: `1px outset ${R.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit' }}>
+                        EDITAR
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </>)}
+
+      {/* ── ABA LEADS ── */}
+      {aba === 'leads' && (
+        <div style={{ flex: 1, overflowY: 'auto', border: `2px inset ${R.bdr}` }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead style={{ position: 'sticky', top: 0 }}>
+              <tr style={{ background: R.hdr }}>
+                {['DATA', 'LABORATÓRIO / NOME', 'E-MAIL', 'WHATSAPP', 'CIDADE', 'STATUS', 'AÇÕES'].map(h => (
+                  <th key={h} style={{ padding: '6px 10px', textAlign: 'left', fontSize: '10px', fontWeight: '700', color: R.hdrTxt, letterSpacing: '0.5px', border: `1px solid ${R.hdrBdr}`, whiteSpace: 'nowrap' }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {leads.map((l, i) => {
+                const st = LEAD_STATUS_STYLE[l.status] || LEAD_STATUS_STYLE.novo;
+                return (
+                  <tr key={l.id} style={{ background: i % 2 === 0 ? R.panel : R.alt, borderBottom: `1px solid ${R.bdr}` }}>
+                    <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#555', whiteSpace: 'nowrap' }}>{fmtDate(l.created_at)}</td>
+                    <td style={{ padding: '7px 10px' }}>
+                      <div style={{ fontSize: '12px', fontWeight: '700', color: '#000' }}>{l.laboratorio || '—'}</div>
+                      <div style={{ fontSize: '10px', color: '#555' }}>{l.nome}</div>
+                    </td>
+                    <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#333' }}>{l.email}</td>
+                    <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#333' }}>{l.whatsapp || '—'}</td>
+                    <td style={{ padding: '7px 10px', fontSize: '11px', color: '#555' }}>{l.cidade || '—'}</td>
+                    <td style={{ padding: '7px 10px' }}>
+                      <span style={{ fontSize: '10px', fontWeight: '700', color: st.color, background: st.bg, padding: '2px 7px', border: `1px solid ${st.color}` }}>{st.label}</span>
+                    </td>
+                    <td style={{ padding: '7px 10px' }}>
+                      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                        {l.status !== 'convertido' && (
+                          <button onClick={() => abrirCriarConta(l)}
+                            style={{ padding: '3px 8px', fontSize: '10px', fontWeight: '700', background: '#004400', color: '#ccffcc', border: '1px outset #006600', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+                            CRIAR CONTA
+                          </button>
+                        )}
+                        {l.status === 'novo' && (
+                          <button onClick={() => handleLeadStatus(l.id, 'contatado')}
+                            style={{ padding: '3px 8px', fontSize: '10px', fontWeight: '700', background: R.alt, color: '#886600', border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+                            CONTATADO
+                          </button>
+                        )}
+                        {l.status !== 'descartado' && l.status !== 'convertido' && (
+                          <button onClick={() => handleLeadStatus(l.id, 'descartado')}
+                            style={{ padding: '3px 8px', fontSize: '10px', fontWeight: '700', background: '#e0e0e0', color: '#666', border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+                            DESCARTAR
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Modal Criar Conta a partir de Lead */}
+      {criarLead && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: R.panel, border: `2px outset ${R.bdr}`, width: '480px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ background: R.hdr, color: R.hdrTxt, padding: '6px 14px', fontWeight: '700', fontSize: '12px', letterSpacing: '1px', display: 'flex', justifyContent: 'space-between', position: 'sticky', top: 0 }}>
+              <span>CRIAR CONTA — {criarLead.laboratorio || criarLead.nome}</span>
+              <button onClick={() => { setCriarLead(null); setCriarSucesso(null); }} style={{ background: 'none', border: '1px solid #ff9999', color: '#ff9999', padding: '1px 6px', cursor: 'pointer', fontFamily: 'inherit' }}>✕</button>
+            </div>
+            <div style={{ border: `2px inset ${R.bdr}`, padding: '16px' }}>
+              {criarSucesso ? (
+                <div>
+                  <div style={{ textAlign: 'center', fontSize: '28px', marginBottom: '10px' }}>✅</div>
+                  <div style={{ fontWeight: '700', fontSize: '13px', textAlign: 'center', marginBottom: '14px', color: '#006600' }}>CONTA CRIADA COM SUCESSO!</div>
+                  <div style={{ background: '#f0fff0', border: '1px solid #006600', padding: '14px', fontFamily: "'Courier New', monospace", fontSize: '12px', lineHeight: '2' }}>
+                    <div><b>Laboratório:</b> {criarSucesso.nome_lab}</div>
+                    <div><b>E-mail:</b> {criarSucesso.email}</div>
+                    <div><b>Senha:</b> {criarSucesso.senha}</div>
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#666', marginTop: '10px', marginBottom: '14px' }}>
+                    Anote as credenciais acima para enviar ao cliente quando agendar a reunião.
+                  </div>
+                  <button onClick={() => { setCriarLead(null); setCriarSucesso(null); }}
+                    style={{ width: '100%', padding: '7px', fontSize: '12px', fontWeight: '700', background: '#880000', color: R.hdrTxt, border: `1px outset ${R.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
+                    FECHAR
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    <div style={{ gridColumn: '1/-1' }}>
+                      <div style={{ fontSize: '10px', fontWeight: '700', color: '#444', textTransform: 'uppercase', marginBottom: '4px' }}>Nome do Laboratório</div>
+                      <input value={criarForm.nome_lab} onChange={e => setCriarForm(f => ({ ...f, nome_lab: e.target.value }))} style={{ ...INP, width: '100%' }} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '10px', fontWeight: '700', color: '#444', textTransform: 'uppercase', marginBottom: '4px' }}>Nome do Responsável</div>
+                      <input value={criarForm.nome_responsavel} onChange={e => setCriarForm(f => ({ ...f, nome_responsavel: e.target.value }))} style={{ ...INP, width: '100%' }} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '10px', fontWeight: '700', color: '#444', textTransform: 'uppercase', marginBottom: '4px' }}>E-mail (login)</div>
+                      <input value={criarForm.email} onChange={e => setCriarForm(f => ({ ...f, email: e.target.value }))} style={{ ...INP, width: '100%' }} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '10px', fontWeight: '700', color: '#444', textTransform: 'uppercase', marginBottom: '4px' }}>Senha</div>
+                      <input value={criarForm.senha} onChange={e => setCriarForm(f => ({ ...f, senha: e.target.value }))} style={{ ...INP, width: '100%' }} placeholder="Mín. 6 caracteres" />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '10px', fontWeight: '700', color: '#444', textTransform: 'uppercase', marginBottom: '4px' }}>Plano</div>
+                      <select value={criarForm.plano} onChange={e => setCriarForm(f => ({ ...f, plano: e.target.value }))} style={{ ...INP, width: '100%' }}>
+                        <option value="trial">Trial</option>
+                        <option value="mensal">Mensal</option>
+                        <option value="anual">Anual</option>
+                        <option value="vitalicio">Vitalício</option>
+                      </select>
+                    </div>
+                    {criarForm.plano === 'trial' && (
+                      <div>
+                        <div style={{ fontSize: '10px', fontWeight: '700', color: '#444', textTransform: 'uppercase', marginBottom: '4px' }}>Dias de Trial</div>
+                        <input type="number" min="1" max="90" value={criarForm.dias_trial} onChange={e => setCriarForm(f => ({ ...f, dias_trial: e.target.value }))} style={{ ...INP, width: '100%' }} />
+                      </div>
+                    )}
+                    {(criarForm.plano === 'mensal' || criarForm.plano === 'anual') && (
+                      <div>
+                        <div style={{ fontSize: '10px', fontWeight: '700', color: '#444', textTransform: 'uppercase', marginBottom: '4px' }}>Licença expira em</div>
+                        <input type="date" value={criarForm.licenca_expira} onChange={e => setCriarForm(f => ({ ...f, licenca_expira: e.target.value }))} style={{ ...INP, width: '100%' }} />
+                      </div>
+                    )}
+                  </div>
+
+                  {criarErro && <div style={{ background: '#ffdddd', border: '1px solid #880000', padding: '6px 10px', fontSize: '11px', color: '#880000', fontWeight: '700' }}>{criarErro}</div>}
+
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                    <button onClick={() => setCriarLead(null)} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: R.alt, color: '#000', border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
+                      CANCELAR
                     </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                    <button onClick={handleCriarConta} disabled={saving} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: '#004400', color: '#ccffcc', border: '1px outset #006600', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
+                      {saving ? 'CRIANDO...' : 'CRIAR CONTA'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Edit modal */}
       {editId && (
