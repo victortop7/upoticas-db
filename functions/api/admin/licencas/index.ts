@@ -37,6 +37,25 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
   return json(rows);
 };
 
+// DELETE /api/admin/licencas?id=xxx — exclui tenant e seus usuários
+export const onRequestDelete = async ({ request, env }: { request: Request; env: Env }) => {
+  if (!isAdmin(request, env)) return json({ error: 'Não autorizado' }, 401);
+
+  const url = new URL(request.url);
+  const id = url.searchParams.get('id');
+  if (!id) return json({ error: 'id obrigatório' }, 400);
+
+  try {
+    await env.DB.batch([
+      env.DB.prepare('DELETE FROM usuarios WHERE tenant_id = ?').bind(id),
+      env.DB.prepare('DELETE FROM tenants WHERE id = ?').bind(id),
+    ]);
+    return json({ ok: true });
+  } catch (err) {
+    return json({ error: 'Erro interno', detail: String(err) }, 500);
+  }
+};
+
 // PATCH /api/admin/licencas — atualiza licença de um tenant
 export const onRequestPatch = async ({ request, env }: { request: Request; env: Env }) => {
   if (!isAdmin(request, env)) return json({ error: 'Não autorizado' }, 401);

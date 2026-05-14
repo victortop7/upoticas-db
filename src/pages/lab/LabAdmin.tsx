@@ -287,6 +287,15 @@ export default function LabAdmin() {
     } catch {}
   }
 
+  async function handleExcluirTenant(id: string) {
+    try {
+      await adminRequest(`/admin/licencas?id=${id}`, secret, { method: 'DELETE' });
+      setTenants(ts => ts.filter(t => t.id !== id));
+    } catch (e: unknown) {
+      setErro(e instanceof Error ? e.message : 'Erro ao excluir');
+    }
+  }
+
   async function handleExcluirLead(id: string) {
     try {
       await adminRequest(`/admin/leads?id=${id}`, secret, { method: 'DELETE' });
@@ -388,10 +397,16 @@ export default function LabAdmin() {
                     <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#333' }}>{fmtDate(t.licenca_expira)}</td>
                     <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#555' }}>{fmtDate(t.created_at)}</td>
                     <td style={{ padding: '7px 10px' }}>
-                      <button onClick={() => openEdit(t)}
-                        style={{ padding: '3px 10px', fontSize: '11px', fontWeight: '700', background: '#880000', color: '#fff', border: `1px outset ${R.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit' }}>
-                        EDITAR
-                      </button>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <button onClick={() => openEdit(t)}
+                          style={{ padding: '3px 10px', fontSize: '11px', fontWeight: '700', background: '#880000', color: '#fff', border: `1px outset ${R.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit' }}>
+                          EDITAR
+                        </button>
+                        <button onClick={() => { if (confirm(`Excluir laboratório "${t.nome}" e todos os usuários? Esta ação não pode ser desfeita.`)) handleExcluirTenant(t.id); }}
+                          style={{ padding: '3px 10px', fontSize: '11px', fontWeight: '700', background: '#ffdddd', color: '#880000', border: '1px outset #cc8888', cursor: 'pointer', fontFamily: 'inherit' }}>
+                          EXCLUIR
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
