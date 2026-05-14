@@ -37,7 +37,7 @@ function fmtDate(s: string | null) {
 }
 function tipoLabel(t: string) { return TIPOS_OS.find(x => x.value === t)?.label ?? t ?? 'OS'; }
 
-const R = { bg:'#c8c4b0', panel:'#d4d0c8', alt:'#dedad2', bdr:'#b0aca4', hdr:'linear-gradient(90deg,#880000,#cc0000)', hdrTxt:'#ffcccc', hdrBdr:'#aa2222', txt:'#000', inp:'#fff' };
+const R = { bg:'#c8c4b0', panel:'#d4d0c8', alt:'#dedad2', bdr:'#b0aca4', hdr:'linear-gradient(90deg,#005500,#008800)', hdrTxt:'#ccffcc', hdrBdr:'#007700', txt:'#000', inp:'#fff' };
 const INP: React.CSSProperties = { padding:'5px 8px', fontSize:'12px', background:R.inp, border:'1px solid #999', color:R.txt, outline:'none', boxSizing:'border-box', fontFamily:"'Courier New', monospace" };
 const LBL: React.CSSProperties = { fontSize:'10px', fontWeight:'700', color:'#444', textTransform:'uppercase', letterSpacing:'0.5px' };
 
@@ -76,7 +76,7 @@ export default function LabOrdens() {
       em_producao: { bg: '#cce0ff', color: '#003388', border: '#003388' },
       pronto: { bg: '#ccffcc', color: '#006600', border: '#006600' },
       entregue: { bg: '#e0e0e0', color: '#444', border: '#888' },
-      cancelado: { bg: '#ffcccc', color: '#880000', border: '#880000' },
+      cancelado: { bg: '#ccffcc', color: '#005500', border: '#005500' },
     };
     const c = colors[s] ?? { bg: '#ddd', color: '#444', border: '#888' };
     return (
@@ -97,7 +97,7 @@ export default function LabOrdens() {
         <div style={{ display:'flex', gap:'6px', alignItems:'center', flexWrap:'wrap' }}>
           <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar OS#, ref., cont. interno..." style={{ ...INP, width:'220px' }} />
           <button onClick={() => navigate('/lab/ordens/nova')}
-            style={{ padding:'5px 16px', fontSize:'12px', fontWeight:'700', background:'#880000', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+            style={{ padding:'5px 16px', fontSize:'12px', fontWeight:'700', background:'#005500', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
             + NOVA OS
           </button>
         </div>
@@ -111,7 +111,7 @@ export default function LabOrdens() {
             {STATUS_FLOW.map(s => (
               <button key={s.value} onClick={() => setStatus(s.value)}
                 style={{ padding:'3px 9px', fontSize:'11px', fontWeight:'700', cursor:'pointer', fontFamily:'inherit',
-                  background: status === s.value ? '#880000' : R.alt,
+                  background: status === s.value ? '#005500' : R.alt,
                   color: status === s.value ? R.hdrTxt : R.txt,
                   border: status === s.value ? `1px inset ${R.hdrBdr}` : `1px outset ${R.bdr}` }}>
                 {s.label}
@@ -148,7 +148,7 @@ export default function LabOrdens() {
 
         {(busca || oticaId || dataIni || dataFim || tipo || status) && (
           <button onClick={() => { setBusca(''); setOticaId(''); setDataIni(''); setDataFim(''); setTipo(''); setStatus(''); }}
-            style={{ padding:'3px 10px', fontSize:'11px', fontWeight:'700', background:R.alt, color:'#880000', border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', alignSelf:'flex-end' }}>
+            style={{ padding:'3px 10px', fontSize:'11px', fontWeight:'700', background:R.alt, color:'#005500', border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', alignSelf:'flex-end' }}>
             ✕ LIMPAR
           </button>
         )}
@@ -162,7 +162,7 @@ export default function LabOrdens() {
           <div style={{ padding:'40px', textAlign:'center', color:'#444' }}>
             Nenhuma ordem encontrada.{' '}
             <button onClick={() => navigate('/lab/ordens/nova')}
-              style={{ color:'#880000', background:'none', border:'none', cursor:'pointer', fontFamily:'inherit', fontSize:'13px', fontWeight:'700' }}>
+              style={{ color:'#005500', background:'none', border:'none', cursor:'pointer', fontFamily:'inherit', fontSize:'13px', fontWeight:'700' }}>
               Criar OS →
             </button>
           </div>
@@ -179,7 +179,7 @@ export default function LabOrdens() {
               {ordens.map((o, i) => (
                 <tr key={o.id} onClick={() => navigate(`/lab/ordens/${o.id}`)}
                   style={{ background: i % 2 === 0 ? R.panel : R.alt, cursor:'pointer', borderBottom:`1px solid ${R.bdr}` }}
-                  onMouseEnter={e => (e.currentTarget.style.background = '#880000')}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#005500')}
                   onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 0 ? R.panel : R.alt)}>
                   <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'700', color:R.txt, whiteSpace:'nowrap' }}>
                     #{String(o.numero).padStart(4, '0')}

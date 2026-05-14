@@ -163,7 +163,7 @@ export default function LabLayout() {
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: '#c8c4b0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Courier New', monospace" }}>
-        <div style={{ color: '#880000', fontWeight: 'bold' }}>AGUARDE...</div>
+        <div style={{ color: '#005500', fontWeight: 'bold' }}>AGUARDE...</div>
       </div>
     );
   }
@@ -192,12 +192,12 @@ export default function LabLayout() {
     navigate(op.to);
   }
 
-  const hdrBg     = dark ? 'linear-gradient(90deg,#440000,#660000)' : 'linear-gradient(90deg,#880000,#cc0000)';
-  const hdrBorder = dark ? '#1a4a1a' : '#aa2222';
-  const hdrTxt    = dark ? '#ffaaaa' : '#ffcccc';
+  const hdrBg     = dark ? 'linear-gradient(90deg,#004400,#004400)' : 'linear-gradient(90deg,#005500,#008800)';
+  const hdrBorder = dark ? '#1a4a1a' : '#007700';
+  const hdrTxt    = dark ? '#aaffbb' : '#ccffcc';
   const mainBg    = dark ? '#111111' : '#c8c4b0';
-  const modBg     = dark ? 'linear-gradient(180deg,#1a0000,#2a0000)' : 'linear-gradient(180deg,#880000,#660000)';
-  const modBorder = dark ? '#3a1a1a' : '#5a2a2a';
+  const modBg     = dark ? 'linear-gradient(180deg,#001a00,#002a00)' : 'linear-gradient(180deg,#005500,#004400)';
+  const modBorder = dark ? '#1a3a1a' : '#5a2a2a';
 
   const opcoes = activeModule ? OPCOES[activeModule] : [];
 
@@ -207,16 +207,16 @@ export default function LabLayout() {
       {/* ── HEADER ── */}
       <div style={{ background: hdrBg, color: hdrTxt, padding: '4px 16px', fontSize: '13px', fontWeight: '700', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `2px solid ${hdrBorder}`, letterSpacing: '1.5px', textTransform: 'uppercase', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ cursor: 'pointer' }} onClick={() => navigate('/lab/dashboard')}>UpÓticas Lab — {tenant?.nome || 'Laboratório'}</span>
+          <span style={{ cursor: 'pointer' }} onClick={() => navigate('/lab/dashboard')}>Conexão Lab — {tenant?.nome || 'Laboratório'}</span>
         </div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <button onClick={() => setAltF1(true)} title="ALT+F1"
             style={{ padding: '2px 8px', fontSize: '10px', fontWeight: 'bold', background: 'rgba(0,0,0,0.3)', color: hdrTxt, border: `1px solid ${hdrBorder}`, borderRadius: '2px', cursor: 'pointer', fontFamily: "'Courier New', monospace", letterSpacing: '0.5px' }}>
             🔍 ALT+F1
           </button>
-          <span style={{ fontSize: '11px', color: dark ? '#ff6666' : '#d0a0a0' }}>{usuario?.nome}</span>
+          <span style={{ fontSize: '11px', color: dark ? '#66cc77' : '#a0d0a8' }}>{usuario?.nome}</span>
           <button onClick={handleLogout}
-            style={{ padding: '2px 10px', fontSize: '11px', background: '#cc0000', color: '#ffffff', border: '1px solid #ff4040', borderRadius: '2px', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 'bold' }}>
+            style={{ padding: '2px 10px', fontSize: '11px', background: '#008800', color: '#ffffff', border: '1px solid #44bb44', borderRadius: '2px', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 'bold' }}>
             SAIR
           </button>
         </div>
@@ -224,7 +224,7 @@ export default function LabLayout() {
 
       {/* ── AVISO DE VENCIMENTO ── */}
       {!licStatus.blocked && !licStatus.expired && licStatus.daysLeft !== null && licStatus.daysLeft <= 3 && (
-        <div style={{ background: licStatus.daysLeft === 1 ? '#cc0000' : licStatus.daysLeft === 2 ? '#aa4400' : '#886600', color: '#fff', padding: '5px 16px', fontSize: '12px', fontWeight: '700', textAlign: 'center', letterSpacing: '1px', fontFamily: "'Courier New', monospace", flexShrink: 0 }}>
+        <div style={{ background: licStatus.daysLeft === 1 ? '#008800' : licStatus.daysLeft === 2 ? '#aa4400' : '#886600', color: '#fff', padding: '5px 16px', fontSize: '12px', fontWeight: '700', textAlign: 'center', letterSpacing: '1px', fontFamily: "'Courier New', monospace", flexShrink: 0 }}>
           ⚠ ATENÇÃO: {licStatus.daysLeft === 1 ? 'ÚLTIMO DIA' : `${licStatus.daysLeft} DIAS RESTANTES`} — ENTRE EM CONTATO PARA RENOVAR SUA LICENÇA ⚠
         </div>
       )}
@@ -234,37 +234,37 @@ export default function LabLayout() {
 
         {/* ── SIDEBAR LOGO ── */}
         <div style={{ background: modBg, width: '42px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderRight: `2px solid ${modBorder}`, flexShrink: 0 }}>
-          <div style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', color: dark ? '#ff6666' : '#ffcccc', fontSize: '11px', fontWeight: 'bold', letterSpacing: '4px', textTransform: 'uppercase', userSelect: 'none' }}>UPOTICAS</div>
-          <div style={{ color: dark ? '#ff4444' : '#ffaaaa', fontSize: '16px' }}>🔬</div>
-          <div style={{ writingMode: 'vertical-rl', color: dark ? '#ff4444' : '#ffaaaa', fontSize: '10px', fontWeight: 'bold', letterSpacing: '3px', textTransform: 'uppercase' }}>LAB</div>
+          <div style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', color: dark ? '#66cc77' : '#ccffcc', fontSize: '11px', fontWeight: 'bold', letterSpacing: '4px', textTransform: 'uppercase', userSelect: 'none' }}>CONEXÃO</div>
+          <div style={{ color: dark ? '#44cc55' : '#aaffbb', fontSize: '16px' }}>🔬</div>
+          <div style={{ writingMode: 'vertical-rl', color: dark ? '#44cc55' : '#aaffbb', fontSize: '10px', fontWeight: 'bold', letterSpacing: '3px', textTransform: 'uppercase' }}>LAB</div>
         </div>
 
         {/* ── MÓDULOS ── */}
         <div style={{ width: '240px', background: dark ? '#1c1c1c' : '#d4d0c8', borderRight: `2px solid ${modBorder}`, display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto' }}>
           {/* Header */}
-          <div style={{ background: 'linear-gradient(90deg,#880000,#cc0000)', color: '#ffcccc', textAlign: 'center', padding: '5px 12px', fontSize: '12px', fontWeight: '700', letterSpacing: '2px', border: `2px outset #aa2222`, borderBottom: 'none' }}>
+          <div style={{ background: 'linear-gradient(90deg,#005500,#008800)', color: '#ccffcc', textAlign: 'center', padding: '5px 12px', fontSize: '12px', fontWeight: '700', letterSpacing: '2px', border: `2px outset #007700`, borderBottom: 'none' }}>
             MÓDULOS
           </div>
           <div style={{ border: `2px inset ${dark ? '#444' : '#808080'}` }}>
             {/* Painel Principal */}
             <div onClick={() => { setActiveModule(null); navigate('/lab/dashboard'); }}
-              style={{ display: 'flex', alignItems: 'center', padding: '6px 10px', borderBottom: `1px solid ${dark ? '#333' : '#b0aca4'}`, background: isDashboard ? '#880000' : (dark ? '#1c1c1c' : '#d4d0c8'), color: isDashboard ? '#ffcccc' : (dark ? '#d8d8d8' : '#000'), cursor: 'pointer', userSelect: 'none' }}
-              onMouseEnter={e => { if (!isDashboard) (e.currentTarget as HTMLElement).style.background = '#660000'; (e.currentTarget as HTMLElement).style.color = '#ffcccc'; }}
+              style={{ display: 'flex', alignItems: 'center', padding: '6px 10px', borderBottom: `1px solid ${dark ? '#333' : '#b0aca4'}`, background: isDashboard ? '#005500' : (dark ? '#1c1c1c' : '#d4d0c8'), color: isDashboard ? '#ccffcc' : (dark ? '#d8d8d8' : '#000'), cursor: 'pointer', userSelect: 'none' }}
+              onMouseEnter={e => { if (!isDashboard) (e.currentTarget as HTMLElement).style.background = '#004400'; (e.currentTarget as HTMLElement).style.color = '#ccffcc'; }}
               onMouseLeave={e => { if (!isDashboard) { (e.currentTarget as HTMLElement).style.background = dark ? '#1c1c1c' : '#d4d0c8'; (e.currentTarget as HTMLElement).style.color = dark ? '#d8d8d8' : '#000'; } }}>
               <span style={{ fontSize: '15px', width: '26px', textAlign: 'center', flexShrink: 0 }}>🏠</span>
               <span style={{ flex: 1, fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', textTransform: 'uppercase' }}>PAINEL PRINCIPAL</span>
             </div>
             {MODULOS.map((m, i) => {
               const isActive = activeModule === m.letra && !isDashboard;
-              const rowBg = isActive ? '#880000' : (i % 2 === 0 ? (dark ? '#1c1c1c' : '#d4d0c8') : (dark ? '#222' : '#dedad2'));
+              const rowBg = isActive ? '#005500' : (i % 2 === 0 ? (dark ? '#1c1c1c' : '#d4d0c8') : (dark ? '#222' : '#dedad2'));
               return (
                 <div key={m.letra} onClick={() => clickModule(m.letra, m.ativo)}
-                  style={{ display: 'flex', alignItems: 'center', padding: '6px 10px', borderBottom: `1px solid ${dark ? '#333' : '#b0aca4'}`, background: rowBg, color: isActive ? '#ffcccc' : (m.ativo ? (dark ? '#d8d8d8' : '#000') : (dark ? '#555' : '#aaa')), cursor: m.ativo ? 'pointer' : 'default', opacity: m.ativo ? 1 : 0.5, userSelect: 'none', transition: 'background 0.08s' }}
-                  onMouseEnter={e => { if (m.ativo && !isActive) { (e.currentTarget as HTMLElement).style.background = '#660000'; (e.currentTarget as HTMLElement).style.color = '#ffcccc'; } }}
-                  onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = rowBg; (e.currentTarget as HTMLElement).style.color = isActive ? '#ffcccc' : (m.ativo ? (dark ? '#d8d8d8' : '#000') : (dark ? '#555' : '#aaa')); } }}>
+                  style={{ display: 'flex', alignItems: 'center', padding: '6px 10px', borderBottom: `1px solid ${dark ? '#333' : '#b0aca4'}`, background: rowBg, color: isActive ? '#ccffcc' : (m.ativo ? (dark ? '#d8d8d8' : '#000') : (dark ? '#555' : '#aaa')), cursor: m.ativo ? 'pointer' : 'default', opacity: m.ativo ? 1 : 0.5, userSelect: 'none', transition: 'background 0.08s' }}
+                  onMouseEnter={e => { if (m.ativo && !isActive) { (e.currentTarget as HTMLElement).style.background = '#004400'; (e.currentTarget as HTMLElement).style.color = '#ccffcc'; } }}
+                  onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = rowBg; (e.currentTarget as HTMLElement).style.color = isActive ? '#ccffcc' : (m.ativo ? (dark ? '#d8d8d8' : '#000') : (dark ? '#555' : '#aaa')); } }}>
                   <span style={{ fontSize: '15px', width: '26px', textAlign: 'center', flexShrink: 0 }}>{m.icon}</span>
                   <span style={{ flex: 1, fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', textTransform: 'uppercase' }}>{m.nome}</span>
-                  <span style={{ fontSize: '12px', fontWeight: '700', color: isActive ? '#ffaaaa' : (dark ? '#ff6666' : '#880000'), width: '18px', textAlign: 'right', flexShrink: 0 }}>{m.letra}</span>
+                  <span style={{ fontSize: '12px', fontWeight: '700', color: isActive ? '#aaffbb' : (dark ? '#66cc77' : '#005500'), width: '18px', textAlign: 'right', flexShrink: 0 }}>{m.letra}</span>
                 </div>
               );
             })}
@@ -274,7 +274,7 @@ export default function LabLayout() {
         {/* ── OPÇÕES ── */}
         {activeModule && opcoes.length > 0 && (
           <div style={{ width: '240px', background: dark ? '#1c1c1c' : '#d4d0c8', borderRight: `2px solid ${modBorder}`, display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto' }}>
-            <div style={{ background: 'linear-gradient(90deg,#880000,#cc0000)', color: '#ffcccc', textAlign: 'center', padding: '5px 12px', fontSize: '12px', fontWeight: '700', letterSpacing: '2px', border: `2px outset #aa2222`, borderBottom: 'none' }}>
+            <div style={{ background: 'linear-gradient(90deg,#005500,#008800)', color: '#ccffcc', textAlign: 'center', padding: '5px 12px', fontSize: '12px', fontWeight: '700', letterSpacing: '2px', border: `2px outset #007700`, borderBottom: 'none' }}>
               OPÇÕES
             </div>
             <div style={{ border: `2px inset ${dark ? '#444' : '#808080'}` }}>
@@ -285,13 +285,13 @@ export default function LabLayout() {
                     ? currentFull === op.to
                     : location.pathname.startsWith(op.to)
                 ));
-                const rowBg = isCurrentRoute ? '#880000' : (i % 2 === 0 ? (dark ? '#1c1c1c' : '#d4d0c8') : (dark ? '#222' : '#dedad2'));
+                const rowBg = isCurrentRoute ? '#005500' : (i % 2 === 0 ? (dark ? '#1c1c1c' : '#d4d0c8') : (dark ? '#222' : '#dedad2'));
                 return (
                   <div key={op.num} onClick={() => clickOpcao(op)}
-                    style={{ display: 'flex', alignItems: 'center', padding: '6px 10px', borderBottom: `1px solid ${dark ? '#333' : '#b0aca4'}`, background: rowBg, color: isCurrentRoute ? '#ffcccc' : (op.disabled ? (dark ? '#555' : '#aaa') : (dark ? '#d8d8d8' : '#000')), cursor: op.disabled ? 'default' : 'pointer', userSelect: 'none', transition: 'background 0.08s' }}
-                    onMouseEnter={e => { if (!op.disabled && !isCurrentRoute) { (e.currentTarget as HTMLElement).style.background = '#660000'; (e.currentTarget as HTMLElement).style.color = '#ffcccc'; } }}
+                    style={{ display: 'flex', alignItems: 'center', padding: '6px 10px', borderBottom: `1px solid ${dark ? '#333' : '#b0aca4'}`, background: rowBg, color: isCurrentRoute ? '#ccffcc' : (op.disabled ? (dark ? '#555' : '#aaa') : (dark ? '#d8d8d8' : '#000')), cursor: op.disabled ? 'default' : 'pointer', userSelect: 'none', transition: 'background 0.08s' }}
+                    onMouseEnter={e => { if (!op.disabled && !isCurrentRoute) { (e.currentTarget as HTMLElement).style.background = '#004400'; (e.currentTarget as HTMLElement).style.color = '#ccffcc'; } }}
                     onMouseLeave={e => { if (!isCurrentRoute) { (e.currentTarget as HTMLElement).style.background = rowBg; (e.currentTarget as HTMLElement).style.color = op.disabled ? (dark ? '#555' : '#aaa') : (dark ? '#d8d8d8' : '#000'); } }}>
-                    <span style={{ fontFamily: "'Courier New', monospace", fontWeight: '700', fontSize: '12px', color: isCurrentRoute ? '#ffaaaa' : (dark ? '#ff6666' : '#880000'), width: '20px', flexShrink: 0 }}>{op.num}</span>
+                    <span style={{ fontFamily: "'Courier New', monospace", fontWeight: '700', fontSize: '12px', color: isCurrentRoute ? '#aaffbb' : (dark ? '#66cc77' : '#005500'), width: '20px', flexShrink: 0 }}>{op.num}</span>
                     <span style={{ flex: 1, fontSize: '11px', fontWeight: '700', letterSpacing: '0.5px', textTransform: 'uppercase' }}>{op.label}</span>
                   </div>
                 );
@@ -310,25 +310,25 @@ export default function LabLayout() {
       {/* ── STATUS BAR ── */}
       <div style={{ background: hdrBg, color: hdrTxt, padding: '3px 16px', fontSize: '11px', borderTop: `2px solid ${hdrBorder}`, display: 'flex', justifyContent: 'space-between', letterSpacing: '0.5px', textTransform: 'uppercase', flexShrink: 0 }}>
         <span>▶ SELECIONE A OPÇÃO DESEJADA</span>
-        <span style={{ color: dark ? '#ff4444' : '#cc8888' }}>UpÓticas Lab v1.0</span>
+        <span style={{ color: dark ? '#44cc55' : '#88ccaa' }}>Conexão Lab v1.0</span>
       </div>
 
       {/* ── OVERLAY BLOQUEIO/EXPIRADO ── */}
       {(licStatus.blocked || licStatus.expired) && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.88)', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: "'Courier New', monospace" }}>
-          <div style={{ background: 'linear-gradient(180deg,#1a0000,#2a0000)', border: '3px outset #880000', borderRadius: '4px', padding: '40px 60px', maxWidth: '500px', textAlign: 'center' }}>
+          <div style={{ background: 'linear-gradient(180deg,#001a00,#002a00)', border: '3px outset #005500', borderRadius: '4px', padding: '40px 60px', maxWidth: '500px', textAlign: 'center' }}>
             <div style={{ fontSize: '48px', marginBottom: '12px' }}>🔒</div>
-            <div style={{ color: '#ff4444', fontSize: '20px', fontWeight: '700', letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '16px' }}>
+            <div style={{ color: '#44cc55', fontSize: '20px', fontWeight: '700', letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '16px' }}>
               {licStatus.blocked ? 'SISTEMA BLOQUEADO' : 'LICENÇA EXPIRADA'}
             </div>
-            <div style={{ color: '#ffcccc', fontSize: '13px', lineHeight: '1.8', marginBottom: '24px' }}>
+            <div style={{ color: '#ccffcc', fontSize: '13px', lineHeight: '1.8', marginBottom: '24px' }}>
               {licStatus.message}
             </div>
-            <div style={{ color: '#ffaaaa', fontSize: '12px', padding: '12px', background: 'rgba(136,0,0,0.3)', border: '1px solid #880000', borderRadius: '2px', marginBottom: '20px' }}>
+            <div style={{ color: '#aaffbb', fontSize: '12px', padding: '12px', background: 'rgba(0,85,0,0.3)', border: '1px solid #005500', borderRadius: '2px', marginBottom: '20px' }}>
               Entre em contato com o suporte para regularizar o acesso ao sistema.
             </div>
             <button onClick={handleLogout}
-              style={{ padding: '8px 24px', fontSize: '12px', fontWeight: 'bold', background: '#880000', color: '#ffcccc', border: '2px outset #aa2222', borderRadius: '2px', cursor: 'pointer', letterSpacing: '1px', textTransform: 'uppercase' }}>
+              style={{ padding: '8px 24px', fontSize: '12px', fontWeight: 'bold', background: '#005500', color: '#ccffcc', border: '2px outset #007700', borderRadius: '2px', cursor: 'pointer', letterSpacing: '1px', textTransform: 'uppercase' }}>
               SAIR DO SISTEMA
             </button>
           </div>

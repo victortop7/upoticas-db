@@ -34,7 +34,7 @@ function PinScreen({ onOk }: { onOk: () => void }) {
   return (
     <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#c8c4b0' }}>
       <div style={{ background: '#d4d0c8', border: '2px outset #b0aca4', width: '280px' }}>
-        <div style={{ background: 'linear-gradient(90deg,#880000,#cc0000)', color: '#ffcccc', padding: '8px 14px', fontWeight: '700', fontSize: '13px', letterSpacing: '1px', border: '2px outset #aa2222', borderBottom: 'none', textAlign: 'center' }}>
+        <div style={{ background: 'linear-gradient(90deg,#005500,#008800)', color: '#ccffcc', padding: '8px 14px', fontWeight: '700', fontSize: '13px', letterSpacing: '1px', border: '2px outset #007700', borderBottom: 'none', textAlign: 'center' }}>
           ACESSO RESTRITO
         </div>
         <div style={{ border: '2px inset #b0aca4', padding: '20px' }}>
@@ -49,10 +49,10 @@ function PinScreen({ onOk }: { onOk: () => void }) {
           }}>
             {[0,1,2,3].map(i => (
               <div key={i} style={{
-                width: '36px', height: '44px', border: `2px inset ${erro ? '#880000' : '#808080'}`,
+                width: '36px', height: '44px', border: `2px inset ${erro ? '#005500' : '#808080'}`,
                 background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '22px', fontFamily: "'Courier New', monospace", fontWeight: '900',
-                color: erro ? '#880000' : '#000',
+                color: erro ? '#005500' : '#000',
               }}>
                 {pin[i] ? '●' : ''}
               </div>
@@ -60,7 +60,7 @@ function PinScreen({ onOk }: { onOk: () => void }) {
           </div>
 
           {erro && (
-            <div style={{ textAlign: 'center', color: '#880000', fontSize: '11px', fontWeight: '700', marginBottom: '10px', fontFamily: "'Courier New', monospace" }}>
+            <div style={{ textAlign: 'center', color: '#005500', fontSize: '11px', fontWeight: '700', marginBottom: '10px', fontFamily: "'Courier New', monospace" }}>
               PIN INCORRETO
             </div>
           )}
@@ -125,7 +125,7 @@ interface Lead {
 
 const R = {
   bg: '#c8c4b0', panel: '#d4d0c8', alt: '#dedad2', bdr: '#b0aca4',
-  hdr: 'linear-gradient(90deg,#880000,#cc0000)', hdrTxt: '#ffcccc', hdrBdr: '#aa2222',
+  hdr: 'linear-gradient(90deg,#005500,#008800)', hdrTxt: '#ccffcc', hdrBdr: '#007700',
 };
 const INP: React.CSSProperties = {
   padding: '5px 8px', fontSize: '12px', background: '#fff',
@@ -137,8 +137,8 @@ const STATUS_STYLE: Record<string, { bg: string; color: string; label: string }>
   ativo:          { bg: '#ccffcc', color: '#006600', label: 'ATIVO' },
   trial:          { bg: '#cce0ff', color: '#003388', label: 'TRIAL' },
   trial_expirado: { bg: '#fff0cc', color: '#886600', label: 'TRIAL EXPIRADO' },
-  expirado:       { bg: '#ffcccc', color: '#880000', label: 'EXPIRADO' },
-  bloqueado:      { bg: '#ffcccc', color: '#880000', label: 'BLOQUEADO' },
+  expirado:       { bg: '#ccffcc', color: '#005500', label: 'EXPIRADO' },
+  bloqueado:      { bg: '#ccffcc', color: '#005500', label: 'BLOQUEADO' },
   desativado:     { bg: '#e0e0e0', color: '#444',    label: 'DESATIVADO' },
 };
 
@@ -315,7 +315,7 @@ export default function LabAdmin() {
           </div>
           <div style={{ border: `2px inset ${R.bdr}`, padding: '20px' }}>
             <div style={{ fontSize: '11px', color: '#444', fontWeight: '700', marginBottom: '8px', textTransform: 'uppercase' }}>Chave de Administrador:</div>
-            {erro && <div style={{ background: '#ffdddd', border: '1px solid #880000', padding: '6px 10px', marginBottom: '10px', fontSize: '11px', color: '#880000', fontWeight: '700' }}>{erro}</div>}
+            {erro && <div style={{ background: '#ddffee', border: '1px solid #005500', padding: '6px 10px', marginBottom: '10px', fontSize: '11px', color: '#005500', fontWeight: '700' }}>{erro}</div>}
             <input
               type="password" value={secret} autoFocus
               onChange={e => setSecret(e.target.value)}
@@ -324,7 +324,7 @@ export default function LabAdmin() {
               placeholder="ADMIN_SECRET..."
             />
             <button onClick={() => load(secret)} disabled={loading}
-              style={{ width: '100%', padding: '7px', fontSize: '12px', fontWeight: '700', background: '#880000', color: R.hdrTxt, border: `1px outset ${R.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
+              style={{ width: '100%', padding: '7px', fontSize: '12px', fontWeight: '700', background: '#005500', color: R.hdrTxt, border: `1px outset ${R.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
               {loading ? 'VERIFICANDO...' : 'ENTRAR'}
             </button>
           </div>
@@ -356,7 +356,7 @@ export default function LabAdmin() {
         </div>
       </div>
 
-      {erro && <div style={{ background: '#ffdddd', border: '1px solid #880000', padding: '7px 10px', marginBottom: '8px', fontSize: '11px', color: '#880000', fontWeight: '700' }}>{erro}</div>}
+      {erro && <div style={{ background: '#ddffee', border: '1px solid #005500', padding: '7px 10px', marginBottom: '8px', fontSize: '11px', color: '#005500', fontWeight: '700' }}>{erro}</div>}
 
       {/* ── ABA LICENÇAS ── */}
       {aba === 'licencas' && (<>
@@ -399,11 +399,11 @@ export default function LabAdmin() {
                     <td style={{ padding: '7px 10px' }}>
                       <div style={{ display: 'flex', gap: '4px' }}>
                         <button onClick={() => openEdit(t)}
-                          style={{ padding: '3px 10px', fontSize: '11px', fontWeight: '700', background: '#880000', color: '#fff', border: `1px outset ${R.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit' }}>
+                          style={{ padding: '3px 10px', fontSize: '11px', fontWeight: '700', background: '#005500', color: '#fff', border: `1px outset ${R.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit' }}>
                           EDITAR
                         </button>
                         <button onClick={() => { if (confirm(`Excluir laboratório "${t.nome}" e todos os usuários? Esta ação não pode ser desfeita.`)) handleExcluirTenant(t.id); }}
-                          style={{ padding: '3px 10px', fontSize: '11px', fontWeight: '700', background: '#ffdddd', color: '#880000', border: '1px outset #cc8888', cursor: 'pointer', fontFamily: 'inherit' }}>
+                          style={{ padding: '3px 10px', fontSize: '11px', fontWeight: '700', background: '#ddffee', color: '#005500', border: '1px outset #88ccaa', cursor: 'pointer', fontFamily: 'inherit' }}>
                           EXCLUIR
                         </button>
                       </div>
@@ -464,7 +464,7 @@ export default function LabAdmin() {
                           </button>
                         )}
                         <button onClick={() => { if (confirm(`Excluir lead de ${l.nome}?`)) handleExcluirLead(l.id); }}
-                          style={{ padding: '3px 8px', fontSize: '10px', fontWeight: '700', background: '#ffdddd', color: '#880000', border: '1px outset #cc8888', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+                          style={{ padding: '3px 8px', fontSize: '10px', fontWeight: '700', background: '#ddffee', color: '#005500', border: '1px outset #88ccaa', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
                           EXCLUIR
                         </button>
                       </div>
@@ -483,7 +483,7 @@ export default function LabAdmin() {
           <div style={{ background: R.panel, border: `2px outset ${R.bdr}`, width: '480px', maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ background: R.hdr, color: R.hdrTxt, padding: '6px 14px', fontWeight: '700', fontSize: '12px', letterSpacing: '1px', display: 'flex', justifyContent: 'space-between', position: 'sticky', top: 0 }}>
               <span>CRIAR CONTA — {criarLead.laboratorio || criarLead.nome}</span>
-              <button onClick={() => { setCriarLead(null); setCriarSucesso(null); }} style={{ background: 'none', border: '1px solid #ff9999', color: '#ff9999', padding: '1px 6px', cursor: 'pointer', fontFamily: 'inherit' }}>✕</button>
+              <button onClick={() => { setCriarLead(null); setCriarSucesso(null); }} style={{ background: 'none', border: '1px solid #99ffaa', color: '#99ffaa', padding: '1px 6px', cursor: 'pointer', fontFamily: 'inherit' }}>✕</button>
             </div>
             <div style={{ border: `2px inset ${R.bdr}`, padding: '16px' }}>
               {criarSucesso ? (
@@ -499,7 +499,7 @@ export default function LabAdmin() {
                     Anote as credenciais acima para enviar ao cliente quando agendar a reunião.
                   </div>
                   <button onClick={() => { setCriarLead(null); setCriarSucesso(null); }}
-                    style={{ width: '100%', padding: '7px', fontSize: '12px', fontWeight: '700', background: '#880000', color: R.hdrTxt, border: `1px outset ${R.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
+                    style={{ width: '100%', padding: '7px', fontSize: '12px', fontWeight: '700', background: '#005500', color: R.hdrTxt, border: `1px outset ${R.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
                     FECHAR
                   </button>
                 </div>
@@ -545,7 +545,7 @@ export default function LabAdmin() {
                     )}
                   </div>
 
-                  {criarErro && <div style={{ background: '#ffdddd', border: '1px solid #880000', padding: '6px 10px', fontSize: '11px', color: '#880000', fontWeight: '700' }}>{criarErro}</div>}
+                  {criarErro && <div style={{ background: '#ddffee', border: '1px solid #005500', padding: '6px 10px', fontSize: '11px', color: '#005500', fontWeight: '700' }}>{criarErro}</div>}
 
                   <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
                     <button onClick={() => setCriarLead(null)} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: R.alt, color: '#000', border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
@@ -568,7 +568,7 @@ export default function LabAdmin() {
           <div style={{ background: R.panel, border: `2px outset ${R.bdr}`, width: '460px' }}>
             <div style={{ background: R.hdr, color: R.hdrTxt, padding: '6px 14px', fontWeight: '700', fontSize: '12px', letterSpacing: '1px', display: 'flex', justifyContent: 'space-between' }}>
               <span>EDITAR LICENÇA</span>
-              <button onClick={() => setEditId(null)} style={{ background: 'none', border: '1px solid #ff9999', color: '#ff9999', padding: '1px 6px', cursor: 'pointer', fontFamily: 'inherit' }}>✕</button>
+              <button onClick={() => setEditId(null)} style={{ background: 'none', border: '1px solid #99ffaa', color: '#99ffaa', padding: '1px 6px', cursor: 'pointer', fontFamily: 'inherit' }}>✕</button>
             </div>
             <div style={{ border: `2px inset ${R.bdr}`, padding: '16px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
@@ -610,7 +610,7 @@ export default function LabAdmin() {
                   <input type="checkbox" checked={editForm.ativo} onChange={e => setEditForm(f => ({ ...f, ativo: e.target.checked }))} />
                   Conta ativa
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', color: '#880000' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', color: '#005500' }}>
                   <input type="checkbox" checked={editForm.bloqueado} onChange={e => setEditForm(f => ({ ...f, bloqueado: e.target.checked }))} />
                   Bloqueado
                 </label>
@@ -620,7 +620,7 @@ export default function LabAdmin() {
                 <button onClick={() => setEditId(null)} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: R.alt, color: '#000', border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
                   CANCELAR
                 </button>
-                <button onClick={handleSave} disabled={saving} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: '#880000', color: '#fff', border: `1px outset ${R.hdrBdr}`, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
+                <button onClick={handleSave} disabled={saving} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: '#005500', color: '#fff', border: `1px outset ${R.hdrBdr}`, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
                   {saving ? 'SALVANDO...' : 'SALVAR'}
                 </button>
               </div>

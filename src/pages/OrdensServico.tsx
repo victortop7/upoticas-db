@@ -26,7 +26,7 @@ const SITUACAO_COLOR: Record<string, { bg: string; color: string }> = {
   em_producao:  { bg: 'rgba(245,158,11,0.12)', color: '#d97706' },
   pronto:       { bg: 'rgba(34,197,94,0.12)', color: '#16a34a' },
   entregue:     { bg: 'rgba(34,197,94,0.08)', color: '#15803d' },
-  cancelado:    { bg: 'rgba(239,68,68,0.1)', color: '#dc2626' },
+  cancelado:    { bg: 'rgba(0,136,0,0.1)', color: '#dc2626' },
 };
 
 function formatBRL(v: number) {

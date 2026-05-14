@@ -82,7 +82,7 @@ export default function Cadastro() {
             </span>
           </div>
           <p style={{ color: 'var(--text-dim)', fontSize: '14px', margin: 0 }}>
-            {isLab ? 'UpÓticas Lab · ' : ''}Experimente grátis por 14 dias
+            {isLab ? 'Conexão Lab · ' : ''}Experimente grátis por 14 dias
           </p>
         </div>
 

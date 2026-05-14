@@ -27,7 +27,7 @@ const SEC: React.CSSProperties = {
   padding: '12px 14px',
 };
 const SEC_TITLE: React.CSSProperties = {
-  fontSize: '10px', fontWeight: '700', color: '#880000', textTransform: 'uppercase',
+  fontSize: '10px', fontWeight: '700', color: '#005500', textTransform: 'uppercase',
   letterSpacing: '1px', marginBottom: '10px', borderBottom: '1px solid var(--border)', paddingBottom: '5px',
 };
 const TH: React.CSSProperties = {
@@ -67,7 +67,7 @@ export default function LabOticaDetalhe() {
       em_producao: { label:'EM PRODUÇÃO',  color:'#003388' },
       pronto:      { label:'PRONTO',       color:'#006600' },
       entregue:    { label:'ENTREGUE',     color:'#444' },
-      cancelado:   { label:'CANCELADO',    color:'#880000' },
+      cancelado:   { label:'CANCELADO',    color:'#005500' },
     };
     function fd(s: string | null) { return s ? s.slice(0,10).split('-').reverse().join('/') : '—'; }
     function mb(v: number) { return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
@@ -109,11 +109,11 @@ export default function LabOticaDetalhe() {
         : `<tr style="background:#f0ede8"><td colspan="7" style="padding:3px 28px;font-size:10px;color:#aaa;font-style:italic">Sem serviços registrados</td></tr>`;
 
       return `
-        <tr style="background:#880000;page-break-inside:avoid">
+        <tr style="background:#005500;page-break-inside:avoid">
           <td style="padding:5px 8px;font-family:monospace;font-weight:900;color:#fff;font-size:12px">#${String(o.numero).padStart(4,'0')}</td>
-          <td style="padding:5px 8px;font-family:monospace;color:#ffcccc;font-size:10px">${fd(o.created_at)}</td>
-          <td style="padding:5px 8px;font-family:monospace;color:#ffcccc;font-size:10px">Ref: ${o.ref_otica||'—'}</td>
-          <td style="padding:5px 8px;font-family:monospace;color:#ffcccc;font-size:10px">CI: ${o.cont_interno||'—'}</td>
+          <td style="padding:5px 8px;font-family:monospace;color:#ccffcc;font-size:10px">${fd(o.created_at)}</td>
+          <td style="padding:5px 8px;font-family:monospace;color:#ccffcc;font-size:10px">Ref: ${o.ref_otica||'—'}</td>
+          <td style="padding:5px 8px;font-family:monospace;color:#ccffcc;font-size:10px">CI: ${o.cont_interno||'—'}</td>
           <td colspan="2" style="padding:5px 8px;font-size:10px;font-weight:700;color:${st.color};background:#fff3e0">${st.label}</td>
           <td style="padding:5px 8px;font-family:monospace;font-weight:900;color:#fff;text-align:right">${mb(o.total||0)}</td>
         </tr>
@@ -129,17 +129,17 @@ export default function LabOticaDetalhe() {
         *{box-sizing:border-box}
         body{margin:12px;font-family:Arial,sans-serif;font-size:11px;color:#000;background:#fff}
         table{width:100%;border-collapse:collapse}
-        .hdr th{background:#880000;color:#fff;padding:5px 8px;text-align:left;font-size:10px;letter-spacing:0.5px;white-space:nowrap}
+        .hdr th{background:#005500;color:#fff;padding:5px 8px;text-align:left;font-size:10px;letter-spacing:0.5px;white-space:nowrap}
         .hdr th.r{text-align:right}
         @page{margin:8mm}
         @media print{body{margin:0}}
       </style>
     </head><body>
-      <div style="text-align:center;margin-bottom:12px;border-bottom:2px solid #880000;padding-bottom:8px">
-        <div style="font-size:16px;font-weight:900;text-transform:uppercase;color:#880000">${nomeOtica}</div>
+      <div style="text-align:center;margin-bottom:12px;border-bottom:2px solid #005500;padding-bottom:8px">
+        <div style="font-size:16px;font-weight:900;text-transform:uppercase;color:#005500">${nomeOtica}</div>
         <div style="font-size:11px;color:#333;margin-top:2px">RELATÓRIO DETALHADO DE ORDENS DE SERVIÇO</div>
         <div style="font-size:10px;color:#666">Período: ${periodo} &nbsp;|&nbsp; ${lista.length} OS &nbsp;|&nbsp; Total: ${mb(totalGeral)}</div>
-        <div style="font-size:9px;color:#aaa">Emitido em ${new Date().toLocaleString('pt-BR')} — UpÓticas Lab</div>
+        <div style="font-size:9px;color:#aaa">Emitido em ${new Date().toLocaleString('pt-BR')} — Conexão Lab</div>
       </div>
       <table>
         <thead class="hdr"><tr>
@@ -148,7 +148,7 @@ export default function LabOticaDetalhe() {
         </tr></thead>
         <tbody>${blocos}</tbody>
         <tfoot>
-          <tr style="background:#880000">
+          <tr style="background:#005500">
             <td colspan="9" style="padding:6px 8px;font-weight:900;color:#fff;font-size:12px">TOTAL GERAL — ${lista.length} OS</td>
             <td style="padding:6px 8px;font-family:monospace;font-weight:900;color:#fff;text-align:right;font-size:13px">${mb(totalGeral)}</td>
           </tr>
@@ -488,7 +488,7 @@ export default function LabOticaDetalhe() {
           <button onClick={() => navigate(`/lab/ordens/nova?otica=${id}`)} style={{ padding: '9px 18px', fontSize: '13px', fontWeight: '600', background: 'var(--surface-alt)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>
             Imprimir
           </button>
-          <button onClick={handleSave} disabled={saving} style={{ padding: '9px 28px', fontSize: '13px', fontWeight: '700', background: saving ? 'var(--text-muted)' : '#880000', color: '#fff', border: 'none', borderRadius: '7px', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
+          <button onClick={handleSave} disabled={saving} style={{ padding: '9px 28px', fontSize: '13px', fontWeight: '700', background: saving ? 'var(--text-muted)' : '#005500', color: '#fff', border: 'none', borderRadius: '7px', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
             {saving ? 'Salvando...' : 'Gravar'}
           </button>
         </div>
@@ -497,7 +497,7 @@ export default function LabOticaDetalhe() {
   }
 
   // ===== MODO VISUALIZAÇÃO — RETRO =====
-  const RV = { bg:'#c8c4b0', panel:'#d4d0c8', alt:'#dedad2', bdr:'#b0aca4', hdr:'linear-gradient(90deg,#880000,#cc0000)', hdrTxt:'#ffcccc', hdrBdr:'#aa2222', txt:'#000' };
+  const RV = { bg:'#c8c4b0', panel:'#d4d0c8', alt:'#dedad2', bdr:'#b0aca4', hdr:'linear-gradient(90deg,#005500,#008800)', hdrTxt:'#ccffcc', hdrBdr:'#007700', txt:'#000' };
   const RINP: React.CSSProperties = { padding:'5px 8px', fontSize:'12px', background:'#fff', border:'1px solid #999', color:'#000', outline:'none', fontFamily:"'Courier New', monospace", boxSizing:'border-box' };
 
   const ST_BADGE: Record<string, { bg: string; color: string; label: string }> = {
@@ -505,7 +505,7 @@ export default function LabOticaDetalhe() {
     em_producao:{ bg:'#cce0ff', color:'#003388', label:'EM PRODUÇÃO' },
     pronto:     { bg:'#ccffcc', color:'#006600', label:'PRONTO' },
     entregue:   { bg:'#e0e0e0', color:'#444',    label:'ENTREGUE' },
-    cancelado:  { bg:'#ffcccc', color:'#880000', label:'CANCELADO' },
+    cancelado:  { bg:'#ccffcc', color:'#005500', label:'CANCELADO' },
   };
 
   function fmtD(s: string | null) {
@@ -548,7 +548,7 @@ export default function LabOticaDetalhe() {
             Editar
           </button>
           <button onClick={() => navigate(`/lab/ordens/nova?otica=${id}`)}
-            style={{ padding:'5px 14px', fontSize:'12px', fontWeight:'700', background:'#880000', color:RV.hdrTxt, border:`1px outset ${RV.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+            style={{ padding:'5px 14px', fontSize:'12px', fontWeight:'700', background:'#005500', color:RV.hdrTxt, border:`1px outset ${RV.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
             + NOVA OS
           </button>
         </div>
@@ -560,7 +560,7 @@ export default function LabOticaDetalhe() {
           { label:'TOTAL DE OS', val: stats?.total_ordens ?? 0, color:'#000' },
           { label:'EM ABERTO',   val: stats?.em_aberto ?? 0,   color:'#886600' },
           { label:'PRONTOS',     val: stats?.prontos ?? 0,      color:'#006600' },
-          { label:'VALOR TOTAL', val: brl(stats?.valor_total ?? 0), color:'#880000', str:true },
+          { label:'VALOR TOTAL', val: brl(stats?.valor_total ?? 0), color:'#005500', str:true },
         ].map(({ label, val, color, str }) => (
           <div key={label} style={{ background:RV.panel, border:`2px outset ${RV.bdr}`, padding:'6px 16px', flexShrink:0 }}>
             <div style={{ fontSize:'10px', fontWeight:'700', color:'#666', textTransform:'uppercase', letterSpacing:'0.5px' }}>{label}</div>
@@ -607,7 +607,7 @@ export default function LabOticaDetalhe() {
             <input type="date" value={filtroDataFim} onChange={e => setFiltroDataFim(e.target.value)} style={{ ...RINP, width:'120px' }} />
             {temFiltro && (
               <button onClick={() => { setFiltroOS(''); setFiltroDataIni(''); setFiltroDataFim(''); }}
-                style={{ padding:'4px 10px', fontSize:'11px', fontWeight:'700', background:RV.alt, color:'#880000', border:`1px outset ${RV.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>
+                style={{ padding:'4px 10px', fontSize:'11px', fontWeight:'700', background:RV.alt, color:'#005500', border:`1px outset ${RV.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>
                 ✕ LIMPAR
               </button>
             )}
@@ -642,9 +642,9 @@ export default function LabOticaDetalhe() {
                     return (
                       <tr key={o.id} onClick={() => navigate(`/lab/ordens/${o.id}`)}
                         style={{ background: i%2===0 ? RV.panel : RV.alt, borderBottom:`1px solid ${RV.bdr}`, cursor:'pointer' }}
-                        onMouseEnter={e => (e.currentTarget.style.background='#880000')}
+                        onMouseEnter={e => (e.currentTarget.style.background='#005500')}
                         onMouseLeave={e => (e.currentTarget.style.background= i%2===0 ? RV.panel : RV.alt)}>
-                        <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'900', color:'#880000' }}>#{String(o.numero).padStart(4,'0')}</td>
+                        <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'900', color:'#005500' }}>#{String(o.numero).padStart(4,'0')}</td>
                         <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#333', whiteSpace:'nowrap' }}>{fmtD(o.created_at)}</td>
                         <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#333' }}>{o.ref_otica||'—'}</td>
                         <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#333' }}>{o.cont_interno||'—'}</td>

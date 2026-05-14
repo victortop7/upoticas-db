@@ -22,15 +22,15 @@ const STATUS_LABELS: Record<string, string> = {
   cancelado: 'CANCELADO',
 };
 const STATUS_BG: Record<string, string> = {
-  aguardando: '#fff8cc', em_producao: '#cce0ff', pronto: '#ccffcc', entregue: '#e0e0e0', cancelado: '#ffcccc',
+  aguardando: '#fff8cc', em_producao: '#cce0ff', pronto: '#ccffcc', entregue: '#e0e0e0', cancelado: '#ccffcc',
 };
 const STATUS_COLOR: Record<string, string> = {
-  aguardando: '#886600', em_producao: '#003388', pronto: '#006600', entregue: '#444', cancelado: '#880000',
+  aguardando: '#886600', em_producao: '#003388', pronto: '#006600', entregue: '#444', cancelado: '#005500',
 };
 
 const R = {
   bg: '#c8c4b0', panel: '#d4d0c8', alt: '#dedad2', bdr: '#b0aca4',
-  hdr: 'linear-gradient(90deg,#880000,#cc0000)', hdrTxt: '#ffcccc', hdrBdr: '#aa2222',
+  hdr: 'linear-gradient(90deg,#005500,#008800)', hdrTxt: '#ccffcc', hdrBdr: '#007700',
 };
 
 function statusBadge(s: string) {
@@ -106,9 +106,9 @@ export default function LabFluxoScan() {
               <div key={n}
                 onClick={() => { localStorage.setItem('lab_scan_setor', String(n)); setSetor(n); setSetupMode(false); }}
                 style={{ display: 'flex', alignItems: 'center', padding: '7px 10px', cursor: 'pointer', background: i % 2 === 0 ? R.panel : R.alt, borderBottom: `1px solid ${R.bdr}`, fontFamily: "'Courier New', monospace", fontSize: '12px', fontWeight: '700' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#880000'; (e.currentTarget as HTMLElement).style.color = '#fff'; }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#005500'; (e.currentTarget as HTMLElement).style.color = '#fff'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = i % 2 === 0 ? R.panel : R.alt; (e.currentTarget as HTMLElement).style.color = '#000'; }}>
-                <span style={{ color: '#880000', width: '22px', flexShrink: 0 }}>{n}</span>
+                <span style={{ color: '#005500', width: '22px', flexShrink: 0 }}>{n}</span>
                 <span>SETOR {n}</span>
               </div>
             ))}
@@ -147,8 +147,8 @@ export default function LabFluxoScan() {
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px' }}>
 
           {result ? (
-            <div style={{ width: '100%', maxWidth: '480px', border: `3px outset ${result.ok ? '#006600' : '#880000'}` }}>
-              <div style={{ background: result.ok ? '#006600' : '#880000', color: '#fff', padding: '6px 14px', fontWeight: '700', fontSize: '12px', letterSpacing: '1px', textTransform: 'uppercase' }}>
+            <div style={{ width: '100%', maxWidth: '480px', border: `3px outset ${result.ok ? '#006600' : '#005500'}` }}>
+              <div style={{ background: result.ok ? '#006600' : '#005500', color: '#fff', padding: '6px 14px', fontWeight: '700', fontSize: '12px', letterSpacing: '1px', textTransform: 'uppercase' }}>
                 {result.ok ? '✓ LEITURA REALIZADA COM SUCESSO' : '✕ ERRO NA LEITURA'}
               </div>
               <div style={{ padding: '16px 20px', background: result.ok ? '#f0fff0' : '#fff0f0' }}>
@@ -176,7 +176,7 @@ export default function LabFluxoScan() {
                     </div>
                   </>
                 ) : (
-                  <div style={{ fontSize: '13px', color: '#880000', fontWeight: '700', fontFamily: "'Courier New', monospace" }}>
+                  <div style={{ fontSize: '13px', color: '#005500', fontWeight: '700', fontFamily: "'Courier New', monospace" }}>
                     {result.error}
                   </div>
                 )}
@@ -187,7 +187,7 @@ export default function LabFluxoScan() {
               <div style={{ fontSize: '48px', marginBottom: '12px', opacity: scanning ? 1 : 0.35, letterSpacing: '-4px', fontFamily: 'monospace' }}>
                 {scanning ? '⟳' : '▌▌ ▌▌▌ ▌ ▌▌▌'}
               </div>
-              <div style={{ fontSize: '15px', fontWeight: '700', color: scanning ? '#880000' : '#555', letterSpacing: '2px', fontFamily: "'Courier New', monospace", textTransform: 'uppercase' }}>
+              <div style={{ fontSize: '15px', fontWeight: '700', color: scanning ? '#005500' : '#555', letterSpacing: '2px', fontFamily: "'Courier New', monospace", textTransform: 'uppercase' }}>
                 {scanning ? 'PROCESSANDO...' : 'AGUARDANDO LEITURA'}
               </div>
               {!scanning && (
@@ -199,7 +199,7 @@ export default function LabFluxoScan() {
           )}
 
           {buffer && (
-            <div style={{ fontFamily: "'Courier New', monospace", fontSize: '12px', color: '#880000', fontWeight: '700', padding: '3px 12px', background: '#fff', border: `1px solid ${R.bdr}` }}>
+            <div style={{ fontFamily: "'Courier New', monospace", fontSize: '12px', color: '#005500', fontWeight: '700', padding: '3px 12px', background: '#fff', border: `1px solid ${R.bdr}` }}>
               ► {buffer}_
             </div>
           )}
@@ -230,7 +230,7 @@ export default function LabFluxoScan() {
             <div style={{ border: `2px inset ${R.bdr}`, overflowY: 'auto', flex: 1 }}>
               {historia.map((h, i) => (
                 <div key={i} style={{ padding: '6px 10px', borderBottom: `1px solid ${R.bdr}`, background: i % 2 === 0 ? R.panel : R.alt }}>
-                  <div style={{ fontFamily: "'Courier New', monospace", fontSize: '12px', fontWeight: '700', color: '#880000' }}>
+                  <div style={{ fontFamily: "'Courier New', monospace", fontSize: '12px', fontWeight: '700', color: '#005500' }}>
                     OS #{String(h.numero).padStart(4, '0')}
                   </div>
                   <div style={{ fontSize: '10px', color: '#333', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>

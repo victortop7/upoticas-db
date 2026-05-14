@@ -22,10 +22,10 @@ export default function LicencaBloqueada() {
 
         {/* Header */}
         <div style={{
-          background: 'linear-gradient(90deg,#880000,#cc0000)',
-          color: '#ffcccc', padding: '10px 20px',
+          background: 'linear-gradient(90deg,#005500,#008800)',
+          color: '#ccffcc', padding: '10px 20px',
           fontSize: '13px', fontWeight: '700', letterSpacing: '2px',
-          border: '2px outset #aa2222', textAlign: 'center', textTransform: 'uppercase',
+          border: '2px outset #007700', textAlign: 'center', textTransform: 'uppercase',
         }}>
           UPÓTICAS — SISTEMA DE GESTÃO
         </div>
@@ -40,7 +40,7 @@ export default function LicencaBloqueada() {
 
           {/* Title */}
           <div style={{
-            fontSize: '15px', fontWeight: '700', color: '#880000',
+            fontSize: '15px', fontWeight: '700', color: '#005500',
             textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px',
             fontFamily: "'Courier New', monospace",
           }}>
@@ -62,7 +62,7 @@ export default function LicencaBloqueada() {
             padding: '16px 20px', marginBottom: '20px',
           }}>
             <div style={{ fontSize: '10px', fontWeight: '700', color: '#006600', letterSpacing: '1px', marginBottom: '8px', textTransform: 'uppercase' }}>
-              Fale com a UpÓticas
+              Fale com a Conexão Óticas
             </div>
             <a
               href="https://wa.me/5585999999999"

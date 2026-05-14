@@ -53,11 +53,11 @@ export default function LabOperadores() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
           <h1 style={{ margin: 0, fontSize: '22px', fontWeight: '700', color: 'var(--text)' }}>Operadores do Sistema</h1>
-          <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--text-dim)' }}>Usuários com acesso ao UpÓticas Lab</p>
+          <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--text-dim)' }}>Usuários com acesso ao Conexão Lab</p>
         </div>
         <button
           onClick={() => { setShowForm(f => !f); setErro(''); setSucesso(''); }}
-          style={{ padding: '9px 20px', fontSize: '13px', fontWeight: '600', background: '#880000', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}
+          style={{ padding: '9px 20px', fontSize: '13px', fontWeight: '600', background: '#005500', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}
         >
           {showForm ? 'Cancelar' : '+ Novo Operador'}
         </button>
@@ -95,7 +95,7 @@ export default function LabOperadores() {
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <button type="submit" disabled={saving} style={{ padding: '9px 24px', fontSize: '13px', fontWeight: '600', background: saving ? 'var(--text-muted)' : '#880000', color: '#fff', border: 'none', borderRadius: '8px', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
+            <button type="submit" disabled={saving} style={{ padding: '9px 24px', fontSize: '13px', fontWeight: '600', background: saving ? 'var(--text-muted)' : '#005500', color: '#fff', border: 'none', borderRadius: '8px', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
               {saving ? 'Salvando...' : 'Criar Operador'}
             </button>
           </div>

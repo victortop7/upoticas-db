@@ -27,7 +27,7 @@ interface VendasResponse {
 
 const SITUACAO_COLOR: Record<string, { bg: string; color: string }> = {
   ativa:     { bg: 'rgba(34,197,94,0.12)', color: '#16a34a' },
-  cancelada: { bg: 'rgba(239,68,68,0.1)', color: '#dc2626' },
+  cancelada: { bg: 'rgba(0,136,0,0.1)', color: '#dc2626' },
 };
 
 const PGTO_LABEL: Record<string, string> = {

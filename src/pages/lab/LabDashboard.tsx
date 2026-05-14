@@ -32,9 +32,9 @@ export default function LabDashboard() {
   const rowOdd    = dark ? '#222222' : '#dedad2';
   const rowBorder = dark ? '#333333' : '#b0aca4';
   const txtMain   = dark ? '#d8d8d8' : '#000000';
-  const accentTxt = dark ? '#ff6666' : '#880000';
-  const hdrBg     = 'linear-gradient(90deg, #880000, #cc0000)';
-  const hdrBorder = '#aa2222';
+  const accentTxt = dark ? '#66cc77' : '#005500';
+  const hdrBg     = 'linear-gradient(90deg, #005500, #008800)';
+  const hdrBorder = '#007700';
 
   function toggleDark() {
     const next = dark ? '0' : '1';
@@ -48,15 +48,15 @@ export default function LabDashboard() {
 
         {/* Logo */}
         <div style={{ background: hdrBg, border: `2px outset ${hdrBorder}`, padding: '16px 12px', textAlign: 'center' }}>
-          <img src="/logo-lab.svg" alt="UpÓticas Lab" style={{ width: '130px', marginBottom: '8px' }} />
-          <div style={{ borderTop: '1px solid #6a1a1a', marginTop: '8px', paddingTop: '8px', color: '#d0a0a0', fontSize: '10px', lineHeight: '1.6' }}>
+          <img src="/logo-lab.svg" alt="Conexão Lab" style={{ width: '130px', marginBottom: '8px' }} />
+          <div style={{ borderTop: '1px solid #1a4a1a', marginTop: '8px', paddingTop: '8px', color: '#a0d0a8', fontSize: '10px', lineHeight: '1.6' }}>
             {tenant?.nome}
           </div>
         </div>
 
         {/* Stats Produção */}
         <div style={{ background: panelBg, border: `2px inset ${dark ? '#444' : '#808080'}`, padding: '8px 10px' }}>
-          <div style={{ background: '#880000', color: '#ffcccc', fontSize: '10px', fontWeight: '700', padding: '3px 6px', marginBottom: '8px', letterSpacing: '1px' }}>PRODUÇÃO</div>
+          <div style={{ background: '#005500', color: '#ccffcc', fontSize: '10px', fontWeight: '700', padding: '3px 6px', marginBottom: '8px', letterSpacing: '1px' }}>PRODUÇÃO</div>
           {[
             { label: 'Hoje',        val: stats.hoje,        color: '#60a5fa' },
             { label: 'Aguardando',  val: stats.aguardando,  color: '#f59e0b' },
@@ -65,7 +65,7 @@ export default function LabDashboard() {
           ].map(({ label, val, color }) => (
             <div key={label} onClick={() => navigate('/lab/ordens')}
               style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 6px', marginBottom: '2px', cursor: 'pointer', borderRadius: '2px' }}
-              onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#880000'}
+              onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#005500'}
               onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
               <span style={{ fontSize: '10px', color: dark ? '#aaa' : '#444', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</span>
               <span style={{ fontSize: '14px', fontWeight: '900', color, fontFamily: 'monospace' }}>{val}</span>
@@ -75,7 +75,7 @@ export default function LabDashboard() {
 
         {/* Acesso Rápido */}
         <div style={{ background: panelBg, border: `2px outset ${dark ? '#555' : '#808080'}`, padding: '8px 10px' }}>
-          <div style={{ background: '#880000', color: '#ffcccc', fontSize: '10px', fontWeight: '700', padding: '3px 6px', marginBottom: '8px', letterSpacing: '1px' }}>ACESSO RÁPIDO</div>
+          <div style={{ background: '#005500', color: '#ccffcc', fontSize: '10px', fontWeight: '700', padding: '3px 6px', marginBottom: '8px', letterSpacing: '1px' }}>ACESSO RÁPIDO</div>
           {[
             { label: 'Nova OS',       to: '/lab/ordens/nova', icon: '➕' },
             { label: 'Fila Produção', to: '/lab/fluxo',       icon: '⚡' },
@@ -84,7 +84,7 @@ export default function LabDashboard() {
           ].map((item, i) => (
             <button key={item.to} onClick={() => navigate(item.to)}
               style={{ display: 'flex', alignItems: 'center', gap: '6px', width: '100%', padding: '4px 6px', marginBottom: '4px', background: i % 2 === 0 ? rowEven : rowOdd, border: `1px outset ${dark ? '#555' : '#a0a098'}`, fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer', color: txtMain, textAlign: 'left', fontWeight: '700', borderBottom: `1px solid ${rowBorder}` }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#880000'; (e.currentTarget as HTMLElement).style.color = '#ffcccc'; }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#005500'; (e.currentTarget as HTMLElement).style.color = '#ccffcc'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = i % 2 === 0 ? rowEven : rowOdd; (e.currentTarget as HTMLElement).style.color = txtMain; }}>
               <span>{item.icon}</span>
               <span style={{ textTransform: 'uppercase', letterSpacing: '0.3px' }}>{item.label}</span>
@@ -95,10 +95,10 @@ export default function LabDashboard() {
         {/* Dark mode + versão */}
         <div style={{ background: panelBg, border: `2px inset ${dark ? '#444' : '#808080'}`, padding: '8px 10px', fontSize: '10px', color: dark ? '#aaa' : '#404040', textAlign: 'center' }}>
           <button onClick={toggleDark}
-            style={{ width: '100%', padding: '4px 6px', marginBottom: '8px', background: dark ? '#333' : '#c8c4b0', border: `1px outset ${dark ? '#555' : '#a0a098'}`, fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer', color: dark ? '#ffcccc' : '#000', fontWeight: '700' }}>
+            style={{ width: '100%', padding: '4px 6px', marginBottom: '8px', background: dark ? '#333' : '#c8c4b0', border: `1px outset ${dark ? '#555' : '#a0a098'}`, fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer', color: dark ? '#ccffcc' : '#000', fontWeight: '700' }}>
             {dark ? '☀️ MODO CLARO' : '🌙 MODO NOTURNO'}
           </button>
-          <div style={{ fontWeight: '700', color: accentTxt, marginBottom: '4px' }}>UpÓticas Lab</div>
+          <div style={{ fontWeight: '700', color: accentTxt, marginBottom: '4px' }}>Conexão Lab</div>
           <div>Versão 1.0</div>
           <div style={{ marginTop: '4px', color: dark ? '#666' : '#606060' }}>Soluções Ópticas</div>
         </div>

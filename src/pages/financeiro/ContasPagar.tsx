@@ -6,7 +6,7 @@ interface Conta { id: string; nome: string; tipo: string; }
 
 const SIT_COLOR: Record<string, { bg: string; color: string }> = {
   pendente:  { bg: 'rgba(245,158,11,0.12)', color: '#d97706' },
-  vencido:   { bg: 'rgba(239,68,68,0.12)', color: '#dc2626' },
+  vencido:   { bg: 'rgba(0,136,0,0.12)', color: '#dc2626' },
   pago:      { bg: 'rgba(34,197,94,0.12)', color: '#16a34a' },
   cancelado: { bg: 'var(--surface-alt)', color: 'var(--text-muted)' },
 };

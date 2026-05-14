@@ -46,7 +46,7 @@ export default function InteresseLab() {
 
       {/* Logo */}
       <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <div style={{ width: '36px', height: '36px', background: 'linear-gradient(135deg,#cc0000,#880000)', borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: '36px', height: '36px', background: 'linear-gradient(135deg,#008800,#005500)', borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/></svg>
         </div>
         <span style={{ fontSize: '18px', fontWeight: '800' }}>Up<span style={{ color: '#ef4444' }}>Laboratorio</span></span>
@@ -60,9 +60,9 @@ export default function InteresseLab() {
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>✅</div>
             <h2 style={{ margin: '0 0 12px', fontSize: '24px', fontWeight: '800' }}>Recebemos seu contato!</h2>
             <p style={{ margin: '0 0 28px', fontSize: '15px', color: '#94a3b8', lineHeight: '1.6' }}>
-              Nossa equipe vai entrar em contato em breve pelo WhatsApp para agendar uma demonstração do UpLaboratorio.
+              Nossa equipe vai entrar em contato em breve pelo WhatsApp para agendar uma demonstração do Conexão Lab.
             </p>
-            <button onClick={() => navigate('/')} style={{ padding: '11px 28px', fontSize: '14px', fontWeight: '700', background: '#cc0000', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <button onClick={() => navigate('/')} style={{ padding: '11px 28px', fontSize: '14px', fontWeight: '700', background: '#008800', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
               Voltar ao início
             </button>
           </div>
@@ -70,14 +70,14 @@ export default function InteresseLab() {
           /* Formulário */
           <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '40px' }}>
             <div style={{ marginBottom: '28px' }}>
-              <h1 style={{ margin: '0 0 8px', fontSize: '24px', fontWeight: '800', letterSpacing: '-0.5px' }}>Quero conhecer o UpLaboratorio</h1>
+              <h1 style={{ margin: '0 0 8px', fontSize: '24px', fontWeight: '800', letterSpacing: '-0.5px' }}>Quero conhecer o Conexão Lab</h1>
               <p style={{ margin: 0, fontSize: '14px', color: '#94a3b8', lineHeight: '1.6' }}>
                 Preencha os dados abaixo e nossa equipe entrará em contato para agendar uma demonstração.
               </p>
             </div>
 
             {erro && (
-              <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', padding: '10px 14px', marginBottom: '20px', fontSize: '13px', color: '#f87171' }}>
+              <div style={{ background: 'rgba(0,136,0,0.1)', border: '1px solid rgba(0,136,0,0.3)', borderRadius: '8px', padding: '10px 14px', marginBottom: '20px', fontSize: '13px', color: '#f87171' }}>
                 {erro}
               </div>
             )}
@@ -116,7 +116,7 @@ export default function InteresseLab() {
 
               <button type="submit" disabled={saving} style={{
                 padding: '13px', fontSize: '15px', fontWeight: '700',
-                background: saving ? '#555' : 'linear-gradient(135deg,#cc0000,#880000)',
+                background: saving ? '#555' : 'linear-gradient(135deg,#008800,#005500)',
                 color: 'white', border: 'none', borderRadius: '10px',
                 cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
                 marginTop: '4px', boxShadow: '0 4px 20px rgba(204,0,0,0.3)',

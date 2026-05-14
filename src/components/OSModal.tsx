@@ -389,8 +389,8 @@ export default function OSModal({ os, onClose, onSaved }: Props) {
                 </div>
               </div>
               <div style={{
-                background: valorRestante > 0 ? 'rgba(239,68,68,0.06)' : 'rgba(34,197,94,0.06)',
-                border: `1px solid ${valorRestante > 0 ? 'rgba(239,68,68,0.2)' : 'rgba(34,197,94,0.2)'}`,
+                background: valorRestante > 0 ? 'rgba(0,136,0,0.06)' : 'rgba(34,197,94,0.06)',
+                border: `1px solid ${valorRestante > 0 ? 'rgba(0,136,0,0.2)' : 'rgba(34,197,94,0.2)'}`,
                 borderRadius: '10px', padding: '16px 20px',
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               }}>

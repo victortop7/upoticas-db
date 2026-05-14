@@ -63,16 +63,16 @@ const PLANOS = [
 ];
 
 const FAQ = [
-  { q: 'Preciso instalar algum programa?', a: 'Não. O UpÓticas funciona 100% no navegador. Acesse de qualquer computador, tablet ou celular sem instalar nada.' },
+  { q: 'Preciso instalar algum programa?', a: 'Não. O Conexão Óticas funciona 100% no navegador. Acesse de qualquer computador, tablet ou celular sem instalar nada.' },
   { q: 'Meus dados ficam seguros?', a: 'Sim. Seus dados ficam armazenados na infraestrutura da Cloudflare, com backups automáticos. Nenhuma ótica concorrente acessa suas informações.' },
   { q: 'Posso cancelar quando quiser?', a: 'Sim, sem multa e sem burocracia. Se cancelar, seus dados ficam disponíveis por 30 dias para exportação.' },
   { q: 'Quantos usuários posso ter?', a: 'Depende do plano. Gestão tem até 10 usuários, Pro até 15 e Completo é ilimitado.' },
   { q: 'Como funciona o período grátis?', a: '14 dias completos, sem cartão de crédito. Acesso a todos os recursos do plano escolhido.' },
-  { q: 'O UpLaboratorio tem aplicativo?', a: 'Sim! O UpLaboratorio é distribuído como aplicativo para Windows. Após a demonstração, fornecemos o instalador.' },
+  { q: 'O Conexão Lab tem aplicativo?', a: 'Sim! O Conexão Lab é distribuído como aplicativo para Windows. Após a demonstração, fornecemos o instalador.' },
 ];
 
-const RED = '#cc0000';
-const RED2 = '#880000';
+const RED = '#008800';
+const RED2 = '#005500';
 const RED3 = '#ef4444';
 const REDGLOW = 'rgba(204,0,0,';
 
@@ -171,7 +171,7 @@ export default function Landing() {
             >
               <img src="https://images.unsplash.com/photo-1776890948428-5cb3e62cc680?w=600&h=180&fit=crop&q=80" alt="Ótica" style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }} />
               <div style={{ padding: '22px 20px' }}>
-                <div style={{ fontSize: '17px', fontWeight: '800', color: '#f1f5f9', marginBottom: '4px' }}>UpÓticas</div>
+                <div style={{ fontSize: '17px', fontWeight: '800', color: '#f1f5f9', marginBottom: '4px' }}>Conexão Óticas</div>
                 <div style={{ fontSize: '12px', color: RED3, fontWeight: '600', marginBottom: '10px' }}>Para óticas</div>
                 <div style={{ fontSize: '13px', color: '#94a3b8', lineHeight: '1.55', marginBottom: '14px' }}>Clientes, OS, vendas, estoque, financeiro e CRM</div>
                 <div style={{ fontSize: '13px', fontWeight: '700', color: RED3 }}>Começar grátis · 14 dias →</div>
@@ -187,7 +187,7 @@ export default function Landing() {
             >
               <img src="https://images.unsplash.com/photo-1758573467030-52481ea92007?w=600&h=180&fit=crop&q=80" alt="Laboratório óptico" style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }} />
               <div style={{ padding: '22px 20px' }}>
-                <div style={{ fontSize: '17px', fontWeight: '800', color: '#f1f5f9', marginBottom: '4px' }}>UpLaboratorio</div>
+                <div style={{ fontSize: '17px', fontWeight: '800', color: '#f1f5f9', marginBottom: '4px' }}>Conexão Lab</div>
                 <div style={{ fontSize: '12px', color: RED3, fontWeight: '600', marginBottom: '10px' }}>Para laboratórios ópticos</div>
                 <div style={{ fontSize: '13px', color: '#94a3b8', lineHeight: '1.55', marginBottom: '14px' }}>Ordens de produção, óticas clientes, estoque de lentes</div>
                 <div style={{ fontSize: '13px', fontWeight: '700', color: RED3 }}>Solicitar demonstração →</div>
@@ -223,7 +223,7 @@ export default function Landing() {
           <img src="https://images.unsplash.com/photo-1732064137039-1599dc5d0a17?w=1200&h=400&fit=crop&q=80" alt="Laboratório óptico" style={{ width: '100%', height: '360px', objectFit: 'cover', display: 'block' }} />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(10,13,20,0.85) 0%, rgba(10,13,20,0.2) 60%, transparent 100%)', display: 'flex', alignItems: 'center', padding: '48px' }}>
             <div style={{ maxWidth: '420px' }}>
-              <div style={{ fontSize: '12px', color: RED3, fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '12px' }}>UpLaboratorio</div>
+              <div style={{ fontSize: '12px', color: RED3, fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '12px' }}>Conexão Lab</div>
               <h3 style={{ fontSize: '28px', fontWeight: '800', margin: '0 0 14px', letterSpacing: '-0.5px', lineHeight: '1.2' }}>Sistema completo para laboratórios ópticos</h3>
               <p style={{ fontSize: '15px', color: '#94a3b8', margin: '0 0 24px', lineHeight: '1.6' }}>Gerencie ordens de produção, estoque de lentes, óticas clientes e muito mais.</p>
               <button onClick={() => navigate('/interesse-lab')} style={{ padding: '12px 28px', fontSize: '14px', fontWeight: '700', background: RED, color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
@@ -354,7 +354,7 @@ export default function Landing() {
             <a href="#planos" style={{ fontSize: '13px', color: '#475569', textDecoration: 'none' }}>Planos</a>
             <a href="#faq" style={{ fontSize: '13px', color: '#475569', textDecoration: 'none' }}>FAQ</a>
           </div>
-          <span style={{ fontSize: '13px', color: '#334155' }}>© {new Date().getFullYear()} UpÓticas</span>
+          <span style={{ fontSize: '13px', color: '#334155' }}>© {new Date().getFullYear()} Conexão Óticas</span>
         </div>
       </footer>
     </div>

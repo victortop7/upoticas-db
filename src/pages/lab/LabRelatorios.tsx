@@ -31,7 +31,7 @@ const STATUS_STYLE: Record<string, { bg: string; color: string; label: string }>
   em_producao:{ bg:'#cce0ff', color:'#003388', label:'EM PRODUÇÃO' },
   pronto:     { bg:'#ccffcc', color:'#006600', label:'PRONTO' },
   entregue:   { bg:'#e0e0e0', color:'#444',    label:'ENTREGUE' },
-  cancelado:  { bg:'#ffcccc', color:'#880000', label:'CANCELADO' },
+  cancelado:  { bg:'#ccffcc', color:'#005500', label:'CANCELADO' },
 };
 
 const TIPOS: Record<string, string> = {
@@ -39,7 +39,7 @@ const TIPOS: Record<string, string> = {
   E:'Encomenda', Z:'Recibo',   N:'Orçamento', M:'Mostruário',
 };
 
-const R = { bg:'#c8c4b0', panel:'#d4d0c8', alt:'#dedad2', bdr:'#b0aca4', hdr:'linear-gradient(90deg,#880000,#cc0000)', hdrTxt:'#ffcccc', hdrBdr:'#aa2222', txt:'#000', inp:'#fff' };
+const R = { bg:'#c8c4b0', panel:'#d4d0c8', alt:'#dedad2', bdr:'#b0aca4', hdr:'linear-gradient(90deg,#005500,#008800)', hdrTxt:'#ccffcc', hdrBdr:'#007700', txt:'#000', inp:'#fff' };
 const INP: React.CSSProperties = { padding:'5px 8px', fontSize:'12px', background:R.inp, border:'1px solid #999', color:R.txt, outline:'none', fontFamily:"'Courier New', monospace", boxSizing:'border-box' };
 
 export default function LabRelatorios() {
@@ -162,7 +162,7 @@ export default function LabRelatorios() {
             ].map(({ label, val, mono }) => (
               <div key={label}>
                 <div style={{ fontSize:'10px', fontWeight:'700', color:'#666', textTransform:'uppercase', letterSpacing:'0.5px' }}>{label}</div>
-                <div style={{ fontSize:'18px', fontWeight:'900', color:'#880000', fontFamily: mono ? "'Courier New', monospace" : 'inherit' }}>{val}</div>
+                <div style={{ fontSize:'18px', fontWeight:'900', color:'#005500', fontFamily: mono ? "'Courier New', monospace" : 'inherit' }}>{val}</div>
               </div>
             ))}
           </div>
@@ -188,9 +188,9 @@ export default function LabRelatorios() {
                   const st = STATUS_STYLE[o.status] || { bg:'#eee', color:'#333', label: o.status };
                   return (
                     <tr key={o.id} style={{ background: i%2===0 ? R.panel : R.alt, borderBottom:`1px solid ${R.bdr}`, cursor:'pointer' }}
-                      onMouseEnter={e => (e.currentTarget.style.background='#880000')}
+                      onMouseEnter={e => (e.currentTarget.style.background='#005500')}
                       onMouseLeave={e => (e.currentTarget.style.background= i%2===0 ? R.panel : R.alt)}>
-                      <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'900', color:'#880000' }}
+                      <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'900', color:'#005500' }}
                         onClick={() => navigate(`/lab/ordens/${o.id}`)}>
                         #{String(o.numero).padStart(4,'0')}
                       </td>
@@ -208,7 +208,7 @@ export default function LabRelatorios() {
                       <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#333', whiteSpace:'nowrap' }}>{fmtDate(o.previsao_entrega)}</td>
                       <td style={{ padding:'6px 10px' }}>
                         <button onClick={() => navigate(`/lab/ordens/${o.id}`)}
-                          style={{ padding:'2px 8px', fontSize:'11px', fontWeight:'700', background:'#880000', color:'#fff', border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}>
+                          style={{ padding:'2px 8px', fontSize:'11px', fontWeight:'700', background:'#005500', color:'#fff', border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}>
                           VER OS →
                         </button>
                       </td>
@@ -261,11 +261,11 @@ export default function LabRelatorios() {
           style={{ ...INP, width:'180px' }}
         />
         <button onClick={buscarPorNumero} disabled={buscandoOS}
-          style={{ padding:'5px 14px', fontSize:'11px', fontWeight:'700', background:'#880000', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+          style={{ padding:'5px 14px', fontSize:'11px', fontWeight:'700', background:'#005500', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
           {buscandoOS ? 'BUSCANDO...' : '🔍 IR PARA OS'}
         </button>
         {erroBuscaOS && (
-          <span style={{ fontSize:'11px', color:'#880000', fontWeight:'700', fontFamily:"'Courier New', monospace" }}>
+          <span style={{ fontSize:'11px', color:'#005500', fontWeight:'700', fontFamily:"'Courier New', monospace" }}>
             ✕ {erroBuscaOS}
           </span>
         )}
@@ -284,7 +284,7 @@ export default function LabRelatorios() {
           </div>
 
           <button onClick={buscarResumo} disabled={loading}
-            style={{ padding:'5px 18px', fontSize:'12px', fontWeight:'700', background:'#880000', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:loading?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase', alignSelf:'flex-end' }}>
+            style={{ padding:'5px 18px', fontSize:'12px', fontWeight:'700', background:'#005500', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:loading?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase', alignSelf:'flex-end' }}>
             {loading ? 'BUSCANDO...' : '🔍 GERAR RELATÓRIO'}
           </button>
         </div>
@@ -293,7 +293,7 @@ export default function LabRelatorios() {
         <div style={{ display:'flex', gap:'4px', marginTop:'8px', flexWrap:'wrap' }}>
           {PRESETS.map(p => (
             <button key={p.label} onClick={() => { setDataIni(p.ini); setDataFim(p.fim); }}
-              style={{ padding:'3px 10px', fontSize:'11px', fontWeight:'700', background: dataIni===p.ini && dataFim===p.fim ? '#880000' : R.alt, color: dataIni===p.ini && dataFim===p.fim ? R.hdrTxt : R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>
+              style={{ padding:'3px 10px', fontSize:'11px', fontWeight:'700', background: dataIni===p.ini && dataFim===p.fim ? '#005500' : R.alt, color: dataIni===p.ini && dataFim===p.fim ? R.hdrTxt : R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>
               {p.label}
             </button>
           ))}
@@ -319,7 +319,7 @@ export default function LabRelatorios() {
           ].map(({ label, val, sub }) => (
             <div key={label} style={{ background:R.panel, border:`2px outset ${R.bdr}`, padding:'8px 16px', flexShrink:0 }}>
               <div style={{ fontSize:'10px', fontWeight:'700', color:'#666', textTransform:'uppercase', letterSpacing:'0.5px' }}>{label}</div>
-              <div style={{ fontSize:'20px', fontWeight:'900', color:'#880000', fontFamily:"'Courier New', monospace", lineHeight:'1.2' }}>{val}</div>
+              <div style={{ fontSize:'20px', fontWeight:'900', color:'#005500', fontFamily:"'Courier New', monospace", lineHeight:'1.2' }}>{val}</div>
               <div style={{ fontSize:'10px', color:'#888', marginTop:'2px' }}>{sub}</div>
             </div>
           ))}
@@ -350,26 +350,26 @@ export default function LabRelatorios() {
                 const pct = Math.round((o.valor_total / maiorValor) * 100);
                 return (
                   <tr key={o.otica_id} style={{ background: i%2===0 ? R.panel : R.alt, borderBottom:`1px solid ${R.bdr}`, cursor:'pointer' }}
-                    onMouseEnter={e => (e.currentTarget.style.background='#880000')}
+                    onMouseEnter={e => (e.currentTarget.style.background='#005500')}
                     onMouseLeave={e => (e.currentTarget.style.background= i%2===0 ? R.panel : R.alt)}>
                     <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#555' }}>{o.otica_codigo||'—'}</td>
                     <td style={{ padding:'7px 10px', fontSize:'13px', fontWeight:'700', color:R.txt }}>{o.otica_nome}</td>
                     <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'14px', fontWeight:'900', color:'#000' }}>{o.total_os}</td>
                     <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'700', color:'#006600' }}>{o.entregues}</td>
                     <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'700', color:'#003388' }}>{o.em_aberto}</td>
-                    <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', color:'#880000' }}>{o.canceladas}</td>
+                    <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', color:'#005500' }}>{o.canceladas}</td>
                     <td style={{ padding:'7px 10px', textAlign:'right' }}>
                       <div style={{ fontFamily:"'Courier New', monospace", fontSize:'13px', fontWeight:'700', color:R.txt, marginBottom:'3px' }}>{brl(o.valor_total)}</div>
                       <div style={{ display:'flex', alignItems:'center', gap:'4px', justifyContent:'flex-end' }}>
                         <div style={{ width:'60px', height:'5px', background:'#b0aca4', borderRadius:'2px', overflow:'hidden' }}>
-                          <div style={{ width:`${pct}%`, height:'100%', background:'#880000' }} />
+                          <div style={{ width:`${pct}%`, height:'100%', background:'#005500' }} />
                         </div>
                         <span style={{ fontSize:'10px', color:'#666', fontFamily:"'Courier New', monospace" }}>{pct}%</span>
                       </div>
                     </td>
                     <td style={{ padding:'7px 10px' }}>
                       <button onClick={() => verOtica(o)}
-                        style={{ padding:'3px 10px', fontSize:'11px', fontWeight:'700', background:'#880000', color:'#fff', border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}>
+                        style={{ padding:'3px 10px', fontSize:'11px', fontWeight:'700', background:'#005500', color:'#fff', border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}>
                         VER OS →
                       </button>
                     </td>
@@ -383,7 +383,7 @@ export default function LabRelatorios() {
                 <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'14px', fontWeight:'900', color:R.hdrTxt }}>{totais?.total_os}</td>
                 <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'13px', fontWeight:'700', color:'#ccffcc' }}>{oticas.reduce((a,o)=>a+o.entregues,0)}</td>
                 <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'13px', color:'#cce0ff' }}>{oticas.reduce((a,o)=>a+o.em_aberto,0)}</td>
-                <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'13px', color:'#ffcccc' }}>{oticas.reduce((a,o)=>a+o.canceladas,0)}</td>
+                <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'13px', color:'#ccffcc' }}>{oticas.reduce((a,o)=>a+o.canceladas,0)}</td>
                 <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'14px', fontWeight:'900', color:R.hdrTxt, textAlign:'right' }}>{brl(totais?.valor_total||0)}</td>
                 <td />
               </tr>

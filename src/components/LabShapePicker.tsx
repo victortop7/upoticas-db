@@ -75,9 +75,9 @@ export default function LabShapePicker({ value, onChange, onClose }: Props) {
     >
       <div style={{ background: '#f0eeee', border: '2px solid #888', borderRadius: '4px', width: '680px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.6)' }}>
         {/* Header */}
-        <div style={{ background: '#880000', color: '#fff', padding: '6px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ background: '#005500', color: '#fff', padding: '6px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontWeight: '700', fontSize: '13px', letterSpacing: '2px', fontFamily: "'Courier New', monospace" }}>SHAPES</span>
-          <button onClick={onClose} style={{ background: 'none', border: '1px solid #ff9999', color: '#ffcccc', padding: '1px 8px', cursor: 'pointer', fontSize: '11px', fontFamily: 'inherit', borderRadius: '2px' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'none', border: '1px solid #99ffaa', color: '#ccffcc', padding: '1px 8px', cursor: 'pointer', fontSize: '11px', fontFamily: 'inherit', borderRadius: '2px' }}>✕</button>
         </div>
 
         {/* Grid */}
@@ -90,14 +90,14 @@ export default function LabShapePicker({ value, onChange, onClose }: Props) {
                 onClick={() => { onChange(s.name); onClose(); }}
                 style={{
                   background: selected ? '#ffeeee' : '#fff',
-                  border: selected ? '2px solid #880000' : '1px solid #ccc',
+                  border: selected ? '2px solid #005500' : '1px solid #ccc',
                   borderRadius: '4px',
                   cursor: 'pointer',
                   padding: '4px',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  boxShadow: selected ? '0 0 0 2px #880000' : '0 1px 3px rgba(0,0,0,0.15)',
+                  boxShadow: selected ? '0 0 0 2px #005500' : '0 1px 3px rgba(0,0,0,0.15)',
                   transition: 'border 0.1s',
                 }}
                 onMouseEnter={e => { if (!selected) (e.currentTarget as HTMLDivElement).style.background = '#f5f5f5'; }}
@@ -108,11 +108,11 @@ export default function LabShapePicker({ value, onChange, onClose }: Props) {
                   <line x1="45" y1="0" x2="45" y2="65" stroke="#ddd" strokeWidth="0.5" />
                   <line x1="0" y1="32" x2="90" y2="32" stroke="#ddd" strokeWidth="0.5" />
                   {/* Shape */}
-                  <path d={s.d} fill="none" stroke={selected ? '#880000' : '#333'} strokeWidth={selected ? '2' : '1.5'} />
+                  <path d={s.d} fill="none" stroke={selected ? '#005500' : '#333'} strokeWidth={selected ? '2' : '1.5'} />
                   {/* Arrow (direction indicator like wotica) */}
-                  <polygon points="74,10 80,14 74,18" fill={selected ? '#880000' : '#555'} />
+                  <polygon points="74,10 80,14 74,18" fill={selected ? '#005500' : '#555'} />
                 </svg>
-                <div style={{ fontSize: '9px', fontWeight: selected ? '700' : '400', color: selected ? '#880000' : '#333', fontFamily: "'Courier New', monospace", letterSpacing: '0.3px', marginTop: '2px' }}>
+                <div style={{ fontSize: '9px', fontWeight: selected ? '700' : '400', color: selected ? '#005500' : '#333', fontFamily: "'Courier New', monospace", letterSpacing: '0.3px', marginTop: '2px' }}>
                   {s.name}
                 </div>
               </div>
@@ -125,7 +125,7 @@ export default function LabShapePicker({ value, onChange, onClose }: Props) {
           <span style={{ fontSize: '11px', color: '#555', fontFamily: "'Courier New', monospace" }}>
             {value ? `Selecionado: ${value}` : 'Clique em um shape para selecionar'}
           </span>
-          <button onClick={onClose} style={{ padding: '3px 14px', fontSize: '11px', background: '#880000', color: '#fff', border: 'none', borderRadius: '2px', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '700' }}>
+          <button onClick={onClose} style={{ padding: '3px 14px', fontSize: '11px', background: '#005500', color: '#fff', border: 'none', borderRadius: '2px', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '700' }}>
             OK
           </button>
         </div>

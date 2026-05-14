@@ -45,7 +45,7 @@ const CADASTRO_DESEJADO: { num: number | string; label: string; key: TabTabela }
 ];
 
 const S = {
-  panelHeader: (color = '#880000'): React.CSSProperties => ({
+  panelHeader: (color = '#005500'): React.CSSProperties => ({
     background: `linear-gradient(90deg, ${color}, ${color}dd)`,
     color: '#ffffff',
     textAlign: 'center' as const,
@@ -53,7 +53,7 @@ const S = {
     fontSize: '11px',
     fontWeight: 'bold',
     letterSpacing: '1.5px',
-    border: '2px outset #aa2222',
+    border: '2px outset #007700',
     borderBottom: 'none',
   }),
   panelBody: (): React.CSSProperties => ({
@@ -65,7 +65,7 @@ const S = {
     alignItems: 'center',
     padding: '5px 8px',
     cursor: 'pointer',
-    background: active ? '#880000' : (i % 2 === 0 ? '#d4d0c8' : '#dedad2'),
+    background: active ? '#005500' : (i % 2 === 0 ? '#d4d0c8' : '#dedad2'),
     color: active ? '#ffffff' : '#000000',
     borderBottom: '1px solid #b0acA4',
     userSelect: 'none' as const,
@@ -75,7 +75,7 @@ const S = {
   }),
   num: (active: boolean): React.CSSProperties => ({
     fontSize: '12px', fontWeight: 'bold',
-    color: active ? '#ffff00' : '#880000',
+    color: active ? '#ffff00' : '#005500',
     width: '16px', textAlign: 'right' as const, flexShrink: 0,
   }),
 };
@@ -121,7 +121,7 @@ function LimiteField({ label, neg, pos, onNeg, onPos, minW = 220 }: {
 function Secao({ title, children }: { title?: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: '12px', border: '1px solid #a0a098' }}>
-      {title && <div style={{ background: '#880000', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', letterSpacing: '1px', textAlign: 'center' }}>{title}</div>}
+      {title && <div style={{ background: '#005500', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', letterSpacing: '1px', textAlign: 'center' }}>{title}</div>}
       <div style={{ padding: '8px 10px', background: '#d4d0c8' }}>{children}</div>
     </div>
   );
@@ -204,7 +204,7 @@ function ParamContent({ tab, config, onChange }: { tab: TabParam; config: Config
         </div>
         {[1,2,3,4,5,6,7,8,9].map(n => (
           <div key={n} style={{ display: 'grid', gridTemplateColumns: '28px 1fr 70px 1fr', gap: '4px', marginBottom: '4px' }}>
-            <span style={{ fontSize: '11px', fontWeight: 'bold', paddingTop: '3px', color: '#880000' }}>{n}</span>
+            <span style={{ fontSize: '11px', fontWeight: 'bold', paddingTop: '3px', color: '#005500' }}>{n}</span>
             <input value={c[`param_setor_${n}_nome`] ?? ''} onChange={e => o(`param_setor_${n}_nome`, e.target.value)} style={{ padding: '2px 4px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: '#fff', border: '2px inset #808080' }} />
             <input type="number" value={c[`param_setor_${n}_tempo`] ?? ''} onChange={e => o(`param_setor_${n}_tempo`, e.target.value)} style={{ padding: '2px 4px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: '#fff', border: '2px inset #808080' }} />
             <select value={c[`param_setor_${n}_status`] ?? ''} onChange={e => o(`param_setor_${n}_status`, e.target.value)} style={{ padding: '2px 4px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: '#fff', border: '2px inset #808080' }}>
@@ -345,14 +345,14 @@ function NumeracaoContent({ tab, config, onChange }: {
         <DotField label="PRÓXIMO ENCOMENDA/ROMANEIO A EMITIR" value={config.num_proximo_encomenda ?? '1'} onChange={v => onChange('num_proximo_encomenda', v)} />
         <DotField label="ÚLTIMA DATA DE PEDIDOS" value={config.num_ultima_data_pedidos ?? ''} onChange={v => onChange('num_ultima_data_pedidos', v)} type="date" />
         <div style={{ marginTop: '14px', border: '1px solid #a0a098' }}>
-          <div style={{ background: '#880000', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', letterSpacing: '1px' }}>IMPORTAÇÃO PEDIDO ON-LINE</div>
+          <div style={{ background: '#005500', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', letterSpacing: '1px' }}>IMPORTAÇÃO PEDIDO ON-LINE</div>
           <div style={{ padding: '8px 10px', background: '#d4d0c8' }}>
             <DotField label="PRÓXIMA PRÉ-VENDA" value={config.num_proximo_prevenda ?? '1'} onChange={v => onChange('num_proximo_prevenda', v)} />
             <DotField label="PRÓXIMO PRÉ-SERVIÇO" value={config.num_proximo_preservico ?? '1'} onChange={v => onChange('num_proximo_preservico', v)} />
           </div>
         </div>
         <div style={{ marginTop: '14px', border: '1px solid #a0a098' }}>
-          <div style={{ background: '#880000', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', letterSpacing: '1px' }}>OBSERVAÇÕES EM PEDIDOS</div>
+          <div style={{ background: '#005500', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', letterSpacing: '1px' }}>OBSERVAÇÕES EM PEDIDOS</div>
           <div style={{ padding: '8px 10px', background: '#d4d0c8' }}>
             <textarea value={config.obs_pedidos ?? ''} onChange={e => onChange('obs_pedidos', e.target.value)} rows={3} style={{ width: '100%', boxSizing: 'border-box', padding: '4px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: '#ffffff', border: '2px inset #808080', color: '#000000', resize: 'vertical' }} />
           </div>
@@ -366,7 +366,7 @@ function NumeracaoContent({ tab, config, onChange }: {
       <div>
         <DotField label="PRÓXIMO FECHAMENTO A EMITIR" value={config.num_proximo_fechamento ?? '1'} onChange={v => onChange('num_proximo_fechamento', v)} />
         <div style={{ marginTop: '14px', border: '1px solid #a0a098' }}>
-          <div style={{ background: '#880000', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', letterSpacing: '1px' }}>PRÓXIMAS DATAS DE FECHAMENTO</div>
+          <div style={{ background: '#005500', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', letterSpacing: '1px' }}>PRÓXIMAS DATAS DE FECHAMENTO</div>
           <div style={{ padding: '10px', background: '#d4d0c8' }}>
             <DotField label="PRÓXIMO FECHAMENTO SEMANAL" value={config.fechamento_data_semanal ?? ''} onChange={v => onChange('fechamento_data_semanal', v)} type="date" />
             <DotField label="PRÓXIMO FECHAMENTO DECENAL" value={config.fechamento_data_decenal ?? ''} onChange={v => onChange('fechamento_data_decenal', v)} type="date" />
@@ -428,7 +428,7 @@ function TabelaContent({ tabela, config, onChange }: {
     padding: '2px 4px', textAlign: 'center' as const, border: '1px solid #606000', whiteSpace: 'nowrap',
   };
   const th: React.CSSProperties = {
-    background: '#880000', color: '#fff', padding: '4px 6px', fontSize: '11px', fontWeight: 'bold',
+    background: '#005500', color: '#fff', padding: '4px 6px', fontSize: '11px', fontWeight: 'bold',
   };
   const scrl: React.CSSProperties = { overflowY: 'auto', maxHeight: '500px' };
 
@@ -534,7 +534,7 @@ function TabelaContent({ tabela, config, onChange }: {
                 key={i}
                 onClick={() => setDespGrupo(i)}
                 style={{ ...S.row(despGrupo === i, i), borderBottom: i < 9 ? '1px solid #b0acA4' : 'none' }}
-                onMouseEnter={e => { if (despGrupo !== i) (e.currentTarget as HTMLElement).style.background = '#660000'; }}
+                onMouseEnter={e => { if (despGrupo !== i) (e.currentTarget as HTMLElement).style.background = '#004400'; }}
                 onMouseLeave={e => { if (despGrupo !== i) (e.currentTarget as HTMLElement).style.background = i % 2 === 0 ? '#d4d0c8' : '#dedad2'; }}
               >
                 <span style={S.label()}>GRUPO {i} — {config[`tab_desp_grp_${i}`] ?? grupoNomes[i]}</span>
@@ -689,7 +689,7 @@ function TabelaContent({ tabela, config, onChange }: {
             const s = pg * 20 + 1;
             const e2 = Math.min(pg * 20 + 20, 99);
             return (
-              <button key={pg} onClick={() => setBancoPg(pg)} style={{ padding: '3px 10px', fontSize: '11px', fontWeight: 'bold', fontFamily: 'inherit', background: bancoPg === pg ? '#880000' : '#d4d0c8', color: bancoPg === pg ? '#fff' : '#880000', border: bancoPg === pg ? '2px inset #808080' : '2px outset #808080', cursor: 'pointer' }}>
+              <button key={pg} onClick={() => setBancoPg(pg)} style={{ padding: '3px 10px', fontSize: '11px', fontWeight: 'bold', fontFamily: 'inherit', background: bancoPg === pg ? '#005500' : '#d4d0c8', color: bancoPg === pg ? '#fff' : '#005500', border: bancoPg === pg ? '2px inset #808080' : '2px outset #808080', cursor: 'pointer' }}>
                 {String(s).padStart(2,'0')}-{String(e2).padStart(2,'0')}
               </button>
             );
@@ -731,7 +731,7 @@ function TabelaContent({ tabela, config, onChange }: {
         <div style={{ ...S.panelBody(), padding: '10px 12px' }}>
           {codes.map(code => (
             <div key={code} style={{ display: 'flex', alignItems: 'center', marginBottom: '5px', gap: '6px' }}>
-              <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#880000', minWidth: '56px' }}>LISTA {code}</span>
+              <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#005500', minWidth: '56px' }}>LISTA {code}</span>
               <span style={{ fontSize: '10px', color: '#808080' }}>——</span>
               <input
                 value={config[`tab_lista_${code}`] ?? ''}
@@ -802,7 +802,7 @@ function TabelaContent({ tabela, config, onChange }: {
         <div style={S.panelBody()}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px' }}>
             <thead>
-              <tr style={{ background: '#880000', color: '#fff' }}>
+              <tr style={{ background: '#005500', color: '#fff' }}>
                 <th style={{ padding: '3px 4px', textAlign: 'center', width: '30px' }}>UF</th>
                 <th style={{ padding: '3px 4px', textAlign: 'center' }}>%ICMS</th>
                 <th style={{ padding: '3px 4px', textAlign: 'center' }}>%ICMS DEST</th>
@@ -891,7 +891,7 @@ export default function LabConfiguracoes() {
       <button
         onClick={handleSave}
         disabled={saving}
-        style={{ padding: '3px 18px', fontSize: '11px', fontWeight: 'bold', background: saving ? '#808080' : '#880000', color: '#ffffff', border: '1px outset #aa2222', cursor: saving ? 'default' : 'pointer', fontFamily: 'inherit', letterSpacing: '0.5px' }}
+        style={{ padding: '3px 18px', fontSize: '11px', fontWeight: 'bold', background: saving ? '#808080' : '#005500', color: '#ffffff', border: '1px outset #007700', cursor: saving ? 'default' : 'pointer', fontFamily: 'inherit', letterSpacing: '0.5px' }}
       >
         {saving ? 'SALVANDO...' : 'SALVAR'}
       </button>
@@ -911,7 +911,7 @@ export default function LabConfiguracoes() {
           key={t.key}
           onClick={() => onSelect(t.key)}
           style={{ ...S.row(act, i), borderBottom: i < items.length - 1 ? '1px solid #b0acA4' : 'none' }}
-          onMouseEnter={e => { if (!act) (e.currentTarget as HTMLElement).style.background = '#660000'; }}
+          onMouseEnter={e => { if (!act) (e.currentTarget as HTMLElement).style.background = '#004400'; }}
           onMouseLeave={e => { if (!act) (e.currentTarget as HTMLElement).style.background = i % 2 === 0 ? '#d4d0c8' : '#dedad2'; }}
         >
           <span style={S.label()}>{t.label}</span>
@@ -973,7 +973,7 @@ export default function LabConfiguracoes() {
                       key={t.key}
                       onClick={() => setTabTabela(act ? null : t.key)}
                       style={{ ...S.row(act, i), borderBottom: i < CADASTRO_DESEJADO.length - 1 ? '1px solid #b0acA4' : 'none' }}
-                      onMouseEnter={e => { if (!act) (e.currentTarget as HTMLElement).style.background = '#660000'; }}
+                      onMouseEnter={e => { if (!act) (e.currentTarget as HTMLElement).style.background = '#004400'; }}
                       onMouseLeave={e => { if (!act) (e.currentTarget as HTMLElement).style.background = i % 2 === 0 ? '#d4d0c8' : '#dedad2'; }}
                     >
                       <span style={S.label()}>{t.label}</span>

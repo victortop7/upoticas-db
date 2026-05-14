@@ -98,7 +98,7 @@ export default function LabVendedores() {
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
           {modo === 'editar' && <button onClick={() => excluir(sel!.id)} style={{ padding: '9px 18px', fontSize: '13px', background: 'var(--red-dim)', color: 'var(--red)', border: '1px solid var(--red)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>Excluir</button>}
           <button onClick={() => setModo('lista')} style={{ padding: '9px 22px', fontSize: '13px', background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
-          <button onClick={salvar} disabled={saving} style={{ padding: '9px 28px', fontSize: '13px', fontWeight: '600', background: saving ? 'var(--text-muted)' : '#880000', color: '#fff', border: 'none', borderRadius: '8px', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>{saving ? 'Salvando...' : 'Salvar'}</button>
+          <button onClick={salvar} disabled={saving} style={{ padding: '9px 28px', fontSize: '13px', fontWeight: '600', background: saving ? 'var(--text-muted)' : '#005500', color: '#fff', border: 'none', borderRadius: '8px', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>{saving ? 'Salvando...' : 'Salvar'}</button>
         </div>
       </div>
     </div>
@@ -108,12 +108,12 @@ export default function LabVendedores() {
     <div style={{ padding: '28px', maxWidth: '860px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: 'var(--text)' }}>Vendedores / Operadores</h1>
-        <button onClick={openNovo} style={{ padding: '9px 20px', fontSize: '13px', fontWeight: '600', background: '#880000', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>+ Novo</button>
+        <button onClick={openNovo} style={{ padding: '9px 20px', fontSize: '13px', fontWeight: '600', background: '#005500', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>+ Novo</button>
       </div>
       <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar..." style={{ ...INP, marginBottom: '16px', background: 'var(--surface)', width: '300px' }} />
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px' }}>
         {loading ? <div style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)' }}>Carregando...</div>
-          : filtrados.length === 0 ? <div style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)' }}>Nenhum vendedor. <button onClick={openNovo} style={{ color: '#880000', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '600' }}>Cadastrar →</button></div>
+          : filtrados.length === 0 ? <div style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)' }}>Nenhum vendedor. <button onClick={openNovo} style={{ color: '#005500', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '600' }}>Cadastrar →</button></div>
           : <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead><tr style={{ background: 'var(--surface-alt)', borderBottom: '1px solid var(--border)' }}>
                 {['Cód', 'Nome', 'CPF/CNPJ', '% Comissão', 'Telefone', ''].map(h => <th key={h} style={{ padding: '9px 12px', textAlign: 'left', fontSize: '10px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>)}

@@ -88,11 +88,11 @@ const R = {
   panel:    '#d4d0c8',
   panelAlt: '#dedad2',
   border:   '#b0aca4',
-  hdrBg:    'linear-gradient(90deg,#880000,#cc0000)',
-  hdrTxt:   '#ffcccc',
-  hdrBorder:'#aa2222',
+  hdrBg:    'linear-gradient(90deg,#005500,#008800)',
+  hdrTxt:   '#ccffcc',
+  hdrBorder:'#007700',
   txt:      '#000000',
-  accent:   '#880000',
+  accent:   '#005500',
   dim:      '#444444',
   inpBg:    '#ffffff',
   inpBdr:   '1px solid #999',
@@ -111,7 +111,7 @@ const LBL: React.CSSProperties = {
 const TH: React.CSSProperties = {
   padding: '4px 6px', fontSize: '10px', fontWeight: '700', color: R.hdrTxt,
   textTransform: 'uppercase', textAlign: 'center',
-  background: '#880000', whiteSpace: 'nowrap', border: '1px solid #6a1a1a',
+  background: '#005500', whiteSpace: 'nowrap', border: '1px solid #1a4a1a',
 };
 const TD: React.CSSProperties = { padding: '2px 3px', verticalAlign: 'middle' };
 const RX_INP: React.CSSProperties = {
@@ -417,14 +417,14 @@ export default function LabNovaOrdem() {
         <div style={{ border: `2px inset ${R.border}` }}>
           {TIPOS.map((t, i) => {
             const isActive = tipo === t.key;
-            const rowBg = isActive ? '#880000' : (i % 2 === 0 ? R.panel : R.panelAlt);
+            const rowBg = isActive ? '#005500' : (i % 2 === 0 ? R.panel : R.panelAlt);
             return (
               <div key={t.key} onClick={() => setTipo(t.key)}
                 style={{ padding: '6px 10px', cursor: 'pointer', fontSize: '11px', fontWeight: '700', color: isActive ? R.hdrTxt : R.txt, background: rowBg, borderBottom: `1px solid ${R.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'background 0.08s', userSelect: 'none' }}
-                onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = '#660000'; (e.currentTarget as HTMLElement).style.color = R.hdrTxt; } }}
+                onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = '#004400'; (e.currentTarget as HTMLElement).style.color = R.hdrTxt; } }}
                 onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = rowBg; (e.currentTarget as HTMLElement).style.color = R.txt; } }}>
                 <span style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t.label}</span>
-                <span style={{ fontFamily: "'Courier New', monospace", fontWeight: '700', color: isActive ? '#ffaaaa' : R.accent }}>{t.key}</span>
+                <span style={{ fontFamily: "'Courier New', monospace", fontWeight: '700', color: isActive ? '#aaffbb' : R.accent }}>{t.key}</span>
               </div>
             );
           })}
@@ -433,7 +433,7 @@ export default function LabNovaOrdem() {
         <div style={{ padding: '8px 10px', borderTop: `2px solid ${R.border}`, display: 'flex', flexDirection: 'column', gap: '5px' }}>
           <div style={{ display: 'flex', gap: '3px' }}>
             {[1, 2].map(s => (
-              <div key={s} style={{ flex: 1, height: '5px', background: step >= s ? '#880000' : R.border, border: `1px inset ${R.border}` }} />
+              <div key={s} style={{ flex: 1, height: '5px', background: step >= s ? '#005500' : R.border, border: `1px inset ${R.border}` }} />
             ))}
           </div>
           <div style={{ fontSize: '9px', color: R.dim, textAlign: 'center', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
@@ -449,7 +449,7 @@ export default function LabNovaOrdem() {
       {/* ===== MAIN FORM ===== */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px', display: 'flex', flexDirection: 'column', gap: '0', background: R.bg }}>
 
-        {erro && <div style={{ background: '#ffdddd', border: '1px solid #cc0000', padding: '8px 12px', fontSize: '12px', color: '#880000', marginBottom: '8px', fontWeight: '700' }}>{erro}</div>}
+        {erro && <div style={{ background: '#ddffee', border: '1px solid #008800', padding: '8px 12px', fontSize: '12px', color: '#005500', marginBottom: '8px', fontWeight: '700' }}>{erro}</div>}
 
         {/* ===== CABEÇALHO ===== */}
         <div style={card}>
@@ -579,7 +579,7 @@ export default function LabNovaOrdem() {
               setErro(''); setStep(2);
               setTimeout(() => window.scrollTo({ top: 0 }), 50);
             }}
-              style={{ padding: '6px 28px', fontSize: '12px', fontWeight: '700', background: '#880000', color: R.hdrTxt, border: `1px outset ${R.hdrBorder}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '1px' }}>
+              style={{ padding: '6px 28px', fontSize: '12px', fontWeight: '700', background: '#005500', color: R.hdrTxt, border: `1px outset ${R.hdrBorder}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '1px' }}>
               PRÓXIMO →
             </button>
           </div>
@@ -883,7 +883,7 @@ export default function LabNovaOrdem() {
             GRAVAR
           </button>
           <button type="submit" disabled={saving}
-            style={{ padding: '6px 24px', fontSize: '11px', fontWeight: '700', background: '#880000', color: R.hdrTxt, border: `1px outset ${R.hdrBorder}`, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            style={{ padding: '6px 24px', fontSize: '11px', fontWeight: '700', background: '#005500', color: R.hdrTxt, border: `1px outset ${R.hdrBorder}`, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             {saving ? 'SALVANDO...' : 'GRAVAR + IMPRIMIR'}
           </button>
         </div>

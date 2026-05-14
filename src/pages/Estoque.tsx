@@ -192,7 +192,7 @@ export default function Estoque() {
               </thead>
               <tbody>
                 {itens.map(item => (
-                  <tr key={item.id} style={{ borderBottom: '1px solid var(--border)', background: item.abaixo_minimo ? 'rgba(239,68,68,0.03)' : 'transparent' }}>
+                  <tr key={item.id} style={{ borderBottom: '1px solid var(--border)', background: item.abaixo_minimo ? 'rgba(0,136,0,0.03)' : 'transparent' }}>
                     <td style={{ padding: '11px 14px' }}>
                       <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text)' }}>{item.descricao}</div>
                       {item.codigo && <div style={{ fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--text-muted)' }}>{item.codigo}</div>}

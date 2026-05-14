@@ -74,7 +74,7 @@ const SEED_PRODUTOS = [
 
 function brl(v: number) { return v > 0 ? `R$ ${Number(v).toFixed(2).replace('.', ',')}` : '—'; }
 
-const R = { bg:'#c8c4b0', panel:'#d4d0c8', alt:'#dedad2', bdr:'#b0aca4', hdr:'linear-gradient(90deg,#880000,#cc0000)', hdrTxt:'#ffcccc', hdrBdr:'#aa2222', txt:'#000', inp:'#fff' };
+const R = { bg:'#c8c4b0', panel:'#d4d0c8', alt:'#dedad2', bdr:'#b0aca4', hdr:'linear-gradient(90deg,#005500,#008800)', hdrTxt:'#ccffcc', hdrBdr:'#007700', txt:'#000', inp:'#fff' };
 const INP: React.CSSProperties = { width:'100%', padding:'5px 8px', fontSize:'12px', background:R.inp, border:'1px solid #999', color:R.txt, outline:'none', boxSizing:'border-box', fontFamily:"'Courier New', monospace" };
 const LBL: React.CSSProperties = { fontSize:'10px', fontWeight:'700', color:'#444', textTransform:'uppercase', letterSpacing:'0.5px', display:'block', marginBottom:'3px' };
 
@@ -186,7 +186,7 @@ export default function LabServicos() {
             {seeding ? 'IMPORTANDO...' : '📥 IMPORTAR CATÁLOGO'}
           </button>
           <button onClick={openNovo}
-            style={{ padding:'5px 16px', fontSize:'12px', fontWeight:'700', background:'#880000', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+            style={{ padding:'5px 16px', fontSize:'12px', fontWeight:'700', background:'#005500', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
             + NOVO
           </button>
         </div>
@@ -220,7 +220,7 @@ export default function LabServicos() {
             <tbody>
               {filtrado.map((s, i) => (
                 <tr key={s.id} style={{ background: i%2===0 ? R.panel : R.alt, borderBottom:`1px solid ${R.bdr}` }}
-                  onMouseEnter={e => (e.currentTarget.style.background = '#880000')}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#005500')}
                   onMouseLeave={e => (e.currentTarget.style.background = i%2===0 ? R.panel : R.alt)}>
                   <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', color:'#555', whiteSpace:'nowrap' }}>{s.codigo||'—'}</td>
                   <td style={{ padding:'6px 10px', fontSize:'12px', fontWeight:'700', color:R.txt }}>{s.nome}</td>
@@ -232,7 +232,7 @@ export default function LabServicos() {
                   ))}
                   <td style={{ padding:'6px 10px', whiteSpace:'nowrap' }}>
                     <button onClick={() => openEdit(s)} style={{ fontSize:'11px', padding:'2px 8px', background:R.alt, color:'#333', border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', marginRight:'4px' }}>Editar</button>
-                    <button onClick={() => handleDelete(s.id)} style={{ fontSize:'11px', padding:'2px 8px', background:'#ffcccc', color:'#880000', border:'1px outset #880000', cursor:'pointer', fontFamily:'inherit' }}>✕</button>
+                    <button onClick={() => handleDelete(s.id)} style={{ fontSize:'11px', padding:'2px 8px', background:'#ccffcc', color:'#005500', border:'1px outset #005500', cursor:'pointer', fontFamily:'inherit' }}>✕</button>
                   </td>
                 </tr>
               ))}
@@ -247,10 +247,10 @@ export default function LabServicos() {
           <div style={{ background:R.panel, border:`2px outset ${R.bdr}`, width:'100%', maxWidth:'480px' }}>
             <div style={{ background:R.hdr, color:R.hdrTxt, padding:'6px 14px', fontSize:'12px', fontWeight:'700', letterSpacing:'1px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
               <span>{editItem ? 'EDITAR SERVIÇO' : 'INCLUIR SERVIÇO'}</span>
-              <button onClick={() => setModal(false)} style={{ background:'none', border:'1px solid #ff9999', color:'#ff9999', padding:'1px 6px', cursor:'pointer', fontFamily:'inherit', fontWeight:'700' }}>✕</button>
+              <button onClick={() => setModal(false)} style={{ background:'none', border:'1px solid #99ffaa', color:'#99ffaa', padding:'1px 6px', cursor:'pointer', fontFamily:'inherit', fontWeight:'700' }}>✕</button>
             </div>
             <div style={{ padding:'16px' }}>
-              {erro && <div style={{ background:'#ffdddd', border:'1px solid #880000', padding:'6px 10px', marginBottom:'10px', fontSize:'11px', color:'#880000', fontWeight:'700' }}>{erro}</div>}
+              {erro && <div style={{ background:'#ddffee', border:'1px solid #005500', padding:'6px 10px', marginBottom:'10px', fontSize:'11px', color:'#005500', fontWeight:'700' }}>{erro}</div>}
               <form onSubmit={handleSave} style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
                 <div style={{ display:'grid', gridTemplateColumns:'100px 1fr 70px', gap:'8px' }}>
                   <div><label style={LBL}>Código</label><input value={form.codigo} onChange={e => setForm(f=>({...f,codigo:e.target.value}))} style={INP} placeholder="0001" /></div>
@@ -276,7 +276,7 @@ export default function LabServicos() {
                 )}
                 <div style={{ display:'flex', gap:'8px', marginTop:'4px' }}>
                   <button type="button" onClick={() => setModal(false)} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:R.alt, color:R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>CANCELAR</button>
-                  <button type="submit" disabled={saving} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:'#880000', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:saving?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+                  <button type="submit" disabled={saving} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:'#005500', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:saving?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
                     {saving ? 'SALVANDO...' : 'GRAVAR'}
                   </button>
                 </div>

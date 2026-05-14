@@ -111,7 +111,7 @@ export default function LabFaturamento() {
         <div style={{ display: 'flex', gap: '4px' }}>
           {[['fechamentos', 'Fechamentos'], ['gerar', 'Gerar Fechamento']].map(([v, l]) => (
             <button key={v} onClick={() => setAba(v as 'fechamentos' | 'gerar')}
-              style={{ padding: '5px 14px', fontSize: '12px', fontWeight: '600', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${aba === v ? '#880000' : 'var(--border)'}`, background: aba === v ? '#880000' : 'transparent', color: aba === v ? '#fff' : 'var(--text-muted)' }}>
+              style={{ padding: '5px 14px', fontSize: '12px', fontWeight: '600', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${aba === v ? '#005500' : 'var(--border)'}`, background: aba === v ? '#005500' : 'transparent', color: aba === v ? '#fff' : 'var(--text-muted)' }}>
               {l}
             </button>
           ))}
@@ -196,7 +196,7 @@ export default function LabFaturamento() {
               <label style={LBL}>Vencimento</label>
               <input type="date" value={vencimento} onChange={e => setVencimento(e.target.value)} style={{ ...INP, width: '140px' }} />
             </div>
-            <button onClick={carregarResumo} disabled={loadingResumo} style={{ padding: '8px 20px', fontSize: '13px', fontWeight: '600', background: '#880000', color: '#fff', border: 'none', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <button onClick={carregarResumo} disabled={loadingResumo} style={{ padding: '8px 20px', fontSize: '13px', fontWeight: '600', background: '#005500', color: '#fff', border: 'none', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>
               {loadingResumo ? 'Carregando...' : 'Calcular'}
             </button>
           </div>
@@ -228,7 +228,7 @@ export default function LabFaturamento() {
                           <button
                             onClick={() => gerarFechamento(r.otica_id, r.qtd_os, r.valor_total)}
                             disabled={gerandoId === r.otica_id}
-                            style={{ padding: '6px 16px', fontSize: '12px', fontWeight: '600', background: gerandoId === r.otica_id ? 'var(--text-muted)' : '#880000', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                            style={{ padding: '6px 16px', fontSize: '12px', fontWeight: '600', background: gerandoId === r.otica_id ? 'var(--text-muted)' : '#005500', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit' }}>
                             {gerandoId === r.otica_id ? 'Gerando...' : 'Gerar Fechamento'}
                           </button>
                         </td>
