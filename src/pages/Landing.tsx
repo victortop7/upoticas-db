@@ -73,8 +73,8 @@ const FAQ = [
 
 const RED = '#008800';
 const RED2 = '#005500';
-const RED3 = '#ef4444';
-const REDGLOW = 'rgba(204,0,0,';
+const RED3 = '#22c55e';
+const REDGLOW = 'rgba(0,136,51,';
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -93,7 +93,7 @@ export default function Landing() {
           <div style={{ width: '34px', height: '34px', background: `linear-gradient(135deg,${RED},${RED2})`, borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 16px ${REDGLOW}0.4)` }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/></svg>
           </div>
-          <span style={{ fontSize: '17px', fontWeight: '800', letterSpacing: '-0.3px' }}>Up<span style={{ color: RED3 }}>Óticas</span></span>
+          <span style={{ fontSize: '17px', fontWeight: '800', letterSpacing: '-0.3px' }}>Conexão <span style={{ color: RED3 }}>Óticas</span></span>
         </div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <a href="#planos" style={{ padding: '8px 16px', fontSize: '14px', color: '#94a3b8', textDecoration: 'none', fontWeight: '500' }}>Planos</a>
@@ -347,7 +347,7 @@ export default function Landing() {
             <div style={{ width: '28px', height: '28px', background: `linear-gradient(135deg,${RED},${RED2})`, borderRadius: '7px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/></svg>
             </div>
-            <span style={{ fontSize: '15px', fontWeight: '800' }}>Up<span style={{ color: RED3 }}>Óticas</span></span>
+            <span style={{ fontSize: '15px', fontWeight: '800' }}>Conexão <span style={{ color: RED3 }}>Óticas</span></span>
           </div>
           <div style={{ display: 'flex', gap: '24px' }}>
             <a href="#funcionalidades" style={{ fontSize: '13px', color: '#475569', textDecoration: 'none' }}>Funcionalidades</a>
