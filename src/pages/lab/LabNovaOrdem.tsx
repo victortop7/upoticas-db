@@ -882,7 +882,7 @@ export default function LabNovaOrdem() {
             style={{ padding: '6px 20px', fontSize: '11px', fontWeight: '700', background: R.panelAlt, color: R.txt, border: `1px outset ${R.border}`, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
             GRAVAR
           </button>
-          <button type="submit" disabled={saving}
+          <button type="button" disabled={saving} onClick={handleSubmit as unknown as React.MouseEventHandler}
             style={{ padding: '6px 24px', fontSize: '11px', fontWeight: '700', background: '#005500', color: R.hdrTxt, border: `1px outset ${R.hdrBorder}`, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             {saving ? 'SALVANDO...' : 'GRAVAR + IMPRIMIR'}
           </button>
