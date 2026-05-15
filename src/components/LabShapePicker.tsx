@@ -24,14 +24,14 @@ const SHAPES: Array<{ name: string; d: string }> = [
   // ── 10: Retangular slim (estreito)
   { name:'SHAPE_10', d:'M 19,22 H 71 Q 79,22 79,28 V 38 Q 79,44 71,44 H 19 Q 11,44 11,38 V 28 Q 11,22 19,22 Z' },
 
-  // ── 11: Cat-eye clássico (lado temporal bem elevado)
-  { name:'SHAPE_11', d:'M 13,37 C 13,16 79,10 79,22 C 79,40 13,55 13,37 Z' },
+  // ── 11: Cat-eye clássico — ambos lados em Y=33, curva TOPO assimétrica (direita sobe mais)
+  { name:'SHAPE_11', d:'M 13,33 C 13,18 78,8 78,33 C 78,52 13,52 13,33 Z' },
   // ── 12: Cat-eye suave
-  { name:'SHAPE_12', d:'M 14,35 C 14,17 77,13 77,25 C 77,43 14,52 14,35 Z' },
-  // ── 13: Cat-eye grande
-  { name:'SHAPE_13', d:'M 11,37 C 11,14 82,8 82,22 C 82,40 11,56 11,37 Z' },
-  // ── 14: Borboleta (amplo, temporal muito alto)
-  { name:'SHAPE_14', d:'M 10,38 C 10,15 83,7 83,21 C 83,39 10,57 10,38 Z' },
+  { name:'SHAPE_12', d:'M 13,33 C 13,19 77,12 77,33 C 77,52 13,52 13,33 Z' },
+  // ── 13: Cat-eye forte / borboleta
+  { name:'SHAPE_13', d:'M 12,33 C 12,15 81,5 81,33 C 81,52 12,52 12,33 Z' },
+  // ── 14: Cat-eye médio variante
+  { name:'SHAPE_14', d:'M 14,33 C 14,20 76,10 76,33 C 76,52 14,52 14,33 Z' },
   // ── 15: Redonda clássica
   { name:'SHAPE_15', d:'M 21,33 C 21,8 69,8 69,33 C 69,58 21,58 21,33 Z' },
 
@@ -43,11 +43,11 @@ const SHAPES: Array<{ name: string; d: string }> = [
   { name:'SHAPE_18', d:'M 16,33 C 16,14 74,14 74,33 C 74,52 16,52 16,33 Z' },
   // ── 19: Oval média topo achatado
   { name:'SHAPE_19', d:'M 16,33 C 16,23 74,23 74,33 C 74,52 16,52 16,33 Z' },
-  // ── 20: Aviador/gota (topo largo, base estreita)
-  { name:'SHAPE_20', d:'M 11,28 C 11,13 79,13 79,28 C 79,53 58,59 45,59 C 32,59 11,53 11,28 Z' },
+  // ── 20: Aviador/gota — começa do ponto inferior e traça a silhueta
+  { name:'SHAPE_20', d:'M 45,57 C 35,57 11,47 11,28 C 11,13 79,13 79,28 C 79,47 55,57 45,57 Z' },
 
   // ── 21: Aviador médio
-  { name:'SHAPE_21', d:'M 13,29 C 13,15 77,15 77,29 C 77,52 57,57 45,57 C 33,57 13,52 13,29 Z' },
+  { name:'SHAPE_21', d:'M 45,55 C 35,55 13,46 13,29 C 13,15 77,15 77,29 C 77,46 55,55 45,55 Z' },
   // ── 22: Oval com leve assimetria
   { name:'SHAPE_22', d:'M 13,35 C 13,15 77,17 77,28 C 77,47 13,52 13,35 Z' },
   // ── 23: Oval slim larga
