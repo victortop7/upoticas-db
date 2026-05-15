@@ -24,14 +24,14 @@ const SHAPES: Array<{ name: string; d: string }> = [
   // ── 10: Retangular slim (estreito)
   { name:'SHAPE_10', d:'M 19,22 H 71 Q 79,22 79,28 V 38 Q 79,44 71,44 H 19 Q 11,44 11,38 V 28 Q 11,22 19,22 Z' },
 
-  // ── 11: Cat-eye clássico — ambos lados em Y=33, curva TOPO assimétrica (direita sobe mais)
-  { name:'SHAPE_11', d:'M 13,33 C 13,18 78,8 78,33 C 78,52 13,52 13,33 Z' },
+  // ── 11: Cat-eye — nasal (esq) baixo, temporal (dir) alto
+  { name:'SHAPE_11', d:'M 13,37 C 13,18 78,10 78,20 C 78,38 13,56 13,37 Z' },
   // ── 12: Cat-eye suave
-  { name:'SHAPE_12', d:'M 13,33 C 13,19 77,12 77,33 C 77,52 13,52 13,33 Z' },
-  // ── 13: Cat-eye forte / borboleta
-  { name:'SHAPE_13', d:'M 12,33 C 12,15 81,5 81,33 C 81,52 12,52 12,33 Z' },
-  // ── 14: Cat-eye médio variante
-  { name:'SHAPE_14', d:'M 14,33 C 14,20 76,10 76,33 C 76,52 14,52 14,33 Z' },
+  { name:'SHAPE_12', d:'M 14,36 C 14,20 77,14 77,24 C 77,42 14,54 14,36 Z' },
+  // ── 13: Cat-eye forte
+  { name:'SHAPE_13', d:'M 12,38 C 12,16 81,6 81,18 C 81,38 12,58 12,38 Z' },
+  // ── 14: Borboleta larga
+  { name:'SHAPE_14', d:'M 10,38 C 10,16 83,6 83,18 C 83,38 10,58 10,38 Z' },
   // ── 15: Redonda clássica
   { name:'SHAPE_15', d:'M 21,33 C 21,8 69,8 69,33 C 69,58 21,58 21,33 Z' },
 
