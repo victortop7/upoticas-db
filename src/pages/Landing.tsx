@@ -13,51 +13,37 @@ const FEATURES = [
 
 const PLANOS = [
   {
-    nome: 'Gestão', preco: '250', desc: 'Para óticas que querem organização', destaque: false, cta: 'Começar grátis',
+    nome: 'Gestão', preco: '270', desc: 'Tudo para gerir e relacionar com clientes', destaque: false, cta: 'Começar grátis',
+    upsell: '+R$20/mês por usuário adicional',
     features: [
       { texto: 'Clientes ilimitados', inc: true },
       { texto: 'Ordens de Serviço ilimitadas', inc: true },
       { texto: 'Controle de Vendas e Caixa', inc: true },
       { texto: 'Controle de Estoque', inc: true },
-      { texto: 'Relatórios gerenciais', inc: true },
-      { texto: 'Impressão de OS', inc: true },
-      { texto: 'CRM & Funil de relacionamento', inc: true },
-      { texto: 'Até 10 usuários', inc: true },
-      { texto: 'Financeiro (contas a pagar/receber)', inc: false },
-      { texto: 'Marketing e Campanhas WhatsApp', inc: false },
-      { texto: 'Nota Fiscal (em breve)', inc: false },
-    ],
-  },
-  {
-    nome: 'Gestão Pro', preco: '350', desc: 'Para óticas em crescimento', destaque: true, cta: 'Começar grátis',
-    features: [
-      { texto: 'Clientes ilimitados', inc: true },
-      { texto: 'Ordens de Serviço ilimitadas', inc: true },
-      { texto: 'Controle de Vendas e Caixa', inc: true },
-      { texto: 'Controle de Estoque', inc: true },
-      { texto: 'Relatórios gerenciais', inc: true },
-      { texto: 'Impressão de OS', inc: true },
-      { texto: 'CRM & Funil de relacionamento', inc: true },
-      { texto: 'Até 15 usuários', inc: true },
       { texto: 'Financeiro (contas a pagar/receber)', inc: true },
-      { texto: 'Marketing e Campanhas WhatsApp', inc: false },
-      { texto: 'Nota Fiscal (em breve)', inc: false },
-    ],
-  },
-  {
-    nome: 'Completo', preco: '450', desc: 'Para quem quer vender mais', destaque: false, cta: 'Começar grátis',
-    features: [
-      { texto: 'Clientes ilimitados', inc: true },
-      { texto: 'Ordens de Serviço ilimitadas', inc: true },
-      { texto: 'Controle de Vendas e Caixa', inc: true },
-      { texto: 'Controle de Estoque', inc: true },
       { texto: 'Relatórios gerenciais', inc: true },
       { texto: 'Impressão de OS', inc: true },
       { texto: 'CRM & Funil de relacionamento', inc: true },
-      { texto: 'Usuários ilimitados', inc: true },
-      { texto: 'Financeiro (contas a pagar/receber)', inc: true },
       { texto: 'Marketing e Campanhas WhatsApp', inc: true },
-      { texto: 'Nota Fiscal — em breve 🔜', inc: true },
+      { texto: '5 usuários incluídos', inc: true },
+      { texto: 'Nota Fiscal Eletrônica (NF-e)', inc: false },
+    ],
+  },
+  {
+    nome: 'Gestão Pro', preco: '370', desc: 'Gestão completa com NF-e e usuários ilimitados', destaque: true, cta: 'Começar grátis',
+    upsell: null,
+    features: [
+      { texto: 'Clientes ilimitados', inc: true },
+      { texto: 'Ordens de Serviço ilimitadas', inc: true },
+      { texto: 'Controle de Vendas e Caixa', inc: true },
+      { texto: 'Controle de Estoque', inc: true },
+      { texto: 'Financeiro (contas a pagar/receber)', inc: true },
+      { texto: 'Relatórios gerenciais', inc: true },
+      { texto: 'Impressão de OS', inc: true },
+      { texto: 'CRM & Funil de relacionamento', inc: true },
+      { texto: 'Marketing e Campanhas WhatsApp', inc: true },
+      { texto: 'Usuários ilimitados', inc: true },
+      { texto: 'Nota Fiscal Eletrônica (NF-e)', inc: true },
     ],
   },
 ];
@@ -66,7 +52,7 @@ const FAQ = [
   { q: 'Preciso instalar algum programa?', a: 'Não. O Conexão Óticas funciona 100% no navegador. Acesse de qualquer computador, tablet ou celular sem instalar nada.' },
   { q: 'Meus dados ficam seguros?', a: 'Sim. Seus dados ficam armazenados na infraestrutura da Cloudflare, com backups automáticos. Nenhuma ótica concorrente acessa suas informações.' },
   { q: 'Posso cancelar quando quiser?', a: 'Sim, sem multa e sem burocracia. Se cancelar, seus dados ficam disponíveis por 30 dias para exportação.' },
-  { q: 'Quantos usuários posso ter?', a: 'Depende do plano. Gestão tem até 10 usuários, Pro até 15 e Completo é ilimitado.' },
+  { q: 'Quantos usuários posso ter?', a: 'O Plano Gestão inclui 5 usuários. Cada usuário adicional custa R$20/mês. O Gestão Pro tem usuários ilimitados.' },
   { q: 'Como funciona o período grátis?', a: '14 dias completos, sem cartão de crédito. Acesso a todos os recursos do plano escolhido.' },
   { q: 'O Conexão Lab tem aplicativo?', a: 'Sim! O Conexão Lab é distribuído como aplicativo para Windows. Após a demonstração, fornecemos o instalador.' },
 ];
@@ -262,13 +248,13 @@ export default function Landing() {
           <h2 style={{ fontSize: '36px', fontWeight: '800', margin: '0 0 12px', letterSpacing: '-0.8px' }}>Preços simples e transparentes</h2>
           <p style={{ fontSize: '16px', color: '#94a3b8', margin: 0 }}>14 dias grátis em qualquer plano. Cancele quando quiser, sem multa.</p>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px', maxWidth: '800px', margin: '0 auto' }}>
           {PLANOS.map((p, i) => (
             <div key={i} style={{
               position: 'relative',
               background: p.destaque ? `linear-gradient(145deg, ${REDGLOW}0.15), ${REDGLOW}0.05))` : 'rgba(255,255,255,0.025)',
               border: `1px solid ${p.destaque ? REDGLOW + '0.45)' : 'rgba(255,255,255,0.07)'}`,
-              borderRadius: '20px', padding: '32px 28px',
+              borderRadius: '20px', padding: '36px 32px',
               boxShadow: p.destaque ? `0 0 40px ${REDGLOW}0.15)` : 'none',
             }}>
               {p.destaque && (
@@ -276,13 +262,19 @@ export default function Landing() {
                   ✦ Mais popular
                 </div>
               )}
-              <h3 style={{ margin: '0 0 4px', fontSize: '20px', fontWeight: '800' }}>{p.nome}</h3>
+              <h3 style={{ margin: '0 0 4px', fontSize: '22px', fontWeight: '800' }}>{p.nome}</h3>
               <p style={{ margin: '0 0 20px', fontSize: '13px', color: '#64748b' }}>{p.desc}</p>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '4px' }}>
                 <span style={{ fontSize: '14px', color: '#94a3b8', alignSelf: 'flex-start', marginTop: '8px' }}>R$</span>
-                <span style={{ fontSize: '44px', fontWeight: '900', letterSpacing: '-2px', color: p.destaque ? RED3 : '#f1f5f9' }}>{p.preco}</span>
+                <span style={{ fontSize: '48px', fontWeight: '900', letterSpacing: '-2px', color: p.destaque ? RED3 : '#f1f5f9' }}>{p.preco}</span>
                 <span style={{ fontSize: '14px', color: '#64748b' }}>/mês</span>
               </div>
+              {p.upsell && (
+                <div style={{ fontSize: '12px', color: '#22c55e', fontWeight: '600', marginBottom: '20px' }}>
+                  {p.upsell}
+                </div>
+              )}
+              {!p.upsell && <div style={{ marginBottom: '20px' }} />}
               <ul style={{ margin: '0 0 28px', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '9px' }}>
                 {p.features.map((f, j) => (
                   <li key={j} style={{ fontSize: '13.5px', color: f.inc ? '#cbd5e1' : '#475569', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
