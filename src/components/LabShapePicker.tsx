@@ -1,106 +1,99 @@
-// Shapes de armações ópticas — viewBox 0 0 90 65, centro (45,33)
+// Shapes de armações ópticas reais — viewBox "0 0 90 65", centro (45,33)
+// Cada shape representa o contorno de UMA lente cortada pelo lab
 
-// Oval orgânica via bezier cúbico
-function lens(
-  cx: number, cy: number,
-  rx: number, ry: number,
-  tc = 0.85, bc = 0.85,          // controle top/bot (0=flat, 1=full curve)
-  tl = 0, tr = 0,                // skew top left/right
-  bl = 0, br = 0                 // skew bot left/right
-): string {
-  const [l, r] = [cx - rx, cx + rx];
-  const tcy = cy - ry * tc;
-  const bcy = cy + ry * bc;
+// Oval via bezier cúbico (M esq,cy C esq,top dir,top dir,cy C dir,bot esq,bot esq,cy Z)
+function ov(lx: number, rx: number, tcy: number, bcy: number,
+            cy = 33, rs = 0, tskR = 0, tskL = 0, bskR = 0, bskL = 0): string {
   return [
-    `M ${l},${cy}`,
-    `C ${l},${tcy + tl} ${r},${tcy + tr} ${r},${cy}`,
-    `C ${r},${bcy + br} ${l},${bcy + bl} ${l},${cy} Z`,
+    `M ${lx},${cy}`,
+    `C ${lx},${tcy + tskL} ${rx},${tcy + tskR} ${rx},${cy + rs}`,
+    `C ${rx},${bcy + bskR} ${lx},${bcy + bskL} ${lx},${cy} Z`,
   ].join(' ');
 }
 
 // Retângulo arredondado
-function rrect(cx: number, cy: number, w: number, h: number, r: number): string {
-  const [x, y, x2, y2] = [cx - w, cy - h, cx + w, cy + h];
+function rr(lx: number, rx: number, ty: number, by: number, r: number): string {
   return [
-    `M ${x + r},${y}`,
-    `H ${x2 - r} A ${r},${r} 0 0,1 ${x2},${y + r}`,
-    `V ${y2 - r} A ${r},${r} 0 0,1 ${x2 - r},${y2}`,
-    `H ${x + r} A ${r},${r} 0 0,1 ${x},${y2 - r}`,
-    `V ${y + r} A ${r},${r} 0 0,1 ${x + r},${y} Z`,
+    `M ${lx + r},${ty}`,
+    `H ${rx - r} Q ${rx},${ty} ${rx},${ty + r}`,
+    `V ${by - r} Q ${rx},${by} ${rx - r},${by}`,
+    `H ${lx + r} Q ${lx},${by} ${lx},${by - r}`,
+    `V ${ty + r} Q ${lx},${ty} ${lx + r},${ty} Z`,
   ].join(' ');
 }
 
-// Cat-eye: lado temporal (direita) mais alto
-function cateye(cx: number, cy: number, rx: number, ry: number, lift: number): string {
-  const [l, r] = [cx - rx, cx + rx];
-  const topL = cy - ry, topR = cy - ry - lift, bot = cy + ry;
+// Cat-eye: lado temporal (direita) sobe
+function ce(lx: number, rx: number, topL: number, topR: number, bcy: number, cy = 33): string {
   return [
-    `M ${l},${cy}`,
-    `C ${l},${topL} ${r},${topR - ry * 0.3} ${r},${topR}`,
-    `C ${r + 4},${topR + ry * 0.5} ${r},${bot} ${cx},${bot}`,
-    `C ${cx - 5},${bot + 2} ${l},${bot} ${l},${cy} Z`,
+    `M ${lx},${cy}`,
+    `C ${lx},${topL} ${rx},${topR - 8} ${rx},${topR}`,
+    `C ${rx},${topR + 14} ${lx},${bcy} ${lx},${cy} Z`,
   ].join(' ');
 }
 
-// D-shape: lado nasal (esquerda) mais reto
-function dshape(cx: number, cy: number, rx: number, ry: number, flatness: number): string {
-  const [l, r] = [cx - rx + flatness, cx + rx];
-  const [t, b] = [cy - ry, cy + ry];
+// Aviador (gota): topo quase reto, base arredondada e estreita
+function av(lx: number, rx: number, ty: number, by: number): string {
+  const cx = (lx + rx) / 2;
   return [
-    `M ${l},${t}`,
-    `H ${r - 5} C ${r + 8},${t} ${r + 8},${b} ${r - 5},${b}`,
-    `H ${l} C ${l - flatness * 0.3},${b} ${l - flatness * 0.3},${t} ${l},${t} Z`,
+    `M ${lx},${ty + 6}`,
+    `C ${lx},${ty} ${rx},${ty} ${rx},${ty + 6}`,
+    `C ${rx},${by - 4} ${cx + 10},${by} ${cx},${by}`,
+    `C ${cx - 10},${by} ${lx},${by - 4} ${lx},${ty + 6} Z`,
   ].join(' ');
 }
 
 const SHAPES: Array<{ name: string; d: string }> = [
-  // ── Ovaladas largas (clássicas) ──
-  { name: 'SHAPE_1',  d: lens(45, 33, 32, 19, 0.85, 0.85) },                // oval larga padrão
-  { name: 'SHAPE_2',  d: lens(45, 33, 28, 20, 0.82, 0.88) },                // oval média
-  { name: 'SHAPE_3',  d: lens(45, 33, 30, 21, 0.90, 0.80) },                // oval arredondada topo
-  { name: 'SHAPE_4',  d: lens(45, 33, 34, 17, 0.70, 0.90) },                // oval bem larga e baixa
-  { name: 'SHAPE_5',  d: lens(45, 33, 26, 22, 0.88, 0.88) },                // oval média alta
+  // ── OVALS CLÁSSICAS ──────────────────────────────────────
+  { name: 'SHAPE_1',  d: ov(13, 77, 15, 51) },                        // oval padrão larga
+  { name: 'SHAPE_2',  d: ov(17, 73, 13, 53) },                        // oval média redonda
+  { name: 'SHAPE_3',  d: ov(10, 80, 18, 48) },                        // oval extra larga
+  { name: 'SHAPE_4',  d: ov(19, 71, 10, 56) },                        // oval grande circular
+  { name: 'SHAPE_5',  d: ov(12, 78, 14, 52) },                        // oval larga alta
 
-  // ── Cat-eye / assimétrica ──
-  { name: 'SHAPE_6',  d: cateye(45, 33, 31, 19, 7) },                       // cat-eye médio
-  { name: 'SHAPE_7',  d: cateye(45, 33, 28, 18, 5) },                       // cat-eye suave
-  { name: 'SHAPE_8',  d: cateye(45, 33, 33, 20, 9) },                       // cat-eye pronunciado
-  { name: 'SHAPE_9',  d: lens(45, 33, 30, 19, 0.60, 0.95, 3, -3) },        // topo achatado
-  { name: 'SHAPE_10', d: lens(45, 33, 34, 16, 0.75, 0.85, 2, -4) },        // aviador leve
+  // ── RETANGULARES (WAYFARER) ───────────────────────────────
+  { name: 'SHAPE_6',  d: rr(12, 78, 16, 50, 8) },                     // wayfarer clássico
+  { name: 'SHAPE_7',  d: rr(14, 76, 18, 48, 6) },                     // wayfarer médio
+  { name: 'SHAPE_8',  d: rr(10, 80, 20, 46, 7) },                     // wayfarer largo
+  { name: 'SHAPE_9',  d: rr(15, 75, 20, 46, 10) },                    // wayfarer arredondado
+  { name: 'SHAPE_10', d: rr(12, 78, 22, 44, 5) },                     // slim retangular
 
-  // ── Retangulares arredondadas ──
-  { name: 'SHAPE_11', d: rrect(45, 33, 28, 17, 9) },                        // ret. arredondado padrão
-  { name: 'SHAPE_12', d: rrect(45, 33, 32, 16, 8) },                        // ret. largo
-  { name: 'SHAPE_13', d: rrect(45, 33, 25, 15, 11) },                       // ret. mais quadrado
-  { name: 'SHAPE_14', d: rrect(45, 33, 30, 14, 7) },                        // ret. baixo e largo
-  { name: 'SHAPE_15', d: rrect(45, 33, 22, 18, 13) },                       // quasi-quadrado
+  // ── CAT-EYE ──────────────────────────────────────────────
+  { name: 'SHAPE_11', d: ce(13, 77, 16, 20, 50) },                    // cat-eye clássico
+  { name: 'SHAPE_12', d: ce(15, 75, 18, 22, 50) },                    // cat-eye suave
+  { name: 'SHAPE_13', d: ce(12, 78, 14, 18, 52) },                    // cat-eye pronunciado
+  { name: 'SHAPE_14', d: ce(16, 74, 20, 24, 50) },                    // cat-eye moderno
+  { name: 'SHAPE_15', d: ce(13, 77, 17, 21, 48) },                    // borboleta/cat-eye largo
 
-  // ── Ovaladas médias ──
-  { name: 'SHAPE_16', d: lens(45, 33, 24, 21, 0.90, 0.90) },                // oval quase circular
-  { name: 'SHAPE_17', d: lens(45, 33, 26, 19, 0.78, 0.92) },                // oval com fundo arredondado
-  { name: 'SHAPE_18', d: lens(45, 33, 22, 23, 0.88, 0.88) },                // oval alta e estreita
-  { name: 'SHAPE_19', d: lens(45, 33, 29, 18, 0.80, 0.80) },                // oval achatada
-  { name: 'SHAPE_20', d: lens(45, 33, 32, 22, 0.88, 0.82) },                // oval grande
+  // ── REDONDAS ─────────────────────────────────────────────
+  { name: 'SHAPE_16', d: ov(21, 69, 9, 57) },                         // redonda clássica
+  { name: 'SHAPE_17', d: ov(18, 72, 10, 56) },                        // redonda maior
+  { name: 'SHAPE_18', d: ov(24, 66, 11, 55) },                        // redonda pequena
+  { name: 'SHAPE_19', d: ov(22, 68, 13, 53) },                        // oval redonda
+  { name: 'SHAPE_20', d: ov(20, 70, 11, 56, 33, -2) },                // redonda com leve assimetria
 
-  // ── D-shapes ──
-  { name: 'SHAPE_21', d: dshape(45, 33, 29, 20, 8) },                       // D-shape clássico
-  { name: 'SHAPE_22', d: dshape(45, 33, 25, 18, 6) },                       // D-shape médio
-  { name: 'SHAPE_23', d: lens(45, 33, 27, 20, 0.50, 0.92, 4, -4) },        // topo quase reto
-  { name: 'SHAPE_24', d: lens(45, 33, 31, 18, 0.82, 0.70, 0, -2, 3, 0) }, // fundo achatado
-  { name: 'SHAPE_25', d: cateye(45, 33, 26, 17, 6) },                       // cat-eye pequeno
+  // ── AVIADOR (GOTA) ────────────────────────────────────────
+  { name: 'SHAPE_21', d: av(11, 79, 16, 54) },                        // aviador clássico
+  { name: 'SHAPE_22', d: av(14, 76, 17, 53) },                        // aviador médio
+  { name: 'SHAPE_23', d: av(13, 77, 19, 51) },                        // aviador slim
+  { name: 'SHAPE_24', d: av(16, 74, 18, 52) },                        // aviador pequeno
 
-  // ── Retangulares finas ──
-  { name: 'SHAPE_26', d: rrect(45, 33, 29, 13, 7) },                        // ret. bem baixo
-  { name: 'SHAPE_27', d: rrect(45, 33, 24, 14, 10) },                       // ret. médio
-  { name: 'SHAPE_28', d: rrect(45, 33, 20, 17, 14) },                       // ret. quadrado arredondado
-  { name: 'SHAPE_29', d: lens(45, 33, 23, 18, 0.85, 0.85) },                // oval pequena
-  { name: 'SHAPE_30', d: lens(45, 33, 27, 16, 0.75, 0.85) },                // oval baixa
+  // ── OVAL COM TOPO RETO (BROWLINE) ─────────────────────────
+  { name: 'SHAPE_25', d: ov(12, 78, 22, 51, 33, 0, 2, 2) },          // browline oval
+  { name: 'SHAPE_26', d: rr(13, 77, 19, 49, 12) },                    // browline retangular
+  { name: 'SHAPE_27', d: ov(14, 76, 22, 50, 33, 0, 3, 3) },          // oval topo quase reto
 
-  // ── Pequenas ──
-  { name: 'SHAPE_31', d: lens(45, 33, 19, 19, 0.88, 0.88) },                // circular pequena
-  { name: 'SHAPE_32', d: lens(45, 33, 22, 17, 0.82, 0.82) },                // oval pequena clássica
-  { name: 'SHAPE_33', d: lens(45, 33, 17, 21, 0.88, 0.88) },                // oval estreita e alta
-  { name: 'SHAPE_34', d: cateye(45, 33, 22, 16, 5) },                       // cat-eye pequeno
+  // ── SLIM / FINAS ──────────────────────────────────────────
+  { name: 'SHAPE_28', d: rr(11, 79, 24, 42, 6) },                     // slim retangular larga
+  { name: 'SHAPE_29', d: rr(14, 76, 24, 42, 8) },                     // slim retangular
+  { name: 'SHAPE_30', d: ov(13, 77, 22, 44) },                        // oval slim
+
+  // ── QUADRADAS ────────────────────────────────────────────
+  { name: 'SHAPE_31', d: rr(18, 72, 13, 53, 14) },                    // quadrada arredondada
+  { name: 'SHAPE_32', d: rr(19, 71, 15, 51, 11) },                    // quadrada menor
+
+  // ── VARIAÇÕES ─────────────────────────────────────────────
+  { name: 'SHAPE_33', d: ov(15, 75, 16, 52, 33, 0, -3, 3) },         // oval com desvio nasal
+  { name: 'SHAPE_34', d: ov(16, 74, 15, 53, 33, -2) },               // oval lado temporal baixo
 ];
 
 interface Props {
@@ -118,7 +111,7 @@ export default function LabShapePicker({ value, onChange, onClose }: Props) {
       <div style={{ background: '#f0eeee', border: '2px solid #888', borderRadius: '4px', width: '680px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.6)' }}>
         {/* Header */}
         <div style={{ background: '#005500', color: '#fff', padding: '6px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontWeight: '700', fontSize: '13px', letterSpacing: '2px', fontFamily: "'Courier New', monospace" }}>SHAPES</span>
+          <span style={{ fontWeight: '700', fontSize: '13px', letterSpacing: '2px', fontFamily: "'Courier New', monospace" }}>SHAPES — FORMAS DE ARMAÇÃO</span>
           <button onClick={onClose} style={{ background: 'none', border: '1px solid #99ffaa', color: '#ccffcc', padding: '1px 8px', cursor: 'pointer', fontSize: '11px', fontFamily: 'inherit', borderRadius: '2px' }}>✕</button>
         </div>
 
@@ -145,15 +138,15 @@ export default function LabShapePicker({ value, onChange, onClose }: Props) {
                 onMouseLeave={e => { if (!selected) (e.currentTarget as HTMLDivElement).style.background = '#fff'; }}
               >
                 <svg viewBox="0 0 90 65" width="100%" style={{ maxHeight: '70px' }}>
-                  {/* Crosshair WOTICA-style */}
-                  <line x1="45" y1="2"  x2="45" y2="63" stroke="#ddd" strokeWidth="0.6" />
-                  <line x1="2"  y1="33" x2="88" y2="33" stroke="#ddd" strokeWidth="0.6" />
+                  {/* Crosshair */}
+                  <line x1="45" y1="2" x2="45" y2="63" stroke="#e0e0e0" strokeWidth="0.6" />
+                  <line x1="2" y1="33" x2="88" y2="33" stroke="#e0e0e0" strokeWidth="0.6" />
                   {/* Shape */}
-                  <path d={s.d} fill="none" stroke={selected ? '#005500' : '#222'} strokeWidth={selected ? '1.8' : '1.4'} />
-                  {/* Seta indicadora (nasal→temporal) */}
-                  <polygon points="72,10 79,14 72,18" fill={selected ? '#005500' : '#444'} />
+                  <path d={s.d} fill="rgba(0,0,0,0.04)" stroke={selected ? '#005500' : '#111'} strokeWidth={selected ? '1.8' : '1.5'} />
+                  {/* Seta de referência (nasal→temporal) */}
+                  <polygon points="72,10 80,14 72,18" fill={selected ? '#005500' : '#555'} />
                 </svg>
-                <div style={{ fontSize: '9px', fontWeight: selected ? '700' : '400', color: selected ? '#005500' : '#444', fontFamily: "'Courier New', monospace", letterSpacing: '0.3px', marginTop: '2px' }}>
+                <div style={{ fontSize: '9px', fontWeight: selected ? '700' : '400', color: selected ? '#005500' : '#444', fontFamily: "'Courier New', monospace", marginTop: '2px' }}>
                   {s.name}
                 </div>
               </div>
