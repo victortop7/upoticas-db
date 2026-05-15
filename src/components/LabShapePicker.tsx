@@ -1,64 +1,106 @@
-// SVG paths for each shape (viewBox 0 0 90 65, center ~45,32)
-// Each function returns a SVG path `d` string
+// Shapes de armações ópticas — viewBox 0 0 90 65, centro (45,33)
 
-function ep(cx: number, cy: number, rx: number, ry: number): string {
-  // Ellipse as path
-  return `M ${cx - rx},${cy} A ${rx},${ry} 0 1,1 ${cx + rx - 0.01},${cy} Z`;
+// Oval orgânica via bezier cúbico
+function lens(
+  cx: number, cy: number,
+  rx: number, ry: number,
+  tc = 0.85, bc = 0.85,          // controle top/bot (0=flat, 1=full curve)
+  tl = 0, tr = 0,                // skew top left/right
+  bl = 0, br = 0                 // skew bot left/right
+): string {
+  const [l, r] = [cx - rx, cx + rx];
+  const tcy = cy - ry * tc;
+  const bcy = cy + ry * bc;
+  return [
+    `M ${l},${cy}`,
+    `C ${l},${tcy + tl} ${r},${tcy + tr} ${r},${cy}`,
+    `C ${r},${bcy + br} ${l},${bcy + bl} ${l},${cy} Z`,
+  ].join(' ');
 }
 
-function rp(cx: number, cy: number, w: number, h: number, r: number): string {
-  // Rounded rectangle
+// Retângulo arredondado
+function rrect(cx: number, cy: number, w: number, h: number, r: number): string {
   const [x, y, x2, y2] = [cx - w, cy - h, cx + w, cy + h];
-  return `M ${x + r},${y} H ${x2 - r} A ${r},${r} 0 0,1 ${x2},${y + r} V ${y2 - r} A ${r},${r} 0 0,1 ${x2 - r},${y2} H ${x + r} A ${r},${r} 0 0,1 ${x},${y2 - r} V ${y + r} A ${r},${r} 0 0,1 ${x + r},${y} Z`;
+  return [
+    `M ${x + r},${y}`,
+    `H ${x2 - r} A ${r},${r} 0 0,1 ${x2},${y + r}`,
+    `V ${y2 - r} A ${r},${r} 0 0,1 ${x2 - r},${y2}`,
+    `H ${x + r} A ${r},${r} 0 0,1 ${x},${y2 - r}`,
+    `V ${y + r} A ${r},${r} 0 0,1 ${x + r},${y} Z`,
+  ].join(' ');
 }
 
-// Asymmetric lens: top-left higher, using cubic bezier
-function ap(cx: number, cy: number, rx: number, ry: number, topShift: number, botShift = 0): string {
-  const l = cx - rx, r = cx + rx, t = cy - ry + topShift, b = cy + ry + botShift;
-  return `M ${l},${cy} C ${l},${t} ${r},${t} ${r},${cy} C ${r},${b} ${l},${b} ${l},${cy} Z`;
+// Cat-eye: lado temporal (direita) mais alto
+function cateye(cx: number, cy: number, rx: number, ry: number, lift: number): string {
+  const [l, r] = [cx - rx, cx + rx];
+  const topL = cy - ry, topR = cy - ry - lift, bot = cy + ry;
+  return [
+    `M ${l},${cy}`,
+    `C ${l},${topL} ${r},${topR - ry * 0.3} ${r},${topR}`,
+    `C ${r + 4},${topR + ry * 0.5} ${r},${bot} ${cx},${bot}`,
+    `C ${cx - 5},${bot + 2} ${l},${bot} ${l},${cy} Z`,
+  ].join(' ');
 }
 
-// D-shape / half-round
-function dp(cx: number, cy: number, rx: number, ry: number, flatLeft: number): string {
-  const l = cx - rx + flatLeft, r2 = cx + rx, t = cy - ry, b = cy + ry;
-  return `M ${l},${t} H ${r2 - 4} C ${r2 + 8},${t} ${r2 + 8},${b} ${r2 - 4},${b} H ${l} Z`;
+// D-shape: lado nasal (esquerda) mais reto
+function dshape(cx: number, cy: number, rx: number, ry: number, flatness: number): string {
+  const [l, r] = [cx - rx + flatness, cx + rx];
+  const [t, b] = [cy - ry, cy + ry];
+  return [
+    `M ${l},${t}`,
+    `H ${r - 5} C ${r + 8},${t} ${r + 8},${b} ${r - 5},${b}`,
+    `H ${l} C ${l - flatness * 0.3},${b} ${l - flatness * 0.3},${t} ${l},${t} Z`,
+  ].join(' ');
 }
 
 const SHAPES: Array<{ name: string; d: string }> = [
-  { name: 'SHAPE_1',  d: ap(45, 32, 32, 20, -4, 2) },
-  { name: 'SHAPE_2',  d: ap(45, 32, 29, 21, -3, 2) },
-  { name: 'SHAPE_3',  d: ap(45, 32, 27, 22, -2, 1) },
-  { name: 'SHAPE_4',  d: ep(45, 32, 27, 22) },
-  { name: 'SHAPE_5',  d: ep(45, 32, 34, 18) },
-  { name: 'SHAPE_6',  d: ap(45, 32, 33, 22, -5, 3) },
-  { name: 'SHAPE_7',  d: ep(45, 32, 26, 24) },
-  { name: 'SHAPE_8',  d: ep(45, 32, 22, 26) },
-  { name: 'SHAPE_9',  d: rp(45, 32, 26, 18, 9) },
-  { name: 'SHAPE_10', d: rp(45, 32, 32, 17, 10) },
-  { name: 'SHAPE_11', d: ap(45, 32, 34, 22, -6, 4) },
-  { name: 'SHAPE_12', d: ap(45, 32, 28, 21, -4, 2) },
-  { name: 'SHAPE_13', d: ep(45, 32, 23, 21) },
-  { name: 'SHAPE_14', d: ep(45, 32, 25, 25) },
-  { name: 'SHAPE_15', d: rp(45, 32, 33, 16, 11) },
-  { name: 'SHAPE_16', d: ap(45, 33, 34, 23, -8, 5) },
-  { name: 'SHAPE_17', d: ap(45, 32, 27, 22, -3, 2) },
-  { name: 'SHAPE_18', d: ep(45, 32, 21, 23) },
-  { name: 'SHAPE_19', d: ep(45, 32, 24, 24) },
-  { name: 'SHAPE_20', d: rp(45, 32, 30, 17, 8) },
-  { name: 'SHAPE_21', d: dp(45, 32, 30, 21, 6) },
-  { name: 'SHAPE_22', d: ap(45, 32, 26, 20, -2, 1) },
-  { name: 'SHAPE_23', d: ep(45, 32, 20, 24) },
-  { name: 'SHAPE_24', d: ap(45, 32, 25, 23, -4, 2) },
-  { name: 'SHAPE_25', d: ap(45, 32, 28, 20, -6, 0) },
-  { name: 'SHAPE_26', d: ep(45, 32, 22, 19) },
-  { name: 'SHAPE_27', d: ap(45, 32, 24, 20, -3, 2) },
-  { name: 'SHAPE_28', d: ep(45, 32, 18, 19) },
-  { name: 'SHAPE_29', d: ap(45, 32, 22, 21, -4, 2) },
-  { name: 'SHAPE_30', d: ap(45, 32, 25, 19, -5, 0) },
-  { name: 'SHAPE_31', d: ep(45, 32, 17, 16) },
-  { name: 'SHAPE_32', d: ep(45, 32, 22, 18) },
-  { name: 'SHAPE_33', d: ep(45, 32, 16, 20) },
-  { name: 'SHAPE_34', d: ap(45, 32, 20, 18, -5, 0) },
+  // ── Ovaladas largas (clássicas) ──
+  { name: 'SHAPE_1',  d: lens(45, 33, 32, 19, 0.85, 0.85) },                // oval larga padrão
+  { name: 'SHAPE_2',  d: lens(45, 33, 28, 20, 0.82, 0.88) },                // oval média
+  { name: 'SHAPE_3',  d: lens(45, 33, 30, 21, 0.90, 0.80) },                // oval arredondada topo
+  { name: 'SHAPE_4',  d: lens(45, 33, 34, 17, 0.70, 0.90) },                // oval bem larga e baixa
+  { name: 'SHAPE_5',  d: lens(45, 33, 26, 22, 0.88, 0.88) },                // oval média alta
+
+  // ── Cat-eye / assimétrica ──
+  { name: 'SHAPE_6',  d: cateye(45, 33, 31, 19, 7) },                       // cat-eye médio
+  { name: 'SHAPE_7',  d: cateye(45, 33, 28, 18, 5) },                       // cat-eye suave
+  { name: 'SHAPE_8',  d: cateye(45, 33, 33, 20, 9) },                       // cat-eye pronunciado
+  { name: 'SHAPE_9',  d: lens(45, 33, 30, 19, 0.60, 0.95, 3, -3) },        // topo achatado
+  { name: 'SHAPE_10', d: lens(45, 33, 34, 16, 0.75, 0.85, 2, -4) },        // aviador leve
+
+  // ── Retangulares arredondadas ──
+  { name: 'SHAPE_11', d: rrect(45, 33, 28, 17, 9) },                        // ret. arredondado padrão
+  { name: 'SHAPE_12', d: rrect(45, 33, 32, 16, 8) },                        // ret. largo
+  { name: 'SHAPE_13', d: rrect(45, 33, 25, 15, 11) },                       // ret. mais quadrado
+  { name: 'SHAPE_14', d: rrect(45, 33, 30, 14, 7) },                        // ret. baixo e largo
+  { name: 'SHAPE_15', d: rrect(45, 33, 22, 18, 13) },                       // quasi-quadrado
+
+  // ── Ovaladas médias ──
+  { name: 'SHAPE_16', d: lens(45, 33, 24, 21, 0.90, 0.90) },                // oval quase circular
+  { name: 'SHAPE_17', d: lens(45, 33, 26, 19, 0.78, 0.92) },                // oval com fundo arredondado
+  { name: 'SHAPE_18', d: lens(45, 33, 22, 23, 0.88, 0.88) },                // oval alta e estreita
+  { name: 'SHAPE_19', d: lens(45, 33, 29, 18, 0.80, 0.80) },                // oval achatada
+  { name: 'SHAPE_20', d: lens(45, 33, 32, 22, 0.88, 0.82) },                // oval grande
+
+  // ── D-shapes ──
+  { name: 'SHAPE_21', d: dshape(45, 33, 29, 20, 8) },                       // D-shape clássico
+  { name: 'SHAPE_22', d: dshape(45, 33, 25, 18, 6) },                       // D-shape médio
+  { name: 'SHAPE_23', d: lens(45, 33, 27, 20, 0.50, 0.92, 4, -4) },        // topo quase reto
+  { name: 'SHAPE_24', d: lens(45, 33, 31, 18, 0.82, 0.70, 0, -2, 3, 0) }, // fundo achatado
+  { name: 'SHAPE_25', d: cateye(45, 33, 26, 17, 6) },                       // cat-eye pequeno
+
+  // ── Retangulares finas ──
+  { name: 'SHAPE_26', d: rrect(45, 33, 29, 13, 7) },                        // ret. bem baixo
+  { name: 'SHAPE_27', d: rrect(45, 33, 24, 14, 10) },                       // ret. médio
+  { name: 'SHAPE_28', d: rrect(45, 33, 20, 17, 14) },                       // ret. quadrado arredondado
+  { name: 'SHAPE_29', d: lens(45, 33, 23, 18, 0.85, 0.85) },                // oval pequena
+  { name: 'SHAPE_30', d: lens(45, 33, 27, 16, 0.75, 0.85) },                // oval baixa
+
+  // ── Pequenas ──
+  { name: 'SHAPE_31', d: lens(45, 33, 19, 19, 0.88, 0.88) },                // circular pequena
+  { name: 'SHAPE_32', d: lens(45, 33, 22, 17, 0.82, 0.82) },                // oval pequena clássica
+  { name: 'SHAPE_33', d: lens(45, 33, 17, 21, 0.88, 0.88) },                // oval estreita e alta
+  { name: 'SHAPE_34', d: cateye(45, 33, 22, 16, 5) },                       // cat-eye pequeno
 ];
 
 interface Props {
@@ -89,7 +131,7 @@ export default function LabShapePicker({ value, onChange, onClose }: Props) {
                 key={s.name}
                 onClick={() => { onChange(s.name); onClose(); }}
                 style={{
-                  background: selected ? '#ffeeee' : '#fff',
+                  background: selected ? '#eeffee' : '#fff',
                   border: selected ? '2px solid #005500' : '1px solid #ccc',
                   borderRadius: '4px',
                   cursor: 'pointer',
@@ -98,21 +140,20 @@ export default function LabShapePicker({ value, onChange, onClose }: Props) {
                   flexDirection: 'column',
                   alignItems: 'center',
                   boxShadow: selected ? '0 0 0 2px #005500' : '0 1px 3px rgba(0,0,0,0.15)',
-                  transition: 'border 0.1s',
                 }}
                 onMouseEnter={e => { if (!selected) (e.currentTarget as HTMLDivElement).style.background = '#f5f5f5'; }}
                 onMouseLeave={e => { if (!selected) (e.currentTarget as HTMLDivElement).style.background = '#fff'; }}
               >
                 <svg viewBox="0 0 90 65" width="100%" style={{ maxHeight: '70px' }}>
-                  {/* Grid lines like wotica */}
-                  <line x1="45" y1="0" x2="45" y2="65" stroke="#ddd" strokeWidth="0.5" />
-                  <line x1="0" y1="32" x2="90" y2="32" stroke="#ddd" strokeWidth="0.5" />
+                  {/* Crosshair WOTICA-style */}
+                  <line x1="45" y1="2"  x2="45" y2="63" stroke="#ddd" strokeWidth="0.6" />
+                  <line x1="2"  y1="33" x2="88" y2="33" stroke="#ddd" strokeWidth="0.6" />
                   {/* Shape */}
-                  <path d={s.d} fill="none" stroke={selected ? '#005500' : '#333'} strokeWidth={selected ? '2' : '1.5'} />
-                  {/* Arrow (direction indicator like wotica) */}
-                  <polygon points="74,10 80,14 74,18" fill={selected ? '#005500' : '#555'} />
+                  <path d={s.d} fill="none" stroke={selected ? '#005500' : '#222'} strokeWidth={selected ? '1.8' : '1.4'} />
+                  {/* Seta indicadora (nasal→temporal) */}
+                  <polygon points="72,10 79,14 72,18" fill={selected ? '#005500' : '#444'} />
                 </svg>
-                <div style={{ fontSize: '9px', fontWeight: selected ? '700' : '400', color: selected ? '#005500' : '#333', fontFamily: "'Courier New', monospace", letterSpacing: '0.3px', marginTop: '2px' }}>
+                <div style={{ fontSize: '9px', fontWeight: selected ? '700' : '400', color: selected ? '#005500' : '#444', fontFamily: "'Courier New', monospace", letterSpacing: '0.3px', marginTop: '2px' }}>
                   {s.name}
                 </div>
               </div>
