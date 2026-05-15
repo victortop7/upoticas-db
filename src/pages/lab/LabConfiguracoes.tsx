@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-type Opcao = 'numeracao' | 'parametros' | 'tabelas' | 'transportadoras' | 'vendedores' | null;
+type Opcao = 'numeracao' | 'dados_lab' | 'parametros' | 'tabelas' | 'transportadoras' | 'vendedores' | null;
 type TabNum = 'pedidos' | 'fechamentos' | 'notas' | 'faturas' | 'outros';
 type TabParam = 'estoque' | 'pedidos' | 'fluxo' | 'recibos' | 'notas' | 'faturamento' | 'contas_receber' | 'contas_pagar' | 'bancario' | 'limites';
 type TabTabela = 'movimentos_estoque' | 'fornecedores' | 'cobrancas' | 'despesas' | 'movimentos' | 'documentos' | 'bancos' | 'quebras_perdas' | 'listas' | 'taxas_icms' | 'feriados' | 'remarcacoes';
@@ -997,6 +997,58 @@ export default function LabConfiguracoes() {
             )}
           </div>
         )}
+
+        {/* ===== DADOS DO LABORATÓRIO ===== */}
+        {opcao === 'dados_lab' && (() => {
+          const lbl: React.CSSProperties = { display: 'block', fontSize: '10px', fontWeight: 'bold', color: '#444', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '2px' };
+          const inp: React.CSSProperties = { width: '100%', padding: '4px 6px', fontSize: '12px', fontFamily: "'Courier New', monospace", background: '#ffffff', border: '2px inset #808080', color: '#000', boxSizing: 'border-box' as const };
+          return (
+            <div style={{ flex: 1 }}>
+              <div style={S.panelHeader()}>DADOS DO LABORATÓRIO</div>
+              <div style={{ ...S.panelBody(), padding: '14px 16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+                  <div style={{ gridColumn: '1/-1' }}>
+                    <label style={lbl}>Nome do Laboratório (impresso na OS)</label>
+                    <input value={config.lab_nome ?? ''} onChange={e => handleChange('lab_nome', e.target.value)} style={inp} placeholder="Ex: City Lab Laboratório Óptico" />
+                  </div>
+                  <div>
+                    <label style={lbl}>CNPJ</label>
+                    <input value={config.lab_cnpj ?? ''} onChange={e => handleChange('lab_cnpj', e.target.value)} style={inp} placeholder="00.000.000/0000-00" />
+                  </div>
+                  <div>
+                    <label style={lbl}>Telefone</label>
+                    <input value={config.lab_telefone ?? ''} onChange={e => handleChange('lab_telefone', e.target.value)} style={inp} placeholder="(00) 00000-0000" />
+                  </div>
+                  <div style={{ gridColumn: '1/-1' }}>
+                    <label style={lbl}>E-mail</label>
+                    <input value={config.lab_email ?? ''} onChange={e => handleChange('lab_email', e.target.value)} style={inp} placeholder="contato@lab.com.br" />
+                  </div>
+                  <div style={{ gridColumn: '1/-1' }}>
+                    <label style={lbl}>Endereço (Rua, número)</label>
+                    <input value={config.lab_endereco ?? ''} onChange={e => handleChange('lab_endereco', e.target.value)} style={inp} placeholder="Ex: Rua das Flores, 123" />
+                  </div>
+                  <div>
+                    <label style={lbl}>Bairro</label>
+                    <input value={config.lab_bairro ?? ''} onChange={e => handleChange('lab_bairro', e.target.value)} style={inp} />
+                  </div>
+                  <div>
+                    <label style={lbl}>CEP</label>
+                    <input value={config.lab_cep ?? ''} onChange={e => handleChange('lab_cep', e.target.value)} style={inp} placeholder="00000-000" />
+                  </div>
+                  <div>
+                    <label style={lbl}>Cidade</label>
+                    <input value={config.lab_cidade ?? ''} onChange={e => handleChange('lab_cidade', e.target.value)} style={inp} />
+                  </div>
+                  <div>
+                    <label style={lbl}>UF</label>
+                    <input value={config.lab_uf ?? ''} onChange={e => handleChange('lab_uf', e.target.value)} style={{ ...inp, textTransform: 'uppercase' }} maxLength={2} />
+                  </div>
+                </div>
+                <SaveBar />
+              </div>
+            </div>
+          );
+        })()}
 
         {!opcao && (
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: '40px', color: '#606060', fontSize: '11px', letterSpacing: '0.5px' }}>

@@ -72,12 +72,15 @@ function OSSlip({ ordem, od, oe, armacao, servicos, tenant, via }: Props) {
 
       {/* ── CABEÇALHO ── */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #000', paddingBottom: '3px' }}>
-        <div style={{ minWidth: '100px' }}>
-          <div style={{ fontSize: '15px', fontWeight: '900', letterSpacing: '-0.5px' }}>
-            {String(tenant?.nome_reduzido || tenant?.nome || 'LABORATÓRIO')}
+        <div style={{ minWidth: '120px' }}>
+          <div style={{ fontSize: '13px', fontWeight: '900', letterSpacing: '-0.5px' }}>
+            {String(tenant?.lab_nome || tenant?.nome || 'LABORATÓRIO')}
           </div>
-          <div style={{ fontSize: '8px', color: '#555', textTransform: 'uppercase' }}>Laboratório Óptico</div>
-          {tenant?.telefone ? <div style={{ fontSize: '8px', color: '#555' }}>{String(tenant.telefone)}</div> : null}
+          <div style={{ fontSize: '7.5px', color: '#555', textTransform: 'uppercase' }}>Laboratório Óptico</div>
+          {tenant?.lab_endereco ? <div style={{ fontSize: '7.5px', color: '#333' }}>{String(tenant.lab_endereco)}{tenant?.lab_bairro ? ` — ${String(tenant.lab_bairro)}` : ''}</div> : null}
+          {(tenant?.lab_cidade || tenant?.lab_uf) ? <div style={{ fontSize: '7.5px', color: '#333' }}>{[tenant?.lab_cidade, tenant?.lab_uf].filter(Boolean).map(String).join('/')}{tenant?.lab_cep ? ` — CEP: ${String(tenant.lab_cep)}` : ''}</div> : null}
+          {tenant?.lab_telefone ? <div style={{ fontSize: '7.5px', color: '#333' }}>Tel: {String(tenant.lab_telefone)}</div> : null}
+          {tenant?.lab_cnpj ? <div style={{ fontSize: '7.5px', color: '#555' }}>CNPJ: {String(tenant.lab_cnpj)}</div> : null}
         </div>
         <div style={{ textAlign: 'center', flex: 1, padding: '0 10px' }}>
           <div style={{ fontSize: '13px', fontWeight: '900', letterSpacing: '1px' }}>

@@ -25,6 +25,16 @@ const DEFAULTS: Record<string, string> = {
   num_proximo_nf:           '1',
   num_proximo_fatura:       '1',
   num_proximo_outro:        '1',
+  // Dados do laboratório (cabeçalho da OS)
+  lab_nome:                 '',
+  lab_cnpj:                 '',
+  lab_telefone:             '',
+  lab_email:                '',
+  lab_endereco:             '',
+  lab_bairro:               '',
+  lab_cidade:               '',
+  lab_uf:                   '',
+  lab_cep:                  '',
 };
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {

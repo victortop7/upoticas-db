@@ -24,6 +24,7 @@ const MODULOS: { letra: ModuleKey; nome: string; icon: string; ativo: boolean }[
 const OPCOES: Record<ModuleKey, Opcao[]> = {
   A: [
     { num: 1, label: 'NUMERAÇÃO DE DOCUMENTOS',    to: '/lab/configuracoes?opcao=numeracao' },
+    { num: 2, label: 'DADOS DO LABORATÓRIO',        to: '/lab/configuracoes?opcao=dados_lab' },
     { num: 3, label: 'PARÂMETROS DO SISTEMA',       to: '/lab/configuracoes?opcao=parametros' },
     { num: 4, label: 'TABELAS DO SISTEMA',          to: '/lab/configuracoes?opcao=tabelas' },
     { num: 5, label: 'CADASTRO DE TRANSPORTADORAS', to: '/lab/transportadoras' },
