@@ -73,7 +73,7 @@ export const onRequestPut = async ({ request, env, params }: { request: Request;
 
         if (card) {
           await env.DB.prepare(
-            `UPDATE crm_cards SET estagio = 'pos_venda', updated_at = datetime('now') WHERE id = ? AND tenant_id = ?`
+            `UPDATE crm_cards SET estagio = 'oculos_pronto', updated_at = datetime('now') WHERE id = ? AND tenant_id = ?`
           ).bind(card.id, auth.tenant_id).run();
         }
       } catch {}

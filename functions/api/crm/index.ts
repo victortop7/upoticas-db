@@ -4,10 +4,10 @@ import { requireAuth, json } from '../../lib/auth-middleware';
 import { ensureCrmTable, ensureEstagiosPadrao } from './setup';
 
 async function aplicarRegras(db: D1Database, tenant_id: string) {
-  // 1. VIP: total gasto >= R$2.000 (não sobrescreve a_receber, aniversario, oculos_pendente)
+  // 1. VIP: total gasto >= R$2.000 (não sobrescreve a_receber, aniversario, oculos_pendente, oculos_pronto)
   await db.prepare(`
     UPDATE crm_cards SET estagio = 'vip', updated_at = datetime('now')
-    WHERE tenant_id = ? AND estagio NOT IN ('vip','a_receber','aniversario','oculos_pendente')
+    WHERE tenant_id = ? AND estagio NOT IN ('vip','a_receber','aniversario','oculos_pendente','oculos_pronto')
     AND cliente_id IN (
       SELECT cliente_id FROM vendas
       WHERE tenant_id = ? AND situacao = 'ativa'
@@ -18,7 +18,7 @@ async function aplicarRegras(db: D1Database, tenant_id: string) {
   // 2. Pós-venda: OS marcada como entregue nos últimos 3 dias (janela de segurança)
   await db.prepare(`
     UPDATE crm_cards SET estagio = 'pos_venda', updated_at = datetime('now')
-    WHERE tenant_id = ? AND estagio NOT IN ('vip','a_receber','aniversario','indicacao','reativacao')
+    WHERE tenant_id = ? AND estagio NOT IN ('vip','a_receber','aniversario','indicacao','reativacao','oculos_pendente','oculos_pronto')
     AND cliente_id IN (
       SELECT DISTINCT cliente_id FROM ordens_servico
       WHERE tenant_id = ? AND situacao = 'entregue'

@@ -223,6 +223,9 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
   const [movMenu, setMovMenu] = useState(false);
   const [finalizarOpen, setFinalizarOpen] = useState(false);
   const [formaPagFinal, setFormaPagFinal] = useState('pix');
+  const [valorRecebido, setValorRecebido] = useState('');
+  const [vendaDetalhes, setVendaDetalhes] = useState<{ valor_final: number; valor_entrada: number } | null>(null);
+  const [carregandoVenda, setCarregandoVenda] = useState(false);
   const [finalizando, setFinalizando] = useState(false);
 
   const fone = card.celular || card.telefone || '';
@@ -241,14 +244,29 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
 
   function salvarNota() { onSalvarNota(card.id, nota, prioridade); }
 
+  async function abrirModalFinalizar() {
+    if (!card.venda_pendente_id) return;
+    setCarregandoVenda(true);
+    try {
+      const v = await api.get<{ valor_final: number; valor_entrada: number }>(`/vendas/${card.venda_pendente_id}`);
+      setVendaDetalhes(v);
+      setValorRecebido(String(card.saldo_venda_pendente || 0));
+    } catch {
+      setValorRecebido(String(card.saldo_venda_pendente || 0));
+    }
+    setCarregandoVenda(false);
+    setFinalizarOpen(true);
+  }
+
   async function handleFinalizar() {
     if (!card.venda_pendente_id) return;
+    const recebido = parseFloat(valorRecebido) || 0;
+    if (recebido <= 0) return;
     setFinalizando(true);
     try {
+      const novaEntrada = (vendaDetalhes?.valor_entrada || 0) + recebido;
       await api.put(`/vendas/${card.venda_pendente_id}`, {
-        situacao: 'ativa',
-        valor_entrada: String(card.saldo_venda_pendente || 0),
-        saldo_restante: '0',
+        valor_entrada: String(novaEntrada),
         forma_pagamento: formaPagFinal,
       });
       setFinalizarOpen(false);
@@ -257,26 +275,62 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
     setFinalizando(false);
   }
 
+  async function handleEntregar() {
+    setFinalizando(true);
+    try {
+      await api.put(`/crm/${card.id}`, { estagio: 'pos_venda', prioridade, notas: nota || null });
+      onAtualizar();
+    } catch {}
+    setFinalizando(false);
+  }
+
+  const saldo = card.saldo_venda_pendente || 0;
+  const recebidoNum = parseFloat(valorRecebido) || 0;
+  const novoSaldo = Math.max(0, saldo - recebidoNum);
+
   return (
     <>
     {finalizarOpen && (
       <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
         onClick={e => e.target === e.currentTarget && setFinalizarOpen(false)}>
-        <div style={{ background: 'var(--surface)', borderRadius: '14px', border: '1px solid var(--border)', width: '100%', maxWidth: '380px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+        <div style={{ background: 'var(--surface)', borderRadius: '14px', border: '1px solid var(--border)', width: '100%', maxWidth: '400px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
           <div style={{ padding: '18px 22px 14px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700' }}>Finalizar Venda</h3>
+              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700' }}>Registrar Recebimento</h3>
               <p style={{ margin: '2px 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>{card.nome}</p>
             </div>
             <button onClick={() => setFinalizarOpen(false)} style={{ width: '28px', height: '28px', border: 'none', borderRadius: '6px', background: 'var(--surface-alt)', color: 'var(--text-dim)', cursor: 'pointer', fontSize: '16px' }}>×</button>
           </div>
           <div style={{ padding: '18px 22px' }}>
-            <div style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '10px', padding: '12px 16px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '14px', color: '#d97706', fontWeight: '600' }}>Saldo a receber</span>
-              <span style={{ fontSize: '18px', fontWeight: '700', color: '#d97706', fontFamily: 'var(--mono)' }}>{brl(card.saldo_venda_pendente!)}</span>
+            {/* Saldo atual */}
+            <div style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '10px', padding: '12px 16px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '13px', color: '#d97706', fontWeight: '600' }}>Saldo em aberto</span>
+              <span style={{ fontSize: '20px', fontWeight: '700', color: '#d97706', fontFamily: 'var(--mono)' }}>{brl(saldo)}</span>
             </div>
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: '500', color: 'var(--text-muted)', marginBottom: '6px' }}>Forma de Pagamento Final</label>
+            {/* Valor recebido */}
+            <div style={{ marginBottom: '14px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase' }}>Valor Recebido (R$)</label>
+              <input
+                type="number"
+                min="0"
+                max={saldo}
+                step="0.01"
+                value={valorRecebido}
+                onChange={e => setValorRecebido(e.target.value)}
+                style={{ width: '100%', padding: '10px 12px', fontSize: '16px', fontFamily: 'var(--mono)', fontWeight: '700', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--surface-alt)', color: 'var(--text)', outline: 'none', boxSizing: 'border-box' }}
+                autoFocus
+              />
+            </div>
+            {/* Saldo restante pós pagamento */}
+            {recebidoNum > 0 && (
+              <div style={{ marginBottom: '14px', padding: '10px 14px', borderRadius: '8px', background: novoSaldo === 0 ? 'rgba(22,163,74,0.1)' : 'rgba(100,116,139,0.08)', border: `1px solid ${novoSaldo === 0 ? 'rgba(22,163,74,0.3)' : 'var(--border)'}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '12px', color: novoSaldo === 0 ? '#16a34a' : 'var(--text-dim)', fontWeight: '600' }}>{novoSaldo === 0 ? '✅ Quitado!' : 'Saldo restante'}</span>
+                <span style={{ fontSize: '15px', fontWeight: '700', fontFamily: 'var(--mono)', color: novoSaldo === 0 ? '#16a34a' : 'var(--text-dim)' }}>{brl(novoSaldo)}</span>
+              </div>
+            )}
+            {/* Forma de pagamento */}
+            <div style={{ marginBottom: '18px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase' }}>Forma de Pagamento</label>
               <select value={formaPagFinal} onChange={e => setFormaPagFinal(e.target.value)}
                 style={{ width: '100%', padding: '9px 12px', fontSize: '14px', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--surface)', color: 'var(--text)', outline: 'none' }}>
                 <option value="pix">Pix</option>
@@ -287,9 +341,9 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
               </select>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
-              <button onClick={() => setFinalizarOpen(false)} style={{ flex: 1, padding: '9px', fontSize: '14px', background: 'var(--surface-alt)', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer' }}>Cancelar</button>
-              <button onClick={handleFinalizar} disabled={finalizando} style={{ flex: 1, padding: '9px', fontSize: '14px', fontWeight: '600', background: finalizando ? 'var(--surface-alt)' : '#16a34a', color: finalizando ? 'var(--text-muted)' : 'white', border: 'none', borderRadius: '8px', cursor: finalizando ? 'default' : 'pointer' }}>
-                {finalizando ? 'Salvando...' : 'Confirmar'}
+              <button onClick={() => setFinalizarOpen(false)} style={{ flex: 1, padding: '10px', fontSize: '14px', background: 'var(--surface-alt)', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer' }}>Cancelar</button>
+              <button onClick={handleFinalizar} disabled={finalizando || recebidoNum <= 0} style={{ flex: 2, padding: '10px', fontSize: '14px', fontWeight: '700', background: recebidoNum <= 0 ? 'var(--surface-alt)' : '#f59e0b', color: recebidoNum <= 0 ? 'var(--text-muted)' : 'white', border: 'none', borderRadius: '8px', cursor: recebidoNum <= 0 ? 'default' : 'pointer' }}>
+                {finalizando ? 'Salvando...' : novoSaldo === 0 ? '✅ Confirmar e Finalizar' : '💰 Registrar Pagamento'}
               </button>
             </div>
           </div>
@@ -331,8 +385,14 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
         )}
 
         {card.estagio === 'oculos_pendente' && (card.saldo_venda_pendente || 0) > 0 && (
-          <button onClick={() => setFinalizarOpen(true)} style={{ width: '100%', marginTop: '8px', padding: '7px', fontSize: '12px', fontWeight: '700', background: 'rgba(245,158,11,0.15)', color: '#d97706', border: '1px solid rgba(245,158,11,0.4)', borderRadius: '7px', cursor: 'pointer' }}>
-            ✅ Finalizar Venda — {brl(card.saldo_venda_pendente!)}
+          <button onClick={abrirModalFinalizar} disabled={carregandoVenda} style={{ width: '100%', marginTop: '8px', padding: '7px', fontSize: '12px', fontWeight: '700', background: 'rgba(245,158,11,0.15)', color: '#d97706', border: '1px solid rgba(245,158,11,0.4)', borderRadius: '7px', cursor: 'pointer' }}>
+            {carregandoVenda ? 'Carregando...' : `💰 Receber Pagamento — ${brl(card.saldo_venda_pendente!)}`}
+          </button>
+        )}
+
+        {card.estagio === 'oculos_pronto' && (
+          <button onClick={handleEntregar} disabled={finalizando} style={{ width: '100%', marginTop: '8px', padding: '7px', fontSize: '12px', fontWeight: '700', background: 'rgba(22,163,74,0.15)', color: '#16a34a', border: '1px solid rgba(22,163,74,0.4)', borderRadius: '7px', cursor: 'pointer' }}>
+            {finalizando ? 'Salvando...' : '✅ Marcar como Entregue → Pós-Venda'}
           </button>
         )}
 
