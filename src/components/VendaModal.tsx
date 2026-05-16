@@ -13,6 +13,8 @@ interface Venda {
   valor_total: number;
   desconto: number;
   valor_final: number;
+  valor_entrada?: number;
+  saldo_restante?: number;
   forma_pagamento?: string;
   observacao?: string;
 }
@@ -109,6 +111,7 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
         situacao: venda.situacao || 'ativa',
         valor_total: venda.valor_total != null ? String(venda.valor_total) : '',
         desconto: venda.desconto != null && venda.desconto > 0 ? String(venda.desconto) : '',
+        valor_entrada: venda.valor_entrada != null ? String(venda.valor_entrada) : '',
         forma_pagamento: venda.forma_pagamento || 'pix',
         observacao: venda.observacao || '',
       });
