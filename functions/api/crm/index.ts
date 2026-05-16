@@ -1,13 +1,13 @@
-import type { PagesFunction, D1Database } from '@cloudflare/workers-types';
+import type { D1Database } from '@cloudflare/workers-types';
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
 import { ensureCrmTable, ensureEstagiosPadrao } from './setup';
 
 async function aplicarRegras(db: D1Database, tenant_id: string) {
-  // 1. VIP: total gasto >= R$2.000 (não sobrescreve a_receber nem aniversario)
+  // 1. VIP: total gasto >= R$2.000 (não sobrescreve a_receber, aniversario, oculos_pendente)
   await db.prepare(`
     UPDATE crm_cards SET estagio = 'vip', updated_at = datetime('now')
-    WHERE tenant_id = ? AND estagio NOT IN ('vip','a_receber','aniversario')
+    WHERE tenant_id = ? AND estagio NOT IN ('vip','a_receber','aniversario','oculos_pendente')
     AND cliente_id IN (
       SELECT cliente_id FROM vendas
       WHERE tenant_id = ? AND situacao = 'ativa'
@@ -73,7 +73,7 @@ async function aplicarRegras(db: D1Database, tenant_id: string) {
   `).bind(tenant_id, tenant_id).run();
 }
 
-export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
+export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;
   await ensureCrmTable(env.DB);
@@ -101,7 +101,9 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       (SELECT MAX(v.created_at) FROM vendas v WHERE v.cliente_id = c.id AND v.tenant_id = cc.tenant_id) as ultima_venda,
       (SELECT COUNT(*) FROM ordens_servico os WHERE os.cliente_id = c.id AND os.tenant_id = cc.tenant_id) as total_os,
       (SELECT COALESCE(SUM(os.valor_restante),0) FROM ordens_servico os WHERE os.cliente_id = c.id AND os.tenant_id = cc.tenant_id AND os.valor_restante > 0) as valor_pendente,
-      (SELECT COALESCE(SUM(v.valor_final),0) FROM vendas v WHERE v.cliente_id = c.id AND v.tenant_id = cc.tenant_id AND v.situacao='ativa') as total_gasto
+      (SELECT COALESCE(SUM(v.valor_final),0) FROM vendas v WHERE v.cliente_id = c.id AND v.tenant_id = cc.tenant_id AND v.situacao='ativa') as total_gasto,
+      (SELECT COALESCE(SUM(v.saldo_restante),0) FROM vendas v WHERE v.cliente_id = c.id AND v.tenant_id = cc.tenant_id AND v.situacao='pendente') as saldo_venda_pendente,
+      (SELECT v.id FROM vendas v WHERE v.cliente_id = c.id AND v.tenant_id = cc.tenant_id AND v.situacao='pendente' ORDER BY v.created_at DESC LIMIT 1) as venda_pendente_id
     FROM crm_cards cc
     JOIN clientes c ON c.id = cc.cliente_id
     WHERE cc.tenant_id = ? AND c.ativo = 1
@@ -111,7 +113,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   return json(cards.results);
 };
 
-export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
+export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;
   await ensureCrmTable(env.DB);

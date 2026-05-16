@@ -14,6 +14,8 @@ interface Card {
   email?: string; cidade?: string; uf?: string; data_nascimento?: string;
   ultima_entrega?: string; ultima_venda?: string; total_os: number;
   total_gasto: number; valor_pendente: number; updated_at: string;
+  saldo_venda_pendente?: number;
+  venda_pendente_id?: string;
 }
 
 const MSG_PADRAO: Record<string, string> = {
@@ -208,16 +210,20 @@ function ConfigModal({ estagios, onClose, onSaved }: {
 }
 
 // ─── Card ─────────────────────────────────────────────────────────────────────
-function CardItem({ card, estagios, onMover, onSalvarNota, tenant }: {
+function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }: {
   card: Card; estagios: Estagio[];
   onMover: (id: string, key: string) => void;
   onSalvarNota: (id: string, nota: string, prioridade?: string) => void;
   tenant: string;
+  onAtualizar: () => void;
 }) {
   const [expandido, setExpandido] = useState(false);
   const [nota, setNota] = useState(card.notas || '');
   const [prioridade, setPrioridade] = useState(card.prioridade);
   const [movMenu, setMovMenu] = useState(false);
+  const [finalizarOpen, setFinalizarOpen] = useState(false);
+  const [formaPagFinal, setFormaPagFinal] = useState('pix');
+  const [finalizando, setFinalizando] = useState(false);
 
   const fone = card.celular || card.telefone || '';
   const temFone = foneValido(fone);
@@ -235,7 +241,61 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant }: {
 
   function salvarNota() { onSalvarNota(card.id, nota, prioridade); }
 
+  async function handleFinalizar() {
+    if (!card.venda_pendente_id) return;
+    setFinalizando(true);
+    try {
+      await api.put(`/vendas/${card.venda_pendente_id}`, {
+        situacao: 'ativa',
+        valor_entrada: String(card.saldo_venda_pendente || 0),
+        saldo_restante: '0',
+        forma_pagamento: formaPagFinal,
+      });
+      setFinalizarOpen(false);
+      onAtualizar();
+    } catch {}
+    setFinalizando(false);
+  }
+
   return (
+    <>
+    {finalizarOpen && (
+      <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+        onClick={e => e.target === e.currentTarget && setFinalizarOpen(false)}>
+        <div style={{ background: 'var(--surface)', borderRadius: '14px', border: '1px solid var(--border)', width: '100%', maxWidth: '380px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+          <div style={{ padding: '18px 22px 14px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700' }}>Finalizar Venda</h3>
+              <p style={{ margin: '2px 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>{card.nome}</p>
+            </div>
+            <button onClick={() => setFinalizarOpen(false)} style={{ width: '28px', height: '28px', border: 'none', borderRadius: '6px', background: 'var(--surface-alt)', color: 'var(--text-dim)', cursor: 'pointer', fontSize: '16px' }}>×</button>
+          </div>
+          <div style={{ padding: '18px 22px' }}>
+            <div style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '10px', padding: '12px 16px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '14px', color: '#d97706', fontWeight: '600' }}>Saldo a receber</span>
+              <span style={{ fontSize: '18px', fontWeight: '700', color: '#d97706', fontFamily: 'var(--mono)' }}>{brl(card.saldo_venda_pendente!)}</span>
+            </div>
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '500', color: 'var(--text-muted)', marginBottom: '6px' }}>Forma de Pagamento Final</label>
+              <select value={formaPagFinal} onChange={e => setFormaPagFinal(e.target.value)}
+                style={{ width: '100%', padding: '9px 12px', fontSize: '14px', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--surface)', color: 'var(--text)', outline: 'none' }}>
+                <option value="pix">Pix</option>
+                <option value="dinheiro">Dinheiro</option>
+                <option value="credito">Cartão de Crédito</option>
+                <option value="debito">Cartão de Débito</option>
+                <option value="outro">Outro</option>
+              </select>
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button onClick={() => setFinalizarOpen(false)} style={{ flex: 1, padding: '9px', fontSize: '14px', background: 'var(--surface-alt)', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer' }}>Cancelar</button>
+              <button onClick={handleFinalizar} disabled={finalizando} style={{ flex: 1, padding: '9px', fontSize: '14px', fontWeight: '600', background: finalizando ? 'var(--surface-alt)' : '#16a34a', color: finalizando ? 'var(--text-muted)' : 'white', border: 'none', borderRadius: '8px', cursor: finalizando ? 'default' : 'pointer' }}>
+                {finalizando ? 'Salvando...' : 'Confirmar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
     <div style={{
       background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px',
       marginBottom: '8px', borderLeft: `3px solid ${estagio?.color || '#64748b'}`,
@@ -262,11 +322,18 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant }: {
           {card.total_os > 0 && <span style={{ fontSize: '10px', background: 'rgba(37,99,235,0.08)', color: '#2563eb', padding: '1px 6px', borderRadius: '10px' }}>{card.total_os} OS</span>}
           {card.total_gasto > 0 && <span style={{ fontSize: '10px', background: 'rgba(22,163,74,0.08)', color: '#16a34a', padding: '1px 6px', borderRadius: '10px' }}>{brl(card.total_gasto)}</span>}
           {card.valor_pendente > 0 && <span style={{ fontSize: '10px', background: 'rgba(220,38,38,0.1)', color: '#dc2626', padding: '1px 6px', borderRadius: '10px', fontWeight: '600' }}>💳 {brl(card.valor_pendente)}</span>}
+          {(card.saldo_venda_pendente || 0) > 0 && <span style={{ fontSize: '10px', background: 'rgba(245,158,11,0.12)', color: '#d97706', padding: '1px 6px', borderRadius: '10px', fontWeight: '600' }}>👓 {brl(card.saldo_venda_pendente!)}</span>}
           {ultimaAtiv && <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{diasAtras(ultimaAtiv)}</span>}
         </div>
 
         {card.notas && !expandido && (
           <p style={{ margin: '6px 0 0', fontSize: '11px', color: 'var(--text-dim)', fontStyle: 'italic', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>💬 {card.notas}</p>
+        )}
+
+        {card.estagio === 'oculos_pendente' && (card.saldo_venda_pendente || 0) > 0 && (
+          <button onClick={() => setFinalizarOpen(true)} style={{ width: '100%', marginTop: '8px', padding: '7px', fontSize: '12px', fontWeight: '700', background: 'rgba(245,158,11,0.15)', color: '#d97706', border: '1px solid rgba(245,158,11,0.4)', borderRadius: '7px', cursor: 'pointer' }}>
+            ✅ Finalizar Venda — {brl(card.saldo_venda_pendente!)}
+          </button>
         )}
 
         <div style={{ display: 'flex', gap: '6px', marginTop: '10px', alignItems: 'center' }}>
@@ -316,6 +383,7 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant }: {
         )}
       </div>
     </div>
+    </>
   );
 }
 
@@ -506,7 +574,7 @@ export default function Funil() {
                     </div>
                   ) : colCards.map(card => (
                     <div key={card.id} draggable onDragStart={() => onDragStart(card.id)} onDragEnd={onDragEnd} style={{ opacity: dragging === card.id ? 0.5 : 1, cursor: 'grab' }}>
-                      <CardItem card={card} estagios={estagios} onMover={mover} onSalvarNota={salvarNota} tenant={tenant?.nome || 'nossa loja'} />
+                      <CardItem card={card} estagios={estagios} onMover={mover} onSalvarNota={salvarNota} tenant={tenant?.nome || 'nossa loja'} onAtualizar={load} />
                     </div>
                   ))}
                 </div>

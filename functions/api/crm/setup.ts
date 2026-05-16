@@ -1,14 +1,15 @@
 import type { D1Database } from '@cloudflare/workers-types';
 
 const ESTAGIOS_PADRAO = [
-  { key: 'novo',        label: 'Novos',       icon: '🆕', color: '#64748b', ordem: 0,  sistema: 1 },
-  { key: 'contato',     label: 'Contato',     icon: '📞', color: '#2563eb', ordem: 1,  sistema: 1 },
-  { key: 'pos_venda',   label: 'Pós-venda',   icon: '💰', color: '#16a34a', ordem: 2,  sistema: 1 },
-  { key: 'a_receber',   label: 'A Receber',   icon: '💳', color: '#dc2626', ordem: 3,  sistema: 1 },
-  { key: 'aniversario', label: 'Aniversário', icon: '🎂', color: '#d97706', ordem: 4,  sistema: 1 },
-  { key: 'indicacao',   label: 'Indicação',   icon: '👥', color: '#7c3aed', ordem: 5,  sistema: 1 },
-  { key: 'reativacao',  label: 'Reativação',  icon: '🔄', color: '#ea580c', ordem: 6,  sistema: 1 },
-  { key: 'vip',         label: 'VIP',         icon: '⭐', color: '#b45309', ordem: 7,  sistema: 1 },
+  { key: 'novo',             label: 'Novos',            icon: '🆕', color: '#64748b', ordem: 0,  sistema: 1 },
+  { key: 'contato',          label: 'Contato',          icon: '📞', color: '#2563eb', ordem: 1,  sistema: 1 },
+  { key: 'oculos_pendente',  label: 'Óculos Pendente',  icon: '👓', color: '#f59e0b', ordem: 2,  sistema: 1 },
+  { key: 'pos_venda',        label: 'Pós-venda',        icon: '💰', color: '#16a34a', ordem: 3,  sistema: 1 },
+  { key: 'a_receber',        label: 'A Receber',        icon: '💳', color: '#dc2626', ordem: 4,  sistema: 1 },
+  { key: 'aniversario',      label: 'Aniversário',      icon: '🎂', color: '#d97706', ordem: 5,  sistema: 1 },
+  { key: 'indicacao',        label: 'Indicação',        icon: '👥', color: '#7c3aed', ordem: 6,  sistema: 1 },
+  { key: 'reativacao',       label: 'Reativação',       icon: '🔄', color: '#ea580c', ordem: 7,  sistema: 1 },
+  { key: 'vip',              label: 'VIP',              icon: '⭐', color: '#b45309', ordem: 8,  sistema: 1 },
 ];
 
 export async function ensureCrmTable(db: D1Database) {
@@ -47,10 +48,17 @@ export async function ensureCrmTable(db: D1Database) {
 }
 
 export async function ensureEstagiosPadrao(db: D1Database, tenant_id: string) {
+  // Garante que oculos_pendente existe mesmo em tenants já criados
+  try {
+    await db.prepare(
+      'INSERT OR IGNORE INTO crm_estagios (id, tenant_id, key, label, icon, color, ordem, sistema) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+    ).bind(crypto.randomUUID(), tenant_id, 'oculos_pendente', 'Óculos Pendente', '👓', '#f59e0b', 2, 1).run();
+  } catch {}
+
   const existing = await db.prepare(
     'SELECT COUNT(*) as n FROM crm_estagios WHERE tenant_id = ?'
   ).bind(tenant_id).first<{ n: number }>();
-  if ((existing?.n || 0) > 0) return;
+  if ((existing?.n || 0) > 1) return;
 
   const now = new Date().toISOString();
   for (const e of ESTAGIOS_PADRAO) {

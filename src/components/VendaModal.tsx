@@ -76,7 +76,7 @@ const FORMAS = [
 
 const EMPTY = {
   cliente_id: '', os_id: '', situacao: 'ativa',
-  valor_total: '', desconto: '', forma_pagamento: 'pix', observacao: '',
+  valor_total: '', desconto: '', valor_entrada: '', forma_pagamento: 'pix', observacao: '',
 };
 
 interface UsuarioSimples { id: string; nome: string; perfil: string; }
@@ -129,6 +129,8 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
   }
 
   const valorFinal = (parseFloat(form.valor_total) || 0) - (parseFloat(form.desconto) || 0);
+  const valorEntrada = form.valor_entrada !== '' ? parseFloat(form.valor_entrada) || 0 : valorFinal;
+  const saldoRestante = Math.max(0, valorFinal - valorEntrada);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -142,6 +144,7 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
       const payload = {
         ...(isMarketing ? { ...form, valor_total: '0', desconto: '0', forma_pagamento: 'outro' } : form),
         ...(isAdmin && funcionarioId ? { funcionario_id: funcionarioId } : {}),
+        valor_entrada: form.valor_entrada || '',
       };
       if (venda) {
         await api.put(`/vendas/${venda.id}`, payload);
@@ -374,6 +377,36 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
                   {valorFinal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                 </span>
               </div>
+
+              {/* Entrada parcial */}
+              <div style={{ marginBottom: '8px' }}>
+                <label style={labelStyle}>Valor de Entrada (R$) — deixe em branco para pagamento integral</label>
+                <input
+                  type="number" step="0.01" min="0"
+                  style={{ ...inputStyle, fontFamily: 'var(--mono)', textAlign: 'right' }}
+                  value={form.valor_entrada}
+                  onChange={e => set('valor_entrada', e.target.value)}
+                  placeholder="Ex: 200,00"
+                />
+              </div>
+
+              {/* Badge saldo restante */}
+              {saldoRestante > 0 && (
+                <div style={{
+                  background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.35)',
+                  borderRadius: '10px', padding: '12px 16px',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  marginBottom: '14px',
+                }}>
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: '600', color: '#d97706' }}>👓 Óculos Pendente</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>Cliente vai buscar e pagar o restante</div>
+                  </div>
+                  <span style={{ fontSize: '18px', fontWeight: '700', fontFamily: 'var(--mono)', color: '#d97706' }}>
+                    {saldoRestante.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                  </span>
+                </div>
+              )}
             </>
           )}
 
