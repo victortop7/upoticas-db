@@ -162,12 +162,8 @@ function ConfigModal({ estagios, onClose, onSaved }: {
                   border: 'none', borderRadius: '6px', cursor: 'pointer', whiteSpace: 'nowrap',
                 }}>{salvando === e.id ? '...' : '✓ Salvar'}</button>
 
-                {/* Excluir (só customizados) */}
-                {!e.sistema ? (
-                  <button onClick={() => excluir(e)} style={{ padding: '6px 8px', fontSize: '12px', background: 'var(--red-dim)', color: 'var(--red)', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>✕</button>
-                ) : (
-                  <span title="Estágio do sistema — não pode ser excluído" style={{ fontSize: '14px', opacity: 0.4, padding: '0 4px' }}>🔒</span>
-                )}
+                {/* Excluir */}
+                <button onClick={() => excluir(e)} style={{ padding: '6px 8px', fontSize: '12px', background: 'var(--red-dim)', color: 'var(--red)', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>✕</button>
               </div>
             </div>
           ))}
