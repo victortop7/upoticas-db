@@ -72,7 +72,6 @@ const SEED_PRODUTOS = [
   { codigo:'0218', nome:'BUS POLY TRANSITIONS VIII',                 unidade:'',   preco1:450.00, preco2:0 },
 ];
 
-function brl(v: number) { return v > 0 ? `R$ ${Number(v).toFixed(2).replace('.', ',')}` : '—'; }
 
 const R = { bg:'#c8c4b0', panel:'#d4d0c8', alt:'#dedad2', bdr:'#b0aca4', hdr:'linear-gradient(90deg,#005500,#008800)', hdrTxt:'#ccffcc', hdrBdr:'#007700', txt:'#000', inp:'#fff' };
 const INP: React.CSSProperties = { width:'100%', padding:'5px 8px', fontSize:'12px', background:R.inp, border:'1px solid #999', color:R.txt, outline:'none', boxSizing:'border-box', fontFamily:"'Courier New', monospace" };
@@ -94,6 +93,8 @@ export default function LabServicos() {
   const [inlineEdit, setInlineEdit] = useState<{ id: string; field: string; value: string } | null>(null);
   const [editingNomeLista, setEditingNomeLista] = useState(false);
   const [nomeLista, setNomeLista] = useState('');
+  const [novaListaModal, setNovaListaModal] = useState(false);
+  const [novaListaNome, setNovaListaNome] = useState('');
 
   function load() {
     setLoading(true);
@@ -190,207 +191,219 @@ export default function LabServicos() {
     setSeeding(false);
   }
 
+  async function criarNovaLista() {
+    if (!novaListaNome.trim()) return;
+    const proximo = listasAtivas + 1;
+    if (proximo > 5) return;
+    const chave = `tab_lista_${proximo}`;
+    await api.put('/lab/configuracoes', { [chave]: novaListaNome.trim() });
+    const novosNomes = [...listaNomes];
+    novosNomes[proximo - 1] = novaListaNome.trim();
+    setListaNomes(novosNomes);
+    setListasAtivas(proximo);
+    setNovaListaNome('');
+    setNovaListaModal(false);
+    setListaFiltro(proximo - 1);
+  }
+
+  function contarProdutosLista(idx: number) {
+    return servicos.filter(s => (s[LISTA_FIELDS[idx] as ListaField] as number) > 0).length;
+  }
+
   const filtrado = servicos.filter(s => !busca || s.nome.toLowerCase().includes(busca.toLowerCase()) || (s.codigo||'').includes(busca));
 
   return (
     <div style={{ padding:'12px', height:'100%', display:'flex', flexDirection:'column', background:R.bg, fontFamily:"'Montserrat', sans-serif" }}>
 
-      {/* Header */}
       {listaFiltro === null ? (
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'8px', flexWrap:'wrap', gap:'6px' }}>
-          <div style={{ background:R.hdr, color:R.hdrTxt, padding:'5px 14px', fontSize:'13px', fontWeight:'700', letterSpacing:'1px', border:`2px outset ${R.hdrBdr}` }}>
-            CATÁLOGO DE SERVIÇOS / PRODUTOS — {servicos.length} item(s)
-          </div>
-          <div style={{ display:'flex', gap:'6px' }}>
-            <button onClick={handleSeed} disabled={seeding}
-              style={{ padding:'5px 12px', fontSize:'11px', fontWeight:'700', background:R.alt, color:'#000', border:`1px outset ${R.bdr}`, cursor:seeding?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
-              {seeding ? 'IMPORTANDO...' : '📥 IMPORTAR CATÁLOGO'}
-            </button>
-            <button onClick={openNovo}
-              style={{ padding:'5px 16px', fontSize:'12px', fontWeight:'700', background:'#005500', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
-              + NOVO
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'8px' }}>
-          <button onClick={() => { setListaFiltro(null); setInlineEdit(null); setEditingNomeLista(false); }}
-            style={{ padding:'5px 12px', fontSize:'11px', fontWeight:'700', background:R.alt, color:'#333', border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>
-            ← VOLTAR
-          </button>
-          <div style={{ background:R.hdr, color:R.hdrTxt, padding:'5px 14px', fontSize:'13px', fontWeight:'700', letterSpacing:'1px', border:`2px outset ${R.hdrBdr}`, flex:1, display:'flex', alignItems:'center', gap:'10px' }}>
-            {editingNomeLista ? (
-              <>
-                <input
-                  autoFocus
-                  value={nomeLista}
-                  onChange={e => setNomeLista(e.target.value)}
-                  onKeyDown={async e => {
-                    if (e.key === 'Enter') {
-                      const chave = `tab_lista_${listaFiltro! + 1}`;
-                      await api.put('/lab/configuracoes', { [chave]: nomeLista });
-                      setListaNomes(n => n.map((v, i) => i === listaFiltro ? nomeLista : v));
-                      setEditingNomeLista(false);
-                    } else if (e.key === 'Escape') { setEditingNomeLista(false); }
-                  }}
-                  style={{ padding:'2px 8px', fontSize:'13px', fontFamily:"'Courier New', monospace", fontWeight:'700', background:'#ffffcc', border:'2px inset #888', color:'#000', outline:'none', width:'200px' }}
-                />
-                <button onClick={async () => {
-                  const chave = `tab_lista_${listaFiltro! + 1}`;
-                  await api.put('/lab/configuracoes', { [chave]: nomeLista });
-                  setListaNomes(n => n.map((v, i) => i === listaFiltro ? nomeLista : v));
-                  setEditingNomeLista(false);
-                }} style={{ padding:'2px 8px', fontSize:'11px', fontWeight:'700', background:'#ccffcc', color:'#005500', border:'1px outset #005500', cursor:'pointer', fontFamily:'inherit' }}>✓ SALVAR</button>
-                <button onClick={() => setEditingNomeLista(false)} style={{ padding:'2px 8px', fontSize:'11px', background:'#ffcccc', color:'#880000', border:'1px outset #880000', cursor:'pointer', fontFamily:'inherit' }}>✕</button>
-              </>
-            ) : (
-              <>
-                <span>{listaNomes[listaFiltro!]} — {filtrado.length} produto(s)</span>
-                <button onClick={() => { setNomeLista(listaNomes[listaFiltro!]); setEditingNomeLista(true); }}
-                  style={{ padding:'2px 8px', fontSize:'11px', fontWeight:'700', background:'rgba(255,255,255,0.15)', color:R.hdrTxt, border:'1px solid rgba(255,255,255,0.3)', cursor:'pointer', fontFamily:'inherit' }}>
-                  ✏️ Renomear
+        /* ══════════════════════════════════════════
+           LANDING — SÓ MOSTRA AS LISTAS
+           ══════════════════════════════════════════ */
+        <>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px' }}>
+            <div style={{ background:R.hdr, color:R.hdrTxt, padding:'5px 14px', fontSize:'13px', fontWeight:'700', letterSpacing:'1px', border:`2px outset ${R.hdrBdr}` }}>
+              LISTAS DE PREÇOS — {listasAtivas} lista(s) | {servicos.length} produto(s) no catálogo
+            </div>
+            <div style={{ display:'flex', gap:'6px' }}>
+              <button onClick={handleSeed} disabled={seeding}
+                style={{ padding:'5px 12px', fontSize:'11px', fontWeight:'700', background:R.alt, color:'#000', border:`1px outset ${R.bdr}`, cursor:seeding?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+                {seeding ? 'IMPORTANDO...' : '📥 IMPORTAR CATÁLOGO'}
+              </button>
+              {listasAtivas < 5 && (
+                <button onClick={() => { setNovaListaNome(''); setNovaListaModal(true); }}
+                  style={{ padding:'5px 16px', fontSize:'12px', fontWeight:'700', background:'#005500', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+                  + NOVA LISTA
                 </button>
-                <span style={{ fontSize:'10px', fontWeight:'400', opacity:0.7, marginLeft:'auto' }}>clique no preço para editar</span>
-              </>
+              )}
+            </div>
+          </div>
+
+          {/* Cards das listas */}
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))', gap:'12px' }}>
+            {LISTA_FIELDS.slice(0, listasAtivas).map((_, i) => {
+              const count = contarProdutosLista(i);
+              return (
+                <button key={i} onClick={() => { setBusca(''); setListaFiltro(i); }}
+                  style={{ padding:'20px 16px', background:R.panel, border:`2px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', textAlign:'left', display:'flex', flexDirection:'column', gap:'8px', transition:'background 0.1s' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#e8e4d8')}
+                  onMouseLeave={e => (e.currentTarget.style.background = R.panel)}>
+                  <span style={{ fontSize:'11px', fontWeight:'700', color:'#888', textTransform:'uppercase', letterSpacing:'0.5px' }}>LISTA {i + 1}</span>
+                  <span style={{ fontSize:'16px', fontWeight:'700', color:'#003300' }}>{listaNomes[i]}</span>
+                  <span style={{ fontSize:'11px', fontFamily:"'Courier New', monospace", color:'#555' }}>
+                    {count} produto(s) com preço
+                  </span>
+                  <span style={{ fontSize:'10px', color:'#008800', fontWeight:'700', marginTop:'4px' }}>▶ ENTRAR NA LISTA</span>
+                </button>
+              );
+            })}
+          </div>
+        </>
+      ) : (
+        /* ══════════════════════════════════════════
+           VIEW DE LISTA ESPECÍFICA
+           ══════════════════════════════════════════ */
+        <>
+          {/* Header da lista */}
+          <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'8px' }}>
+            <button onClick={() => { setListaFiltro(null); setInlineEdit(null); setEditingNomeLista(false); setBusca(''); }}
+              style={{ padding:'5px 12px', fontSize:'11px', fontWeight:'700', background:R.alt, color:'#333', border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>
+              ← VOLTAR
+            </button>
+            <div style={{ background:R.hdr, color:R.hdrTxt, padding:'5px 14px', fontSize:'13px', fontWeight:'700', letterSpacing:'1px', border:`2px outset ${R.hdrBdr}`, flex:1, display:'flex', alignItems:'center', gap:'10px' }}>
+              {editingNomeLista ? (
+                <>
+                  <input autoFocus value={nomeLista} onChange={e => setNomeLista(e.target.value)}
+                    onKeyDown={async e => {
+                      if (e.key === 'Enter') {
+                        await api.put('/lab/configuracoes', { [`tab_lista_${listaFiltro + 1}`]: nomeLista });
+                        setListaNomes(n => n.map((v, i) => i === listaFiltro ? nomeLista : v));
+                        setEditingNomeLista(false);
+                      } else if (e.key === 'Escape') { setEditingNomeLista(false); }
+                    }}
+                    style={{ padding:'2px 8px', fontSize:'13px', fontFamily:"'Courier New', monospace", fontWeight:'700', background:'#ffffcc', border:'2px inset #888', color:'#000', outline:'none', width:'200px' }}
+                  />
+                  <button onClick={async () => {
+                    await api.put('/lab/configuracoes', { [`tab_lista_${listaFiltro + 1}`]: nomeLista });
+                    setListaNomes(n => n.map((v, i) => i === listaFiltro ? nomeLista : v));
+                    setEditingNomeLista(false);
+                  }} style={{ padding:'2px 8px', fontSize:'11px', fontWeight:'700', background:'#ccffcc', color:'#005500', border:'1px outset #005500', cursor:'pointer', fontFamily:'inherit' }}>✓ SALVAR</button>
+                  <button onClick={() => setEditingNomeLista(false)} style={{ padding:'2px 8px', fontSize:'11px', background:'#ffcccc', color:'#880000', border:'1px outset #880000', cursor:'pointer', fontFamily:'inherit' }}>✕</button>
+                </>
+              ) : (
+                <>
+                  <span>{listaNomes[listaFiltro]} — {filtrado.filter(s => (s[LISTA_FIELDS[listaFiltro] as ListaField] as number) > 0).length} produto(s)</span>
+                  <button onClick={() => { setNomeLista(listaNomes[listaFiltro]); setEditingNomeLista(true); }}
+                    style={{ padding:'2px 8px', fontSize:'11px', fontWeight:'700', background:'rgba(255,255,255,0.15)', color:R.hdrTxt, border:'1px solid rgba(255,255,255,0.3)', cursor:'pointer', fontFamily:'inherit' }}>
+                    ✏️ Renomear
+                  </button>
+                  <button onClick={openNovo}
+                    style={{ padding:'2px 10px', fontSize:'11px', fontWeight:'700', background:'#ccffcc', color:'#003300', border:'1px outset #005500', cursor:'pointer', fontFamily:'inherit', marginLeft:'auto' }}>
+                    + NOVO PRODUTO
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Busca */}
+          <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar por código ou nome..."
+            style={{ ...INP, marginBottom:'8px', fontFamily:"'Montserrat', sans-serif" }} />
+
+          {/* Tabela da lista */}
+          <div style={{ flex:1, overflowY:'auto', border:`2px inset ${R.bdr}` }}>
+            {loading ? (
+              <div style={{ padding:'40px', textAlign:'center', color:'#444', fontFamily:"'Courier New', monospace" }}>Carregando...</div>
+            ) : (
+              <table style={{ width:'100%', borderCollapse:'collapse' }}>
+                <thead style={{ position:'sticky', top:0 }}>
+                  <tr style={{ background:R.hdr }}>
+                    <th style={{ padding:'6px 10px', textAlign:'left', fontSize:'10px', fontWeight:'700', color:R.hdrTxt, letterSpacing:'0.5px', border:`1px solid ${R.hdrBdr}` }}>CÓDIGO</th>
+                    <th style={{ padding:'6px 10px', textAlign:'left', fontSize:'10px', fontWeight:'700', color:R.hdrTxt, letterSpacing:'0.5px', border:`1px solid ${R.hdrBdr}` }}>DESCRIÇÃO</th>
+                    <th style={{ padding:'6px 10px', textAlign:'right', fontSize:'10px', fontWeight:'700', color:'#ccffcc', letterSpacing:'0.5px', border:`1px solid ${R.hdrBdr}`, background:'#003300', minWidth:'150px' }}>
+                      {listaNomes[listaFiltro]} — clique para editar
+                    </th>
+                    <th style={{ padding:'6px 10px', border:`1px solid ${R.hdrBdr}`, width:'80px' }}></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...filtrado].sort((a, b) => {
+                    const va = (a[LISTA_FIELDS[listaFiltro] as ListaField] as number) || 0;
+                    const vb = (b[LISTA_FIELDS[listaFiltro] as ListaField] as number) || 0;
+                    return vb - va;
+                  }).map((s, i) => {
+                    const field = LISTA_FIELDS[listaFiltro];
+                    const val = (s[field as ListaField] as number) || 0;
+                    const isEditing = inlineEdit?.id === s.id && inlineEdit.field === field;
+                    return (
+                      <tr key={s.id} style={{ background: i%2===0 ? R.panel : R.alt, borderBottom:`1px solid ${R.bdr}` }}
+                        onMouseEnter={e => (e.currentTarget.style.background = '#d0f0d0')}
+                        onMouseLeave={e => (e.currentTarget.style.background = i%2===0 ? R.panel : R.alt)}>
+                        <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', color:'#555' }}>{s.codigo||'—'}</td>
+                        <td style={{ padding:'6px 10px', fontSize:'12px', fontWeight:'700', color:R.txt }}>{s.nome}</td>
+                        <td style={{ padding:'4px 6px', textAlign:'right' }}>
+                          {isEditing ? (
+                            <input autoFocus value={inlineEdit.value}
+                              onChange={e => setInlineEdit(v => v ? { ...v, value: e.target.value } : v)}
+                              onBlur={async () => { if (inlineEdit) await saveInlinePrice(inlineEdit.id, inlineEdit.field, inlineEdit.value); setInlineEdit(null); }}
+                              onKeyDown={async e => {
+                                if (e.key === 'Enter') { e.preventDefault(); if (inlineEdit) await saveInlinePrice(inlineEdit.id, inlineEdit.field, inlineEdit.value); setInlineEdit(null); }
+                                else if (e.key === 'Escape') { setInlineEdit(null); }
+                              }}
+                              style={{ width:'120px', padding:'3px 6px', fontSize:'13px', fontFamily:"'Courier New', monospace", textAlign:'right', background:'#ffffcc', border:'2px inset #888', color:'#000', outline:'none' }}
+                            />
+                          ) : (
+                            <button onClick={() => setInlineEdit({ id: s.id, field, value: val > 0 ? String(val) : '' })}
+                              style={{ width:'100%', textAlign:'right', padding:'4px 8px', fontFamily:"'Courier New', monospace", fontSize:'13px', fontWeight:'700', background: val > 0 ? '#efffef' : '#fff8f8', color: val > 0 ? '#005500' : '#cc0000', border:`1px solid ${val > 0 ? '#aaddaa' : '#ddaaaa'}`, cursor:'pointer', borderRadius:'2px' }}>
+                              {val > 0 ? `R$ ${val.toFixed(2).replace('.',',')}` : '— definir preço'}
+                            </button>
+                          )}
+                        </td>
+                        <td style={{ padding:'4px 6px', whiteSpace:'nowrap', textAlign:'center' }}>
+                          <button onClick={() => openEdit(s)} style={{ fontSize:'11px', padding:'2px 8px', background:R.alt, color:'#333', border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', marginRight:'3px' }}>✏️</button>
+                          <button onClick={() => handleDelete(s.id)} style={{ fontSize:'11px', padding:'2px 6px', background:'#ffeeee', color:'#880000', border:'1px outset #cc0000', cursor:'pointer', fontFamily:'inherit' }}>✕</button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             )}
           </div>
-        </div>
+        </>
       )}
 
-      {/* Busca */}
-      <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar por código ou nome..."
-        style={{ ...INP, marginBottom:'8px', fontFamily:"'Montserrat', sans-serif" }} />
-
-      {/* Tabs de listas */}
-      {listaFiltro === null && (
-        <div style={{ display:'flex', gap:'4px', marginBottom:'6px', flexWrap:'wrap' }}>
-          {LISTA_FIELDS.slice(0, listasAtivas).map((_, i) => (
-            <button key={i} onClick={() => setListaFiltro(i)}
-              style={{ padding:'4px 12px', fontSize:'11px', fontWeight:'700', background:'#005500', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', letterSpacing:'0.5px' }}>
-              📋 {listaNomes[i]}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Tabela */}
-      <div style={{ flex:1, overflowY:'auto', border:`2px inset ${R.bdr}` }}>
-        {loading ? (
-          <div style={{ padding:'40px', textAlign:'center', color:'#444', fontFamily:"'Courier New', monospace" }}>Carregando...</div>
-        ) : filtrado.length === 0 ? (
-          <div style={{ padding:'40px', textAlign:'center', color:'#444' }}>
-            Nenhum serviço. Use "Importar Catálogo" para carregar os produtos.
+      {/* Modal Nova Lista */}
+      {novaListaModal && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:300, display:'flex', alignItems:'center', justifyContent:'center', padding:'16px' }}>
+          <div style={{ background:R.panel, border:`2px outset ${R.bdr}`, width:'100%', maxWidth:'360px' }}>
+            <div style={{ background:R.hdr, color:R.hdrTxt, padding:'6px 14px', fontSize:'12px', fontWeight:'700', letterSpacing:'1px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <span>NOVA LISTA DE PREÇOS — LISTA {listasAtivas + 1}</span>
+              <button onClick={() => setNovaListaModal(false)} style={{ background:'none', border:'1px solid #99ffaa', color:'#99ffaa', padding:'1px 6px', cursor:'pointer', fontFamily:'inherit', fontWeight:'700' }}>✕</button>
+            </div>
+            <div style={{ padding:'16px', display:'flex', flexDirection:'column', gap:'12px' }}>
+              <div>
+                <label style={LBL}>Nome da lista (ex: Hoya, Essilor, Tabela 3)</label>
+                <input autoFocus value={novaListaNome} onChange={e => setNovaListaNome(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && criarNovaLista()}
+                  style={{ ...INP, fontFamily:"'Montserrat', sans-serif", fontSize:'14px' }} placeholder="Nome da lista..." />
+              </div>
+              <div style={{ display:'flex', gap:'8px' }}>
+                <button onClick={() => setNovaListaModal(false)} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:R.alt, color:R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>CANCELAR</button>
+                <button onClick={criarNovaLista} disabled={!novaListaNome.trim()} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background: novaListaNome.trim() ? '#005500' : '#aaa', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor: novaListaNome.trim() ? 'pointer' : 'not-allowed', fontFamily:'inherit', textTransform:'uppercase' }}>
+                  CRIAR LISTA
+                </button>
+              </div>
+            </div>
           </div>
-        ) : listaFiltro !== null ? (
-          /* ── VIEW DE LISTA ESPECÍFICA ── */
-          <table style={{ width:'100%', borderCollapse:'collapse' }}>
-            <thead style={{ position:'sticky', top:0 }}>
-              <tr style={{ background:R.hdr }}>
-                <th style={{ padding:'6px 10px', textAlign:'left', fontSize:'10px', fontWeight:'700', color:R.hdrTxt, letterSpacing:'0.5px', border:`1px solid ${R.hdrBdr}` }}>CÓDIGO</th>
-                <th style={{ padding:'6px 10px', textAlign:'left', fontSize:'10px', fontWeight:'700', color:R.hdrTxt, letterSpacing:'0.5px', border:`1px solid ${R.hdrBdr}` }}>DESCRIÇÃO</th>
-                <th style={{ padding:'6px 10px', textAlign:'right', fontSize:'10px', fontWeight:'700', color:'#ccffcc', letterSpacing:'0.5px', border:`1px solid ${R.hdrBdr}`, background:'#003300' }}>
-                  {listaNomes[listaFiltro]} (clique para editar)
-                </th>
-                <th style={{ padding:'6px 10px', border:`1px solid ${R.hdrBdr}` }}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {[...filtrado].sort((a, b) => {
-                const va = (a[LISTA_FIELDS[listaFiltro] as ListaField] as number) || 0;
-                const vb = (b[LISTA_FIELDS[listaFiltro] as ListaField] as number) || 0;
-                return vb - va;
-              }).map((s, i) => {
-                const field = LISTA_FIELDS[listaFiltro];
-                const val = (s[field as ListaField] as number) || 0;
-                const isEditing = inlineEdit?.id === s.id && inlineEdit.field === field;
-                return (
-                  <tr key={s.id} style={{ background: i%2===0 ? R.panel : R.alt, borderBottom:`1px solid ${R.bdr}` }}
-                    onMouseEnter={e => (e.currentTarget.style.background = '#d0f0d0')}
-                    onMouseLeave={e => (e.currentTarget.style.background = i%2===0 ? R.panel : R.alt)}>
-                    <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', color:'#555' }}>{s.codigo||'—'}</td>
-                    <td style={{ padding:'6px 10px', fontSize:'12px', fontWeight:'700', color:R.txt }}>{s.nome}</td>
-                    <td style={{ padding:'4px 6px', textAlign:'right' }}>
-                      {isEditing ? (
-                        <input
-                          autoFocus
-                          value={inlineEdit.value}
-                          onChange={e => setInlineEdit(v => v ? { ...v, value: e.target.value } : v)}
-                          onBlur={async () => {
-                            if (inlineEdit) await saveInlinePrice(inlineEdit.id, inlineEdit.field, inlineEdit.value);
-                            setInlineEdit(null);
-                          }}
-                          onKeyDown={async e => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              if (inlineEdit) await saveInlinePrice(inlineEdit.id, inlineEdit.field, inlineEdit.value);
-                              setInlineEdit(null);
-                            } else if (e.key === 'Escape') { setInlineEdit(null); }
-                          }}
-                          style={{ width:'100px', padding:'3px 6px', fontSize:'13px', fontFamily:"'Courier New', monospace", textAlign:'right', background:'#ffffcc', border:'2px inset #888', color:'#000', outline:'none' }}
-                        />
-                      ) : (
-                        <button onClick={() => setInlineEdit({ id: s.id, field, value: val > 0 ? String(val) : '' })}
-                          style={{ width:'100%', textAlign:'right', padding:'4px 8px', fontFamily:"'Courier New', monospace", fontSize:'13px', fontWeight:'700', background: val > 0 ? '#efffef' : '#fff8f8', color: val > 0 ? '#005500' : '#cc0000', border:`1px solid ${val > 0 ? '#aaddaa' : '#ddaaaa'}`, cursor:'pointer', borderRadius:'2px' }}>
-                          {val > 0 ? `R$ ${val.toFixed(2).replace('.',',')}` : '— clicar para definir'}
-                        </button>
-                      )}
-                    </td>
-                    <td style={{ padding:'6px 6px', whiteSpace:'nowrap' }}>
-                      <button onClick={() => openEdit(s)} style={{ fontSize:'11px', padding:'2px 8px', background:R.alt, color:'#333', border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>Editar</button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        ) : (
-          /* ── VIEW GERAL (TODAS AS LISTAS) ── */
-          <table style={{ width:'100%', borderCollapse:'collapse' }}>
-            <thead style={{ position:'sticky', top:0 }}>
-              <tr style={{ background:R.hdr }}>
-                {['CÓDIGO','DESCRIÇÃO','UN'].map(h => (
-                  <th key={h} style={{ padding:'6px 10px', textAlign:'left', fontSize:'10px', fontWeight:'700', color:R.hdrTxt, letterSpacing:'0.5px', border:`1px solid ${R.hdrBdr}`, whiteSpace:'nowrap' }}>{h}</th>
-                ))}
-                {LISTA_FIELDS.slice(0, listasAtivas).map((_, i) => (
-                  <th key={i} onClick={() => setListaFiltro(i)}
-                    style={{ padding:'6px 10px', textAlign:'right', fontSize:'10px', fontWeight:'700', color:R.hdrTxt, letterSpacing:'0.5px', border:`1px solid ${R.hdrBdr}`, whiteSpace:'nowrap', cursor:'pointer', userSelect:'none' }}
-                    title={`Entrar na ${listaNomes[i]}`}>
-                    {listaNomes[i]} ▶
-                  </th>
-                ))}
-                <th style={{ padding:'6px 10px', border:`1px solid ${R.hdrBdr}` }}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtrado.map((s, i) => (
-                <tr key={s.id} style={{ background: i%2===0 ? R.panel : R.alt, borderBottom:`1px solid ${R.bdr}` }}
-                  onMouseEnter={e => (e.currentTarget.style.background = '#005500')}
-                  onMouseLeave={e => (e.currentTarget.style.background = i%2===0 ? R.panel : R.alt)}>
-                  <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', color:'#555', whiteSpace:'nowrap' }}>{s.codigo||'—'}</td>
-                  <td style={{ padding:'6px 10px', fontSize:'12px', fontWeight:'700', color:R.txt }}>{s.nome}</td>
-                  <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#555', textAlign:'center' }}>{s.unidade||'—'}</td>
-                  {LISTA_FIELDS.slice(0, listasAtivas).map((field, li) => (
-                    <td key={field} style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', color: li===0 ? R.txt : '#003388', textAlign:'right' }}>
-                      {brl(s[field as ListaField] as number)}
-                    </td>
-                  ))}
-                  <td style={{ padding:'6px 10px', whiteSpace:'nowrap' }}>
-                    <button onClick={() => openEdit(s)} style={{ fontSize:'11px', padding:'2px 8px', background:R.alt, color:'#333', border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', marginRight:'4px' }}>Editar</button>
-                    <button onClick={() => handleDelete(s.id)} style={{ fontSize:'11px', padding:'2px 8px', background:'#ccffcc', color:'#005500', border:'1px outset #005500', cursor:'pointer', fontFamily:'inherit' }}>✕</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* Modal */}
+      {/* Modal Produto */}
       {modal && (
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:200, display:'flex', alignItems:'center', justifyContent:'center', padding:'16px' }}>
           <div style={{ background:R.panel, border:`2px outset ${R.bdr}`, width:'100%', maxWidth:'480px' }}>
             <div style={{ background:R.hdr, color:R.hdrTxt, padding:'6px 14px', fontSize:'12px', fontWeight:'700', letterSpacing:'1px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-              <span>{editItem ? 'EDITAR SERVIÇO' : 'INCLUIR SERVIÇO'}</span>
+              <span>{editItem ? 'EDITAR PRODUTO' : 'NOVO PRODUTO'}</span>
               <button onClick={() => setModal(false)} style={{ background:'none', border:'1px solid #99ffaa', color:'#99ffaa', padding:'1px 6px', cursor:'pointer', fontFamily:'inherit', fontWeight:'700' }}>✕</button>
             </div>
             <div style={{ padding:'16px' }}>
@@ -405,19 +418,10 @@ export default function LabServicos() {
                   {LISTA_FIELDS.slice(0, listasAtivas).map((field, i) => (
                     <div key={field}>
                       <label style={LBL}>{listaNomes[i]} R$</label>
-                      <input
-                        value={form[field as keyof typeof form]}
-                        onChange={e => setForm(f => ({ ...f, [field]: e.target.value }))}
-                        style={INP} placeholder="0,00"
-                      />
+                      <input value={form[field as keyof typeof form]} onChange={e => setForm(f => ({ ...f, [field]: e.target.value }))} style={INP} placeholder="0,00" />
                     </div>
                   ))}
                 </div>
-                {listasAtivas < 5 && (
-                  <div style={{ fontSize:'10px', color:'#666', fontFamily:"'Courier New', monospace", borderTop:`1px solid ${R.bdr}`, paddingTop:'6px' }}>
-                    Para adicionar mais listas: A → Tabelas → Listas de Preços (configure LISTA {listasAtivas + 1})
-                  </div>
-                )}
                 <div style={{ display:'flex', gap:'8px', marginTop:'4px' }}>
                   <button type="button" onClick={() => setModal(false)} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:R.alt, color:R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>CANCELAR</button>
                   <button type="submit" disabled={saving} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:'#005500', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:saving?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
