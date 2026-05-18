@@ -154,6 +154,9 @@ export default function LabNovaOrdem() {
   const [refOtica, setRefOtica] = useState('');
   const [classificacao, setClassificacao] = useState('N');
   const [listaPreco, setListaPreco] = useState('1');
+  const [listasDisponiveis, setListasDisponiveis] = useState<{ numero: string; nome: string }[]>([
+    { numero: '1', nome: 'LISTA 1' }, { numero: '2', nome: 'LISTA 2' },
+  ]);
   const [previsao, setPrevisao] = useState(() => toYMD(addBusinessDays(new Date(), 5)));
   const [operador, setOperador] = useState('');
   const [medico, setMedico] = useState('');
@@ -206,7 +209,6 @@ export default function LabNovaOrdem() {
   useEffect(() => {
     api.get<Otica[]>('/lab/oticas').then(list => {
       setOticas(list);
-      // Se veio otica_id na URL, preenche código e nome
       const presel = searchParams.get('otica');
       if (presel) {
         const found = list.find(o => o.id === presel);
@@ -215,6 +217,14 @@ export default function LabNovaOrdem() {
     }).catch(() => {});
     api.get<Produto[]>('/lab/servicos').then(setProdutos).catch(() => {});
     api.get<{ usuarios: Usuario[] }>('/usuarios').then(d => setOperadores(d.usuarios)).catch(() => {});
+    api.get<Record<string, string>>('/lab/configuracoes').then(cfg => {
+      const listas: { numero: string; nome: string }[] = [];
+      for (let i = 1; i <= 9; i++) {
+        const nome = cfg[`tab_lista_${i}`];
+        if (nome || i <= 2) listas.push({ numero: String(i), nome: nome || `LISTA ${i}` });
+      }
+      if (listas.length > 0) setListasDisponiveis(listas);
+    }).catch(() => {});
   }, [searchParams]);
 
   function handleOticaLookup(cod: string) {
@@ -487,7 +497,11 @@ export default function LabNovaOrdem() {
             </div>
             <div>
               <label style={LBL}>Lista Preço</label>
-              <input value={listaPreco} onChange={e => setListaPreco(e.target.value)} style={{ ...INP, textAlign: 'center' }} placeholder="1" />
+              <select value={listaPreco} onChange={e => setListaPreco(e.target.value)} style={{ ...INP, fontFamily: 'var(--sans)' }}>
+                {listasDisponiveis.map(l => (
+                  <option key={l.numero} value={l.numero}>{l.nome}</option>
+                ))}
+              </select>
             </div>
             <div>
               <label style={LBL}>Previsão Entrega</label>
