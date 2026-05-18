@@ -92,6 +92,8 @@ export default function LabServicos() {
   const [listasAtivas, setListasAtivas] = useState(2);
   const [listaFiltro, setListaFiltro] = useState<number | null>(null);
   const [inlineEdit, setInlineEdit] = useState<{ id: string; field: string; value: string } | null>(null);
+  const [editingNomeLista, setEditingNomeLista] = useState(false);
+  const [nomeLista, setNomeLista] = useState('');
 
   function load() {
     setLoading(true);
@@ -212,13 +214,45 @@ export default function LabServicos() {
         </div>
       ) : (
         <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'8px' }}>
-          <button onClick={() => { setListaFiltro(null); setInlineEdit(null); }}
+          <button onClick={() => { setListaFiltro(null); setInlineEdit(null); setEditingNomeLista(false); }}
             style={{ padding:'5px 12px', fontSize:'11px', fontWeight:'700', background:R.alt, color:'#333', border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>
             ← VOLTAR
           </button>
-          <div style={{ background:R.hdr, color:R.hdrTxt, padding:'5px 14px', fontSize:'13px', fontWeight:'700', letterSpacing:'1px', border:`2px outset ${R.hdrBdr}`, flex:1 }}>
-            {listaNomes[listaFiltro]} — {filtrado.length} produto(s) &nbsp;
-            <span style={{ fontSize:'10px', fontWeight:'400', opacity:0.8 }}>clique no preço para editar</span>
+          <div style={{ background:R.hdr, color:R.hdrTxt, padding:'5px 14px', fontSize:'13px', fontWeight:'700', letterSpacing:'1px', border:`2px outset ${R.hdrBdr}`, flex:1, display:'flex', alignItems:'center', gap:'10px' }}>
+            {editingNomeLista ? (
+              <>
+                <input
+                  autoFocus
+                  value={nomeLista}
+                  onChange={e => setNomeLista(e.target.value)}
+                  onKeyDown={async e => {
+                    if (e.key === 'Enter') {
+                      const chave = `tab_lista_${listaFiltro! + 1}`;
+                      await api.put('/lab/configuracoes', { [chave]: nomeLista });
+                      setListaNomes(n => n.map((v, i) => i === listaFiltro ? nomeLista : v));
+                      setEditingNomeLista(false);
+                    } else if (e.key === 'Escape') { setEditingNomeLista(false); }
+                  }}
+                  style={{ padding:'2px 8px', fontSize:'13px', fontFamily:"'Courier New', monospace", fontWeight:'700', background:'#ffffcc', border:'2px inset #888', color:'#000', outline:'none', width:'200px' }}
+                />
+                <button onClick={async () => {
+                  const chave = `tab_lista_${listaFiltro! + 1}`;
+                  await api.put('/lab/configuracoes', { [chave]: nomeLista });
+                  setListaNomes(n => n.map((v, i) => i === listaFiltro ? nomeLista : v));
+                  setEditingNomeLista(false);
+                }} style={{ padding:'2px 8px', fontSize:'11px', fontWeight:'700', background:'#ccffcc', color:'#005500', border:'1px outset #005500', cursor:'pointer', fontFamily:'inherit' }}>✓ SALVAR</button>
+                <button onClick={() => setEditingNomeLista(false)} style={{ padding:'2px 8px', fontSize:'11px', background:'#ffcccc', color:'#880000', border:'1px outset #880000', cursor:'pointer', fontFamily:'inherit' }}>✕</button>
+              </>
+            ) : (
+              <>
+                <span>{listaNomes[listaFiltro!]} — {filtrado.length} produto(s)</span>
+                <button onClick={() => { setNomeLista(listaNomes[listaFiltro!]); setEditingNomeLista(true); }}
+                  style={{ padding:'2px 8px', fontSize:'11px', fontWeight:'700', background:'rgba(255,255,255,0.15)', color:R.hdrTxt, border:'1px solid rgba(255,255,255,0.3)', cursor:'pointer', fontFamily:'inherit' }}>
+                  ✏️ Renomear
+                </button>
+                <span style={{ fontSize:'10px', fontWeight:'400', opacity:0.7, marginLeft:'auto' }}>clique no preço para editar</span>
+              </>
+            )}
           </div>
         </div>
       )}
