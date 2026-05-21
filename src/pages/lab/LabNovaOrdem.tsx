@@ -125,7 +125,7 @@ const COB_INP: React.CSSProperties = {
   color: R.txt, outline: 'none', fontFamily: "'Courier New', monospace",
 };
 
-function RxInput({ value, onChange, width = 62 }: { value: string; onChange: (v: string) => void; width?: number }) {
+function RxInput({ value, onChange, width = 50 }: { value: string; onChange: (v: string) => void; width?: number }) {
   return <input value={value} onChange={e => onChange(e.target.value)} style={{ ...RX_INP, width: `${width}px` }} />;
 }
 
@@ -606,65 +606,48 @@ export default function LabNovaOrdem() {
         {/* ===== RECEITA ===== */}
         <div style={card}>
           <div style={secTitle}>Receita das Lentes</div>
-          <div style={{ display: 'flex', gap: '12px', overflowX: 'auto' }}>
-            {/* Table 1: graus */}
-            <table style={{ borderCollapse: 'collapse', flexShrink: 0 }}>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ borderCollapse: 'collapse', width: '100%' }}>
               <thead>
-                <tr>
-                  <th style={TH}></th>
-                  <th style={{ ...TH, padding: '5px 20px' }} colSpan={2}>GRAU DE LONGE</th>
-                  <th style={TH}>EIXO</th><th style={TH}>ADIC</th>
-                  <th style={{ ...TH, padding: '5px 20px' }} colSpan={2}>GRAU DE PERTO</th>
-                </tr>
                 <tr>
                   <th style={TH}>OLHO</th>
-                  <th style={TH}>ESF</th><th style={TH}>CIL</th>
-                  <th style={TH}></th><th style={TH}></th>
-                  <th style={TH}>ESF</th><th style={TH}>CIL</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(['od', 'oe'] as const).map((o, i) => (
-                  <tr key={o}>
-                    <td style={{ ...TD, fontSize: '11px', fontWeight: '700', color: 'var(--text-dim)', paddingRight: '8px' }}>O/{i === 0 ? 'D' : 'E'}</td>
-                    <td style={TD}><RxInput value={o === 'od' ? od.esf_longe : oe.esf_longe} onChange={v => updateOlho(o, 'esf_longe', v)} /></td>
-                    <td style={TD}><RxInput value={o === 'od' ? od.cil_longe : oe.cil_longe} onChange={v => updateOlho(o, 'cil_longe', v)} /></td>
-                    <td style={TD}><RxInput value={o === 'od' ? od.eixo_longe : oe.eixo_longe} onChange={v => updateOlho(o, 'eixo_longe', v)} width={50} /></td>
-                    <td style={TD}><RxInput value={o === 'od' ? od.adicao : oe.adicao} onChange={v => updateOlho(o, 'adicao', v)} /></td>
-                    <td style={TD}><RxInput value={o === 'od' ? od.esf_perto : oe.esf_perto} onChange={v => updateOlho(o, 'esf_perto', v)} /></td>
-                    <td style={TD}><RxInput value={o === 'od' ? od.cil_perto : oe.cil_perto} onChange={v => updateOlho(o, 'cil_perto', v)} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {/* Table 2: DNP/PRISMA */}
-            <table style={{ borderCollapse: 'collapse', flexShrink: 0 }}>
-              <thead>
-                <tr>
-                  <th style={TH}></th>
-                  <th style={TH} colSpan={2}>DNP</th>
-                  <th style={TH}>ALT</th><th style={TH}>DEC H</th>
-                  <th style={TH} colSpan={2}>PRISMA</th>
+                  <th style={{ ...TH, padding: '3px 8px' }} colSpan={2}>GRAU LONGE</th>
+                  <th style={TH}>EIXO</th>
+                  <th style={TH}>ADIC</th>
+                  <th style={{ ...TH, padding: '3px 8px' }} colSpan={2}>GRAU PERTO</th>
+                  <th style={{ ...TH, borderLeft: '2px solid #007700' }} colSpan={2}>DNP</th>
+                  <th style={TH}>ALT</th>
+                  <th style={TH}>DEC H</th>
+                  <th style={{ ...TH, padding: '3px 8px' }} colSpan={2}>PRISMA</th>
                   <th style={TH}>FLUXO</th>
                 </tr>
                 <tr>
-                  <th style={TH}>OLHO</th>
-                  <th style={TH}>LONGE</th><th style={TH}>PERTO</th>
+                  <th style={TH}></th>
+                  <th style={TH}>ESF</th><th style={TH}>CIL</th>
                   <th style={TH}></th><th style={TH}></th>
-                  <th style={TH}>VALOR</th><th style={TH}>EIXO</th>
+                  <th style={TH}>ESF</th><th style={TH}>CIL</th>
+                  <th style={{ ...TH, borderLeft: '2px solid #007700' }}>L</th><th style={TH}>P</th>
+                  <th style={TH}></th><th style={TH}></th>
+                  <th style={TH}>VL</th><th style={TH}>EX</th>
                   <th style={TH}>LAB</th>
                 </tr>
               </thead>
               <tbody>
                 {(['od', 'oe'] as const).map((o, i) => (
                   <tr key={o}>
-                    <td style={{ ...TD, fontSize: '11px', fontWeight: '700', color: 'var(--text-dim)', paddingRight: '8px' }}>O/{i === 0 ? 'D' : 'E'}</td>
-                    <td style={TD}><RxInput value={o === 'od' ? od.dnp_longe : oe.dnp_longe} onChange={v => updateOlho(o, 'dnp_longe', v)} /></td>
-                    <td style={TD}><RxInput value={o === 'od' ? od.dnp_perto : oe.dnp_perto} onChange={v => updateOlho(o, 'dnp_perto', v)} /></td>
-                    <td style={TD}><RxInput value={o === 'od' ? od.alt : oe.alt} onChange={v => updateOlho(o, 'alt', v)} width={50} /></td>
-                    <td style={TD}><RxInput value={o === 'od' ? od.dec_h : oe.dec_h} onChange={v => updateOlho(o, 'dec_h', v)} width={50} /></td>
+                    <td style={{ ...TD, fontSize: '11px', fontWeight: '700', color: 'var(--text-dim)', paddingRight: '6px', whiteSpace: 'nowrap' }}>O/{i === 0 ? 'D' : 'E'}</td>
+                    <td style={TD}><RxInput value={o === 'od' ? od.esf_longe : oe.esf_longe} onChange={v => updateOlho(o, 'esf_longe', v)} /></td>
+                    <td style={TD}><RxInput value={o === 'od' ? od.cil_longe : oe.cil_longe} onChange={v => updateOlho(o, 'cil_longe', v)} /></td>
+                    <td style={TD}><RxInput value={o === 'od' ? od.eixo_longe : oe.eixo_longe} onChange={v => updateOlho(o, 'eixo_longe', v)} width={44} /></td>
+                    <td style={TD}><RxInput value={o === 'od' ? od.adicao : oe.adicao} onChange={v => updateOlho(o, 'adicao', v)} /></td>
+                    <td style={TD}><RxInput value={o === 'od' ? od.esf_perto : oe.esf_perto} onChange={v => updateOlho(o, 'esf_perto', v)} /></td>
+                    <td style={TD}><RxInput value={o === 'od' ? od.cil_perto : oe.cil_perto} onChange={v => updateOlho(o, 'cil_perto', v)} /></td>
+                    <td style={{ ...TD, borderLeft: '2px solid #007700' }}><RxInput value={o === 'od' ? od.dnp_longe : oe.dnp_longe} onChange={v => updateOlho(o, 'dnp_longe', v)} width={44} /></td>
+                    <td style={TD}><RxInput value={o === 'od' ? od.dnp_perto : oe.dnp_perto} onChange={v => updateOlho(o, 'dnp_perto', v)} width={44} /></td>
+                    <td style={TD}><RxInput value={o === 'od' ? od.alt : oe.alt} onChange={v => updateOlho(o, 'alt', v)} width={44} /></td>
+                    <td style={TD}><RxInput value={o === 'od' ? od.dec_h : oe.dec_h} onChange={v => updateOlho(o, 'dec_h', v)} width={44} /></td>
                     <td style={TD}><RxInput value={o === 'od' ? od.prisma_valor : oe.prisma_valor} onChange={v => updateOlho(o, 'prisma_valor', v)} /></td>
-                    <td style={TD}><RxInput value={o === 'od' ? od.prisma_eixo : oe.prisma_eixo} onChange={v => updateOlho(o, 'prisma_eixo', v)} width={50} /></td>
+                    <td style={TD}><RxInput value={o === 'od' ? od.prisma_eixo : oe.prisma_eixo} onChange={v => updateOlho(o, 'prisma_eixo', v)} width={44} /></td>
                     <td style={{ ...TD, textAlign: 'center' }}>
                       {i === 0 && <input type="checkbox" checked={fluxoLab} onChange={e => setFluxoLab(e.target.checked)} />}
                     </td>
