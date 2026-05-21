@@ -20,9 +20,6 @@ interface ItemCobranca {
   perc_desc: string; produto_id: string;
 }
 
-interface ItemEstoque {
-  codigo: string; descricao: string; un: string; estoque: string; qtd: string; produto_id: string;
-}
 
 const TIPOS = [
   { key: 'U', label: 'VENDA/PEDIDO' }, { key: 'S', label: 'VENDA/PEDIDO' },
@@ -63,7 +60,6 @@ const OLHO_INI: RxOlho = {
 };
 
 const ITEM_COB_INI: ItemCobranca = { codigo: '', descricao: '', un: '', estoque: '', qtd: '1', pv_unit: '', perc_desc: '0', produto_id: '' };
-const ITEM_EST_INI: ItemEstoque = { codigo: '', descricao: '', un: '', estoque: '', qtd: '1', produto_id: '' };
 
 function addBusinessDays(start: Date, days: number): Date {
   const d = new Date(start);
@@ -202,9 +198,6 @@ export default function LabNovaOrdem() {
   ]);
 
   // Baixa no estoque
-  const [baixaEstoque, setBaixaEstoque] = useState<ItemEstoque[]>([
-    { ...ITEM_EST_INI }, { ...ITEM_EST_INI }, { ...ITEM_EST_INI }, { ...ITEM_EST_INI },
-  ]);
 
   useEffect(() => {
     api.get<Otica[]>('/lab/oticas').then(list => {
@@ -275,10 +268,6 @@ export default function LabNovaOrdem() {
     setCobranca(c => c.map((x, j) => j === i ? { ...x, ...patch } : x));
   }
 
-  function setEstItem(i: number, patch: Partial<ItemEstoque>) {
-    setBaixaEstoque(e => e.map((x, j) => j === i ? { ...x, ...patch } : x));
-  }
-
   const lookupProduto = useCallback((termo: string): Produto | undefined => {
     const t = termo.trim().toLowerCase();
     if (!t) return undefined;
@@ -299,20 +288,6 @@ export default function LabNovaOrdem() {
         un: p.unidade || 'UN',
         estoque: p.estoque_atual !== undefined ? String(p.estoque_atual) : '',
         pv_unit: p.valor_padrao > 0 ? p.valor_padrao.toFixed(2).replace('.', ',') : '',
-        produto_id: p.id,
-      });
-    }
-  }
-
-  function handleEstCodigoBlur(i: number, codigo: string) {
-    if (!codigo.trim()) return;
-    const p = lookupProduto(codigo);
-    if (p) {
-      setEstItem(i, {
-        codigo: p.codigo,
-        descricao: p.nome,
-        un: p.unidade || 'UN',
-        estoque: p.estoque_atual !== undefined ? String(p.estoque_atual) : '',
         produto_id: p.id,
       });
     }
@@ -412,12 +387,6 @@ export default function LabNovaOrdem() {
           lente_od: lenteOd || null, lente_oe: lenteOe || null,
         },
         servicos: servicosPayload,
-        baixa_estoque: baixaEstoque
-          .filter(e => e.codigo.trim() || e.descricao.trim())
-          .map(e => ({
-            codigo: e.codigo || null, produto_id: e.produto_id || null,
-            descricao: e.descricao, qtd: parseFloat(e.qtd.replace(',', '.')) || 1,
-          })),
       });
       navigate(`/lab/ordens/${id}`);
     } catch (err: unknown) {
