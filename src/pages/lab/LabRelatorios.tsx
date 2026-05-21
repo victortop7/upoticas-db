@@ -52,8 +52,9 @@ export default function LabRelatorios() {
   const [buscado, setBuscado]  = useState(false);
 
   // Drill-down
-  const [oticaSel, setOticaSel] = useState<{id:string; nome:string} | null>(null);
+  const [oticaSel, setOticaSel] = useState<{id:string; nome:string; codigo?:string} | null>(null);
   const [ordens, setOrdens]     = useState<Ordem[]>([]);
+  const [servicosPorOS, setServicosPorOS] = useState<Record<string, any[]>>({});
   const [loadingOS, setLoadingOS] = useState(false);
 
   // Busca por número de OS
@@ -95,14 +96,96 @@ export default function LabRelatorios() {
   }, [dataIni, dataFim]);
 
   async function verOtica(o: OticaRow) {
-    setOticaSel({ id: o.otica_id, nome: o.otica_nome });
+    setOticaSel({ id: o.otica_id, nome: o.otica_nome, codigo: o.otica_codigo });
     setLoadingOS(true);
     try {
       const p = new URLSearchParams({ data_ini: dataIni, data_fim: dataFim, otica_id: o.otica_id });
-      const r = await api.get<{ ordens: Ordem[] }>(`/lab/relatorios/periodo?${p}`);
+      const r = await api.get<{ ordens: Ordem[]; servicos: any[] }>(`/lab/relatorios/periodo?${p}`);
       setOrdens(r.ordens || []);
+      // Agrupa serviços por os_id
+      const agrupado: Record<string, any[]> = {};
+      for (const s of (r.servicos || [])) {
+        if (!agrupado[s.os_id]) agrupado[s.os_id] = [];
+        agrupado[s.os_id].push(s);
+      }
+      setServicosPorOS(agrupado);
     } catch {}
     setLoadingOS(false);
+  }
+
+  function imprimirRelatorio(ordens: Ordem[], svcMap: Record<string, any[]>, otica: {nome:string; codigo?:string}, periodo: string) {
+    const brlFmt = (v: number) => Number(v||0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+    const total = ordens.reduce((a, o) => a + (o.total||0), 0);
+
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
+    <title>Relatório ${otica.nome}</title>
+    <style>
+      body { font-family: 'Courier New', monospace; font-size: 11px; color: #000; margin: 0; padding: 16px; }
+      h1 { font-size: 16px; text-align: center; margin: 0 0 4px; }
+      .sub { text-align: center; font-size: 11px; margin-bottom: 16px; border-bottom: 2px solid #000; padding-bottom: 8px; }
+      .os-block { margin-bottom: 14px; border: 1px solid #999; page-break-inside: avoid; }
+      .os-header { background: #222; color: #fff; padding: 5px 10px; display: flex; justify-content: space-between; font-weight: 700; font-size: 12px; }
+      .os-info { padding: 4px 10px; background: #f5f5f5; font-size: 10px; display: flex; gap: 20px; flex-wrap: wrap; border-bottom: 1px solid #ccc; }
+      table { width: 100%; border-collapse: collapse; }
+      th { background: #ddd; border: 1px solid #999; padding: 3px 6px; font-size: 10px; text-align: left; }
+      td { border: 1px solid #ddd; padding: 3px 6px; font-size: 10px; }
+      .num { text-align: right; }
+      .total-row { background: #eee; font-weight: 700; }
+      .resumo { margin-top: 20px; border-top: 2px solid #000; padding-top: 10px; display: flex; justify-content: flex-end; gap: 40px; }
+      .resumo div { text-align: right; }
+      .resumo .label { font-size: 10px; color: #555; }
+      .resumo .valor { font-size: 15px; font-weight: 900; }
+      @media print { body { padding: 8px; } }
+    </style></head><body>
+    <h1>CONEXÃO LAB — RELATÓRIO DE FATURAMENTO</h1>
+    <div class="sub">
+      Ótica: <strong>${otica.codigo ? otica.codigo + ' — ' : ''}${otica.nome}</strong><br>
+      Período: ${periodo} &nbsp;|&nbsp; Total de OS: ${ordens.length}
+    </div>
+    ${ordens.map(o => {
+      const svcs = svcMap[o.id] || [];
+      const status = { aguardando:'AGUARDANDO', em_producao:'EM PRODUÇÃO', pronto:'PRONTO', entregue:'ENTREGUE', cancelado:'CANCELADO' }[o.status] || o.status;
+      const data = o.created_at ? o.created_at.slice(0,10).split('-').reverse().join('/') : '—';
+      const prev = o.previsao_entrega ? o.previsao_entrega.slice(0,10).split('-').reverse().join('/') : '—';
+      return `
+      <div class="os-block">
+        <div class="os-header">
+          <span>#${String(o.numero).padStart(4,'0')} — ${o.tipo || ''}</span>
+          <span>${status}</span>
+          <span>${brlFmt(o.total||0)}</span>
+        </div>
+        <div class="os-info">
+          <span>Data: <strong>${data}</strong></span>
+          ${o.ref_otica ? `<span>Ref. Ótica: <strong>${o.ref_otica}</strong></span>` : ''}
+          ${o.cont_interno ? `<span>Cont. Interno: <strong>${o.cont_interno}</strong></span>` : ''}
+          ${o.vendedor ? `<span>Vendedor: <strong>${o.vendedor}</strong></span>` : ''}
+          <span>Previsão: <strong>${prev}</strong></span>
+        </div>
+        ${svcs.length > 0 ? `
+        <table>
+          <thead><tr><th>Cód.</th><th>Descrição</th><th class="num">Qtd</th><th class="num">Unit.</th><th class="num">Desc%</th><th class="num">Total</th></tr></thead>
+          <tbody>
+            ${svcs.map(s => `<tr>
+              <td>${s.codigo||'—'}</td>
+              <td>${s.descricao||''}</td>
+              <td class="num">${s.qtd||1}</td>
+              <td class="num">${brlFmt(s.pv_unit||0)}</td>
+              <td class="num">${s.perc_desc||0}%</td>
+              <td class="num">${brlFmt(s.total_liq||0)}</td>
+            </tr>`).join('')}
+          </tbody>
+          <tfoot><tr class="total-row"><td colspan="5" style="text-align:right;padding:3px 6px">TOTAL DA OS</td><td class="num">${brlFmt(o.total||0)}</td></tr></tfoot>
+        </table>` : '<div style="padding:6px 10px;color:#666;font-size:10px">Sem serviços cadastrados</div>'}
+      </div>`;
+    }).join('')}
+    <div class="resumo">
+      <div><div class="label">TOTAL GERAL</div><div class="valor">${brlFmt(total)}</div></div>
+    </div>
+    <script>window.onload = () => { window.print(); }</script>
+    </body></html>`;
+
+    const w = window.open('', '_blank', 'width=900,height=700');
+    if (w) { w.document.write(html); w.document.close(); }
   }
 
   const PRESETS = [
@@ -136,9 +219,9 @@ export default function LabRelatorios() {
             <div style={{ fontSize:'11px', color:'#555', fontFamily:"'Courier New', monospace" }}>
               {fmtDate(dataIni)} até {fmtDate(dataFim)}
             </div>
-            <button onClick={() => window.print()}
+            <button onClick={() => imprimirRelatorio(ordens, servicosPorOS, oticaSel!, `${fmtDate(dataIni)} até ${fmtDate(dataFim)}`)}
               style={{ padding:'5px 14px', fontSize:'11px', fontWeight:'700', background:'#003388', color:'#fff', border:'1px outset #003388', cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
-              🖨️ IMPRIMIR
+              🖨️ IMPRIMIR RELATÓRIO
             </button>
           </div>
         </div>

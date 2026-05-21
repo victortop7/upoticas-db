@@ -18,7 +18,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
     if (dataIni) { where += ' AND date(o.created_at) >= ?'; params.push(dataIni); }
     if (dataFim) { where += ' AND date(o.created_at) <= ?'; params.push(dataFim); }
 
-    // Se otica_id fornecido: retorna lista de OS dessa ótica
+    // Se otica_id fornecido: retorna lista de OS dessa ótica com serviços
     if (oticaId) {
       where += ' AND o.otica_id = ?';
       params.push(oticaId);
@@ -27,7 +27,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
         SELECT o.id, o.numero, o.status, o.tipo, o.total,
                o.ref_otica, o.cont_interno, o.previsao_entrega,
                o.created_at, o.vendedor,
-               ot.nome AS otica_nome
+               ot.nome AS otica_nome, ot.codigo AS otica_codigo
         FROM lab_ordens o
         LEFT JOIN lab_oticas ot ON ot.id = o.otica_id
         ${where}
@@ -35,7 +35,23 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
         LIMIT 500
       `).bind(...params).all();
 
-      return json({ ordens: result.results });
+      const ordens = result.results as Record<string, unknown>[];
+
+      // Busca serviços de todas as OS encontradas
+      const ids = ordens.map(o => o.id as string);
+      let servicos: Record<string, unknown>[] = [];
+      if (ids.length > 0) {
+        const placeholders = ids.map(() => '?').join(',');
+        const svcResult = await env.DB.prepare(`
+          SELECT os_id, codigo, descricao, qtd, pv_unit, perc_desc, total_liq
+          FROM lab_ordens_servicos
+          WHERE os_id IN (${placeholders}) AND tenant_id = ?
+          ORDER BY os_id, id
+        `).bind(...ids, tenant_id).all();
+        servicos = svcResult.results as Record<string, unknown>[];
+      }
+
+      return json({ ordens, servicos });
     }
 
     // Sem otica_id: retorna resumo por ótica + totais
