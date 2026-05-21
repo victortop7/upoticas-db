@@ -812,61 +812,6 @@ export default function LabNovaOrdem() {
           </div>
         </div>
 
-        {/* ===== BAIXA NO ESTOQUE ===== */}
-        <div style={card}>
-          <div style={secTitle}>Baixa no Estoque</div>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
-              <thead>
-                <tr style={{ background: 'var(--surface-alt)', borderBottom: '1px solid var(--border)' }}>
-                  {[
-                    { label: 'CÓDIGO', w: '90px' }, { label: 'DESCRIÇÃO', w: 'auto' },
-                    { label: 'UN', w: '45px' }, { label: 'ESTOQUE', w: '75px' }, { label: 'QTD', w: '60px' }, { label: '', w: '24px' },
-                  ].map(h => (
-                    <th key={h.label} style={{ ...TH, width: h.w }}>{h.label}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {baixaEstoque.map((e, i) => (
-                  <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td style={TD}>
-                      <input
-                        value={e.codigo}
-                        onChange={ev => setEstItem(i, { codigo: ev.target.value })}
-                        onBlur={() => handleEstCodigoBlur(i, e.codigo)}
-                        onKeyDown={ev => { if (ev.key === 'Tab' || ev.key === 'Enter') handleEstCodigoBlur(i, e.codigo); }}
-                        style={{ ...COB_INP, textAlign: 'center', width: '80px' }}
-                        placeholder="Cód."
-                      />
-                    </td>
-                    <td style={TD}>
-                      <input
-                        value={e.descricao}
-                        onChange={ev => setEstItem(i, { descricao: ev.target.value })}
-                        onBlur={() => { if (!e.descricao && e.codigo) handleEstCodigoBlur(i, e.codigo); }}
-                        style={{ ...COB_INP, width: '100%' }}
-                        placeholder="Produto..."
-                      />
-                    </td>
-                    <td style={TD}><CobInput value={e.un} onChange={v => setEstItem(i, { un: v })} style={{ textAlign: 'center', width: '40px' }} /></td>
-                    <td style={{ ...TD, fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center' }}>{e.estoque || '—'}</td>
-                    <td style={TD}><CobInput value={e.qtd} onChange={v => setEstItem(i, { qtd: v })} style={{ textAlign: 'center', width: '55px' }} /></td>
-                    <td style={{ ...TD, textAlign: 'center' }}>
-                      <button type="button" onClick={() => setBaixaEstoque(be => be.length > 1 ? be.filter((_, j) => j !== i) : be)}
-                        style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '14px', lineHeight: 1 }}>×</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <button type="button" onClick={() => setBaixaEstoque(be => [...be, { ...ITEM_EST_INI }])}
-            style={{ marginTop: '8px', fontSize: '11px', color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '600' }}>
-            + Adicionar linha
-          </button>
-        </div>
-
         {/* ===== OBSERVAÇÕES ===== */}
         <div style={card}>
           <label style={LBL}>Observações</label>
