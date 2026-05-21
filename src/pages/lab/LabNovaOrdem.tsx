@@ -630,10 +630,8 @@ export default function LabNovaOrdem() {
                   <th style={TH}>EIXO</th>
                   <th style={TH}>ADIC</th>
                   <th style={{ ...TH, padding: '3px 8px' }} colSpan={2}>GRAU PERTO</th>
-                  <th style={{ ...TH, borderLeft: '2px solid #007700' }} colSpan={2}>DNP</th>
+                  <th style={{ ...TH, borderLeft: '2px solid #007700' }}>DNP</th>
                   <th style={TH}>ALT</th>
-                  <th style={TH}>DEC H</th>
-                  <th style={{ ...TH, padding: '3px 8px' }} colSpan={2}>PRISMA</th>
                   <th style={TH}>FLUXO</th>
                 </tr>
                 <tr>
@@ -641,9 +639,8 @@ export default function LabNovaOrdem() {
                   <th style={TH}>ESF</th><th style={TH}>CIL</th>
                   <th style={TH}></th><th style={TH}></th>
                   <th style={TH}>ESF</th><th style={TH}>CIL</th>
-                  <th style={{ ...TH, borderLeft: '2px solid #007700' }}>L</th><th style={TH}>P</th>
-                  <th style={TH}></th><th style={TH}></th>
-                  <th style={TH}>VL</th><th style={TH}>EX</th>
+                  <th style={{ ...TH, borderLeft: '2px solid #007700' }}></th>
+                  <th style={TH}></th>
                   <th style={TH}>LAB</th>
                 </tr>
               </thead>
@@ -658,11 +655,7 @@ export default function LabNovaOrdem() {
                     <td style={TD}><RxInput value={o === 'od' ? od.esf_perto : oe.esf_perto} onChange={v => updateOlho(o, 'esf_perto', v)} /></td>
                     <td style={TD}><RxInput value={o === 'od' ? od.cil_perto : oe.cil_perto} onChange={v => updateOlho(o, 'cil_perto', v)} /></td>
                     <td style={{ ...TD, borderLeft: '2px solid #007700' }}><RxInput value={o === 'od' ? od.dnp_longe : oe.dnp_longe} onChange={v => updateOlho(o, 'dnp_longe', v)} width={44} /></td>
-                    <td style={TD}><RxInput value={o === 'od' ? od.dnp_perto : oe.dnp_perto} onChange={v => updateOlho(o, 'dnp_perto', v)} width={44} /></td>
                     <td style={TD}><RxInput value={o === 'od' ? od.alt : oe.alt} onChange={v => updateOlho(o, 'alt', v)} width={44} /></td>
-                    <td style={TD}><RxInput value={o === 'od' ? od.dec_h : oe.dec_h} onChange={v => updateOlho(o, 'dec_h', v)} width={44} /></td>
-                    <td style={TD}><RxInput value={o === 'od' ? od.prisma_valor : oe.prisma_valor} onChange={v => updateOlho(o, 'prisma_valor', v)} /></td>
-                    <td style={TD}><RxInput value={o === 'od' ? od.prisma_eixo : oe.prisma_eixo} onChange={v => updateOlho(o, 'prisma_eixo', v)} width={44} /></td>
                     <td style={{ ...TD, textAlign: 'center' }}>
                       {i === 0 && <input type="checkbox" checked={fluxoLab} onChange={e => setFluxoLab(e.target.checked)} />}
                     </td>
