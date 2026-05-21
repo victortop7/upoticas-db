@@ -40,15 +40,10 @@ const ARM_TIPOS = [
   { value: '9', label: 'METAL NYLON' },
 ];
 
-const LENTE_TIPOS = [
-  { value: '', label: '— Tipo de lente' },
-  { value: '11', label: '11 - VISÃO SIMPLES' }, { value: '111', label: '111 - VIS. SIMPLES BASE INT' },
-  { value: '51', label: '51 - KATRAL VIS. SIMPLES' }, { value: '41', label: '41 - HIDROP VIS. SIMPLES' },
-  { value: '12', label: '12 - SOLA ASL' }, { value: '3', label: '3 - PROGRESSIVOS' },
-  { value: '13', label: '13 - VISÃO INTERMEDIÁRIA' }, { value: '22', label: '22 - BIFOCAL TOPO RETO' },
-  { value: '23', label: '23 - BIFOCAL KRIPTOK' }, { value: '24', label: '24 - BIFOCAL ULTEX' },
-  { value: '241', label: '241 - BIFOCAL ULTEX CURVA EXT' }, { value: '25', label: '25 - BIFOCAL EXECUTIVE' },
-  { value: '42', label: '42 - HIDROP TOPO RETO' }, { value: '52', label: '52 - BIFOCAL KATRAL TOPORETO' },
+const LENTE_TIPOS_PADRAO = [
+  { value: '01', label: '01 - VISÃO SIMPLES' },
+  { value: '02', label: '02 - PROGRESSIVA' },
+  { value: '03', label: '03 - BIFOCAL' },
 ];
 
 
@@ -189,6 +184,9 @@ export default function LabNovaOrdem() {
   const [lenteTipo, setLenteTipo] = useState('');
   const [lenteMarca, setLenteMarca] = useState('');
   const [lenteOd, setLenteOd] = useState('');
+  const [lenteTipos, setLenteTipos] = useState(LENTE_TIPOS_PADRAO);
+  const [novoTipoOpen, setNovoTipoOpen] = useState(false);
+  const [novoTipoLabel, setNovoTipoLabel] = useState('');
   const [lenteOe, setLenteOe] = useState('');
 
   // Cobrança
@@ -217,6 +215,14 @@ export default function LabNovaOrdem() {
         if (nome || i <= 2) listas.push({ numero: String(i), nome: nome || `LISTA ${i}` });
       }
       if (listas.length > 0) setListasDisponiveis(listas);
+
+      // Carrega tipos de lente extras
+      const extras: { value: string; label: string }[] = [];
+      for (let i = 4; i <= 30; i++) {
+        const v = cfg[`lente_tipo_${i}`];
+        if (v) extras.push({ value: String(i).padStart(2, '0'), label: v });
+      }
+      if (extras.length > 0) setLenteTipos([...LENTE_TIPOS_PADRAO, ...extras]);
     }).catch(() => {});
   }, [searchParams]);
 
@@ -291,6 +297,19 @@ export default function LabNovaOrdem() {
         produto_id: p.id,
       });
     }
+  }
+
+  async function salvarNovoTipo() {
+    if (!novoTipoLabel.trim()) return;
+    const proximo = lenteTipos.length + 1;
+    const chave = `lente_tipo_${proximo}`;
+    const num = String(proximo).padStart(2, '0');
+    const label = `${num} - ${novoTipoLabel.trim().toUpperCase()}`;
+    await api.put('/lab/configuracoes', { [chave]: label });
+    const novo = { value: num, label };
+    setLenteTipos(t => [...t, novo]);
+    setLenteTipo(num);
+    setNovoTipoOpen(false);
   }
 
   const totalGeral = cobranca.reduce((acc, s) => acc + calcItem(s).liq, 0);
@@ -671,10 +690,39 @@ export default function LabNovaOrdem() {
             <div style={secTitle}>Dados das Lentes e Tratamentos</div>
             <div style={{ marginBottom: '8px' }}>
               <label style={LBL}>Tipo de Lente</label>
-              <select value={lenteTipo} onChange={e => setLenteTipo(e.target.value)} style={{ ...INP, fontFamily: 'var(--sans)' }}>
-                {LENTE_TIPOS.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
-              </select>
+              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                <select value={lenteTipo} onChange={e => setLenteTipo(e.target.value)} style={{ ...INP, fontFamily: 'var(--sans)', flex: 1 }}>
+                  <option value="">— Tipo de lente</option>
+                  {lenteTipos.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
+                </select>
+                <button type="button" onClick={() => { setNovoTipoLabel(''); setNovoTipoOpen(true); }}
+                  title="Adicionar novo tipo"
+                  style={{ padding: '5px 10px', fontSize: '14px', fontWeight: '700', background: '#005500', color: '#ccffcc', border: '1px outset #007700', cursor: 'pointer', flexShrink: 0 }}>
+                  +
+                </button>
+              </div>
             </div>
+
+            {/* Modal novo tipo de lente */}
+            {novoTipoOpen && (
+              <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                onClick={e => e.target === e.currentTarget && setNovoTipoOpen(false)}>
+                <div style={{ background: '#d4d0c8', border: '2px outset #b0aca4', width: '320px', padding: '16px' }}>
+                  <div style={{ background: 'linear-gradient(90deg,#005500,#008800)', color: '#ccffcc', padding: '6px 12px', fontWeight: '700', fontSize: '12px', letterSpacing: '1px', marginBottom: '14px' }}>
+                    NOVO TIPO DE LENTE
+                  </div>
+                  <label style={LBL}>Nome do tipo</label>
+                  <input autoFocus value={novoTipoLabel} onChange={e => setNovoTipoLabel(e.target.value)}
+                    onKeyDown={async ev => { if (ev.key === 'Enter') await salvarNovoTipo(); else if (ev.key === 'Escape') setNovoTipoOpen(false); }}
+                    style={{ ...INP, marginBottom: '12px', fontFamily: "'Montserrat', sans-serif" }}
+                    placeholder="Ex: PROGRESSIVA DIGITAL" />
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button type="button" onClick={() => setNovoTipoOpen(false)} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: '#c8c4b0', border: '1px outset #b0aca4', cursor: 'pointer' }}>CANCELAR</button>
+                    <button type="button" onClick={salvarNovoTipo} disabled={!novoTipoLabel.trim()} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: '#005500', color: '#ccffcc', border: '1px outset #007700', cursor: novoTipoLabel.trim() ? 'pointer' : 'not-allowed' }}>ADICIONAR</button>
+                  </div>
+                </div>
+              </div>
+            )}
             <div style={{ marginBottom: '8px' }}>
               <label style={LBL}>Marca / Material</label>
               <input value={lenteMarca} onChange={e => setLenteMarca(e.target.value)} style={INP} />
