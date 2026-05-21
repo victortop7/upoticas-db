@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 
-interface Otica { id: string; nome: string; }
+interface Otica { id: string; nome: string; codigo?: string; }
 interface Ordem {
   id: string; numero: number; status: string; tipo: string;
   ref_otica: string | null; cont_interno: string | null;
@@ -50,22 +50,28 @@ export default function LabOrdens() {
   const [tipo, setTipo] = useState('');
   const [busca, setBusca] = useState('');
   const [oticaId, setOticaId] = useState('');
+  const [nomeOtica, setNomeOtica] = useState('');
+  const [refOtica, setRefOtica] = useState('');
+  const [numOS, setNumOS] = useState('');
   const [dataIni, setDataIni] = useState('');
   const [dataFim, setDataFim] = useState('');
 
   const load = useCallback(() => {
     setLoading(true);
     const p = new URLSearchParams();
-    if (status) p.set('status', status);
-    if (tipo) p.set('tipo', tipo);
-    if (busca) p.set('q', busca);
-    if (oticaId) p.set('otica_id', oticaId);
-    if (dataIni) p.set('data_ini', dataIni);
-    if (dataFim) p.set('data_fim', dataFim);
+    if (status)    p.set('status', status);
+    if (tipo)      p.set('tipo', tipo);
+    if (busca)     p.set('q', busca);
+    if (oticaId)   p.set('otica_id', oticaId);
+    if (nomeOtica) p.set('nome_otica', nomeOtica);
+    if (refOtica)  p.set('ref_otica', refOtica);
+    if (numOS)     p.set('num_os', numOS);
+    if (dataIni)   p.set('data_ini', dataIni);
+    if (dataFim)   p.set('data_fim', dataFim);
     api.get<Ordem[]>(`/lab/ordens?${p}`)
       .then(setOrdens).catch(() => setOrdens([]))
       .finally(() => setLoading(false));
-  }, [status, tipo, busca, oticaId, dataIni, dataFim]);
+  }, [status, tipo, busca, oticaId, nomeOtica, refOtica, numOS, dataIni, dataFim]);
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => { api.get<Otica[]>('/lab/oticas').then(setOticas).catch(() => {}); }, []);
@@ -104,7 +110,8 @@ export default function LabOrdens() {
       </div>
 
       {/* Filtros */}
-      <div style={{ background:R.panel, border:`2px outset ${R.bdr}`, padding:'8px 12px', marginBottom:'8px', display:'flex', gap:'16px', alignItems:'flex-end', flexWrap:'wrap' }}>
+      <div style={{ background:R.panel, border:`2px outset ${R.bdr}`, padding:'8px 12px', marginBottom:'8px', display:'flex', gap:'12px', alignItems:'flex-end', flexWrap:'wrap' }}>
+
         <div>
           <div style={LBL}>Status</div>
           <div style={{ display:'flex', gap:'3px' }}>
@@ -122,18 +129,31 @@ export default function LabOrdens() {
 
         <div>
           <div style={LBL}>Tipo</div>
-          <select value={tipo} onChange={e => setTipo(e.target.value)}
-            style={{ ...INP, width:'130px' }}>
+          <select value={tipo} onChange={e => setTipo(e.target.value)} style={{ ...INP, width:'120px' }}>
             {TIPOS_OS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
           </select>
         </div>
 
         <div>
-          <div style={LBL}>Ótica</div>
-          <select value={oticaId} onChange={e => setOticaId(e.target.value)}
-            style={{ ...INP, width:'180px' }}>
+          <div style={LBL}>Nº OS</div>
+          <input value={numOS} onChange={e => setNumOS(e.target.value)} placeholder="Ex: 17" style={{ ...INP, width:'70px' }} />
+        </div>
+
+        <div>
+          <div style={LBL}>Nome da Ótica</div>
+          <input value={nomeOtica} onChange={e => setNomeOtica(e.target.value)} placeholder="Digite o nome..." style={{ ...INP, width:'160px' }} />
+        </div>
+
+        <div>
+          <div style={LBL}>Ref. Ótica</div>
+          <input value={refOtica} onChange={e => setRefOtica(e.target.value)} placeholder="Referência..." style={{ ...INP, width:'110px' }} />
+        </div>
+
+        <div>
+          <div style={LBL}>Ótica (lista)</div>
+          <select value={oticaId} onChange={e => setOticaId(e.target.value)} style={{ ...INP, width:'150px' }}>
             <option value="">Todas</option>
-            {oticas.map(o => <option key={o.id} value={o.id}>{o.nome}</option>)}
+            {oticas.map(o => <option key={o.id} value={o.id}>{o.codigo ? `${o.codigo} - ` : ''}{o.nome}</option>)}
           </select>
         </div>
 
@@ -146,9 +166,9 @@ export default function LabOrdens() {
           </div>
         </div>
 
-        {(busca || oticaId || dataIni || dataFim || tipo || status) && (
-          <button onClick={() => { setBusca(''); setOticaId(''); setDataIni(''); setDataFim(''); setTipo(''); setStatus(''); }}
-            style={{ padding:'3px 10px', fontSize:'11px', fontWeight:'700', background:R.alt, color:'#005500', border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', alignSelf:'flex-end' }}>
+        {(busca || oticaId || nomeOtica || refOtica || numOS || dataIni || dataFim || tipo || status) && (
+          <button onClick={() => { setBusca(''); setOticaId(''); setNomeOtica(''); setRefOtica(''); setNumOS(''); setDataIni(''); setDataFim(''); setTipo(''); setStatus(''); }}
+            style={{ padding:'3px 10px', fontSize:'11px', fontWeight:'700', background:'#ffcccc', color:'#880000', border:`1px outset #cc0000`, cursor:'pointer', fontFamily:'inherit', alignSelf:'flex-end' }}>
             ✕ LIMPAR
           </button>
         )}
