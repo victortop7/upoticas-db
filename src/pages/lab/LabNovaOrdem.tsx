@@ -251,8 +251,24 @@ export default function LabNovaOrdem() {
   }
 
   function updateOlho(olho: 'od' | 'oe', k: keyof RxOlho, v: string) {
-    if (olho === 'od') setOd(p => ({ ...p, [k]: v }));
-    else setOe(p => ({ ...p, [k]: v }));
+    const setter = olho === 'od' ? setOd : setOe;
+    setter(prev => {
+      const next = { ...prev, [k]: v };
+      // Transposição automática: ESF perto = ESF longe + Adição, CIL perto = CIL longe
+      if (k === 'esf_longe' || k === 'adicao' || k === 'cil_longe') {
+        const esf = parseFloat((k === 'esf_longe' ? v : next.esf_longe).replace(',', '.')) || 0;
+        const adic = parseFloat((k === 'adicao' ? v : next.adicao).replace(',', '.')) || 0;
+        const cil = k === 'cil_longe' ? v : next.cil_longe;
+        if (adic !== 0) {
+          const esfPerto = esf + adic;
+          next.esf_perto = Number.isInteger(esfPerto * 100)
+            ? esfPerto.toFixed(2)
+            : String(Math.round(esfPerto * 100) / 100);
+          next.cil_perto = cil;
+        }
+      }
+      return next;
+    });
   }
 
   function setCobItem(i: number, patch: Partial<ItemCobranca>) {
