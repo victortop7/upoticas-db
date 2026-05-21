@@ -72,16 +72,16 @@ export default function Login() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <form onSubmit={handleSubmit} autoComplete="on" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--text)', marginBottom: '6px' }}>E-mail</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="seu@email.com"
+              <input type="email" name="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="seu@email.com"
                 style={{ width: '100%', padding: '10px 12px', fontSize: '14px', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--surface-alt)', color: 'var(--text)', outline: 'none', boxSizing: 'border-box' }}
                 onFocus={e => e.target.style.borderColor = '#16a34a'} onBlur={e => e.target.style.borderColor = 'var(--border)'} />
             </div>
             <div>
               <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--text)', marginBottom: '6px' }}>Senha</label>
-              <input type="password" value={senha} onChange={e => setSenha(e.target.value)} required placeholder="••••••••"
+              <input type="password" name="password" autoComplete="current-password" value={senha} onChange={e => setSenha(e.target.value)} required placeholder="••••••••"
                 style={{ width: '100%', padding: '10px 12px', fontSize: '14px', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--surface-alt)', color: 'var(--text)', outline: 'none', boxSizing: 'border-box' }}
                 onFocus={e => e.target.style.borderColor = '#16a34a'} onBlur={e => e.target.style.borderColor = 'var(--border)'} />
             </div>
@@ -132,15 +132,15 @@ export default function Login() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <form onSubmit={handleSubmit} autoComplete="on" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#444', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>E-mail</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="seu@email.com"
+              <input type="email" name="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="seu@email.com"
                 style={{ width: '100%', padding: '7px 10px', fontSize: '13px', border: '1px solid #999', background: '#fff', color: '#000', outline: 'none', fontFamily: "'Courier New', monospace", boxSizing: 'border-box' }} />
             </div>
             <div>
               <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#444', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Senha</label>
-              <input type="password" value={senha} onChange={e => setSenha(e.target.value)} required placeholder="••••••••"
+              <input type="password" name="password" autoComplete="current-password" value={senha} onChange={e => setSenha(e.target.value)} required placeholder="••••••••"
                 style={{ width: '100%', padding: '7px 10px', fontSize: '13px', border: '1px solid #999', background: '#fff', color: '#000', outline: 'none', fontFamily: "'Courier New', monospace", boxSizing: 'border-box' }} />
             </div>
             <button type="submit" disabled={loading}
