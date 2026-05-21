@@ -419,7 +419,7 @@ export default function LabNovaOrdem() {
   };
 
   return (
-    <form onSubmit={handleSubmit} onKeyDown={handleFormKeyDown} style={{ display: 'flex', height: '100%', overflow: 'hidden', background: R.bg, fontFamily: "'Montserrat', sans-serif" }}>
+    <form onSubmit={handleSubmit} onKeyDown={handleFormKeyDown} style={{ display: 'flex', height: '100%', overflow: 'hidden', background: R.bg, fontFamily: "'Montserrat', sans-serif", zoom: 0.85 }}>
 
       {/* ===== TIPO PANEL — mesmo estilo MÓDULOS ===== */}
       <div style={{ width: '180px', flexShrink: 0, background: R.panel, borderRight: `2px solid ${R.border}`, display: 'flex', flexDirection: 'column' }}>
