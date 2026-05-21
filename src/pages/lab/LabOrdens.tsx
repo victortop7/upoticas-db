@@ -51,6 +51,7 @@ export default function LabOrdens() {
   const [busca, setBusca] = useState('');
   const [oticaId, setOticaId] = useState('');
   const [nomeOtica, setNomeOtica] = useState('');
+  const [codOtica, setCodOtica] = useState('');
   const [refOtica, setRefOtica] = useState('');
   const [numOS, setNumOS] = useState('');
   const [dataIni, setDataIni] = useState('');
@@ -64,6 +65,7 @@ export default function LabOrdens() {
     if (busca)     p.set('q', busca);
     if (oticaId)   p.set('otica_id', oticaId);
     if (nomeOtica) p.set('nome_otica', nomeOtica);
+    if (codOtica)  p.set('cod_otica', codOtica);
     if (refOtica)  p.set('ref_otica', refOtica);
     if (numOS)     p.set('num_os', numOS);
     if (dataIni)   p.set('data_ini', dataIni);
@@ -71,7 +73,7 @@ export default function LabOrdens() {
     api.get<Ordem[]>(`/lab/ordens?${p}`)
       .then(setOrdens).catch(() => setOrdens([]))
       .finally(() => setLoading(false));
-  }, [status, tipo, busca, oticaId, nomeOtica, refOtica, numOS, dataIni, dataFim]);
+  }, [status, tipo, busca, oticaId, nomeOtica, codOtica, refOtica, numOS, dataIni, dataFim]);
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => { api.get<Otica[]>('/lab/oticas').then(setOticas).catch(() => {}); }, []);
@@ -145,6 +147,11 @@ export default function LabOrdens() {
         </div>
 
         <div>
+          <div style={LBL}>Cód. Ótica</div>
+          <input value={codOtica} onChange={e => setCodOtica(e.target.value)} placeholder="Ex: 001" style={{ ...INP, width:'80px' }} />
+        </div>
+
+        <div>
           <div style={LBL}>Ref. Ótica</div>
           <input value={refOtica} onChange={e => setRefOtica(e.target.value)} placeholder="Referência..." style={{ ...INP, width:'110px' }} />
         </div>
@@ -166,8 +173,8 @@ export default function LabOrdens() {
           </div>
         </div>
 
-        {(busca || oticaId || nomeOtica || refOtica || numOS || dataIni || dataFim || tipo || status) && (
-          <button onClick={() => { setBusca(''); setOticaId(''); setNomeOtica(''); setRefOtica(''); setNumOS(''); setDataIni(''); setDataFim(''); setTipo(''); setStatus(''); }}
+        {(busca || oticaId || nomeOtica || codOtica || refOtica || numOS || dataIni || dataFim || tipo || status) && (
+          <button onClick={() => { setBusca(''); setOticaId(''); setNomeOtica(''); setCodOtica(''); setRefOtica(''); setNumOS(''); setDataIni(''); setDataFim(''); setTipo(''); setStatus(''); }}
             style={{ padding:'3px 10px', fontSize:'11px', fontWeight:'700', background:'#ffcccc', color:'#880000', border:`1px outset #cc0000`, cursor:'pointer', fontFamily:'inherit', alignSelf:'flex-end' }}>
             ✕ LIMPAR
           </button>
