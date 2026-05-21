@@ -31,8 +31,8 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
     if (dataIni) { query += ' AND date(o.created_at) >= ?'; params.push(dataIni); }
     if (dataFim) { query += ' AND date(o.created_at) <= ?'; params.push(dataFim); }
     if (q) {
-      query += ' AND (ot.nome LIKE ? OR CAST(o.numero AS TEXT) LIKE ? OR o.cont_interno LIKE ? OR o.ref_otica LIKE ?)';
-      params.push(`%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`);
+      query += ' AND (ot.nome LIKE ? OR CAST(o.numero AS TEXT) LIKE ? OR o.cont_interno LIKE ? OR o.ref_otica LIKE ? OR ot.codigo LIKE ?)';
+      params.push(`%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`);
     }
 
     query += ' ORDER BY o.created_at DESC LIMIT 500';
