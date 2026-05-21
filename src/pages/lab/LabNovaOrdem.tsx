@@ -419,7 +419,8 @@ export default function LabNovaOrdem() {
   };
 
   return (
-    <form onSubmit={handleSubmit} onKeyDown={handleFormKeyDown} style={{ display: 'flex', height: '100%', overflow: 'hidden', background: R.bg, fontFamily: "'Montserrat', sans-serif", zoom: 0.85 }}>
+    <div style={{ width: '117.6%', height: '117.6%', transform: 'scale(0.85)', transformOrigin: 'top left', overflow: 'hidden' }}>
+    <form onSubmit={handleSubmit} onKeyDown={handleFormKeyDown} style={{ display: 'flex', height: '100%', overflow: 'hidden', background: R.bg, fontFamily: "'Montserrat', sans-serif" }}>
 
       {/* ===== TIPO PANEL — mesmo estilo MÓDULOS ===== */}
       <div style={{ width: '180px', flexShrink: 0, background: R.panel, borderRight: `2px solid ${R.border}`, display: 'flex', flexDirection: 'column' }}>
@@ -909,5 +910,6 @@ export default function LabNovaOrdem() {
         <LabShapePicker value={armShape} onChange={setArmShape} onClose={() => setShowShapePicker(false)} />
       )}
     </form>
+    </div>
   );
 }
