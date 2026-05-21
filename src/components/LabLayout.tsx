@@ -284,7 +284,7 @@ export default function LabLayout() {
                 const isCurrentRoute = !!(op.to && (
                   op.to.includes('?')
                     ? currentFull === op.to
-                    : location.pathname.startsWith(op.to)
+                    : location.pathname === op.to
                 ));
                 const rowBg = isCurrentRoute ? '#005500' : (i % 2 === 0 ? (dark ? '#1c1c1c' : '#d4d0c8') : (dark ? '#222' : '#dedad2'));
                 return (
