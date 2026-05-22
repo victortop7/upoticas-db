@@ -22,7 +22,8 @@ function fg(v: number | null | undefined): string {
 }
 function fd(s?: string | null): string {
   if (!s) return '';
-  const p = s.split('T')[0].split('-');
+  const dateOnly = s.replace('T', ' ').split(' ')[0];
+  const p = dateOnly.split('-');
   return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : s;
 }
 function brl(v: unknown): string {
@@ -87,10 +88,7 @@ function OSSlip({ ordem, od, oe, armacao, servicos, tenant, via }: Props) {
             SERVIÇO {String(Number(ordem.numero) || 0).padStart(6, '0')}
           </div>
           <div style={{ fontSize: '9px' }}>USUÁRIO: {String(ordem.usuario_receita || ordem.vendedor || '—')}</div>
-          <div style={{ fontSize: '9px' }}>
-            DATA: {fd(String(ordem.created_at || ''))} &nbsp;&nbsp; CAIXA: {String(ordem.caixa || '—')}
-          </div>
-          <div style={{ fontSize: '9px' }}>PREVISÃO PRD: {fd(String(ordem.previsao_entrega || ''))}</div>
+          <div style={{ fontSize: '9px' }}>PREVISÃO ENTREGA: {fd(String(ordem.previsao_entrega || ''))}</div>
         </div>
         <div style={{ textAlign: 'center', minWidth: '80px' }}>
           <div style={{ fontFamily: "'Libre Barcode 128 Text'", fontSize: '38px', lineHeight: '1', letterSpacing: '0', color: '#000' }}>
