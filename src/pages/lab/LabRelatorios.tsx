@@ -102,11 +102,12 @@ export default function LabRelatorios() {
       const p = new URLSearchParams({ data_ini: dataIni, data_fim: dataFim, otica_id: o.otica_id });
       const r = await api.get<{ ordens: Ordem[]; servicos: any[] }>(`/lab/relatorios/periodo?${p}`);
       setOrdens(r.ordens || []);
-      // Agrupa serviços por os_id
+      // Agrupa serviços por ordem_id
       const agrupado: Record<string, any[]> = {};
       for (const s of (r.servicos || [])) {
-        if (!agrupado[s.os_id]) agrupado[s.os_id] = [];
-        agrupado[s.os_id].push(s);
+        const key = s.ordem_id as string;
+        if (!agrupado[key]) agrupado[key] = [];
+        agrupado[key].push(s);
       }
       setServicosPorOS(agrupado);
     } catch {}

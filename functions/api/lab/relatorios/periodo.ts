@@ -41,14 +41,16 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
       const ids = ordens.map(o => o.id as string);
       let servicos: Record<string, unknown>[] = [];
       if (ids.length > 0) {
-        const placeholders = ids.map(() => '?').join(',');
-        const svcResult = await env.DB.prepare(`
-          SELECT os_id, codigo, descricao, qtd, pv_unit, perc_desc, total_liq
-          FROM lab_ordens_servicos
-          WHERE os_id IN (${placeholders}) AND tenant_id = ?
-          ORDER BY os_id, id
-        `).bind(...ids, tenant_id).all();
-        servicos = svcResult.results as Record<string, unknown>[];
+        try {
+          const placeholders = ids.map(() => '?').join(',');
+          const svcResult = await env.DB.prepare(`
+            SELECT ordem_id, codigo, descricao, qtd, valor_unit, perc_desc, total
+            FROM lab_servicos_os
+            WHERE ordem_id IN (${placeholders}) AND tenant_id = ?
+            ORDER BY ordem_id, id
+          `).bind(...ids, tenant_id).all();
+          servicos = svcResult.results as Record<string, unknown>[];
+        } catch { /* se falhar, retorna sem serviços */ }
       }
 
       return json({ ordens, servicos });
