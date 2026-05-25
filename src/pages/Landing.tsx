@@ -254,7 +254,7 @@ export default function Landing() {
               { num: '02', title: 'Configure sua ótica', desc: 'Adicione o nome da loja e os primeiros colaboradores. Tudo pronto em minutos.' },
               { num: '03', title: 'Comece a usar', desc: 'Abra a primeira OS, registre uma venda ou cadastre um cliente. Simples desde o primeiro acesso.' },
             ].map((s, i) => (
-              <div key={i} style={{ textAlign: 'center', padding: '8px', display: 'flex', flexDirection: isMobile ? 'row' : 'column', alignItems: isMobile ? 'flex-start' : 'center', gap: isMobile ? '16px' : '0', textAlign: isMobile ? 'left' : 'center' as 'left' | 'center' }}>
+              <div key={i} style={{ textAlign: isMobile ? 'left' : 'center', padding: '8px', display: 'flex', flexDirection: isMobile ? 'row' : 'column', alignItems: isMobile ? 'flex-start' : 'center', gap: isMobile ? '16px' : '0' }}>
                 <div style={{ fontSize: isMobile ? '28px' : '40px', fontWeight: '900', color: RED3, marginBottom: isMobile ? '0' : '12px', fontFamily: 'monospace', letterSpacing: '-2px', flexShrink: 0 }}>{s.num}</div>
                 <div>
                   <h3 style={{ margin: '0 0 8px', fontSize: '16px', fontWeight: '700', color: '#f1f5f9' }}>{s.title}</h3>
