@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 type Tab = 'superficie' | 'visao' | 'fotossensivel';
 
@@ -38,8 +38,10 @@ const AMBIENTE_OVERLAY: Record<string, { sem: string; com: string }> = {
 };
 
 // ─── Superfície ──────────────────────────────────────────────────────────────
-function Superficie() {
-  const [tipo, setTipo] = useState<'convencional' | 'digital'>('convencional');
+function Superficie({ initialDemo }: { initialDemo?: string }) {
+  const [tipo, setTipo] = useState<'convencional' | 'digital'>(
+    initialDemo === 'digital' ? 'digital' : 'convencional'
+  );
 
   return (
     <div style={{
@@ -135,8 +137,10 @@ function Superficie() {
 }
 
 // ─── Visão COM/SEM ───────────────────────────────────────────────────────────
-function Visao() {
-  const [tratamento, setTratamento] = useState('ar');
+function Visao({ initialDemo }: { initialDemo?: string }) {
+  const [tratamento, setTratamento] = useState(
+    TRATAMENTOS.some(t => t.id === initialDemo) ? initialDemo! : 'ar'
+  );
   const [ambiente, setAmbiente] = useState('noite');
   const [divX, setDivX] = useState(50);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -339,7 +343,13 @@ function Fotossensivel() {
 
 // ─── Main ────────────────────────────────────────────────────────────────────
 export default function Demonstracoes() {
-  const [tab, setTab] = useState<Tab>('superficie');
+  const [params] = useSearchParams();
+  const rawTab = params.get('tab') ?? 'superficie';
+  const demo = params.get('demo') ?? '';
+  const validTabs: Tab[] = ['superficie', 'visao', 'fotossensivel'];
+  const initialTab: Tab = validTabs.includes(rawTab as Tab) ? (rawTab as Tab) : 'superficie';
+
+  const [tab, setTab] = useState<Tab>(initialTab);
   const navigate = useNavigate();
 
   return (
@@ -383,8 +393,8 @@ export default function Demonstracoes() {
         <div style={{ width: 80 }} />
       </div>
 
-      {tab === 'superficie' && <Superficie />}
-      {tab === 'visao' && <Visao />}
+      {tab === 'superficie' && <Superficie initialDemo={demo} />}
+      {tab === 'visao' && <Visao initialDemo={demo} />}
       {tab === 'fotossensivel' && <Fotossensivel />}
     </div>
   );
