@@ -54,6 +54,12 @@ import Produtos from './pages/Produtos';
 import Estoque from './pages/Estoque';
 import Faturamento from './pages/Faturamento';
 import Bancario from './pages/Bancario';
+import VisionLayout from './pages/vision/VisionLayout';
+import VisionHome from './pages/vision/VisionHome';
+import MapaVisual from './pages/vision/MapaVisual';
+import Demonstracoes from './pages/vision/Demonstracoes';
+import VisionOS from './pages/vision/VisionOS';
+import VisionAtendimentos from './pages/vision/VisionAtendimentos';
 
 export default function App() {
   return (
@@ -120,6 +126,15 @@ export default function App() {
             <Route path="/lab/produtos" element={<Produtos />} />
             <Route path="/lab/faturamento" element={<Faturamento />} />
             <Route path="/lab/bancario" element={<Bancario />} />
+          </Route>
+
+          {/* Conect Vision */}
+          <Route element={<VisionLayout />}>
+            <Route path="/vision" element={<VisionHome />} />
+            <Route path="/vision/mapa-visual" element={<MapaVisual />} />
+            <Route path="/vision/demonstracoes" element={<Demonstracoes />} />
+            <Route path="/vision/os" element={<VisionOS />} />
+            <Route path="/vision/atendimentos" element={<VisionAtendimentos />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/login" replace />} />

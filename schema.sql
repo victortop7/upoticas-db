@@ -396,3 +396,121 @@ CREATE INDEX IF NOT EXISTS idx_lab_armacao_ordem ON lab_armacao(ordem_id);
 CREATE INDEX IF NOT EXISTS idx_lab_servicos_ordem ON lab_servicos_os(ordem_id);
 CREATE INDEX IF NOT EXISTS idx_lab_estoque_tenant ON lab_estoque(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_lab_estoque_mov_produto ON lab_estoque_movimentacoes(produto_id);
+
+-- =============================================================
+-- Conect Vision — simulador de lentes para balcão
+-- =============================================================
+
+CREATE TABLE IF NOT EXISTS vision_lentes (
+  id TEXT PRIMARY KEY,
+  tenant_id TEXT,                          -- NULL = catálogo base (todas as óticas)
+  marca TEXT NOT NULL,
+  nome TEXT NOT NULL,
+  material TEXT,
+  indice REAL,
+  tipo TEXT NOT NULL DEFAULT 'monofocal',  -- monofocal | progressivo | bifocal
+  cor TEXT NOT NULL DEFAULT '#3b82f6',     -- cor do dot no mapa visual
+  grau_max REAL,
+  cil_max REAL,
+  adicao_max REAL,
+  ativo INTEGER NOT NULL DEFAULT 1,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS vision_tratamentos (
+  id TEXT PRIMARY KEY,
+  tenant_id TEXT,
+  nome TEXT NOT NULL,
+  descricao TEXT,
+  icone TEXT,
+  ativo INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS vision_lente_recomendacoes (
+  id TEXT PRIMARY KEY,
+  lente_id TEXT NOT NULL REFERENCES vision_lentes(id),
+  ordem INTEGER NOT NULL DEFAULT 1,
+  texto TEXT NOT NULL,
+  audio_url TEXT,
+  video_url TEXT
+);
+
+CREATE TABLE IF NOT EXISTS vision_os (
+  id TEXT PRIMARY KEY,
+  tenant_id TEXT NOT NULL REFERENCES tenants(id),
+  numero INTEGER NOT NULL,
+  tipo TEXT NOT NULL DEFAULT 'orcamento',
+  cliente_nome TEXT,
+  cliente_cpf TEXT,
+  cliente_tel TEXT,
+  cliente_foto_url TEXT,
+  od_esf REAL, od_cil REAL, od_eixo INTEGER,
+  od_adicao REAL, od_dnp REAL, od_alt REAL, od_prisma TEXT, od_base TEXT,
+  oe_esf REAL, oe_cil REAL, oe_eixo INTEGER,
+  oe_adicao REAL, oe_dnp REAL, oe_alt REAL, oe_prisma TEXT, oe_base TEXT,
+  medico_nome TEXT, medico_crm TEXT, data_receita TEXT,
+  arm_dnp REAL, arm_vertical REAL, arm_ponte REAL,
+  arm_aro REAL, arm_alt_pupilar REAL,
+  lente_id TEXT REFERENCES vision_lentes(id),
+  tratamento_id TEXT REFERENCES vision_tratamentos(id),
+  lente_desc TEXT,
+  itens_vistos TEXT NOT NULL DEFAULT '[]',
+  itens_vendidos TEXT NOT NULL DEFAULT '[]',
+  acessorios TEXT NOT NULL DEFAULT '[]',
+  valor_lente REAL NOT NULL DEFAULT 0,
+  valor_armacao REAL NOT NULL DEFAULT 0,
+  desconto REAL NOT NULL DEFAULT 0,
+  valor_total REAL NOT NULL DEFAULT 0,
+  parcelas INTEGER NOT NULL DEFAULT 1,
+  forma_pagamento TEXT,
+  status TEXT NOT NULL DEFAULT 'aberto',
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(tenant_id, numero)
+);
+
+CREATE TABLE IF NOT EXISTS vision_exames (
+  id TEXT PRIMARY KEY,
+  tenant_id TEXT NOT NULL REFERENCES tenants(id),
+  nome TEXT, telefone TEXT, idade INTEGER,
+  usa_oculos INTEGER NOT NULL DEFAULT 0,
+  acuidade_od REAL, acuidade_oe REAL,
+  contraste_od REAL, contraste_oe REAL,
+  astigmatismo_od INTEGER NOT NULL DEFAULT 0,
+  astigmatismo_oe INTEGER NOT NULL DEFAULT 0,
+  ishihara_resultado TEXT,
+  qr_code TEXT,
+  status TEXT NOT NULL DEFAULT 'finalizado',
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_vision_lentes_tenant ON vision_lentes(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_vision_os_tenant ON vision_os(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_vision_os_status ON vision_os(tenant_id, status);
+CREATE INDEX IF NOT EXISTS idx_vision_exames_tenant ON vision_exames(tenant_id);
+
+-- Catálogo base de lentes (seed)
+INSERT OR IGNORE INTO vision_lentes (id, tenant_id, marca, nome, material, indice, tipo, cor, grau_max, cil_max, adicao_max) VALUES
+  ('base-var-1', NULL, 'Varilux', 'Varilux Comfort Max', 'Orgânico', 1.67, 'progressivo', '#3b82f6', 6.0, 4.0, 3.5),
+  ('base-var-2', NULL, 'Varilux', 'Varilux X Series', 'Orgânico', 1.74, 'progressivo', '#3b82f6', 8.0, 5.0, 3.5),
+  ('base-var-3', NULL, 'Varilux', 'Varilux Digitime', 'Orgânico', 1.60, 'progressivo', '#3b82f6', 4.0, 2.0, 2.5),
+  ('base-hoya-1', NULL, 'Hoya', 'Hoya iD MyStyle V+', 'Orgânico', 1.60, 'progressivo', '#22c55e', 8.0, 4.0, 3.5),
+  ('base-hoya-2', NULL, 'Hoya', 'Hoya Nulux EP', 'Orgânico', 1.67, 'monofocal', '#22c55e', 10.0, 5.0, NULL),
+  ('base-hoya-3', NULL, 'Hoya', 'Hoya Sync III', 'Orgânico', 1.56, 'progressivo', '#22c55e', 5.0, 3.0, 2.0),
+  ('base-rod-1', NULL, 'Rodenstock', 'Multigressiv MyView 2', 'Orgânico', 1.60, 'progressivo', '#a855f7', 8.0, 5.0, 3.5),
+  ('base-rod-2', NULL, 'Rodenstock', 'Impression FreeSign 3', 'Orgânico', 1.74, 'progressivo', '#a855f7', 12.0, 6.0, 3.5),
+  ('base-zei-1', NULL, 'Zeiss', 'Zeiss Progressive Individual 2', 'Orgânico', 1.67, 'progressivo', '#f59e0b', 8.0, 5.0, 3.5),
+  ('base-zei-2', NULL, 'Zeiss', 'Zeiss EnergizeMe', 'Orgânico', 1.56, 'progressivo', '#f59e0b', 4.0, 2.0, 2.0),
+  ('base-zei-3', NULL, 'Zeiss', 'Zeiss Single Vision', 'Orgânico', 1.50, 'monofocal', '#f59e0b', 8.0, 4.0, NULL),
+  ('base-sha-1', NULL, 'Shamir', 'Shamir Autograph Intelligence', 'Orgânico', 1.60, 'progressivo', '#06b6d4', 8.0, 5.0, 3.5),
+  ('base-ind-1', NULL, 'Indo', 'Indo Solitaire Plus', 'Orgânico', 1.50, 'monofocal', '#64748b', 6.0, 3.0, NULL),
+  ('base-opt-1', NULL, 'Optifog', 'Optifog Daily', 'Orgânico', 1.56, 'monofocal', '#ef4444', 6.0, 3.0, NULL);
+
+-- Tratamentos base
+INSERT OR IGNORE INTO vision_tratamentos (id, tenant_id, nome, descricao, icone) VALUES
+  ('base-t-ar', NULL, 'Anti-Reflexo', 'Elimina reflexos e aumenta transmissão de luz', 'ar'),
+  ('base-t-az', NULL, 'Luz Azul', 'Filtra luz azul emitida por telas digitais', 'az'),
+  ('base-t-ft', NULL, 'Fotossensível', 'Escurece automaticamente sob luz solar', 'ft'),
+  ('base-t-ab', NULL, 'Anti-Abrasivo', 'Protege contra riscos e arranhões', 'ab'),
+  ('base-t-hf', NULL, 'Hidro-fóbico', 'Repele água e gordura, facilita limpeza', 'hf'),
+  ('base-t-uv', NULL, 'Proteção UV', 'Bloqueia 100% dos raios UVA e UVB', 'uv');
