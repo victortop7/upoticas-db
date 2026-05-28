@@ -270,23 +270,16 @@ export default function VisionHome() {
         flex: 1,
         position: 'relative',
         overflow: 'hidden',
-        background: 'linear-gradient(135deg, #e8f0fe 0%, #f0f7ff 40%, #dbeafe 100%)',
+        backgroundImage: 'url(https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=1600&q=85&auto=format&fit=crop)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center 30%',
       }}>
-        {/* Decoração óptica */}
-        <svg
-          style={{ position: 'absolute', right: -80, top: '50%', transform: 'translateY(-50%)', opacity: 0.15, pointerEvents: 'none' }}
-          width="640" height="640" viewBox="0 0 400 400" fill="none"
-        >
-          {[180, 150, 120, 90, 60, 30].map((r, i) => (
-            <circle key={i} cx="200" cy="200" r={r} stroke="#1d4ed8" strokeWidth={i === 0 ? 1.5 : 0.8} />
-          ))}
-          <circle cx="200" cy="200" r="18" fill="#1d4ed8" fillOpacity="0.3" />
-          <circle cx="200" cy="200" r="8" fill="#1d4ed8" fillOpacity="0.6" />
-          <line x1="200" y1="20" x2="200" y2="60" stroke="#1d4ed8" strokeWidth="1.5" strokeLinecap="round" />
-          <line x1="200" y1="340" x2="200" y2="380" stroke="#1d4ed8" strokeWidth="1.5" strokeLinecap="round" />
-          <line x1="20" y1="200" x2="60" y2="200" stroke="#1d4ed8" strokeWidth="1.5" strokeLinecap="round" />
-          <line x1="340" y1="200" x2="380" y2="200" stroke="#1d4ed8" strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
+        {/* Overlay claro sobre a foto para manter identidade visual */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(135deg, rgba(232,240,254,0.78) 0%, rgba(219,234,254,0.55) 50%, rgba(219,234,254,0.35) 100%)',
+          pointerEvents: 'none',
+        }} />
 
         {/* Logo + card ótica */}
         <div style={{ position: 'absolute', top: 28, left: 32, pointerEvents: 'none' }}>
