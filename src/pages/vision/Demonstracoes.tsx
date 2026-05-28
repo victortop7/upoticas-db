@@ -1,53 +1,170 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, type ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 type Tab = 'superficie' | 'visao' | 'fotossensivel';
 
 const TRATAMENTOS = [
-  { id: 'ar', label: 'Anti-Reflexo', cor: '#3b82f6' },
-  { id: 'az', label: 'Luz Azul', cor: '#8b5cf6' },
-  { id: 'ft', label: 'Fotossensível', cor: '#f59e0b' },
-  { id: 'ab', label: 'Anti-Abrasivo', cor: '#22c55e' },
-  { id: 'hf', label: 'Hidro-fóbico', cor: '#06b6d4' },
-  { id: 'uv', label: 'Proteção UV', cor: '#ef4444' },
+  { id: 'ar',  label: 'Anti-Reflexo',  cor: '#3b82f6' },
+  { id: 'az',  label: 'Luz Azul',      cor: '#8b5cf6' },
+  { id: 'ft',  label: 'Fotossensível', cor: '#f59e0b' },
+  { id: 'ab',  label: 'Anti-Abrasivo', cor: '#22c55e' },
+  { id: 'hf',  label: 'Hidrofóbico',   cor: '#06b6d4' },
+  { id: 'uv',  label: 'Proteção UV',   cor: '#ef4444' },
+  { id: 'pol', label: 'Polarizado',    cor: '#f97316' },
 ];
 
 const AMBIENTES = [
-  { id: 'noite', label: 'Noite', emoji: '🌙' },
-  { id: 'chuva', label: 'Chuva', emoji: '🌧️' },
-  { id: 'sol', label: 'Sol', emoji: '☀️' },
-  { id: 'tela', label: 'Tela', emoji: '💻' },
+  { id: 'noite',   label: 'Noite',   emoji: '🌙' },
+  { id: 'chuva',   label: 'Chuva',   emoji: '🌧️' },
+  { id: 'sol',     label: 'Sol',     emoji: '☀️' },
+  { id: 'tela',    label: 'Tela',    emoji: '💻' },
   { id: 'leitura', label: 'Leitura', emoji: '📖' },
 ];
 
-const DESCRICOES: Record<string, string> = {
-  ar: 'Elimina até 99,9% dos reflexos luminosos. Aumenta a transmissão de luz, reduz o cansaço visual e melhora o contraste em todas as situações de iluminação.',
-  az: 'Filtra a faixa de luz azul nociva emitida por monitores, smartphones e lâmpadas LED. Reduz a fadiga digital e melhora a qualidade do sono.',
-  ft: 'Tecnologia fotocromática que escurece automaticamente ao detectar raios UV. Volta ao estado claro em ambientes fechados em poucos segundos.',
-  ab: 'Camada de endurecimento que protege a lente contra riscos e arranhões do dia a dia, aumentando a vida útil e mantendo a clareza óptica.',
-  hf: 'Superfície que repele água, gordura e partículas de poeira. Facilita a limpeza e mantém a lente impecável por mais tempo.',
-  uv: 'Bloqueio total dos raios UVA e UVB, prevenindo danos à córnea, ao cristalino e à retina causados pela exposição solar.',
+const SCENE_BG: Record<string, string> = {
+  noite: `
+    radial-gradient(ellipse at 28% 42%, rgba(255,220,80,1) 0%, rgba(255,165,30,.7) 5%, rgba(255,120,20,.18) 16%, transparent 28%),
+    radial-gradient(ellipse at 71% 35%, rgba(255,210,60,.9) 0%, rgba(255,150,20,.6) 4%, rgba(255,120,20,.12) 14%, transparent 25%),
+    radial-gradient(ellipse at 50% 80%, rgba(40,80,180,.3) 0%, transparent 55%),
+    linear-gradient(to bottom, #020408 0%, #050b18 35%, #070e20 70%, #0a1228 100%)`,
+  chuva: `
+    repeating-linear-gradient(98deg, transparent 0px, transparent 20px, rgba(160,195,225,.05) 20px, rgba(160,195,225,.05) 22px),
+    linear-gradient(170deg, #1c2c3e 0%, #0e1926 50%, #080f1c 100%)`,
+  sol: `
+    radial-gradient(ellipse at 50% -8%, rgba(255,255,200,1) 0%, rgba(255,240,120,.85) 18%, rgba(130,198,232,.75) 45%, #78b2d8 70%, #5c9ec6 100%)`,
+  tela: `
+    radial-gradient(ellipse at 50% 44%, rgba(28,78,195,.98) 0%, rgba(14,42,118,.82) 28%, rgba(7,20,58,.95) 55%, #020810 100%)`,
+  leitura: `
+    radial-gradient(ellipse at 60% 20%, rgba(255,245,220,1) 0%, rgba(250,235,205,.8) 30%, rgba(240,220,185,1) 100%)`,
 };
 
-const AMBIENTE_OVERLAY: Record<string, { sem: string; com: string }> = {
-  noite: { sem: '#050810', com: '#0a1a3a' },
-  chuva: { sem: '#060c12', com: '#0d2040' },
-  sol: { sem: '#0a0800', com: '#1a1200' },
-  tela: { sem: '#050810', com: '#060f1c' },
-  leitura: { sem: '#080604', com: '#100e08' },
+type Effect = { semFilter: string; comFilter: string; description: string };
+
+const EFFECTS: Record<string, Record<string, Effect>> = {
+  ar: {
+    noite:   { semFilter: 'brightness(.72) contrast(1.22)', comFilter: 'brightness(1.08) contrast(.98) saturate(1.08)', description: 'Reflexos de faróis eliminados — visão noturna segura' },
+    chuva:   { semFilter: 'brightness(.76) contrast(1.15) blur(.35px)', comFilter: 'brightness(.94)', description: 'Reflexos do asfalto molhado eliminados completamente' },
+    sol:     { semFilter: 'brightness(.82) contrast(1.28) saturate(.78)', comFilter: 'brightness(1.0) contrast(1.05)', description: 'Reflexos em vidros e superfícies — eliminados' },
+    tela:    { semFilter: 'brightness(.76) contrast(1.22)', comFilter: 'brightness(1.02) contrast(.98)', description: 'Reflexo da tela eliminado — 99,9% de transmissão de luz' },
+    leitura: { semFilter: 'brightness(.8) contrast(1.14)', comFilter: 'brightness(1.04) contrast(1.0)', description: 'Reflexo do papel eliminado — leitura sem esforço' },
+  },
+  az: {
+    noite:   { semFilter: 'hue-rotate(18deg) saturate(1.42) brightness(.84)', comFilter: 'sepia(.12) saturate(.87) brightness(1.02)', description: 'LEDs e fluorescentes filtrados — menos tensão ocular' },
+    chuva:   { semFilter: 'hue-rotate(14deg) saturate(1.3) brightness(.88)', comFilter: 'sepia(.1) saturate(.9) brightness(.98)', description: 'Céu cinza emite forte luz azul — filtrada' },
+    sol:     { semFilter: 'hue-rotate(8deg) saturate(1.22) brightness(.9)', comFilter: 'sepia(.08) saturate(.94) brightness(1.04)', description: 'Componente azul/UV do sol filtrada' },
+    tela:    { semFilter: 'hue-rotate(16deg) saturate(1.62) brightness(.86)', comFilter: 'sepia(.16) saturate(.8) brightness(1.12) hue-rotate(-6deg)', description: 'Luz azul nociva filtrada — menos fadiga e melhor sono' },
+    leitura: { semFilter: 'hue-rotate(10deg) saturate(1.26) brightness(.88)', comFilter: 'sepia(.1) saturate(.9) brightness(1.06)', description: 'Leitura prolongada sem cansaço visual' },
+  },
+  ft: {
+    noite:   { semFilter: 'brightness(.88)', comFilter: 'brightness(.9)', description: 'Sem UV à noite — lente totalmente clara' },
+    chuva:   { semFilter: 'brightness(1.05) saturate(.84)', comFilter: 'brightness(.68) saturate(.64) contrast(1.06)', description: 'Ativa mesmo em dias nublados com UV presente' },
+    sol:     { semFilter: 'brightness(1.38) contrast(1.22) saturate(.68)', comFilter: 'brightness(.4) contrast(1.22) saturate(.52)', description: 'Escurece automaticamente sob luz solar — proteção total' },
+    tela:    { semFilter: 'brightness(.92)', comFilter: 'brightness(.94)', description: 'Telas não emitem UV — lente permanece clara' },
+    leitura: { semFilter: 'brightness(1.0)', comFilter: 'brightness(.96)', description: 'Iluminação interna: lente clara para conforto de leitura' },
+  },
+  ab: {
+    noite:   { semFilter: 'brightness(.7) blur(.6px) contrast(1.12)', comFilter: 'brightness(1.05)', description: 'Sem riscos = sem difração dos faróis noturnos' },
+    chuva:   { semFilter: 'brightness(.76) blur(.5px)', comFilter: 'brightness(.92)', description: 'Riscos não retêm sujeira — limpeza mais fácil' },
+    sol:     { semFilter: 'brightness(.86) blur(.35px)', comFilter: 'brightness(1.0)', description: 'Areia e poeira não arranhão — campo e praia' },
+    tela:    { semFilter: 'brightness(.78) blur(.4px)', comFilter: 'brightness(1.02)', description: 'Superfície dura protegida — texto perfeitamente nítido' },
+    leitura: { semFilter: 'brightness(.83) blur(.5px) contrast(.88)', comFilter: 'brightness(1.06) contrast(1.02)', description: 'Arranhões eliminados — visão cristalina para leitura' },
+  },
+  hf: {
+    noite:   { semFilter: 'brightness(.6) blur(.9px) contrast(.84)', comFilter: 'brightness(.95)', description: 'Névoa e condensação eliminadas à noite' },
+    chuva:   { semFilter: 'brightness(.62) blur(1.2px)', comFilter: 'brightness(.9)', description: 'Gotas deslizam imediatamente — visão livre na chuva' },
+    sol:     { semFilter: 'brightness(.86) contrast(.92)', comFilter: 'brightness(1.06) contrast(1.05)', description: 'Repele suor, protetor e gordura — praia e esporte' },
+    tela:    { semFilter: 'brightness(.84) contrast(.9)', comFilter: 'brightness(1.0)', description: 'Digitais e manchas de gordura escorregam da lente' },
+    leitura: { semFilter: 'brightness(.87) contrast(.93)', comFilter: 'brightness(1.02)', description: 'Fácil de limpar — sem marcas persistentes' },
+  },
+  uv: {
+    noite:   { semFilter: 'brightness(.95)', comFilter: 'brightness(1.0)', description: 'Sem UV à noite — proteção sem alterar a visão' },
+    chuva:   { semFilter: 'brightness(1.18) contrast(1.12) saturate(.8)', comFilter: 'brightness(.95) contrast(1.0)', description: 'UV presente mesmo nublado — bloqueado automaticamente' },
+    sol:     { semFilter: 'brightness(1.48) contrast(1.38) saturate(.52)', comFilter: 'brightness(.96) contrast(1.08)', description: 'UVA e UVB 100% bloqueados — proteção máxima da retina' },
+    tela:    { semFilter: 'brightness(.9) saturate(1.16)', comFilter: 'brightness(1.0)', description: 'Telas emitem UV mínimo — proteção preventiva' },
+    leitura: { semFilter: 'brightness(1.06)', comFilter: 'brightness(1.0)', description: 'Iluminação UV indireta bloqueada' },
+  },
+  pol: {
+    noite:   { semFilter: 'brightness(.7) contrast(1.28)', comFilter: 'brightness(1.06) contrast(1.06)', description: 'Reflexos horizontais das luzes eliminados' },
+    chuva:   { semFilter: 'brightness(.74) contrast(1.22)', comFilter: 'brightness(.95) saturate(1.16)', description: 'Reflexos do asfalto molhado completamente eliminados' },
+    sol:     { semFilter: 'brightness(.8) contrast(1.32) saturate(.68)', comFilter: 'brightness(1.0) contrast(1.12) saturate(1.22)', description: 'Reflexos horizontais eliminados — cores vibrantes' },
+    tela:    { semFilter: 'brightness(.85) contrast(1.1)', comFilter: 'brightness(1.02)', description: 'Reflexos de telas LCD — comportamento normal com polarizado' },
+    leitura: { semFilter: 'brightness(.83) contrast(1.12)', comFilter: 'brightness(1.02) contrast(1.02) saturate(1.06)', description: 'Reflexos de papel eliminados — leitura ao ar livre' },
+  },
 };
 
-// ─── Superfície ──────────────────────────────────────────────────────────────
+// ─── SVG overlays ─────────────────────────────────────────────────────────────
+function GlareRings() {
+  return (
+    <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice"
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+      {[9,18,27,36,46].map(r => (
+        <circle key={r} cx="28" cy="42" r={r} fill="none" stroke="rgba(255,235,160,.11)" strokeWidth=".8" />
+      ))}
+      {[8,16,24,32,40].map(r => (
+        <circle key={r} cx="71" cy="35" r={r} fill="none" stroke="rgba(255,235,160,.09)" strokeWidth=".7" />
+      ))}
+      <circle cx="28" cy="42" r="4" fill="rgba(255,255,210,.96)" />
+      <circle cx="71" cy="35" r="3.5" fill="rgba(255,255,200,.92)" />
+    </svg>
+  );
+}
+
+function WaterDrops() {
+  const drops = [
+    {cx:18,cy:22,rx:3.5,ry:4.2},{cx:43,cy:14,rx:4.5,ry:5.5},{cx:68,cy:28,rx:3,ry:3.8},
+    {cx:30,cy:52,rx:5.2,ry:6.2},{cx:60,cy:62,rx:4,ry:4.8},{cx:82,cy:44,rx:4.2,ry:5},
+    {cx:12,cy:72,rx:2.8,ry:3.4},{cx:52,cy:80,rx:4,ry:5},{cx:86,cy:72,rx:3.2,ry:4},
+    {cx:22,cy:88,rx:2.5,ry:3.2},{cx:74,cy:85,rx:3.5,ry:4.2},{cx:95,cy:30,rx:3,ry:3.6},
+  ];
+  return (
+    <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice"
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+      <defs>
+        <radialGradient id="wdg" cx="35%" cy="30%">
+          <stop offset="0%" stopColor="rgba(210,235,255,.92)" />
+          <stop offset="100%" stopColor="rgba(160,200,240,.35)" />
+        </radialGradient>
+      </defs>
+      {drops.map((d, i) => (
+        <ellipse key={i} cx={d.cx} cy={d.cy} rx={d.rx} ry={d.ry}
+          fill="url(#wdg)" stroke="rgba(180,215,255,.4)" strokeWidth=".3" />
+      ))}
+    </svg>
+  );
+}
+
+function ScratchLines() {
+  const sc = [
+    {x1:12,y1:18,x2:44,y2:32},{x1:60,y1:8,x2:72,y2:50},{x1:28,y1:55,x2:54,y2:70},
+    {x1:70,y1:60,x2:90,y2:76},{x1:18,y1:82,x2:38,y2:96},{x1:82,y1:18,x2:96,y2:38},
+  ];
+  return (
+    <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice"
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+      {sc.map((s, i) => (
+        <line key={i} x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2}
+          stroke="rgba(255,255,255,.38)" strokeWidth=".45" strokeLinecap="round" />
+      ))}
+    </svg>
+  );
+}
+
+function getSemSvg(tratamento: string, ambiente: string): ReactNode | null {
+  if ((tratamento === 'ar' || tratamento === 'pol') && ambiente === 'noite') return <GlareRings />;
+  if (tratamento === 'pol' && ambiente === 'sol') return <GlareRings />;
+  if (tratamento === 'hf' && (ambiente === 'chuva' || ambiente === 'noite')) return <WaterDrops />;
+  if (tratamento === 'ab') return <ScratchLines />;
+  return null;
+}
+
+// ─── Superfície ───────────────────────────────────────────────────────────────
 function Superficie({ initialDemo }: { initialDemo?: string }) {
   const [tipo, setTipo] = useState<'convencional' | 'digital'>(
     initialDemo === 'digital' ? 'digital' : 'convencional'
   );
 
   return (
-    <div style={{
-      flex: 1, display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center', gap: 32, padding: '24px 40px',
-    }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 32, padding: '24px 40px' }}>
       <div style={{ display: 'flex', gap: 0, background: '#07080e', borderRadius: 10, padding: 3, border: '1px solid #1e2030' }}>
         {(['convencional', 'digital'] as const).map(t => (
           <button key={t} onClick={() => setTipo(t)} style={{
@@ -55,28 +172,19 @@ function Superficie({ initialDemo }: { initialDemo?: string }) {
             background: tipo === t ? '#1e2030' : 'transparent',
             color: tipo === t ? '#f0f0f5' : '#4b5563',
             fontSize: 13, fontWeight: 600, fontFamily: 'var(--sans)',
-            textTransform: 'uppercase', letterSpacing: '0.06em',
-            transition: 'all 0.15s',
-          }}>
-            {t}
-          </button>
+            textTransform: 'uppercase', letterSpacing: '.06em', transition: 'all .15s',
+          }}>{t}</button>
         ))}
       </div>
 
       <div style={{ display: 'flex', gap: 60, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
-        {/* SVG da superfície */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-          <div style={{
-            background: '#07080e', border: '1px solid #1e2030',
-            borderRadius: 20, padding: 32,
-          }}>
+          <div style={{ background: '#07080e', border: '1px solid #1e2030', borderRadius: 20, padding: 32 }}>
             {tipo === 'convencional' ? (
               <svg viewBox="0 0 220 180" width="220" height="180">
-                {[10, 22, 36, 52, 70, 88, 105].map((r, i) => (
+                {[10,22,36,52,70,88,105].map((r, i) => (
                   <ellipse key={i} cx="110" cy="90" rx={r * 1.5} ry={r}
-                    fill="none" stroke="#3b82f6"
-                    strokeWidth={i === 0 ? 1.8 : 0.7}
-                    strokeOpacity={0.5 - i * 0.05} />
+                    fill="none" stroke="#3b82f6" strokeWidth={i === 0 ? 1.8 : .7} strokeOpacity={.5 - i * .05} />
                 ))}
                 <ellipse cx="110" cy="90" rx="14" ry="10" fill="#3b82f630" stroke="#3b82f6" strokeWidth="2" />
               </svg>
@@ -84,31 +192,29 @@ function Superficie({ initialDemo }: { initialDemo?: string }) {
               <svg viewBox="0 0 220 180" width="220" height="180">
                 <defs>
                   <linearGradient id="gdig2" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.04" />
-                    <stop offset="55%" stopColor="#3b82f6" stopOpacity="0.22" />
-                    <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.04" />
+                    <stop offset="0%" stopColor="#3b82f6" stopOpacity=".04" />
+                    <stop offset="55%" stopColor="#3b82f6" stopOpacity=".22" />
+                    <stop offset="100%" stopColor="#3b82f6" stopOpacity=".04" />
                   </linearGradient>
                 </defs>
-                <ellipse cx="110" cy="90" rx="100" ry="70" fill="url(#gdig2)" stroke="#3b82f6" strokeWidth="1.5" strokeOpacity="0.5" />
-                <ellipse cx="88" cy="72" rx="28" ry="14" fill="#3b82f6" fillOpacity="0.15" />
-                {[0, 1, 2, 3].map(i => (
-                  <line key={i} x1={30 + i * 53} y1="25" x2={30 + i * 53} y2="155" stroke="#3b82f6" strokeWidth="0.4" strokeOpacity="0.15" />
+                <ellipse cx="110" cy="90" rx="100" ry="70" fill="url(#gdig2)" stroke="#3b82f6" strokeWidth="1.5" strokeOpacity=".5" />
+                <ellipse cx="88" cy="72" rx="28" ry="14" fill="#3b82f6" fillOpacity=".15" />
+                {[0,1,2,3].map(i => (
+                  <line key={i} x1={30+i*53} y1="25" x2={30+i*53} y2="155" stroke="#3b82f6" strokeWidth=".4" strokeOpacity=".15" />
                 ))}
-                {[0, 1, 2].map(i => (
-                  <line key={i} x1="10" y1={50 + i * 40} x2="210" y2={50 + i * 40} stroke="#3b82f6" strokeWidth="0.4" strokeOpacity="0.15" />
+                {[0,1,2].map(i => (
+                  <line key={i} x1="10" y1={50+i*40} x2="210" y2={50+i*40} stroke="#3b82f6" strokeWidth=".4" strokeOpacity=".15" />
                 ))}
               </svg>
             )}
           </div>
-          <div style={{
-            fontSize: 11, color: tipo === 'convencional' ? '#6b7280' : '#3b82f6',
-            fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700,
-          }}>{tipo}</div>
+          <div style={{ fontSize: 11, color: tipo === 'convencional' ? '#6b7280' : '#3b82f6', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.1em', fontWeight: 700 }}>
+            {tipo}
+          </div>
         </div>
 
-        {/* Descrição */}
         <div style={{ maxWidth: 320, display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <h3 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#f0f0f5', letterSpacing: '-0.3px' }}>
+          <h3 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#f0f0f5', letterSpacing: '-.3px' }}>
             {tipo === 'convencional' ? 'Lente Convencional' : 'Lente Digital'}
           </h3>
           <p style={{ margin: 0, fontSize: 14, color: '#6b7280', lineHeight: 1.7 }}>
@@ -122,10 +228,7 @@ function Superficie({ initialDemo }: { initialDemo?: string }) {
               : ['Fresagem CNC ponto a ponto', 'Sem aberrações periféricas', 'Máxima nitidez e conforto']
             ).map((item, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{
-                  width: 5, height: 5, borderRadius: '50%',
-                  background: tipo === 'digital' ? '#3b82f6' : '#374151', flexShrink: 0,
-                }} />
+                <div style={{ width: 5, height: 5, borderRadius: '50%', background: tipo === 'digital' ? '#3b82f6' : '#374151', flexShrink: 0 }} />
                 <span style={{ fontSize: 13, color: '#4b5563' }}>{item}</span>
               </div>
             ))}
@@ -136,7 +239,7 @@ function Superficie({ initialDemo }: { initialDemo?: string }) {
   );
 }
 
-// ─── Visão COM/SEM ───────────────────────────────────────────────────────────
+// ─── Visão COM/SEM ─────────────────────────────────────────────────────────────
 function Visao({ initialDemo }: { initialDemo?: string }) {
   const [tratamento, setTratamento] = useState(
     TRATAMENTOS.some(t => t.id === initialDemo) ? initialDemo! : 'ar'
@@ -147,46 +250,41 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
   const dragging = useRef(false);
 
   const trObj = TRATAMENTOS.find(t => t.id === tratamento)!;
-  const cores = AMBIENTE_OVERLAY[ambiente];
+  const effect = EFFECTS[tratamento]?.[ambiente] ?? EFFECTS.ar.noite;
+  const semSvg = getSemSvg(tratamento, ambiente);
 
   function move(clientX: number) {
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return;
-    const pct = ((clientX - rect.left) / rect.width) * 100;
-    setDivX(Math.min(92, Math.max(8, pct)));
+    setDivX(Math.min(90, Math.max(10, ((clientX - rect.left) / rect.width) * 100)));
   }
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {/* Filtros */}
-      <div style={{
-        display: 'flex', gap: 24, padding: '14px 28px',
-        borderBottom: '1px solid #12141c', flexShrink: 0, flexWrap: 'wrap',
-      }}>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 16, padding: '11px 22px', borderBottom: '1px solid #12141c', flexShrink: 0, flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
           {TRATAMENTOS.map(t => (
             <button key={t.id} onClick={() => setTratamento(t.id)} style={{
-              padding: '6px 14px', borderRadius: 20, cursor: 'pointer',
+              padding: '5px 11px', borderRadius: 20, cursor: 'pointer',
               background: tratamento === t.id ? t.cor : '#07080e',
               border: `1px solid ${tratamento === t.id ? t.cor : '#1e2030'}`,
               color: tratamento === t.id ? '#fff' : '#4b5563',
-              fontSize: 12, fontWeight: 600, fontFamily: 'var(--sans)',
-              transition: 'all 0.15s',
+              fontSize: 11.5, fontWeight: 600, fontFamily: 'var(--sans)', transition: 'all .15s',
             }}>{t.label}</button>
           ))}
         </div>
-        <div style={{ display: 'flex', gap: 6 }}>
+        <div style={{ display: 'flex', gap: 4 }}>
           {AMBIENTES.map(a => (
             <button key={a.id} onClick={() => setAmbiente(a.id)} style={{
-              padding: '6px 12px', borderRadius: 20, cursor: 'pointer',
+              padding: '5px 10px', borderRadius: 20, cursor: 'pointer',
               background: ambiente === a.id ? '#1e2030' : 'transparent',
               border: `1px solid ${ambiente === a.id ? '#2a2d3e' : '#1e2030'}`,
               color: ambiente === a.id ? '#f0f0f5' : '#4b5563',
-              fontSize: 12, fontFamily: 'var(--sans)',
-              display: 'flex', alignItems: 'center', gap: 5,
-              transition: 'all 0.15s',
+              fontSize: 11.5, fontFamily: 'var(--sans)',
+              display: 'flex', alignItems: 'center', gap: 4, transition: 'all .15s',
             }}>
-              <span style={{ fontSize: 14 }}>{a.emoji}</span>
+              <span style={{ fontSize: 13 }}>{a.emoji}</span>
               <span>{a.label}</span>
             </button>
           ))}
@@ -194,64 +292,73 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
       </div>
 
       {/* Comparador */}
-      <div style={{ flex: 1, display: 'flex', gap: 0, overflow: 'hidden' }}>
-        <div
-          ref={containerRef}
-          onMouseDown={() => { dragging.current = true; }}
-          onMouseMove={e => { if (dragging.current) move(e.clientX); }}
-          onMouseUp={() => { dragging.current = false; }}
-          onMouseLeave={() => { dragging.current = false; }}
-          onTouchMove={e => move(e.touches[0].clientX)}
-          style={{
-            flex: 1, position: 'relative', cursor: 'col-resize',
-            background: cores.sem, userSelect: 'none',
-          }}
-        >
-          {/* COM tratamento (esquerda do divider) */}
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: `linear-gradient(135deg, ${cores.com} 0%, ${cores.sem} 100%)`,
-            clipPath: `inset(0 ${100 - divX}% 0 0)`,
-          }} />
+      <div
+        ref={containerRef}
+        onMouseDown={() => { dragging.current = true; }}
+        onMouseMove={e => { if (dragging.current) move(e.clientX); }}
+        onMouseUp={() => { dragging.current = false; }}
+        onMouseLeave={() => { dragging.current = false; }}
+        onTouchStart={() => { dragging.current = true; }}
+        onTouchMove={e => move(e.touches[0].clientX)}
+        onTouchEnd={() => { dragging.current = false; }}
+        style={{ flex: 1, position: 'relative', overflow: 'hidden', cursor: 'col-resize', userSelect: 'none' }}
+      >
+        {/* SEM base */}
+        <div style={{ position: 'absolute', inset: 0, background: SCENE_BG[ambiente], filter: effect.semFilter }} />
 
-          {/* Linha divisória */}
+        {/* COM overlay — lado esquerdo */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: SCENE_BG[ambiente],
+          filter: effect.comFilter,
+          clipPath: `inset(0 ${100 - divX}% 0 0)`,
+        }} />
+
+        {/* SVG de defeito no lado SEM (direito) */}
+        {semSvg && (
+          <div style={{ position: 'absolute', inset: 0, clipPath: `inset(0 0 0 ${divX}%)`, pointerEvents: 'none' }}>
+            {semSvg}
+          </div>
+        )}
+
+        {/* Divisor */}
+        <div style={{
+          position: 'absolute', top: 0, bottom: 0,
+          left: `${divX}%`, transform: 'translateX(-50%)',
+          width: 2, background: 'rgba(255,255,255,.9)',
+          boxShadow: '0 0 12px rgba(255,255,255,.5)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          pointerEvents: 'none',
+        }}>
           <div style={{
-            position: 'absolute', top: 0, bottom: 0,
-            left: `${divX}%`, transform: 'translateX(-50%)',
-            width: 2, background: 'rgba(255,255,255,0.9)',
-            boxShadow: '0 0 12px rgba(255,255,255,0.5)',
+            width: 36, height: 36, borderRadius: '50%',
+            background: '#fff', boxShadow: '0 2px 16px rgba(0,0,0,.5)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <div style={{
-              width: 36, height: 36, borderRadius: '50%',
-              background: '#fff', boxShadow: '0 2px 16px rgba(0,0,0,0.5)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1e2030" strokeWidth="2.5" strokeLinecap="round">
-                <polyline points="15 18 9 12 15 6" />
-              </svg>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1e2030" strokeWidth="2.5" strokeLinecap="round" style={{ marginLeft: -8 }}>
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
-            </div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1e2030" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6" /></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1e2030" strokeWidth="2.5" strokeLinecap="round" style={{ marginLeft: -8 }}><polyline points="9 18 15 12 9 6" /></svg>
           </div>
+        </div>
 
-          {/* Labels */}
-          <div style={{ position: 'absolute', bottom: 20, left: 20, fontSize: 11, color: '#374151', fontFamily: 'var(--mono)', background: '#00000070', padding: '4px 10px', borderRadius: 6, letterSpacing: '0.08em' }}>SEM</div>
-          <div style={{ position: 'absolute', bottom: 20, right: 20, fontSize: 11, color: '#f0f0f5', fontFamily: 'var(--mono)', background: '#00000070', padding: '4px 10px', borderRadius: 6, letterSpacing: '0.08em' }}>COM {trObj.label.toUpperCase()}</div>
+        {/* Labels */}
+        <div style={{ position: 'absolute', bottom: 64, left: 16, fontSize: 11, color: '#e2e8f0', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
+          ✓ COM {trObj.label.toUpperCase()}
+        </div>
+        <div style={{ position: 'absolute', bottom: 64, right: 16, fontSize: 11, color: '#9ca3af', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
+          ✗ SEM
+        </div>
 
-          {/* Descrição no centro */}
-          <div style={{
-            position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)',
-            background: '#00000090', borderRadius: 12, padding: '10px 18px',
-            maxWidth: 300, textAlign: 'center',
-          }}>
-            <div style={{ fontSize: 11, color: trObj.cor, fontWeight: 700, fontFamily: 'var(--mono)', marginBottom: 4, letterSpacing: '0.06em' }}>
-              {trObj.label.toUpperCase()}
-            </div>
-            <div style={{ fontSize: 12, color: '#9ca3af', lineHeight: 1.5 }}>
-              {DESCRICOES[tratamento]}
-            </div>
+        {/* Descrição */}
+        <div style={{
+          position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)',
+          background: 'rgba(0,0,0,.78)', borderRadius: 12, padding: '10px 20px',
+          width: 'max-content', maxWidth: 400, textAlign: 'center', pointerEvents: 'none',
+        }}>
+          <div style={{ fontSize: 10, color: trObj.cor, fontWeight: 700, fontFamily: 'var(--mono)', marginBottom: 4, letterSpacing: '.06em', textTransform: 'uppercase' }}>
+            {trObj.label}
+          </div>
+          <div style={{ fontSize: 12, color: '#9ca3af', lineHeight: 1.5 }}>
+            {effect.description}
           </div>
         </div>
       </div>
@@ -259,89 +366,115 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
   );
 }
 
-// ─── Fotossensível ───────────────────────────────────────────────────────────
+// ─── Fotossensível ─────────────────────────────────────────────────────────────
 function Fotossensivel() {
   const [valor, setValor] = useState(0);
-  const opacity = valor / 100;
+  const pct = valor / 100;
+  const darkR = Math.round(pct * 40);
+  const darkG = Math.round(pct * 35);
+  const darkB = Math.round(pct * 20);
+  const darkA = pct * 0.85;
+
+  const uvLevel = valor < 25 ? 'Ambiente interno' : valor < 55 ? 'Nublado — UV presente' : valor < 80 ? 'Sol direto' : 'Sol forte — UV intenso';
+  const uvIcon = valor < 25 ? '🏠' : valor < 55 ? '⛅' : valor < 80 ? '🌤️' : '☀️';
+  const lensLabel = valor < 10 ? 'CLARA' : valor < 40 ? `${Math.round(pct * 100)}% ATIVA` : `${Math.round(pct * 100)}% ESCURA`;
 
   return (
-    <div style={{
-      flex: 1, display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-      padding: '32px 40px', gap: 32,
-    }}>
-      {/* Preview da lente */}
-      <div style={{
-        position: 'relative', width: 320, height: 220,
-        borderRadius: 24, overflow: 'hidden',
-        background: '#07080e', border: '1px solid #1e2030',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '28px 40px', gap: 28 }}>
+      {/* Cena com lente sobreposta */}
+      <div style={{ display: 'flex', gap: 40, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
+        {/* Cena outdoor */}
         <div style={{
-          position: 'absolute', inset: 0,
-          background: `rgba(${Math.round(opacity * 30)}, ${Math.round(opacity * 20)}, ${Math.round(opacity * 5)}, ${opacity * 0.88})`,
-          transition: 'background 0.3s ease',
-        }} />
-        <svg viewBox="0 0 200 140" width="200" height="140" style={{ position: 'relative', zIndex: 1 }}>
-          <ellipse cx="100" cy="70" rx="88" ry="60"
-            fill={`rgba(${Math.round(opacity * 160)}, ${Math.round(opacity * 100)}, ${Math.round(opacity * 20)}, ${0.1 + opacity * 0.45})`}
-            stroke={`rgba(${Math.round(opacity * 180)}, ${Math.round(opacity * 120)}, ${Math.round(opacity * 30)}, ${0.2 + opacity * 0.55})`}
-            strokeWidth="1.5" />
-          <text x="100" y="75" textAnchor="middle"
-            fill={opacity > 0.1 ? `rgba(255,210,60,${opacity})` : 'rgba(75,85,99,0.8)'}
-            fontSize="13" fontFamily="var(--mono)" fontWeight="600">
-            {opacity < 0.1 ? 'CLARA' : `${Math.round(opacity * 100)}% ESCURA`}
-          </text>
-        </svg>
-        <div style={{ position: 'absolute', top: 16, right: 16, fontSize: 26 }}>
-          {valor < 25 ? '🏠' : valor < 60 ? '⛅' : '☀️'}
+          width: 300, height: 200, borderRadius: 20, overflow: 'hidden', position: 'relative',
+          background: SCENE_BG.sol, border: '1px solid #1e2030',
+          boxShadow: '0 8px 32px rgba(0,0,0,.4)',
+        }}>
+          {/* Overlay da lente fotossensível */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: `rgba(${darkR},${darkG},${darkB},${darkA})`,
+            transition: 'background .35s ease',
+          }} />
+          {/* Ícone UV */}
+          <div style={{ position: 'absolute', top: 14, right: 14, fontSize: 28 }}>{uvIcon}</div>
+          {/* Estado da lente */}
+          <div style={{
+            position: 'absolute', bottom: 14, left: '50%', transform: 'translateX(-50%)',
+            background: 'rgba(0,0,0,.65)', borderRadius: 8, padding: '5px 14px',
+            fontSize: 12, fontFamily: 'var(--mono)', fontWeight: 700,
+            color: pct < .1 ? '#9ca3af' : `rgba(${220 - Math.round(pct*80)},${180 - Math.round(pct*60)},${60 - Math.round(pct*40)},1)`,
+            whiteSpace: 'nowrap',
+          }}>{lensLabel}</div>
+        </div>
+
+        {/* Info UV */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minWidth: 220 }}>
+          <div>
+            <div style={{ fontSize: 11, color: '#374151', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 6 }}>Intensidade UV</div>
+            <div style={{ height: 8, background: '#1e2030', borderRadius: 4, overflow: 'hidden' }}>
+              <div style={{
+                height: '100%', borderRadius: 4,
+                width: `${valor}%`,
+                background: `linear-gradient(to right, #1e3a5f, #3b82f6, #f59e0b, #ef4444)`,
+                transition: 'width 0s',
+              }} />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontSize: 10, color: '#374151', fontFamily: 'var(--mono)' }}>
+              <span>0 UV</span><span>UV máx</span>
+            </div>
+          </div>
+
+          {/* Escala de escurecimento */}
+          <div style={{ background: '#07080e', borderRadius: 14, padding: '14px 16px', border: '1px solid #1e2030' }}>
+            <div style={{ fontSize: 11, color: '#374151', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 10 }}>Estado atual</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{
+                width: 44, height: 44, borderRadius: '50%', border: '2px solid #2a2d3e',
+                background: pct < .05 ? 'rgba(200,220,255,.15)' : `rgba(${darkR*2},${darkG*2},${darkB*2},${Math.min(darkA+.1, 1)})`,
+                transition: 'background .35s',
+              }} />
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#f0f0f5', fontFamily: 'var(--mono)' }}>
+                  {uvIcon} {uvLevel}
+                </div>
+                <div style={{ fontSize: 11, color: '#6b7280', marginTop: 3 }}>
+                  {pct < .05 ? 'Lente transparente' : `Filtrando ${Math.round(pct * 100)}% da luz`}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p style={{ margin: 0, fontSize: 12, color: '#6b7280', lineHeight: 1.65, background: '#07080e', borderRadius: 12, padding: '12px 16px', border: '1px solid #1e2030' }}>
+            Tecnologia fotocromática que escurece automaticamente ao detectar raios UV. Volta ao estado claro em ambientes fechados em segundos.
+          </p>
         </div>
       </div>
 
       {/* Slider */}
-      <div style={{ width: '100%', maxWidth: 440 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+      <div style={{ width: '100%', maxWidth: 500 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <span style={{ fontSize: 22 }}>🏠</span>
-          <span style={{ fontSize: 12, color: '#374151', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-            Intensidade da Luz Solar
+          <span style={{ fontSize: 12, color: '#374151', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.08em' }}>
+            Intensidade da Luz Solar / UV
           </span>
           <span style={{ fontSize: 22 }}>☀️</span>
         </div>
-        <div style={{ position: 'relative', height: 8, background: '#1e2030', borderRadius: 4 }}>
+        <div style={{ position: 'relative', height: 10, background: '#1e2030', borderRadius: 5 }}>
           <div style={{
             position: 'absolute', left: 0, top: 0, bottom: 0,
-            width: `${valor}%`, borderRadius: 4,
-            background: `linear-gradient(to right, #1e3a5f, #f59e0b)`,
-            transition: 'width 0s',
+            width: `${valor}%`, borderRadius: 5,
+            background: `linear-gradient(to right, #1e3a5f, #3b82f6 40%, #f59e0b 70%, #ef4444)`,
           }} />
-          <input
-            type="range" min={0} max={100} value={valor}
+          <input type="range" min={0} max={100} value={valor}
             onChange={e => setValor(Number(e.target.value))}
-            style={{
-              position: 'absolute', inset: 0, width: '100%', height: '100%',
-              opacity: 0, cursor: 'pointer', margin: 0,
-            }}
-          />
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontSize: 10, color: '#374151', fontFamily: 'var(--mono)' }}>
-          <span>Ambiente interno</span>
-          <span>Luz solar direta</span>
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', margin: 0 }} />
         </div>
       </div>
-
-      <p style={{
-        margin: 0, fontSize: 13, color: '#6b7280', textAlign: 'center',
-        maxWidth: 400, lineHeight: 1.7,
-        background: '#07080e', borderRadius: 14, padding: '14px 20px',
-        border: '1px solid #1e2030',
-      }}>
-        {DESCRICOES['ft']}
-      </p>
     </div>
   );
 }
 
-// ─── Main ────────────────────────────────────────────────────────────────────
+// ─── Main ──────────────────────────────────────────────────────────────────────
 export default function Demonstracoes() {
   const [params] = useSearchParams();
   const rawTab = params.get('tab') ?? 'superficie';
@@ -353,10 +486,7 @@ export default function Demonstracoes() {
   const navigate = useNavigate();
 
   return (
-    <div style={{
-      height: '100dvh', display: 'flex', flexDirection: 'column',
-      background: '#050508', overflow: 'hidden',
-    }}>
+    <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: '#050508', overflow: 'hidden' }}>
       {/* Top bar */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -372,7 +502,6 @@ export default function Demonstracoes() {
           Voltar
         </button>
 
-        {/* Tabs centralizadas */}
         <div style={{ display: 'flex', gap: 0 }}>
           {([
             ['superficie', 'SUPERFÍCIE'],
@@ -382,10 +511,10 @@ export default function Demonstracoes() {
             <button key={t} onClick={() => setTab(t)} style={{
               background: 'none', border: 'none', cursor: 'pointer',
               padding: '0 20px', height: 48,
-              fontSize: 11, fontWeight: 700, letterSpacing: '0.1em',
+              fontSize: 11, fontWeight: 700, letterSpacing: '.1em',
               color: tab === t ? '#f0f0f5' : '#374151',
               borderBottom: tab === t ? '2px solid #3b82f6' : '2px solid transparent',
-              fontFamily: 'var(--mono)', transition: 'color 0.15s',
+              fontFamily: 'var(--mono)', transition: 'color .15s',
             }}>{label}</button>
           ))}
         </div>
