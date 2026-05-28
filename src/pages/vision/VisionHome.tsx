@@ -270,9 +270,9 @@ export default function VisionHome() {
         flex: 1,
         position: 'relative',
         overflow: 'hidden',
-        backgroundImage: 'url(https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=1600&q=85&auto=format&fit=crop)',
+        backgroundImage: 'url(https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=1600&q=85&auto=format&fit=crop)',
         backgroundSize: 'cover',
-        backgroundPosition: 'center 30%',
+        backgroundPosition: 'center center',
       }}>
         {/* Overlay claro sobre a foto para manter identidade visual */}
         <div style={{
