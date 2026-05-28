@@ -1,7 +1,4 @@
 import { useState, useEffect } from 'react';
-import {
-  RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer,
-} from 'recharts';
 import DrumPicker from './components/DrumPicker';
 import { api } from '../../lib/api';
 
@@ -63,6 +60,61 @@ const RECOMENDACOES = [
   'Conforto visual garantido no dia a dia',
 ];
 
+function SvgRadar({ data, color }: { data: { subject: string; value: number }[]; color: string }) {
+  const cx = 140, cy = 130, r = 90;
+  const n = data.length;
+  const angles = data.map((_, i) => (Math.PI * 2 * i) / n - Math.PI / 2);
+
+  function point(radius: number, i: number) {
+    return {
+      x: cx + radius * Math.cos(angles[i]),
+      y: cy + radius * Math.sin(angles[i]),
+    };
+  }
+
+  const rings = [0.25, 0.5, 0.75, 1];
+  const dataPoints = data.map((d, i) => point((d.value / 100) * r, i));
+  const polyPoints = dataPoints.map(p => `${p.x},${p.y}`).join(' ');
+
+  return (
+    <svg width="280" height="260" viewBox="0 0 280 260">
+      {/* Anéis de fundo */}
+      {rings.map(ring => {
+        const pts = data.map((_, i) => point(r * ring, i));
+        return (
+          <polygon key={ring}
+            points={pts.map(p => `${p.x},${p.y}`).join(' ')}
+            fill="none" stroke="#1a1f2e" strokeWidth="1"
+          />
+        );
+      })}
+      {/* Eixos */}
+      {data.map((_, i) => {
+        const outer = point(r, i);
+        return <line key={i} x1={cx} y1={cy} x2={outer.x} y2={outer.y} stroke="#1a1f2e" strokeWidth="1" />;
+      })}
+      {/* Área dos dados */}
+      <polygon points={polyPoints} fill={color} fillOpacity={0.18} stroke={color} strokeWidth={2} strokeLinejoin="round" />
+      {/* Pontos */}
+      {dataPoints.map((p, i) => (
+        <circle key={i} cx={p.x} cy={p.y} r={3} fill={color} />
+      ))}
+      {/* Labels */}
+      {data.map((d, i) => {
+        const labelR = r + 18;
+        const lp = point(labelR, i);
+        const anchor = lp.x < cx - 5 ? 'end' : lp.x > cx + 5 ? 'start' : 'middle';
+        return (
+          <text key={i} x={lp.x} y={lp.y + 4} textAnchor={anchor}
+            fill="#4a5568" fontSize="9" fontFamily="var(--mono)">
+            {d.subject}
+          </text>
+        );
+      })}
+    </svg>
+  );
+}
+
 const MARCAS_LABELS: Record<string, string[]> = {
   'Varilux': ['#3b82f6'],
   'Hoya': ['#22c55e'],
@@ -91,12 +143,6 @@ export default function MapaVisual() {
 
   const radarData = calcRadar(esf, cil, add, selectedLente);
   const marcas = [...new Set(lentes.map(l => l.marca))];
-
-  const tipo = parseFloat(add) > 0 ? 'progressivo' : Math.abs(parseFloat(esf)) > 0 ? 'monofocal' : 'monofocal';
-
-  const lentesFiltradas = lentes.filter(l =>
-    l.tipo === tipo || (tipo === 'progressivo' && l.tipo === 'progressivo')
-  );
 
   return (
     <div style={{
@@ -208,25 +254,8 @@ export default function MapaVisual() {
             </div>
           )}
 
-          {/* Radar chart */}
-          <div style={{ width: '100%', maxWidth: 340, height: 280 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={radarData} margin={{ top: 16, right: 24, bottom: 16, left: 24 }}>
-                <PolarGrid stroke="#1a1f2e" strokeDasharray="3 3" />
-                <PolarAngleAxis
-                  dataKey="subject"
-                  tick={{ fill: '#4a5568', fontSize: 10, fontFamily: 'var(--mono)' }}
-                />
-                <Radar
-                  dataKey="value"
-                  stroke={selectedLente?.cor ?? '#3b82f6'}
-                  fill={selectedLente?.cor ?? '#3b82f6'}
-                  fillOpacity={0.18}
-                  strokeWidth={2}
-                />
-              </RadarChart>
-            </ResponsiveContainer>
-          </div>
+          {/* Radar chart — SVG puro */}
+          <SvgRadar data={radarData} color={selectedLente?.cor ?? '#3b82f6'} />
 
           {/* Badges da lente */}
           {selectedLente && (

@@ -193,7 +193,6 @@ function Fotossensivel() {
   const [valor, setValor] = useState(0);
 
   const opacity = valor / 100;
-  const bgColor = `rgba(${Math.round(20 - opacity * 20)}, ${Math.round(20 - opacity * 15)}, ${Math.round(10 - opacity * 10)}, 1)`;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24, alignItems: 'center' }}>

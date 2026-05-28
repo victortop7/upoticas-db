@@ -176,7 +176,6 @@ export default function VisionOS() {
   }, [tab]);
 
   const total = totalOS(data);
-  const parcelas = parseInt(data.parcelas) || 1;
 
   return (
     <div style={{
@@ -242,7 +241,7 @@ export default function VisionOS() {
                         fontSize: 12, fontWeight: 700, color: '#3b82f6',
                         fontFamily: 'var(--mono)', paddingRight: 8,
                       }}>{olho}</td>
-                      {fields.map((f, i) => (
+                      {fields.map((f) => (
                         <RxCell key={f} label="" value={data[f]} onChange={set(f)} />
                       ))}
                     </tr>
