@@ -412,7 +412,7 @@ export default function VisionHome() {
               <button
                 key={mod.id}
                 data-submenu={mod.submenu ? 'true' : undefined}
-                onClick={() => handleModule(mod)}
+                onClick={e => { e.stopPropagation(); handleModule(mod); }}
                 style={{
                   flexShrink: 0,
                   width: 110, minHeight: 128,
