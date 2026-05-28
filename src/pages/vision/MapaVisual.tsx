@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import DrumPicker from './components/DrumPicker';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../../lib/api';
+import { useNavigate } from 'react-router-dom';
 
 interface Lente {
   id: string;
@@ -14,99 +14,135 @@ interface Lente {
   adicao_max: number | null;
 }
 
-// Gera array de valores com step
-function range(min: number, max: number, step: number): string[] {
-  const result: string[] = [];
-  for (let v = min; v <= max + 0.001; v += step) {
-    const fixed = Math.round(v * 100) / 100;
-    const s = fixed >= 0 ? `+${fixed.toFixed(2)}` : fixed.toFixed(2);
-    result.push(s);
-  }
-  return result;
+// ─── Drum Picker ────────────────────────────────────────────────────────────
+const ITEM_H = 46;
+
+function DrumPicker({ label, values, selected, onChange, color = '#3b82f6' }: {
+  label: string; values: string[]; selected: string;
+  onChange: (v: string) => void; color?: string;
+}) {
+  const listRef = useRef<HTMLDivElement>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const selectedIdx = Math.max(0, values.indexOf(selected));
+
+  const scrollTo = useCallback((idx: number, smooth = true) => {
+    listRef.current?.scrollTo({ top: idx * ITEM_H, behavior: smooth ? 'smooth' : 'instant' });
+  }, []);
+
+  useEffect(() => { scrollTo(selectedIdx, false); }, []);
+
+  const onScroll = useCallback(() => {
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => {
+      const el = listRef.current;
+      if (!el) return;
+      const idx = Math.round(el.scrollTop / ITEM_H);
+      const clamped = Math.max(0, Math.min(idx, values.length - 1));
+      el.scrollTo({ top: clamped * ITEM_H, behavior: 'smooth' });
+      onChange(values[clamped]);
+    }, 80);
+  }, [values, onChange]);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flex: 1 }}>
+      <div style={{
+        fontSize: 9, color: '#374151', fontFamily: 'var(--mono)',
+        textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700,
+      }}>{label}</div>
+
+      <div style={{
+        position: 'relative', height: ITEM_H * 5, overflow: 'hidden',
+        borderRadius: 10, background: '#07080e',
+        border: '1px solid #12141c', width: '100%',
+      }}>
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0, height: ITEM_H * 2,
+          background: 'linear-gradient(to bottom, #07080e, transparent)',
+          pointerEvents: 'none', zIndex: 2,
+        }} />
+        <div style={{
+          position: 'absolute', top: ITEM_H * 2, left: 0, right: 0, height: ITEM_H,
+          background: `${color}14`,
+          borderTop: `1px solid ${color}35`,
+          borderBottom: `1px solid ${color}35`,
+          pointerEvents: 'none', zIndex: 1,
+        }} />
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: ITEM_H * 2,
+          background: 'linear-gradient(to top, #07080e, transparent)',
+          pointerEvents: 'none', zIndex: 2,
+        }} />
+        <div
+          ref={listRef}
+          onScroll={onScroll}
+          style={{
+            height: '100%', overflowY: 'scroll', scrollbarWidth: 'none',
+            paddingTop: ITEM_H * 2, paddingBottom: ITEM_H * 2,
+          }}
+        >
+          {values.map((v, i) => {
+            const isSel = i === selectedIdx;
+            return (
+              <div
+                key={v}
+                onClick={() => { onChange(v); scrollTo(i); }}
+                style={{
+                  height: ITEM_H,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: isSel ? 16 : 13,
+                  fontWeight: isSel ? 700 : 400,
+                  color: isSel ? color : '#374151',
+                  fontFamily: 'var(--mono)', cursor: 'pointer',
+                  transition: 'color 0.1s',
+                }}
+              >{v}</div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
 }
 
-const ESF_VALUES = range(-20, 10, 0.25);
-const CIL_VALUES = range(-6, 0, 0.25);
-const ADD_VALUES = ['0.00', ...range(0.75, 3.5, 0.25).filter(v => v !== '+0.00')];
-const DNP_VALUES = Array.from({ length: 37 }, (_, i) => (28 + i * 0.5).toFixed(1));
-
-// Gera os dados do radar com base na prescrição selecionada
-function calcRadar(esf: string, cil: string, add: string, lente: Lente | null) {
-  const esfV = Math.abs(parseFloat(esf) || 0);
-  const cilV = Math.abs(parseFloat(cil) || 0);
-  const addV = parseFloat(add) || 0;
-
-  const maxEsf = lente?.grau_max ?? 8;
-  const maxCil = lente?.cil_max ?? 4;
-  const maxAdd = lente?.adicao_max ?? 3.5;
-
-  return [
-    { subject: 'GRAU', value: Math.min((esfV / maxEsf) * 100, 100) },
-    { subject: 'CILÍNDRICO', value: Math.min((cilV / maxCil) * 100, 100) },
-    { subject: 'ADIÇÃO', value: addV > 0 ? Math.min((addV / maxAdd) * 100, 100) : 0 },
-    { subject: 'LONGE', value: esfV < 3 ? 90 : esfV < 6 ? 70 : 50 },
-    { subject: 'INTERM.', value: addV > 0 ? 75 : 50 },
-    { subject: 'PERTO', value: addV > 0 ? Math.min((addV / 3.5) * 100, 100) : 40 },
-    { subject: 'SOL', value: 0 },
-  ];
-}
-
-const RECOMENDACOES = [
-  'Lente indicada para sua prescrição',
-  'Alta definição visual em todas as distâncias',
-  'Tecnologia de ponta para reduzir fadiga',
-  'Compatível com tratamento anti-reflexo',
-  'Índice de refração ideal para seu grau',
-  'Conforto visual garantido no dia a dia',
-];
-
-function SvgRadar({ data, color }: { data: { subject: string; value: number }[]; color: string }) {
-  const cx = 140, cy = 130, r = 90;
+// ─── Radar SVG ──────────────────────────────────────────────────────────────
+function RadarChart({ data, color }: { data: { subject: string; value: number }[]; color: string }) {
+  const W = 300, H = 280, cx = W / 2, cy = H / 2 - 4, R = 100;
   const n = data.length;
   const angles = data.map((_, i) => (Math.PI * 2 * i) / n - Math.PI / 2);
 
-  function point(radius: number, i: number) {
-    return {
-      x: cx + radius * Math.cos(angles[i]),
-      y: cy + radius * Math.sin(angles[i]),
-    };
+  function pt(r: number, i: number) {
+    return { x: cx + r * Math.cos(angles[i]), y: cy + r * Math.sin(angles[i]) };
   }
 
   const rings = [0.25, 0.5, 0.75, 1];
-  const dataPoints = data.map((d, i) => point((d.value / 100) * r, i));
-  const polyPoints = dataPoints.map(p => `${p.x},${p.y}`).join(' ');
+  const dataPolygon = data.map((d, i) => pt((d.value / 100) * R, i));
+  const polyPts = dataPolygon.map(p => `${p.x},${p.y}`).join(' ');
 
   return (
-    <svg width="280" height="260" viewBox="0 0 280 260">
-      {/* Anéis de fundo */}
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ overflow: 'visible' }}>
       {rings.map(ring => {
-        const pts = data.map((_, i) => point(r * ring, i));
+        const pts = data.map((_, i) => pt(R * ring, i));
         return (
           <polygon key={ring}
             points={pts.map(p => `${p.x},${p.y}`).join(' ')}
-            fill="none" stroke="#1a1f2e" strokeWidth="1"
+            fill="none" stroke="#1e2030" strokeWidth={ring === 1 ? 1.2 : 0.8}
           />
         );
       })}
-      {/* Eixos */}
       {data.map((_, i) => {
-        const outer = point(r, i);
-        return <line key={i} x1={cx} y1={cy} x2={outer.x} y2={outer.y} stroke="#1a1f2e" strokeWidth="1" />;
+        const outer = pt(R, i);
+        return <line key={i} x1={cx} y1={cy} x2={outer.x} y2={outer.y} stroke="#1e2030" strokeWidth="0.8" />;
       })}
-      {/* Área dos dados */}
-      <polygon points={polyPoints} fill={color} fillOpacity={0.18} stroke={color} strokeWidth={2} strokeLinejoin="round" />
-      {/* Pontos */}
-      {dataPoints.map((p, i) => (
-        <circle key={i} cx={p.x} cy={p.y} r={3} fill={color} />
+      <polygon points={polyPts} fill={color} fillOpacity={0.2} stroke={color} strokeWidth={2} strokeLinejoin="round" />
+      {dataPolygon.map((p, i) => (
+        data[i].value > 2 && <circle key={i} cx={p.x} cy={p.y} r={3.5} fill={color} />
       ))}
-      {/* Labels */}
       {data.map((d, i) => {
-        const labelR = r + 18;
-        const lp = point(labelR, i);
-        const anchor = lp.x < cx - 5 ? 'end' : lp.x > cx + 5 ? 'start' : 'middle';
+        const lp = pt(R + 20, i);
+        const anchor = lp.x < cx - 8 ? 'end' : lp.x > cx + 8 ? 'start' : 'middle';
         return (
           <text key={i} x={lp.x} y={lp.y + 4} textAnchor={anchor}
-            fill="#4a5568" fontSize="9" fontFamily="var(--mono)">
+            fill="#4b5563" fontSize="9.5" fontFamily="var(--mono)" letterSpacing="0.04em">
             {d.subject}
           </text>
         );
@@ -115,209 +151,268 @@ function SvgRadar({ data, color }: { data: { subject: string; value: number }[];
   );
 }
 
-const MARCAS_LABELS: Record<string, string[]> = {
-  'Varilux': ['#3b82f6'],
-  'Hoya': ['#22c55e'],
-  'Rodenstock': ['#a855f7'],
-  'Zeiss': ['#f59e0b'],
-  'Shamir': ['#06b6d4'],
-  'Indo': ['#64748b'],
-  'Optifog': ['#ef4444'],
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function range(min: number, max: number, step: number): string[] {
+  const out: string[] = [];
+  for (let v = min; v <= max + 0.001; v += step) {
+    const f = Math.round(v * 100) / 100;
+    out.push(f >= 0 ? `+${f.toFixed(2)}` : f.toFixed(2));
+  }
+  return out;
+}
+
+const ESF = range(-20, 10, 0.25);
+const CIL = range(-6, 0, 0.25);
+const ADD = ['0.00', ...range(0.75, 3.5, 0.25).map(v => v.replace('+', ''))];
+const DNP = Array.from({ length: 37 }, (_, i) => (28 + i * 0.5).toFixed(1));
+
+function calcRadar(esf: string, cil: string, add: string, lente: Lente | null) {
+  const ev = Math.abs(parseFloat(esf) || 0);
+  const cv = Math.abs(parseFloat(cil) || 0);
+  const av = parseFloat(add) || 0;
+  const mE = lente?.grau_max ?? 8, mC = lente?.cil_max ?? 4, mA = lente?.adicao_max ?? 3.5;
+  return [
+    { subject: 'GRAU', value: Math.min((ev / mE) * 100, 100) },
+    { subject: 'CILÍND.', value: Math.min((cv / mC) * 100, 100) },
+    { subject: 'ADIÇÃO', value: av > 0 ? Math.min((av / mA) * 100, 100) : 0 },
+    { subject: 'LONGE', value: ev < 2 ? 90 : ev < 5 ? 70 : 50 },
+    { subject: 'INTERM.', value: av > 0 ? 75 : 45 },
+    { subject: 'PERTO', value: av > 0 ? Math.min((av / 3.5) * 100, 100) : 35 },
+    { subject: 'SOL', value: 0 },
+  ];
+}
+
+const BRAND_COLORS: Record<string, string> = {
+  'Varilux': '#3b82f6', 'Hoya': '#22c55e', 'Rodenstock': '#a855f7',
+  'Zeiss': '#f59e0b', 'Shamir': '#06b6d4', 'Indo': '#64748b', 'Optifog': '#ef4444',
 };
 
+const RECS = [
+  'Lente indicada para sua prescrição',
+  'Alta definição em todas as distâncias',
+  'Reduz fadiga visual em telas',
+  'Compatível com anti-reflexo premium',
+  'Índice ideal para o grau indicado',
+  'Máximo conforto visual diário',
+];
+
+// ─── Main ────────────────────────────────────────────────────────────────────
 export default function MapaVisual() {
+  const navigate = useNavigate();
   const [lentes, setLentes] = useState<Lente[]>([]);
-  const [selectedLente, setSelectedLente] = useState<Lente | null>(null);
+  const [selected, setSelected] = useState<Lente | null>(null);
   const [esf, setEsf] = useState('+0.00');
   const [cil, setCil] = useState('0.00');
   const [add, setAdd] = useState('0.00');
   const [dnp, setDnp] = useState('32.0');
-  const [loading, setLoading] = useState(true);
+  const [filterMarca, setFilterMarca] = useState<string | null>(null);
 
   useEffect(() => {
     api.get<Lente[]>('/vision/lentes').then(data => {
       setLentes(data);
-      if (data.length > 0) setSelectedLente(data[0]);
-    }).finally(() => setLoading(false));
+      if (data.length) setSelected(data[0]);
+    });
   }, []);
 
-  const radarData = calcRadar(esf, cil, add, selectedLente);
   const marcas = [...new Set(lentes.map(l => l.marca))];
+  const listaFiltrada = filterMarca ? lentes.filter(l => l.marca === filterMarca) : lentes;
+  const radarData = calcRadar(esf, cil, add, selected);
+  const cor = selected?.cor ?? '#3b82f6';
 
   return (
     <div style={{
-      display: 'flex', flexDirection: 'column',
-      height: 'calc(100vh - 56px)',
-      background: '#080a0f',
+      height: '100dvh', display: 'flex', flexDirection: 'column',
+      background: '#050508', overflow: 'hidden',
     }}>
-      {/* Área principal */}
+      {/* Top bar */}
       <div style={{
-        flex: 1, display: 'flex', gap: 0, overflow: 'hidden', minHeight: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 20px', height: 48,
+        background: '#07080e', borderBottom: '1px solid #12141c', flexShrink: 0,
       }}>
-        {/* Coluna esquerda — marcas */}
-        <div style={{
-          width: 200, background: '#0a0c12',
-          borderRight: '1px solid #1a1f2e',
-          display: 'flex', flexDirection: 'column',
-          overflowY: 'auto',
+        <button onClick={() => navigate('/vision')} style={{
+          background: 'none', border: 'none', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', gap: 8, color: '#6b7280',
+          fontSize: 13, fontFamily: 'var(--sans)', padding: 0,
         }}>
-          <div style={{
-            padding: '14px 16px 8px',
-            fontSize: 10, color: '#3d4a5c',
-            textTransform: 'uppercase', letterSpacing: '0.08em',
-            fontFamily: 'var(--mono)', fontWeight: 600,
-          }}>
-            Lentes
-          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6" /></svg>
+          Voltar
+        </button>
+        <span style={{ fontSize: 14, fontWeight: 700, color: '#f0f0f5' }}>Mapa Visual</span>
+        <div style={{ width: 60 }} />
+      </div>
 
-          {loading ? (
-            <div style={{ padding: 16, color: '#3d4a5c', fontSize: 13 }}>Carregando...</div>
-          ) : (
-            marcas.map(marca => {
-              const cor = MARCAS_LABELS[marca]?.[0] ?? '#3b82f6';
-              const items = lentes.filter(l => l.marca === marca);
-              return (
-                <div key={marca}>
-                  <div style={{
-                    display: 'flex', alignItems: 'center', gap: 8,
-                    padding: '10px 16px 4px',
-                  }}>
-                    <div style={{
-                      width: 8, height: 8, borderRadius: '50%',
-                      background: cor, flexShrink: 0,
-                    }} />
-                    <span style={{
-                      fontSize: 11, fontWeight: 700, color: '#64748b',
-                      textTransform: 'uppercase', letterSpacing: '0.06em',
-                    }}>{marca}</span>
-                  </div>
-                  {items.map(l => (
-                    <button
-                      key={l.id}
-                      onClick={() => setSelectedLente(l)}
-                      style={{
-                        width: '100%', textAlign: 'left',
-                        padding: '8px 16px 8px 32px',
-                        background: selectedLente?.id === l.id
-                          ? `${cor}18` : 'transparent',
-                        border: 'none', cursor: 'pointer',
-                        borderLeft: selectedLente?.id === l.id
-                          ? `2px solid ${cor}` : '2px solid transparent',
-                        transition: 'background 0.1s',
-                      }}
-                    >
-                      <div style={{
-                        fontSize: 12, color: selectedLente?.id === l.id
-                          ? '#e8eaf0' : '#4a5568',
-                        fontFamily: 'var(--sans)', lineHeight: 1.3,
-                      }}>
-                        {l.nome.replace(marca, '').trim()}
-                      </div>
-                      <div style={{
-                        fontSize: 10, color: '#3d4a5c',
-                        fontFamily: 'var(--mono)', marginTop: 2,
-                      }}>
-                        {l.indice ? `${l.indice}` : ''} {l.tipo}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              );
-            })
-          )}
+      {/* Content */}
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
+
+        {/* Brand dots column */}
+        <div style={{
+          width: 44, background: '#07080e',
+          borderRight: '1px solid #12141c',
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', paddingTop: 16, gap: 14, flexShrink: 0,
+        }}>
+          <button
+            onClick={() => setFilterMarca(null)}
+            title="Todas"
+            style={{
+              width: 12, height: 12, borderRadius: '50%', border: 'none', cursor: 'pointer',
+              background: filterMarca === null ? '#f0f0f5' : '#1e2030',
+              transition: 'background 0.15s', flexShrink: 0,
+            }}
+          />
+          {marcas.map(marca => (
+            <button
+              key={marca}
+              onClick={() => setFilterMarca(prev => prev === marca ? null : marca)}
+              title={marca}
+              style={{
+                width: 12, height: 12, borderRadius: '50%', border: 'none', cursor: 'pointer',
+                background: BRAND_COLORS[marca] ?? '#3b82f6',
+                opacity: filterMarca === null || filterMarca === marca ? 1 : 0.25,
+                transition: 'opacity 0.15s', flexShrink: 0,
+                boxShadow: filterMarca === marca ? `0 0 8px ${BRAND_COLORS[marca]}` : 'none',
+              }}
+            />
+          ))}
         </div>
 
-        {/* Centro — radar + info lente */}
+        {/* Left panel — lentes list */}
+        <div style={{
+          width: 190, background: '#07080e',
+          borderRight: '1px solid #12141c',
+          display: 'flex', flexDirection: 'column',
+          overflowY: 'auto', flexShrink: 0,
+        }}>
+          {/* Foto placeholder */}
+          <div style={{
+            margin: '12px 12px 8px',
+            height: 80, borderRadius: 12,
+            background: '#0c0d12', border: '1px dashed #1e2030',
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center', gap: 4,
+            flexShrink: 0,
+          }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="1.5" strokeLinecap="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+              <circle cx="12" cy="13" r="4" />
+            </svg>
+            <span style={{ fontSize: 9, color: '#374151', fontFamily: 'var(--mono)' }}>IMAGEM CLIENTE</span>
+          </div>
+
+          {/* Lente selecionada info */}
+          {selected && (
+            <div style={{
+              margin: '0 12px 12px',
+              padding: '10px 12px',
+              background: '#0c0d12', borderRadius: 10,
+              border: `1px solid ${cor}30`, flexShrink: 0,
+            }}>
+              <div style={{ fontSize: 10, color: cor, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 }}>
+                {selected.marca}
+              </div>
+              <div style={{ fontSize: 12, color: '#f0f0f5', fontWeight: 600, lineHeight: 1.3 }}>
+                {selected.nome.replace(selected.marca, '').trim()}
+              </div>
+              <div style={{ fontSize: 10, color: '#4b5563', marginTop: 4, fontFamily: 'var(--mono)' }}>
+                {selected.indice} · {selected.tipo}
+              </div>
+            </div>
+          )}
+
+          {/* Lista de lentes */}
+          <div style={{ flex: 1, overflowY: 'auto' }}>
+            {listaFiltrada.map(l => {
+              const lCor = BRAND_COLORS[l.marca] ?? l.cor;
+              const isSel = selected?.id === l.id;
+              return (
+                <button
+                  key={l.id}
+                  onClick={() => setSelected(l)}
+                  style={{
+                    width: '100%', textAlign: 'left',
+                    padding: '9px 12px 9px 16px',
+                    background: isSel ? `${lCor}12` : 'transparent',
+                    borderLeft: `2px solid ${isSel ? lCor : 'transparent'}`,
+                    border: 'none', cursor: 'pointer',
+                    borderBottom: '1px solid #0c0d12',
+                    transition: 'background 0.1s',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <div style={{
+                      width: 6, height: 6, borderRadius: '50%',
+                      background: lCor, flexShrink: 0,
+                    }} />
+                    <div style={{ fontSize: 11, color: isSel ? '#f0f0f5' : '#6b7280', lineHeight: 1.3 }}>
+                      {l.nome}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 9.5, color: '#374151', fontFamily: 'var(--mono)', marginTop: 2, marginLeft: 13 }}>
+                    {l.tipo} {l.indice}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Center — radar */}
         <div style={{
           flex: 1, display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center', padding: '24px 16px',
-          gap: 16,
+          alignItems: 'center', justifyContent: 'center', padding: '16px 8px',
+          gap: 8, minWidth: 0,
         }}>
-          {/* Nome da lente selecionada */}
-          {selectedLente && (
+          {selected && (
             <div style={{ textAlign: 'center' }}>
-              <div style={{
-                fontSize: 11, color: selectedLente.cor ?? '#3b82f6',
-                textTransform: 'uppercase', letterSpacing: '0.1em',
-                fontFamily: 'var(--mono)', fontWeight: 700,
-              }}>
-                {selectedLente.marca}
+              <div style={{ fontSize: 11, color: cor, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                {selected.marca}
               </div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: '#e8eaf0', marginTop: 2 }}>
-                {selectedLente.nome.replace(selectedLente.marca, '').trim()}
-              </div>
-              <div style={{
-                fontSize: 12, color: '#3d4a5c', fontFamily: 'var(--mono)', marginTop: 4,
-              }}>
-                Índice {selectedLente.indice ?? '—'} · {selectedLente.tipo}
+              <div style={{ fontSize: 17, fontWeight: 700, color: '#f0f0f5', marginTop: 2, letterSpacing: '-0.3px' }}>
+                {selected.nome.replace(selected.marca, '').trim()}
               </div>
             </div>
           )}
-
-          {/* Radar chart — SVG puro */}
-          <SvgRadar data={radarData} color={selectedLente?.cor ?? '#3b82f6'} />
-
-          {/* Badges da lente */}
-          {selectedLente && (
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
-              {selectedLente.grau_max && (
-                <span style={badgeStyle('#1a1f2e')}>
-                  Grau até ±{selectedLente.grau_max.toFixed(1)}
-                </span>
-              )}
-              {selectedLente.cil_max && (
-                <span style={badgeStyle('#1a1f2e')}>
-                  Cil até {selectedLente.cil_max.toFixed(1)}
-                </span>
-              )}
-              {selectedLente.adicao_max && (
-                <span style={badgeStyle('#1a1f2e')}>
-                  Add até +{selectedLente.adicao_max.toFixed(1)}
-                </span>
-              )}
+          <RadarChart data={radarData} color={cor} />
+          {/* Badges */}
+          {selected && (
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
+              {selected.grau_max && <Badge label={`Grau ±${selected.grau_max}`} />}
+              {selected.cil_max && <Badge label={`Cil ${selected.cil_max}`} />}
+              {selected.adicao_max && <Badge label={`Add +${selected.adicao_max}`} />}
             </div>
           )}
         </div>
 
-        {/* Coluna direita — recomendações */}
+        {/* Right — recommendations */}
         <div style={{
-          width: 220, background: '#0a0c12',
-          borderLeft: '1px solid #1a1f2e',
+          width: 210, background: '#07080e',
+          borderLeft: '1px solid #12141c',
           display: 'flex', flexDirection: 'column',
-          padding: '16px 0',
-          overflowY: 'auto',
+          overflowY: 'auto', flexShrink: 0,
+          paddingTop: 8,
         }}>
           <div style={{
-            padding: '0 16px 12px',
-            fontSize: 10, color: '#3d4a5c',
-            textTransform: 'uppercase', letterSpacing: '0.08em',
-            fontFamily: 'var(--mono)', fontWeight: 600,
-          }}>
-            Recomendações
-          </div>
-          {RECOMENDACOES.map((rec, i) => (
-            <div
-              key={i}
-              style={{
-                display: 'flex', gap: 12, alignItems: 'flex-start',
-                padding: '10px 16px',
-                borderBottom: '1px solid #0f1218',
-              }}
-            >
+            padding: '8px 16px 10px',
+            fontSize: 9, color: '#374151',
+            fontFamily: 'var(--mono)', textTransform: 'uppercase',
+            letterSpacing: '0.1em', fontWeight: 700,
+          }}>Recomendações</div>
+          {RECS.map((rec, i) => (
+            <div key={i} style={{
+              display: 'flex', gap: 10, alignItems: 'flex-start',
+              padding: '11px 16px',
+              borderBottom: '1px solid #0c0d12',
+            }}>
               <div style={{
-                width: 24, height: 24, borderRadius: 8, flexShrink: 0,
-                background: `${selectedLente?.cor ?? '#3b82f6'}22`,
+                width: 26, height: 26, borderRadius: 8, flexShrink: 0,
+                background: `${cor}18`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 10, fontWeight: 700,
-                color: selectedLente?.cor ?? '#3b82f6',
-                fontFamily: 'var(--mono)',
+                fontSize: 10, fontWeight: 800, color: cor, fontFamily: 'var(--mono)',
               }}>
                 {String(i + 1).padStart(2, '0')}
               </div>
-              <span style={{
-                fontSize: 12, color: '#64748b', lineHeight: 1.5,
-                fontFamily: 'var(--sans)',
-              }}>
+              <span style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.5 }}>
                 {rec}
               </span>
             </div>
@@ -325,84 +420,40 @@ export default function MapaVisual() {
         </div>
       </div>
 
-      {/* Drum pickers — prescrição */}
+      {/* Bottom — drum pickers */}
       <div style={{
-        background: '#0a0c12',
-        borderTop: '1px solid #1a1f2e',
-        padding: '16px 24px',
-        display: 'flex',
-        gap: 12,
-        alignItems: 'flex-end',
-        overflowX: 'auto',
+        background: '#07080e',
+        borderTop: '1px solid #12141c',
+        padding: '10px 16px 10px',
+        display: 'flex', gap: 8, alignItems: 'flex-end',
+        flexShrink: 0,
       }}>
         <div style={{
-          fontSize: 11, color: '#3d4a5c', fontFamily: 'var(--mono)',
-          textTransform: 'uppercase', letterSpacing: '0.08em',
-          fontWeight: 600, marginRight: 8, whiteSpace: 'nowrap',
-          alignSelf: 'center',
-        }}>
-          Prescrição
-        </div>
-        <DrumPicker
-          label="Esférico"
-          values={ESF_VALUES}
-          selected={esf}
-          onChange={setEsf}
-          color={selectedLente?.cor ?? '#3b82f6'}
-        />
-        <DrumPicker
-          label="Cilíndrico"
-          values={CIL_VALUES}
-          selected={cil}
-          onChange={setCil}
-          color={selectedLente?.cor ?? '#3b82f6'}
-        />
-        <DrumPicker
-          label="Adição"
-          values={ADD_VALUES}
-          selected={add}
-          onChange={setAdd}
-          color={selectedLente?.cor ?? '#3b82f6'}
-        />
-        <div style={{ width: 1, background: '#1a1f2e', height: 80, alignSelf: 'center', flexShrink: 0, margin: '0 4px' }} />
-        <DrumPicker
-          label="DNP"
-          values={DNP_VALUES}
-          selected={dnp}
-          onChange={setDnp}
-          color="#64748b"
-        />
+          fontSize: 9, color: '#374151', fontFamily: 'var(--mono)',
+          textTransform: 'uppercase', letterSpacing: '0.1em',
+          writingMode: 'vertical-rl', transform: 'rotate(180deg)',
+          alignSelf: 'center', marginRight: 4, flexShrink: 0,
+        }}>RX</div>
 
-        <div style={{ flex: 1 }} />
+        <DrumPicker label="ESF" values={ESF} selected={esf} onChange={setEsf} color={cor} />
+        <DrumPicker label="CIL" values={CIL} selected={cil} onChange={setCil} color={cor} />
+        <DrumPicker label="ADD" values={ADD} selected={add} onChange={setAdd} color={cor} />
 
-        {/* Prescrição selecionada resumida */}
+        <div style={{ width: 1, background: '#1e2030', alignSelf: 'stretch', flexShrink: 0, margin: '0 4px' }} />
+
+        <DrumPicker label="DNP" values={DNP} selected={dnp} onChange={setDnp} color="#4b5563" />
+
+        {/* Resumo */}
         <div style={{
-          background: '#0f1218', border: '1px solid #1a1f2e',
-          borderRadius: 12, padding: '10px 16px',
-          minWidth: 160, flexShrink: 0,
+          marginLeft: 'auto', background: '#0c0d12',
+          border: '1px solid #1e2030', borderRadius: 12,
+          padding: '10px 16px', flexShrink: 0, minWidth: 130,
         }}>
-          <div style={{
-            fontSize: 10, color: '#3d4a5c', fontFamily: 'var(--mono)',
-            textTransform: 'uppercase', marginBottom: 6,
-          }}>
-            Resumo
-          </div>
-          <div style={{
-            display: 'grid', gridTemplateColumns: '1fr 1fr',
-            gap: '2px 16px',
-          }}>
-            {[
-              ['Esf', esf],
-              ['Cil', cil],
-              ['Add', add !== '0.00' ? add : '—'],
-              ['DNP', dnp],
-            ].map(([k, v]) => (
-              <div key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 10, color: '#3d4a5c', fontFamily: 'var(--mono)' }}>{k}</span>
-                <span style={{
-                  fontSize: 12, fontWeight: 700, fontFamily: 'var(--mono)',
-                  color: selectedLente?.cor ?? '#3b82f6',
-                }}>{v}</span>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px 20px' }}>
+            {[['ESF', esf], ['CIL', cil], ['ADD', add !== '0.00' ? add : '—'], ['DNP', dnp]].map(([k, v]) => (
+              <div key={k} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: 9, color: '#374151', fontFamily: 'var(--mono)' }}>{k}</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: cor, fontFamily: 'var(--mono)' }}>{v}</span>
               </div>
             ))}
           </div>
@@ -412,14 +463,12 @@ export default function MapaVisual() {
   );
 }
 
-function badgeStyle(bg: string): React.CSSProperties {
-  return {
-    background: bg,
-    border: '1px solid #2a2f3e',
-    borderRadius: 8,
-    padding: '3px 10px',
-    fontSize: 11,
-    color: '#64748b',
-    fontFamily: 'var(--mono)',
-  };
+function Badge({ label }: { label: string }) {
+  return (
+    <span style={{
+      background: '#0c0d12', border: '1px solid #1e2030',
+      borderRadius: 6, padding: '2px 9px',
+      fontSize: 10, color: '#4b5563', fontFamily: 'var(--mono)',
+    }}>{label}</span>
+  );
 }

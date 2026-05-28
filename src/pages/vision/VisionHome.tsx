@@ -5,63 +5,72 @@ const TILES = [
   {
     id: 'mapa-visual',
     label: 'Mapa Visual',
-    desc: 'Simulador de lentes por prescrição',
+    desc: 'Simulador de prescrição',
+    path: '/vision/mapa-visual',
+    color: '#3b82f6',
+    bg: 'linear-gradient(145deg, #0c1829 0%, #050f1f 100%)',
+    border: '#1e3a5f',
     icon: (
-      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+      <svg width="52" height="52" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="9" stroke="#3b82f6" strokeWidth="1.2" strokeDasharray="3 2" />
+        <circle cx="12" cy="12" r="5" stroke="#3b82f6" strokeWidth="1.5" />
+        <circle cx="12" cy="12" r="2" fill="#3b82f6" />
+        <line x1="12" y1="3" x2="12" y2="6" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" />
+        <line x1="12" y1="18" x2="12" y2="21" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" />
+        <line x1="3" y1="12" x2="6" y2="12" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" />
+        <line x1="18" y1="12" x2="21" y2="12" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" />
       </svg>
     ),
-    color: '#3b82f6',
-    glow: 'rgba(59,130,246,0.18)',
-    path: '/vision/mapa-visual',
   },
   {
     id: 'demonstracoes',
     label: 'Demonstrações',
-    desc: 'Superfície, tratamentos e fotossensível',
+    desc: 'Superfície · Tratamentos · Foto',
+    path: '/vision/demonstracoes',
+    color: '#22c55e',
+    bg: 'linear-gradient(145deg, #0b1e13 0%, #050f0a 100%)',
+    border: '#14532d',
     icon: (
-      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="3"/>
-        <path d="M20.188 10.934c.2.646.312 1.349.312 2.066 0 4.418-3.582 8-8 8s-8-3.582-8-8 3.582-8 8-8c1.858 0 3.574.633 4.938 1.688"/>
-        <path d="M22 12h-4"/>
-        <path d="M12 2v4"/>
+      <svg width="52" height="52" viewBox="0 0 24 24" fill="none">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="#22c55e" strokeWidth="1.5" />
+        <circle cx="12" cy="12" r="3" stroke="#22c55e" strokeWidth="1.5" />
+        <path d="M12 9v-2M12 17v-2M9 12H7M17 12h-2" stroke="#22c55e" strokeWidth="1.2" strokeLinecap="round" />
       </svg>
     ),
-    color: '#22c55e',
-    glow: 'rgba(34,197,94,0.18)',
-    path: '/vision/demonstracoes',
   },
   {
     id: 'os',
     label: 'Ordem de Serviço',
-    desc: 'Receita, laboratório e fechamento',
+    desc: 'Receita · Lab · Fechamento',
+    path: '/vision/os',
+    color: '#a855f7',
+    bg: 'linear-gradient(145deg, #150d22 0%, #0c050f 100%)',
+    border: '#3b0764',
     icon: (
-      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-        <polyline points="14 2 14 8 20 8"/>
-        <line x1="16" y1="13" x2="8" y2="13"/>
-        <line x1="16" y1="17" x2="8" y2="17"/>
-        <polyline points="10 9 9 9 8 9"/>
+      <svg width="52" height="52" viewBox="0 0 24 24" fill="none">
+        <rect x="4" y="2" width="16" height="20" rx="2" stroke="#a855f7" strokeWidth="1.5" />
+        <line x1="8" y1="7" x2="16" y2="7" stroke="#a855f7" strokeWidth="1.2" strokeLinecap="round" />
+        <line x1="8" y1="11" x2="16" y2="11" stroke="#a855f7" strokeWidth="1.2" strokeLinecap="round" />
+        <line x1="8" y1="15" x2="13" y2="15" stroke="#a855f7" strokeWidth="1.2" strokeLinecap="round" />
       </svg>
     ),
-    color: '#a855f7',
-    glow: 'rgba(168,85,247,0.18)',
-    path: '/vision/os',
   },
   {
     id: 'atendimentos',
     label: 'Atendimentos',
-    desc: 'Histórico de OS e estatísticas',
+    desc: 'Histórico · Estatísticas',
+    path: '/vision/atendimentos',
+    color: '#f59e0b',
+    bg: 'linear-gradient(145deg, #1a1205 0%, #0f0a02 100%)',
+    border: '#451a03',
     icon: (
-      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="18" y1="20" x2="18" y2="10"/>
-        <line x1="12" y1="20" x2="12" y2="4"/>
-        <line x1="6" y1="20" x2="6" y2="14"/>
+      <svg width="52" height="52" viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="3" width="18" height="18" rx="2" stroke="#f59e0b" strokeWidth="1.5" />
+        <line x1="8" y1="17" x2="8" y2="12" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" />
+        <line x1="12" y1="17" x2="12" y2="7" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" />
+        <line x1="16" y1="17" x2="16" y2="10" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" />
       </svg>
     ),
-    color: '#f59e0b',
-    glow: 'rgba(245,158,11,0.18)',
-    path: '/vision/atendimentos',
   },
 ];
 
@@ -71,85 +80,108 @@ export default function VisionHome() {
 
   return (
     <div style={{
-      minHeight: 'calc(100vh - 56px)',
+      height: '100dvh',
       display: 'flex',
       flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '32px 24px',
-      gap: 32,
+      background: '#050508',
     }}>
       {/* Header */}
-      <div style={{ textAlign: 'center' }}>
-        <div style={{
-          fontSize: 13, color: '#3b82f6', fontWeight: 600, letterSpacing: '0.08em',
-          textTransform: 'uppercase', marginBottom: 8, fontFamily: 'var(--mono)',
-        }}>
-          {tenant?.nome ?? 'Ótica'}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '0 28px',
+        height: 52,
+        background: '#07080e',
+        borderBottom: '1px solid #12141c',
+        flexShrink: 0,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{
+            width: 30, height: 30, borderRadius: 9,
+            background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 15, fontWeight: 800, color: '#fff', letterSpacing: '-0.5px',
+          }}>V</div>
+          <span style={{ fontSize: 16, fontWeight: 700, color: '#f0f0f5', letterSpacing: '-0.3px' }}>
+            Conect Vision
+          </span>
         </div>
-        <h1 style={{
-          margin: 0, fontSize: 28, fontWeight: 700, color: '#e8eaf0', lineHeight: 1.2,
-        }}>
-          Conect Vision
-        </h1>
-        <p style={{ margin: '8px 0 0', fontSize: 14, color: '#4a5568' }}>
-          Selecione um módulo para começar
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e' }} />
+          <span style={{ fontSize: 13, color: '#6b7280', fontWeight: 500 }}>
+            {tenant?.nome ?? 'Ótica'}
+          </span>
+        </div>
       </div>
 
-      {/* Grid de tiles */}
+      {/* Tiles grid */}
       <div style={{
+        flex: 1,
         display: 'grid',
-        gridTemplateColumns: 'repeat(2, 1fr)',
-        gap: 16,
-        width: '100%',
-        maxWidth: 680,
+        gridTemplateColumns: '1fr 1fr',
+        gridTemplateRows: '1fr 1fr',
+        gap: 2,
+        padding: 2,
       }}>
         {TILES.map((tile) => (
           <button
             key={tile.id}
             onClick={() => navigate(tile.path)}
             style={{
-              background: '#0d1018',
-              border: `1px solid ${tile.glow.replace('0.18', '0.3')}`,
-              borderRadius: 20,
-              padding: '32px 24px',
+              background: tile.bg,
+              border: `1px solid ${tile.border}`,
+              borderRadius: 16,
               cursor: 'pointer',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'flex-start',
-              gap: 16,
+              justifyContent: 'flex-end',
+              padding: '28px 32px',
+              gap: 0,
               textAlign: 'left',
-              transition: 'transform 0.15s, box-shadow 0.15s',
-              boxShadow: `0 4px 24px ${tile.glow}`,
-              minHeight: 160,
+              position: 'relative',
+              overflow: 'hidden',
+              transition: 'transform 0.12s, filter 0.12s',
+              WebkitTapHighlightColor: 'transparent',
             }}
-            onMouseEnter={e => {
-              (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px)';
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 8px 32px ${tile.glow.replace('0.18', '0.32')}`;
-            }}
-            onMouseLeave={e => {
-              (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)';
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 4px 24px ${tile.glow}`;
-            }}
+            onPointerDown={e => (e.currentTarget.style.transform = 'scale(0.985)')}
+            onPointerUp={e => (e.currentTarget.style.transform = 'scale(1)')}
+            onPointerLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
           >
+            {/* Glow top-right */}
             <div style={{
-              width: 60, height: 60, borderRadius: 16,
-              background: tile.glow,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: tile.color,
-            }}>
+              position: 'absolute', top: -40, right: -40,
+              width: 160, height: 160, borderRadius: '50%',
+              background: `radial-gradient(circle, ${tile.color}28 0%, transparent 70%)`,
+              pointerEvents: 'none',
+            }} />
+
+            {/* Icon */}
+            <div style={{ marginBottom: 20 }}>
               {tile.icon}
             </div>
-            <div>
-              <div style={{
-                fontSize: 17, fontWeight: 700, color: '#e8eaf0', marginBottom: 4,
-              }}>
-                {tile.label}
-              </div>
-              <div style={{ fontSize: 13, color: '#4a5568', lineHeight: 1.4 }}>
-                {tile.desc}
-              </div>
+
+            <div style={{
+              fontSize: 20, fontWeight: 700, color: '#f0f0f5',
+              letterSpacing: '-0.3px', lineHeight: 1.1,
+            }}>
+              {tile.label}
+            </div>
+            <div style={{
+              fontSize: 13, color: '#6b7280', marginTop: 6, lineHeight: 1.4,
+            }}>
+              {tile.desc}
+            </div>
+
+            {/* Arrow */}
+            <div style={{
+              position: 'absolute', top: 24, right: 24,
+              color: tile.color, opacity: 0.5,
+            }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
             </div>
           </button>
         ))}
