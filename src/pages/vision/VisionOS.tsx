@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 
 type Tab = 'cliente' | 'receita' | 'laboratorio' | 'fechamento' | 'busca';
+type BuscaTipo = 'numero' | 'data' | 'nome' | 'cpf';
+type BuscaLista = 'os' | 'excluidas' | 'clientes';
 
 interface OSData {
   cliente_nome: string; cliente_cpf: string; cliente_rg: string;
@@ -13,13 +15,24 @@ interface OSData {
   cliente_vendedor: string;
   od_esf: string; od_cil: string; od_eixo: string;
   od_adicao: string; od_dnp: string; od_alt: string;
+  od_prisma_h: string; od_base_h: string; od_prisma_v: string; od_base_v: string;
   oe_esf: string; oe_cil: string; oe_eixo: string;
   oe_adicao: string; oe_dnp: string; oe_alt: string;
-  medico_nome: string; medico_crm: string; data_receita: string;
-  arm_dnp: string; arm_vertical: string; arm_ponte: string;
-  arm_aro: string; arm_alt_pupilar: string;
-  lente_desc: string; valor_lente: string; valor_armacao: string;
-  desconto: string; forma_pagamento: string; parcelas: string; tipo: string;
+  oe_prisma_h: string; oe_base_h: string; oe_prisma_v: string; oe_base_v: string;
+  medico_nome: string; medico_crm: string; data_receita: string; receita_obs: string;
+  arm_dnp_od: string; arm_dnp_oe: string;
+  arm_vertical: string; arm_ponte: string; arm_aro: string;
+  arm_alt_pupilar_od: string; arm_alt_pupilar_oe: string;
+  arm_dv: string; arm_diag_maior: string; arm_ip: string; arm_ca: string;
+  arm_tipo: string; arm_obs: string;
+  lentes_nome: string; lentes_desc: string; lentes_obs: string;
+  armacao_nome: string; armacao_obs: string;
+  data_entrega: string;
+  desconto: string; acrescimo: string;
+  forma_pagamento: string; parcelas: string; tipo: string;
+  valor_lente: string; valor_armacao: string;
+  // kept for API compat
+  arm_dnp: string; arm_alt_pupilar: string; lente_desc: string;
 }
 
 interface VisionOSRow {
@@ -35,25 +48,50 @@ const EMPTY: OSData = {
   cliente_obs: '', cliente_nascimento: '', cliente_sexo: '',
   cliente_vendedor: '',
   od_esf: '', od_cil: '', od_eixo: '', od_adicao: '', od_dnp: '', od_alt: '',
+  od_prisma_h: '', od_base_h: '', od_prisma_v: '', od_base_v: '',
   oe_esf: '', oe_cil: '', oe_eixo: '', oe_adicao: '', oe_dnp: '', oe_alt: '',
-  medico_nome: '', medico_crm: '', data_receita: '',
-  arm_dnp: '', arm_vertical: '', arm_ponte: '', arm_aro: '', arm_alt_pupilar: '',
-  lente_desc: '', valor_lente: '', valor_armacao: '', desconto: '',
-  forma_pagamento: 'Cartão', parcelas: '1', tipo: 'orcamento',
+  oe_prisma_h: '', oe_base_h: '', oe_prisma_v: '', oe_base_v: '',
+  medico_nome: '', medico_crm: '', data_receita: '', receita_obs: '',
+  arm_dnp_od: '', arm_dnp_oe: '',
+  arm_vertical: '', arm_ponte: '', arm_aro: '',
+  arm_alt_pupilar_od: '', arm_alt_pupilar_oe: '',
+  arm_dv: '', arm_diag_maior: '', arm_ip: '', arm_ca: '',
+  arm_tipo: '---', arm_obs: '',
+  lentes_nome: '', lentes_desc: '', lentes_obs: '',
+  armacao_nome: '', armacao_obs: '',
+  data_entrega: '',
+  desconto: '0', acrescimo: '0',
+  forma_pagamento: 'Cartão', parcelas: '12', tipo: 'orcamento',
+  valor_lente: '0', valor_armacao: '0',
+  arm_dnp: '', arm_alt_pupilar: '', lente_desc: '',
 };
 
 const UFS = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
 
-// ─── Estilos base ─────────────────────────────────────────────────────────────
+function fmtEsf(v: number) { return (v > 0 ? '+' : '') + v.toFixed(2); }
+const ESF_VALS = ['', ...Array.from({ length: 161 }, (_, i) => fmtEsf(20 - i * 0.25))];
+const CIL_VALS = ['', 'plano', ...Array.from({ length: 32 }, (_, i) => (-(i + 1) * 0.25).toFixed(2))];
+const ADD_VALS = ['', ...Array.from({ length: 16 }, (_, i) => '+' + ((i + 1) * 0.25).toFixed(2))];
+const BASE_VALS = ['', 'IN', 'OUT', 'UP', 'DOWN'];
+const ARM_TIPOS = ['---', 'Aro fechado', 'Nylon', 'Parafuso', 'Balgriff', 'Sem aro'];
+
 const BG = '#d4d0c8';
-const FIELD_BG = '#ffffff';
 const BORDER = '#888';
-const LABEL: React.CSSProperties = { fontSize: 11, color: '#444', fontStyle: 'italic', fontFamily: 'Arial, sans-serif', display: 'block', marginBottom: 1 };
+const LABEL: React.CSSProperties = {
+  fontSize: 11, color: '#444', fontStyle: 'italic',
+  fontFamily: 'Arial, sans-serif', display: 'block', marginBottom: 1,
+};
 const INPUT: React.CSSProperties = {
-  background: FIELD_BG, border: `1px solid ${BORDER}`,
+  background: '#fff', border: `1px solid ${BORDER}`,
   padding: '4px 6px', fontSize: 13, fontFamily: 'Arial, sans-serif',
-  color: '#000', outline: 'none', width: '100%', boxSizing: 'border-box',
-  borderRadius: 0,
+  color: '#000', outline: 'none', width: '100%',
+  boxSizing: 'border-box', borderRadius: 0,
+};
+const SEL: React.CSSProperties = { ...INPUT, padding: '3px 2px', cursor: 'pointer' };
+const BTN: React.CSSProperties = {
+  background: '#4a4a48', border: '1px solid #333',
+  padding: '6px 14px', fontSize: 12, fontWeight: 'bold',
+  cursor: 'pointer', color: '#fff', whiteSpace: 'nowrap', borderRadius: 0,
 };
 
 function F({ label, value, onChange, placeholder = '', type = 'text', style = {} }: {
@@ -62,25 +100,109 @@ function F({ label, value, onChange, placeholder = '', type = 'text', style = {}
 }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', ...style }}>
-      <label style={LABEL}>{label}</label>
+      {label && <label style={LABEL}>{label}</label>}
       <input type={type} value={value} onChange={e => onChange(e.target.value)}
         placeholder={placeholder} style={INPUT} />
     </div>
   );
 }
 
-function RxCell({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+function Radio({ checked, onClick }: { checked: boolean; onClick: () => void }) {
   return (
-    <td style={{ padding: '2px 3px' }}>
-      <div style={{ fontSize: 9, color: '#555', fontStyle: 'italic', fontFamily: 'Arial', marginBottom: 1 }}>{label}</div>
-      <input value={value} onChange={e => onChange(e.target.value)}
-        style={{ ...INPUT, width: 62, textAlign: 'center', fontSize: 13 }} />
-    </td>
+    <div onClick={onClick} style={{
+      width: 16, height: 16, borderRadius: '50%', border: '2px solid #666',
+      background: '#fff', boxSizing: 'border-box', cursor: 'pointer',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+    }}>
+      {checked && <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#1144cc' }} />}
+    </div>
   );
 }
 
 function totalOS(data: OSData) {
-  return Math.max(0, (parseFloat(data.valor_lente) || 0) + (parseFloat(data.valor_armacao) || 0) - (parseFloat(data.desconto) || 0));
+  const lente = parseFloat(data.valor_lente) || 0;
+  const armacao = parseFloat(data.valor_armacao) || 0;
+  const desc = parseFloat(data.desconto) || 0;
+  const acres = parseFloat(data.acrescimo) || 0;
+  return Math.max(0, lente + armacao - desc + acres);
+}
+
+// ── Glasses SVG ────────────────────────────────────────────────────────────────
+function GlassesSVG({ data }: { data: OSData }) {
+  const v = (val: string) => val || '';
+  return (
+    <svg viewBox="0 0 720 260" width="100%" style={{ display: 'block', background: '#c8c4bc' }}>
+      {/* Lentes */}
+      <rect x="55" y="55" width="250" height="155" rx="26" fill="rgba(180,200,220,0.25)" stroke="#555" strokeWidth="15" />
+      <rect x="415" y="55" width="250" height="155" rx="26" fill="rgba(180,200,220,0.25)" stroke="#555" strokeWidth="15" />
+      {/* Ponte */}
+      <path d="M305 115 Q360 96 415 115" fill="none" stroke="#555" strokeWidth="13" />
+      {/* Hastes */}
+      <line x1="55" y1="112" x2="8" y2="112" stroke="#555" strokeWidth="13" strokeLinecap="round" />
+      <line x1="665" y1="112" x2="712" y2="112" stroke="#555" strokeWidth="13" strokeLinecap="round" />
+
+      {/* ── Setas e rótulos ── */}
+      {/* DNP OD */}
+      <line x1="360" y1="28" x2="540" y2="28" stroke="#444" strokeWidth="1.2" />
+      <polygon points="360,24 360,32 354,28" fill="#444" />
+      <polygon points="540,24 540,32 546,28" fill="#444" />
+      <text x="450" y="20" textAnchor="middle" fontSize="12" fontFamily="Arial" fontWeight="bold" fill="#222">DNP OD</text>
+      {/* DNP OE */}
+      <line x1="180" y1="28" x2="360" y2="28" stroke="#444" strokeWidth="1.2" />
+      <polygon points="180,24 180,32 174,28" fill="#444" />
+      <text x="270" y="20" textAnchor="middle" fontSize="12" fontFamily="Arial" fontWeight="bold" fill="#222">DNP OE</text>
+
+      {/* VERTICAL - seta central */}
+      <line x1="360" y1="55" x2="360" y2="210" stroke="#444" strokeWidth="1.2" />
+      <polygon points="356,55 364,55 360,49" fill="#444" />
+      <polygon points="356,210 364,210 360,216" fill="#444" />
+      <text x="372" y="138" fontSize="11" fontFamily="Arial" fill="#333">VERTICAL</text>
+
+      {/* PONTE rótulo */}
+      <text x="360" y="170" textAnchor="middle" fontSize="11" fontFamily="Arial" fill="#333">PONTE</text>
+
+      {/* ARO - horizontal direita */}
+      <line x1="415" y1="228" x2="665" y2="228" stroke="#444" strokeWidth="1.2" />
+      <polygon points="415,224 415,232 409,228" fill="#444" />
+      <polygon points="665,224 665,232 671,228" fill="#444" />
+      <text x="540" y="244" textAnchor="middle" fontSize="11" fontFamily="Arial" fill="#333">ARO</text>
+
+      {/* ALT PUPILAR OD - esquerda */}
+      <line x1="46" y1="55" x2="46" y2="210" stroke="#444" strokeWidth="1.2" />
+      <polygon points="42,55 50,55 46,49" fill="#444" />
+      <polygon points="42,210 50,210 46,216" fill="#444" />
+      <text x="30" y="133" fontSize="10" fontFamily="Arial" fill="#333" textAnchor="middle" transform="rotate(-90,30,133)">ALT PUPILAR OD</text>
+
+      {/* ALT PUPILAR OE - direita */}
+      <line x1="674" y1="55" x2="674" y2="210" stroke="#444" strokeWidth="1.2" />
+      <polygon points="670,55 678,55 674,49" fill="#444" />
+      <polygon points="670,210 678,210 674,216" fill="#444" />
+      <text x="692" y="133" fontSize="10" fontFamily="Arial" fill="#333" textAnchor="middle" transform="rotate(90,692,133)">ALT PUPILAR OE</text>
+
+      {/* ── Caixas de valores ── */}
+      {/* DNP OD */}
+      <rect x="425" y="32" width="50" height="20" fill="#fff" stroke="#888" strokeWidth="1" />
+      <text x="450" y="46" textAnchor="middle" fontSize="12" fontFamily="Arial" fill="#000">{v(data.arm_dnp_od)}</text>
+      {/* DNP OE */}
+      <rect x="245" y="32" width="50" height="20" fill="#fff" stroke="#888" strokeWidth="1" />
+      <text x="270" y="46" textAnchor="middle" fontSize="12" fontFamily="Arial" fill="#000">{v(data.arm_dnp_oe)}</text>
+      {/* VERTICAL */}
+      <rect x="335" y="127" width="50" height="20" fill="#fff" stroke="#888" strokeWidth="1" />
+      <text x="360" y="141" textAnchor="middle" fontSize="12" fontFamily="Arial" fill="#000">{v(data.arm_vertical)}</text>
+      {/* PONTE */}
+      <rect x="335" y="174" width="50" height="20" fill="#fff" stroke="#888" strokeWidth="1" />
+      <text x="360" y="188" textAnchor="middle" fontSize="12" fontFamily="Arial" fill="#000">{v(data.arm_ponte)}</text>
+      {/* ARO */}
+      <rect x="515" y="232" width="50" height="20" fill="#fff" stroke="#888" strokeWidth="1" />
+      <text x="540" y="246" textAnchor="middle" fontSize="12" fontFamily="Arial" fill="#000">{v(data.arm_aro)}</text>
+      {/* ALT PUPILAR OD */}
+      <rect x="14" y="225" width="50" height="20" fill="#fff" stroke="#888" strokeWidth="1" />
+      <text x="39" y="239" textAnchor="middle" fontSize="12" fontFamily="Arial" fill="#000">{v(data.arm_alt_pupilar_od)}</text>
+      {/* ALT PUPILAR OE */}
+      <rect x="656" y="225" width="50" height="20" fill="#fff" stroke="#888" strokeWidth="1" />
+      <text x="681" y="239" textAnchor="middle" fontSize="12" fontFamily="Arial" fill="#000">{v(data.arm_alt_pupilar_oe)}</text>
+    </svg>
+  );
 }
 
 export default function VisionOS() {
@@ -91,6 +213,8 @@ export default function VisionOS() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [busca, setBusca] = useState('');
+  const [buscaTipo, setBuscaTipo] = useState<BuscaTipo>('numero');
+  const [buscaLista, setBuscaLista] = useState<BuscaLista>('os');
 
   function set(field: keyof OSData) { return (v: string) => setData(p => ({ ...p, [field]: v })); }
 
@@ -106,15 +230,20 @@ export default function VisionOS() {
         oe_esf: data.oe_esf || null, oe_cil: data.oe_cil || null,
         oe_eixo: data.oe_eixo ? parseInt(data.oe_eixo) : null,
         oe_adicao: data.oe_adicao || null, oe_dnp: data.oe_dnp || null, oe_alt: data.oe_alt || null,
-        arm_dnp: data.arm_dnp || null, arm_vertical: data.arm_vertical || null,
-        arm_ponte: data.arm_ponte || null, arm_aro: data.arm_aro || null,
-        arm_alt_pupilar: data.arm_alt_pupilar || null,
+        arm_dnp: data.arm_dnp_od || null,
+        arm_vertical: data.arm_vertical || null,
+        arm_ponte: data.arm_ponte || null,
+        arm_aro: data.arm_aro || null,
+        arm_alt_pupilar: data.arm_alt_pupilar_od || null,
+        lente_desc: data.lentes_nome || null,
         valor_lente: parseFloat(data.valor_lente) || 0,
         valor_armacao: parseFloat(data.valor_armacao) || 0,
         desconto: parseFloat(data.desconto) || 0,
-        valor_total: total, parcelas: parseInt(data.parcelas) || 1,
+        valor_total: total,
+        parcelas: parseInt(data.parcelas) || 12,
       });
-      setSaved(true); setData({ ...EMPTY });
+      setSaved(true);
+      setData({ ...EMPTY });
       setTimeout(() => setSaved(false), 2500);
     } catch { alert('Erro ao salvar OS.'); }
     finally { setSaving(false); }
@@ -122,7 +251,7 @@ export default function VisionOS() {
 
   async function carregarBusca() {
     try {
-      const rows = await api.get<VisionOSRow[]>(`/vision/os?q=${encodeURIComponent(busca)}&limit=30`);
+      const rows = await api.get<VisionOSRow[]>(`/vision/os?q=${encodeURIComponent(busca)}&limit=50`);
       setOslist(rows);
     } catch { /**/ }
   }
@@ -130,16 +259,23 @@ export default function VisionOS() {
   useEffect(() => { if (tab === 'busca') carregarBusca(); }, [tab]);
 
   const total = totalOS(data);
-  const TABS: [Tab, string][] = [['cliente','CLIENTE'],['receita','RECEITA'],['laboratorio','LABORATÓRIO'],['fechamento','FECHAMENTO'],['busca','BUSCA']];
+  const parc = parseInt(data.parcelas) || 12;
+  const TABS: [Tab, string][] = [
+    ['cliente', 'CLIENTE'], ['receita', 'RECEITA'],
+    ['laboratorio', 'LABORATÓRIO'], ['fechamento', 'FECHAMENTO'], ['busca', 'BUSCA'],
+  ];
 
   return (
-    <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: BG, fontFamily: 'Arial, sans-serif', userSelect: 'none' }}>
+    <div style={{
+      height: '100dvh', display: 'flex', flexDirection: 'column',
+      background: BG, fontFamily: 'Arial, sans-serif', userSelect: 'none', overflow: 'hidden',
+    }}>
 
-      {/* Header — resumo do paciente */}
+      {/* ── Header ── */}
       <div style={{
-        display: 'flex', alignItems: 'center', gap: 0,
+        display: 'flex', alignItems: 'center',
         background: '#b8c8d8', borderBottom: '1px solid #8899aa',
-        padding: '3px 10px', flexShrink: 0, fontSize: 12, color: '#000',
+        padding: '3px 0', flexShrink: 0, fontSize: 12,
       }}>
         {[
           ['Cliente', data.cliente_nome],
@@ -148,301 +284,562 @@ export default function VisionOS() {
           ['RG', data.cliente_rg],
           ['Nascimento', data.cliente_nascimento],
         ].map(([label, val], i) => (
-          <div key={i} style={{ display: 'flex', gap: 4, marginRight: 28 }}>
-            <span style={{ color: '#334', fontWeight: 'bold' }}>{label}:</span>
-            <span style={{ color: val ? '#000' : '#889' }}>{val || ''}</span>
+          <div key={i} style={{
+            flex: 1, display: 'flex', gap: 4, padding: '0 12px',
+            borderRight: i < 4 ? '1px solid #99aabc' : 'none',
+          }}>
+            <span style={{ fontWeight: 'bold', color: '#223', whiteSpace: 'nowrap' }}>{label}:</span>
+            <span style={{ color: val ? '#000' : '#889', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{val || ''}</span>
           </div>
         ))}
       </div>
 
-      {/* Tab bar */}
-      <div style={{
-        display: 'flex', alignItems: 'stretch',
-        background: '#3c3c3c', flexShrink: 0,
-      }}>
-        {/* Título da OS */}
+      {/* ── Tab bar ── */}
+      <div style={{ display: 'flex', alignItems: 'stretch', background: '#3c3c3c', flexShrink: 0 }}>
         <div style={{
-          padding: '0 18px', display: 'flex', alignItems: 'center',
-          background: '#282828', color: '#fff',
+          padding: '0 16px', display: 'flex', alignItems: 'center',
+          background: '#2a2a2a', color: '#ccc',
           fontSize: 12, fontWeight: 'bold', letterSpacing: '.06em',
-          borderRight: '1px solid #555', cursor: 'pointer',
+          borderRight: '1px solid #555', cursor: 'pointer', whiteSpace: 'nowrap',
         }} onClick={() => navigate('/vision')}>
           ← ORDEM DE SERVIÇO
         </div>
-
-        {/* Tabs */}
         {TABS.map(([t, label]) => (
           <button key={t} onClick={() => setTab(t)} style={{
-            background: tab === t ? BG : '#505050',
+            background: tab === t ? BG : 'transparent',
             border: 'none', borderRight: '1px solid #555',
-            padding: '8px 16px', cursor: 'pointer',
+            padding: '8px 20px', cursor: 'pointer',
             fontSize: 12, fontWeight: 'bold', letterSpacing: '.05em',
-            color: tab === t ? '#000' : '#ccc',
-            borderBottom: tab === t ? `1px solid ${BG}` : 'none',
-            marginBottom: tab === t ? -1 : 0,
+            color: tab === t ? '#000' : '#bbb',
           }}>{label}</button>
         ))}
+        <div style={{ flex: 1 }} />
       </div>
 
-      {/* Conteúdo */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>
+      {/* ── Conteúdo ── */}
+      <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
 
-        {/* CLIENTE */}
+        {/* ════ CLIENTE ════ */}
         {tab === 'cliente' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 900 }}>
-            {/* Linha 1: Cliente radio + Pesquisa + Vendedor */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '6px 0' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
-                <span style={{ fontWeight: 'bold' }}>Cliente:</span>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontStyle: 'italic', fontSize: 12 }}>
-                  <input type="radio" name="paciente" defaultChecked style={{ accentColor: '#1144aa' }} />
-                  É o Paciente
-                </label>
-              </div>
-              <button style={{
-                background: '#e8e4e0', border: '2px outset #ccc',
-                padding: '4px 18px', fontSize: 12, fontWeight: 'bold',
-                cursor: 'pointer', letterSpacing: '.04em',
-              }}>PESQUISA</button>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
-                <span style={{ fontSize: 13, fontWeight: 'bold', whiteSpace: 'nowrap' }}>Vendedor:</span>
-                <input value={data.cliente_vendedor} onChange={e => set('cliente_vendedor')(e.target.value)}
-                  style={{ ...INPUT, flex: 1 }} />
-              </div>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 7 }}>
+            {/* Row 1 */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 12, fontWeight: 'bold' }}>Data Nascimento:</span>
+                <span style={{ fontSize: 13, fontWeight: 'bold' }}>Cliente:</span>
+                <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#1144cc', border: '3px solid #fff', boxShadow: '0 0 0 2px #1144cc', flexShrink: 0 }} />
+                <span style={{ fontSize: 13, fontStyle: 'italic' }}>É o Paciente</span>
+              </div>
+              <button style={{ background: '#e8e4e0', border: '2px outset #ccc', padding: '4px 16px', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' }}>
+                PESQUISA
+              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
+                <span style={{ fontSize: 13, fontWeight: 'bold', whiteSpace: 'nowrap' }}>Vendedor:</span>
+                <input value={data.cliente_vendedor} onChange={e => set('cliente_vendedor')(e.target.value)} style={{ ...INPUT, flex: 1 }} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <label style={LABEL}>Data Nascimento:</label>
                 <input value={data.cliente_nascimento} onChange={e => set('cliente_nascimento')(e.target.value)}
-                  placeholder="DD/MM/AAAA" style={{ ...INPUT, width: 110 }} />
+                  placeholder="DD/MM/AAAA" style={{ ...INPUT, width: 120 }} />
               </div>
             </div>
 
-            {/* Linha 2: CPF + RG + Sexo */}
-            <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>
+            {/* Row 2: CPF + RG + Sexo */}
+            <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
               <F label="CPF" value={data.cliente_cpf} onChange={set('cliente_cpf')} placeholder="000.000.000-00" style={{ flex: 2 }} />
-              <F label="RG" value={data.cliente_rg} onChange={set('cliente_rg')} placeholder="000.000.000-0" style={{ flex: 2 }} />
-              <div style={{ display: 'flex', flexDirection: 'column', paddingBottom: 2 }}>
-                <span style={{ ...LABEL }}>Sexo:</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14, height: 27 }}>
-                  {['Masc', 'Fem'].map(s => (
-                    <label key={s} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, cursor: 'pointer' }}>
-                      <input type="radio" name="sexo" value={s}
-                        checked={data.cliente_sexo === s} onChange={() => set('cliente_sexo')(s)}
-                        style={{ accentColor: '#1144aa', width: 16, height: 16 }} />
-                      {s}
-                    </label>
-                  ))}
-                </div>
+              <F label="RG" value={data.cliente_rg} onChange={set('cliente_rg')} placeholder="0000000-0" style={{ flex: 2 }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingBottom: 4, flex: 1 }}>
+                <span style={{ fontSize: 13, fontWeight: 'bold' }}>SEXO:</span>
+                {['Masc', 'Fem'].map(s => (
+                  <label key={s} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, cursor: 'pointer' }}>
+                    <Radio checked={data.cliente_sexo === s} onClick={() => set('cliente_sexo')(s)} />
+                    {s}
+                  </label>
+                ))}
               </div>
             </div>
 
-            {/* Linha 3: Nome */}
+            {/* Row 3: Nome */}
             <F label="Nome" value={data.cliente_nome} onChange={set('cliente_nome')} placeholder="Nome completo" />
 
-            {/* Linha 4: CEP + Endereço */}
-            <div style={{ display: 'flex', gap: 10 }}>
-              <F label="CEP" value={data.cliente_cep} onChange={set('cliente_cep')} placeholder="00000-000" style={{ flex: '0 0 130px' }} />
+            {/* Row 4: CEP + Endereço */}
+            <div style={{ display: 'flex', gap: 8 }}>
+              <F label="CEP" value={data.cliente_cep} onChange={set('cliente_cep')} placeholder="00000-000" style={{ flex: '0 0 140px' }} />
               <F label="ENDEREÇO" value={data.cliente_endereco} onChange={set('cliente_endereco')} style={{ flex: 1 }} />
             </div>
 
-            {/* Linha 5: Bairro + Número */}
-            <div style={{ display: 'flex', gap: 10 }}>
+            {/* Row 5: Bairro + Nº */}
+            <div style={{ display: 'flex', gap: 8 }}>
               <F label="BAIRRO" value={data.cliente_bairro} onChange={set('cliente_bairro')} style={{ flex: 1 }} />
               <F label="Nº" value={data.cliente_numero} onChange={set('cliente_numero')} style={{ flex: '0 0 80px' }} />
             </div>
 
-            {/* Linha 6: Cidade + UF */}
-            <div style={{ display: 'flex', gap: 10 }}>
+            {/* Row 6: Cidade + UF */}
+            <div style={{ display: 'flex', gap: 8 }}>
               <F label="CIDADE" value={data.cliente_cidade} onChange={set('cliente_cidade')} style={{ flex: 1 }} />
-              <div style={{ display: 'flex', flexDirection: 'column', flex: '0 0 80px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', flex: '0 0 90px' }}>
                 <label style={LABEL}>UF</label>
-                <select value={data.cliente_uf} onChange={e => set('cliente_uf')(e.target.value)}
-                  style={{ ...INPUT, padding: '3px 4px' }}>
-                  {UFS.map(uf => <option key={uf} value={uf}>{uf}</option>)}
+                <select value={data.cliente_uf} onChange={e => set('cliente_uf')(e.target.value)} style={SEL}>
+                  {UFS.map(uf => <option key={uf}>{uf}</option>)}
                 </select>
               </div>
             </div>
 
-            {/* Linha 7: Fone 1 + Fone 2 */}
-            <div style={{ display: 'flex', gap: 10 }}>
+            {/* Row 7: Fones */}
+            <div style={{ display: 'flex', gap: 8 }}>
               <F label="FONE 1" value={data.cliente_tel} onChange={set('cliente_tel')} placeholder="(00) 00000-0000" style={{ flex: 1 }} />
               <F label="FONE 2" value={data.cliente_tel2} onChange={set('cliente_tel2')} placeholder="(00) 00000-0000" style={{ flex: 1 }} />
             </div>
 
-            {/* Linha 8: E-mail */}
-            <F label="E-mail" value={data.cliente_email} onChange={set('cliente_email')} placeholder="email@exemplo.com" type="email" />
+            {/* Row 8: Email */}
+            <F label="E-mail" value={data.cliente_email} onChange={set('cliente_email')} type="email" />
 
-            {/* Linha 9: Observação */}
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {/* Row 9: Obs */}
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
               <label style={LABEL}>OBSERVAÇÃO</label>
               <textarea value={data.cliente_obs} onChange={e => set('cliente_obs')(e.target.value)}
-                rows={2} style={{ ...INPUT, resize: 'none', fontFamily: 'Arial, sans-serif' }} />
+                style={{ ...INPUT, resize: 'none', flex: 1, minHeight: 52, fontFamily: 'Arial' }} />
             </div>
           </div>
         )}
 
-        {/* RECEITA */}
+        {/* ════ RECEITA ════ */}
         {tab === 'receita' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 700 }}>
-            <div style={{
-              background: '#c8c4bc', border: '2px inset #888',
-              padding: '12px 16px',
-            }}>
-              <table style={{ borderCollapse: 'separate', borderSpacing: '6px 2px' }}>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ fontSize: 14, fontWeight: 'bold' }}>Receita:</div>
+
+            {/* Prescription table */}
+            <div style={{ overflowX: 'auto', border: '1px solid #999' }}>
+              <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 700 }}>
                 <thead>
-                  <tr>
-                    <th style={{ width: 36 }}></th>
-                    {['ESF','CIL','EIXO','ADIÇÃO','DNP','ALT'].map(h => (
-                      <th key={h} style={{ fontSize: 10, color: '#333', fontStyle: 'italic', textAlign: 'center', paddingBottom: 4, fontWeight: 'normal' }}>{h}</th>
+                  <tr style={{ background: '#c8c4bc' }}>
+                    <th style={{ border: '1px solid #aaa', width: 38, padding: '4px' }} />
+                    <th style={{ border: '1px solid #aaa', padding: '4px 6px', fontSize: 11, fontWeight: 'normal', fontStyle: 'italic', color: '#333' }}>ESF</th>
+                    <th style={{ border: '1px solid #aaa', padding: '4px 6px', fontSize: 11, fontWeight: 'normal', fontStyle: 'italic', color: '#333' }}>CIL</th>
+                    <th style={{ border: '1px solid #aaa', padding: '4px 6px', fontSize: 11, fontWeight: 'normal', fontStyle: 'italic', color: '#333' }}>EIXO</th>
+                    <th style={{ border: '1px solid #aaa', padding: '4px 6px', fontSize: 11, fontWeight: 'normal', fontStyle: 'italic', color: '#333' }}>ADIÇÃO</th>
+                    <th style={{ border: '1px solid #aaa', padding: '4px 6px', fontSize: 11, fontWeight: 'normal', fontStyle: 'italic', color: '#333' }}>DNP</th>
+                    <th style={{ border: '1px solid #aaa', padding: '4px 6px', fontSize: 11, fontWeight: 'normal', fontStyle: 'italic', color: '#333' }}>ALT</th>
+                    <th colSpan={2} style={{ border: '1px solid #aaa', padding: '3px 6px', fontSize: 10, fontWeight: 'normal', color: '#444', textAlign: 'center' }}>PRISMA HORIZONTAL</th>
+                    <th colSpan={2} style={{ border: '1px solid #aaa', padding: '3px 6px', fontSize: 10, fontWeight: 'normal', color: '#444', textAlign: 'center' }}>PRISMA VERTICAL</th>
+                  </tr>
+                  <tr style={{ background: '#c8c4bc' }}>
+                    {[...Array(7)].map((_, i) => <th key={i} style={{ border: '1px solid #aaa' }} />)}
+                    {['PRISMA', 'BASE', 'PRISMA', 'BASE'].map((h, i) => (
+                      <th key={i} style={{ border: '1px solid #aaa', padding: '2px 4px', fontSize: 10, fontWeight: 'normal', fontStyle: 'italic', color: '#555' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {[
-                    { olho: 'OD', fields: ['od_esf','od_cil','od_eixo','od_adicao','od_dnp','od_alt'] as (keyof OSData)[] },
-                    { olho: 'OE', fields: ['oe_esf','oe_cil','oe_eixo','oe_adicao','oe_dnp','oe_alt'] as (keyof OSData)[] },
+                    { olho: 'OD', fields: ['od_esf','od_cil','od_eixo','od_adicao','od_dnp','od_alt','od_prisma_h','od_base_h','od_prisma_v','od_base_v'] },
+                    { olho: 'OE', fields: ['oe_esf','oe_cil','oe_eixo','oe_adicao','oe_dnp','oe_alt','oe_prisma_h','oe_base_h','oe_prisma_v','oe_base_v'] },
                   ].map(({ olho, fields }) => (
                     <tr key={olho}>
-                      <td style={{ fontSize: 13, fontWeight: 'bold', color: '#1144aa', fontFamily: 'Arial', paddingRight: 6 }}>{olho}</td>
-                      {fields.map(f => <RxCell key={f} label="" value={data[f]} onChange={set(f)} />)}
+                      <td style={{ border: '1px solid #aaa', background: '#c8c4bc', fontWeight: 'bold', fontSize: 13, textAlign: 'center', padding: '4px' }}>{olho}</td>
+                      {/* ESF */}
+                      <td style={{ border: '1px solid #aaa', padding: 2 }}>
+                        <select value={data[fields[0] as keyof OSData]} onChange={e => set(fields[0] as keyof OSData)(e.target.value)} style={{ ...SEL, width: 82 }}>
+                          {ESF_VALS.map(v => <option key={v} value={v}>{v}</option>)}
+                        </select>
+                      </td>
+                      {/* CIL */}
+                      <td style={{ border: '1px solid #aaa', padding: 2 }}>
+                        <select value={data[fields[1] as keyof OSData]} onChange={e => set(fields[1] as keyof OSData)(e.target.value)} style={{ ...SEL, width: 82 }}>
+                          {CIL_VALS.map(v => <option key={v} value={v}>{v}</option>)}
+                        </select>
+                      </td>
+                      {/* EIXO */}
+                      <td style={{ border: '1px solid #aaa', padding: 2 }}>
+                        <input value={data[fields[2] as keyof OSData]} onChange={e => set(fields[2] as keyof OSData)(e.target.value)}
+                          style={{ ...INPUT, width: 56, textAlign: 'center', background: '#e8e8e8' }} placeholder="0°" />
+                      </td>
+                      {/* ADIÇÃO */}
+                      <td style={{ border: '1px solid #aaa', padding: 2 }}>
+                        <select value={data[fields[3] as keyof OSData]} onChange={e => set(fields[3] as keyof OSData)(e.target.value)} style={{ ...SEL, width: 76 }}>
+                          {ADD_VALS.map(v => <option key={v} value={v}>{v}</option>)}
+                        </select>
+                      </td>
+                      {/* DNP */}
+                      <td style={{ border: '1px solid #aaa', padding: 2 }}>
+                        <input value={data[fields[4] as keyof OSData]} onChange={e => set(fields[4] as keyof OSData)(e.target.value)}
+                          style={{ ...INPUT, width: 60, textAlign: 'center' }} placeholder="32.0" />
+                      </td>
+                      {/* ALT */}
+                      <td style={{ border: '1px solid #aaa', padding: 2 }}>
+                        <input value={data[fields[5] as keyof OSData]} onChange={e => set(fields[5] as keyof OSData)(e.target.value)}
+                          style={{ ...INPUT, width: 60, textAlign: 'center' }} placeholder="22.0" />
+                      </td>
+                      {/* PRISMA H */}
+                      <td style={{ border: '1px solid #aaa', padding: 2 }}>
+                        <input value={data[fields[6] as keyof OSData]} onChange={e => set(fields[6] as keyof OSData)(e.target.value)}
+                          style={{ ...INPUT, width: 60, textAlign: 'center' }} placeholder="0.00" />
+                      </td>
+                      {/* BASE H */}
+                      <td style={{ border: '1px solid #aaa', padding: 2 }}>
+                        <select value={data[fields[7] as keyof OSData]} onChange={e => set(fields[7] as keyof OSData)(e.target.value)} style={{ ...SEL, width: 72 }}>
+                          {BASE_VALS.map(v => <option key={v} value={v}>{v}</option>)}
+                        </select>
+                      </td>
+                      {/* PRISMA V */}
+                      <td style={{ border: '1px solid #aaa', padding: 2 }}>
+                        <input value={data[fields[8] as keyof OSData]} onChange={e => set(fields[8] as keyof OSData)(e.target.value)}
+                          style={{ ...INPUT, width: 60, textAlign: 'center' }} placeholder="0.00" />
+                      </td>
+                      {/* BASE V */}
+                      <td style={{ border: '1px solid #aaa', padding: 2 }}>
+                        <select value={data[fields[9] as keyof OSData]} onChange={e => set(fields[9] as keyof OSData)(e.target.value)} style={{ ...SEL, width: 72 }}>
+                          {BASE_VALS.map(v => <option key={v} value={v}>{v}</option>)}
+                        </select>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              <F label="Nome do Médico" value={data.medico_nome} onChange={set('medico_nome')} placeholder="Dr. Nome" style={{ flex: '0 0 220px' }} />
-              <F label="CRM" value={data.medico_crm} onChange={set('medico_crm')} placeholder="00000/UF" style={{ flex: '0 0 130px' }} />
-              <F label="Data da Receita" value={data.data_receita} onChange={set('data_receita')} placeholder="DD/MM/AAAA" style={{ flex: '0 0 140px' }} />
+
+            {/* Lower: box + médico/data/obs */}
+            <div style={{ display: 'flex', gap: 12, flex: 1 }}>
+              {/* Left empty box + eye btn */}
+              <div style={{ flex: '0 0 200px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div style={{ flex: 1, border: '1px solid #999', background: '#c0bcb4', minHeight: 100 }} />
+                <button style={{ background: '#3d5266', border: '2px outset #5577aa', padding: '10px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg viewBox="0 0 64 42" width="64" height="42" fill="none">
+                    <rect x="3" y="8" width="58" height="30" rx="5" stroke="white" strokeWidth="3" />
+                    <ellipse cx="22" cy="23" rx="8" ry="8" stroke="white" strokeWidth="2.5" />
+                    <circle cx="22" cy="23" r="3.5" fill="white" />
+                    <ellipse cx="42" cy="23" rx="8" ry="8" stroke="white" strokeWidth="2.5" />
+                    <circle cx="42" cy="23" r="3.5" fill="white" />
+                    <line x1="30" y1="23" x2="34" y2="23" stroke="white" strokeWidth="2" />
+                    <line x1="3" y1="23" x2="14" y2="23" stroke="white" strokeWidth="2" />
+                    <line x1="50" y1="23" x2="61" y2="23" stroke="white" strokeWidth="2" />
+                    <path d="M22 15 L18 8 M42 15 L46 8" stroke="white" strokeWidth="2" />
+                    <path d="M26 10 Q32 5 38 10" stroke="white" strokeWidth="2" fill="none" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Right: médico + data + obs */}
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+                  <F label="Nome Médico" value={data.medico_nome} onChange={set('medico_nome')} placeholder="Dr. Nome" style={{ flex: 1 }} />
+                  <F label="CRM" value={data.medico_crm} onChange={set('medico_crm')} placeholder="00000/UF" style={{ flex: '0 0 120px' }} />
+                  <button style={{ ...BTN, background: '#e8e4e0', color: '#000', border: '2px outset #ccc', alignSelf: 'flex-end' }}>
+                    Selecionar Médico
+                  </button>
+                </div>
+                <div>
+                  <label style={LABEL}>Data Receita:</label>
+                  <input value={data.data_receita} onChange={e => set('data_receita')(e.target.value)}
+                    placeholder="DD/MM/AAAA" style={{ ...INPUT, width: 130 }} />
+                </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  <label style={LABEL}>Observação</label>
+                  <textarea value={data.receita_obs} onChange={e => set('receita_obs')(e.target.value)}
+                    style={{ ...INPUT, resize: 'none', flex: 1, minHeight: 80, fontFamily: 'Arial' }} />
+                </div>
+              </div>
             </div>
           </div>
         )}
 
-        {/* LABORATÓRIO */}
+        {/* ════ LABORATÓRIO ════ */}
         {tab === 'laboratorio' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 700 }}>
-            <div style={{ background: '#c8c4bc', border: '2px inset #888', padding: '16px 20px', display: 'flex', gap: 28, alignItems: 'center', flexWrap: 'wrap' }}>
-              <svg viewBox="0 0 320 140" width="280" height="120">
-                <ellipse cx="95" cy="70" rx="70" ry="45" fill="none" stroke="#1144aa" strokeWidth="1.5" strokeOpacity=".5" />
-                <ellipse cx="225" cy="70" rx="70" ry="45" fill="none" stroke="#1144aa" strokeWidth="1.5" strokeOpacity=".5" />
-                <path d="M165 58 Q160 70 155 58" fill="none" stroke="#1144aa" strokeWidth="1.5" strokeOpacity=".5" />
-                <line x1="25" y1="70" x2="165" y2="70" stroke="#1144aa" strokeWidth=".8" strokeDasharray="4 3" strokeOpacity=".4" />
-                <line x1="155" y1="70" x2="295" y2="70" stroke="#1144aa" strokeWidth=".8" strokeDasharray="4 3" strokeOpacity=".4" />
-                <text x="95" y="130" textAnchor="middle" fill="#333" fontSize="9" fontFamily="Arial">DNP: {data.arm_dnp || '—'}</text>
-                <text x="160" y="90" textAnchor="middle" fill="#333" fontSize="9" fontFamily="Arial">{data.arm_ponte || '—'}</text>
-              </svg>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, flex: 1 }}>
-                <F label="DNP" value={data.arm_dnp} onChange={set('arm_dnp')} placeholder="62.0" />
-                <F label="Vertical" value={data.arm_vertical} onChange={set('arm_vertical')} placeholder="26.0" />
-                <F label="Ponte" value={data.arm_ponte} onChange={set('arm_ponte')} placeholder="17.0" />
-                <F label="Aro" value={data.arm_aro} onChange={set('arm_aro')} placeholder="50.0" />
-                <F label="Alt. Pupilar" value={data.arm_alt_pupilar} onChange={set('arm_alt_pupilar')} placeholder="22.0" />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* FECHAMENTO */}
-        {tab === 'fechamento' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 600 }}>
-            <F label="Lente / Descrição" value={data.lente_desc} onChange={set('lente_desc')} placeholder="Varilux Comfort 1.67 AR" />
-            <div style={{ display: 'flex', gap: 10 }}>
-              <F label="Valor Lente (R$)" value={data.valor_lente} onChange={set('valor_lente')} placeholder="0,00" style={{ flex: 1 }} />
-              <F label="Valor Armação (R$)" value={data.valor_armacao} onChange={set('valor_armacao')} placeholder="0,00" style={{ flex: 1 }} />
-              <F label="Desconto (R$)" value={data.desconto} onChange={set('desconto')} placeholder="0,00" style={{ flex: 1 }} />
+          <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', padding: '8px 12px', gap: 8 }}>
+            <div>
+              <label style={LABEL}>Data Entrega:</label>
+              <input value={data.data_entrega} onChange={e => set('data_entrega')(e.target.value)}
+                placeholder="DD/MM/AAAA" style={{ ...INPUT, width: 130 }} />
             </div>
 
-            {/* Total */}
-            <div style={{ background: '#c8c4bc', border: '2px inset #888', padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24 }}>
-              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-end' }}>
-                <div>
-                  <label style={LABEL}>Pagamento</label>
-                  <select value={data.forma_pagamento} onChange={e => set('forma_pagamento')(e.target.value)} style={{ ...INPUT, width: 130 }}>
-                    {['Cartão','Dinheiro','PIX','Boleto','Cheque'].map(f => <option key={f} value={f}>{f}</option>)}
-                  </select>
+            <div style={{ flex: 1, overflow: 'auto', display: 'flex', gap: 12 }}>
+              {/* LEFT */}
+              <div style={{ flex: '0 0 560px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {/* Glasses illustration */}
+                <GlassesSVG data={data} />
+
+                {/* OD/OE lab table */}
+                <div style={{ overflowX: 'auto', border: '1px solid #999' }}>
+                  <table style={{ borderCollapse: 'collapse', minWidth: 500 }}>
+                    <thead>
+                      <tr style={{ background: '#c0bbb4' }}>
+                        <th style={{ border: '1px solid #aaa', padding: '3px 6px', width: 36 }} />
+                        {['ESF','CIL','EIXO','ADIÇÃO','DNP','ALT','PRISMA','BASE','PRISMA','BASE'].map((h, i) => (
+                          <th key={i} style={{ border: '1px solid #aaa', padding: '3px 5px', fontSize: 10, fontWeight: 'normal', fontStyle: 'italic', color: '#333' }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { olho: 'OD', fields: ['od_esf','od_cil','od_eixo','od_adicao','od_dnp','od_alt','od_prisma_h','od_base_h','od_prisma_v','od_base_v'] },
+                        { olho: 'OE', fields: ['oe_esf','oe_cil','oe_eixo','oe_adicao','oe_dnp','oe_alt','oe_prisma_h','oe_base_h','oe_prisma_v','oe_base_v'] },
+                      ].map(({ olho, fields }) => (
+                        <tr key={olho}>
+                          <td style={{ border: '1px solid #aaa', background: '#c0bbb4', fontWeight: 'bold', fontSize: 12, textAlign: 'center', padding: '3px' }}>{olho}</td>
+                          {fields.map(f => (
+                            <td key={f} style={{ border: '1px solid #aaa', padding: 2 }}>
+                              <input value={data[f as keyof OSData]} onChange={e => set(f as keyof OSData)(e.target.value)}
+                                style={{ ...INPUT, width: 48, textAlign: 'center', fontSize: 11 }} placeholder="mm" />
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-                <div>
-                  <label style={LABEL}>Parcelas</label>
-                  <select value={data.parcelas} onChange={e => set('parcelas')(e.target.value)} style={{ ...INPUT, width: 170 }}>
-                    {[1,2,3,4,5,6,8,10,12].map(p => (
-                      <option key={p} value={String(p)}>
-                        {p}x {p > 1 && total > 0 ? `de ${(total/p).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}` : ''}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: 11, color: '#555', fontStyle: 'italic' }}>TOTAL</div>
-                <div style={{ fontSize: 26, fontWeight: 'bold', color: '#000', fontFamily: 'Arial', letterSpacing: '.02em' }}>
-                  {total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                </div>
-              </div>
-            </div>
 
-            {/* Botões */}
-            <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-              <button onClick={() => salvar('orcamento')} disabled={saving} style={{
-                padding: '8px 22px', background: '#e8e4e0', border: '2px outset #ccc',
-                fontSize: 13, fontWeight: 'bold', cursor: 'pointer', letterSpacing: '.04em',
-              }}>ORÇAMENTO</button>
-              <button onClick={() => salvar('venda')} disabled={saving} style={{
-                padding: '8px 22px', background: '#1144cc', border: '2px outset #3366ee',
-                fontSize: 13, fontWeight: 'bold', cursor: 'pointer', color: '#fff', letterSpacing: '.04em',
-              }}>{saving ? 'SALVANDO...' : 'ENVIAR PEDIDO'}</button>
-              {saved && <span style={{ display: 'flex', alignItems: 'center', fontSize: 13, color: '#006600', fontWeight: 'bold' }}>✓ Salvo!</span>}
-            </div>
-          </div>
-        )}
-
-        {/* BUSCA */}
-        {tab === 'busca' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ display: 'flex', gap: 8, maxWidth: 500 }}>
-              <input value={busca} onChange={e => setBusca(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && carregarBusca()}
-                placeholder="Número, nome ou CPF..."
-                style={{ ...INPUT, flex: 1, fontSize: 14 }} />
-              <button onClick={carregarBusca} style={{
-                padding: '6px 18px', background: '#1144cc', border: '2px outset #3366ee',
-                color: '#fff', fontSize: 13, fontWeight: 'bold', cursor: 'pointer',
-              }}>BUSCAR</button>
-            </div>
-
-            {oslist.length > 0 ? (
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, background: '#fff', border: '1px solid #aaa' }}>
-                <thead>
-                  <tr style={{ background: '#b0b8c8' }}>
-                    {['Nº','Cliente','Tipo','Total','Data'].map(h => (
-                      <th key={h} style={{ padding: '5px 10px', textAlign: 'left', fontWeight: 'bold', fontSize: 12, borderBottom: '1px solid #888' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {oslist.map((os, i) => (
-                    <tr key={os.id} style={{ background: i % 2 === 0 ? '#fff' : '#eeeaE4' }}>
-                      <td style={{ padding: '5px 10px', color: '#1144aa', fontWeight: 'bold' }}>#{os.numero}</td>
-                      <td style={{ padding: '5px 10px' }}>{os.cliente_nome ?? '—'}</td>
-                      <td style={{ padding: '5px 10px' }}>{os.tipo}</td>
-                      <td style={{ padding: '5px 10px', fontWeight: 'bold' }}>{os.valor_total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
-                      <td style={{ padding: '5px 10px', color: '#555' }}>{new Date(os.created_at).toLocaleDateString('pt-BR')}</td>
-                    </tr>
+                {/* Measurement inputs */}
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+                  {[
+                    ['DNP OD', 'arm_dnp_od', 68], ['DNP OE', 'arm_dnp_oe', 68],
+                    ['VERTICAL', 'arm_vertical', 68], ['PONTE', 'arm_ponte', 68],
+                    ['ARO', 'arm_aro', 68], ['D.V.', 'arm_dv', 56],
+                    ['DIAG. MAIOR', 'arm_diag_maior', 80], ['I.P.', 'arm_ip', 56], ['C.A.', 'arm_ca', 56],
+                    ['ALT PUP OD', 'arm_alt_pupilar_od', 72], ['ALT PUP OE', 'arm_alt_pupilar_oe', 72],
+                  ].map(([label, field, w]) => (
+                    <div key={field as string} style={{ display: 'flex', flexDirection: 'column' }}>
+                      <label style={{ ...LABEL, fontSize: 10 }}>{label as string}</label>
+                      <input value={data[field as keyof OSData]} onChange={e => set(field as keyof OSData)(e.target.value)}
+                        style={{ ...INPUT, width: Number(w), textAlign: 'center', fontSize: 12 }} placeholder="mm" />
+                    </div>
                   ))}
-                </tbody>
-              </table>
-            ) : (
-              <div style={{ padding: '32px 0', color: '#666', fontStyle: 'italic', textAlign: 'center' }}>
-                {busca ? 'Nenhuma OS encontrada.' : 'Digite para buscar ordens de serviço.'}
+                </div>
+
+                {/* Tipo Armação + Obs */}
+                <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <label style={LABEL}>Tipo Armação:</label>
+                    <select value={data.arm_tipo} onChange={e => set('arm_tipo')(e.target.value)} style={{ ...SEL, width: 160 }}>
+                      {ARM_TIPOS.map(v => <option key={v} value={v}>{v}</option>)}
+                    </select>
+                  </div>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    <label style={LABEL}>OBSERVAÇÃO</label>
+                    <input value={data.arm_obs} onChange={e => set('arm_obs')(e.target.value)} style={INPUT} />
+                  </div>
+                </div>
               </div>
-            )}
+
+              {/* RIGHT — Lentes */}
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
+                <div>
+                  <span style={{ fontSize: 13, fontWeight: 'bold' }}>LENTES:</span>
+                  <div style={{ border: '1px solid #999', background: '#c0bbb4', minHeight: 70, padding: 4, marginTop: 2 }} />
+                </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  <label style={LABEL}>DESCRIÇÃO DAS LENTES</label>
+                  <textarea value={data.lentes_desc} onChange={e => set('lentes_desc')(e.target.value)}
+                    style={{ ...INPUT, resize: 'none', flex: 1, minHeight: 70, fontFamily: 'Arial' }} />
+                </div>
+                <F label="ARMAÇÃO" value={data.armacao_nome} onChange={set('armacao_nome')} />
+                <F label="OBSERVAÇÃO" value={data.armacao_obs} onChange={set('armacao_obs')} />
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <F label="Valor Lente (R$)" value={data.valor_lente} onChange={set('valor_lente')} placeholder="0,00" style={{ flex: 1 }} />
+                  <F label="Valor Armação (R$)" value={data.valor_armacao} onChange={set('valor_armacao')} placeholder="0,00" style={{ flex: 1 }} />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ════ FECHAMENTO ════ */}
+        {tab === 'fechamento' && (
+          <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            {/* Panel headers */}
+            <div style={{ display: 'flex', background: '#c8c4bc', borderBottom: '1px solid #999', flexShrink: 0 }}>
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRight: '1px solid #999' }}>
+                <span style={{ fontSize: 13, fontWeight: 'bold' }}>Itens Vistos:</span>
+                <div style={{ marginLeft: 'auto', display: 'flex', gap: 2 }}>
+                  {['🔍', '✕', '→'].map((ic, i) => (
+                    <button key={i} style={{ background: '#556', border: '1px solid #334', padding: '4px 10px', color: '#fff', fontSize: 13, cursor: 'pointer' }}>{ic}</button>
+                  ))}
+                </div>
+              </div>
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px' }}>
+                <span style={{ fontSize: 13, fontWeight: 'bold' }}>Itens Vendidos:</span>
+                <span style={{ fontSize: 11 }}>+ Acessórios:</span>
+                <div style={{ marginLeft: 'auto', display: 'flex', gap: 2 }}>
+                  {[
+                    { ic: '👁', bg: '#1144cc' }, { ic: '🕶', bg: '#1144cc' },
+                    { ic: '▌▌▌', bg: '#1144cc' }, { ic: '✕', bg: '#556' },
+                  ].map(({ ic, bg }, i) => (
+                    <button key={i} style={{ background: bg, border: '1px solid #334', padding: '4px 8px', color: '#fff', fontSize: 12, cursor: 'pointer' }}>{ic}</button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Table headers */}
+            <div style={{ display: 'flex', background: '#c0bbb4', flexShrink: 0 }}>
+              {[0, 1].map(pi => (
+                <div key={pi} style={{ flex: 1, borderRight: pi === 0 ? '1px solid #999' : 'none' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
+                    <thead>
+                      <tr>
+                        {['COD', 'AO', 'UN', 'PRODUTO', 'PREÇO'].map(h => (
+                          <th key={h} style={{ border: '1px solid #aaa', padding: '3px 6px', fontWeight: 'bold', color: '#333', textAlign: h === 'PRODUTO' ? 'left' : 'center' }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                  </table>
+                </div>
+              ))}
+            </div>
+
+            {/* Empty list area */}
+            <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+              <div style={{ flex: 1, background: '#ccc8c0', borderRight: '1px solid #999' }} />
+              <div style={{ flex: 1, background: '#ccc8c0' }} />
+            </div>
+
+            {/* Bottom row */}
+            <div style={{ display: 'flex', borderTop: '1px solid #999', flexShrink: 0 }}>
+              {/* Left: SUB TOTAL */}
+              <div style={{ flex: 1, padding: '6px 12px', borderRight: '1px solid #999', background: '#c8c4bc', display: 'flex', alignItems: 'flex-end' }}>
+                <span style={{ fontSize: 12 }}>SUB TOTAL:</span>
+                <span style={{ marginLeft: 8, fontSize: 12, color: '#555' }}>Indisponível</span>
+              </div>
+
+              {/* Right: Fechamento */}
+              <div style={{ flex: 1, background: '#c8c4bc', padding: '8px 12px', display: 'flex', gap: 16 }}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 'bold', marginBottom: 6 }}>Fechamento:</div>
+                  <div>
+                    <label style={LABEL}>Data Entrega:</label>
+                    <input value={data.data_entrega} onChange={e => set('data_entrega')(e.target.value)}
+                      placeholder="DD/MM/AAAA" style={{ ...INPUT, width: 130 }} />
+                  </div>
+                </div>
+                <div style={{ marginLeft: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 12 }}>Desconto (R$):</span>
+                    <input value={data.desconto} onChange={e => set('desconto')(e.target.value)}
+                      style={{ ...INPUT, width: 70, textAlign: 'right' }} />
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 12 }}>Acréscimo (R$):</span>
+                    <input value={data.acrescimo} onChange={e => set('acrescimo')(e.target.value)}
+                      style={{ ...INPUT, width: 70, textAlign: 'right' }} />
+                  </div>
+                  <div style={{ fontSize: 18, fontWeight: 'bold', marginTop: 4 }}>
+                    Total: {parc}x de {(total / parc).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div style={{ display: 'flex', background: '#b8b4ac', borderTop: '1px solid #888', flexShrink: 0 }}>
+              <div style={{ flex: 1, borderRight: '1px solid #888', padding: '6px 10px' }}>
+                {saved && <span style={{ fontSize: 13, color: '#006600', fontWeight: 'bold' }}>✓ Salvo!</span>}
+              </div>
+              <div style={{ flex: 1, display: 'flex', gap: 4, padding: '6px 8px', justifyContent: 'flex-end' }}>
+                <button onClick={() => setData({ ...EMPTY })} style={BTN}>Nova</button>
+                <button onClick={() => salvar('orcamento')} disabled={saving} style={BTN}>Salvar Orçamento</button>
+                <button onClick={() => salvar('venda')} disabled={saving} style={BTN}>{saving ? 'Salvando...' : 'Enviar Pedido'}</button>
+                <button style={{ ...BTN, background: '#2a6644' }}>$ Informar Pagamento</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ════ BUSCA ════ */}
+        {tab === 'busca' && (
+          <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', padding: '8px 12px', gap: 8 }}>
+            {/* Top filter */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexShrink: 0 }}>
+              <span style={{ fontSize: 14, fontWeight: 'bold' }}>Busca:</span>
+              {[
+                { tipo: 'numero' as BuscaTipo, label: 'Número' },
+                { tipo: 'data' as BuscaTipo, label: 'Data Emissão' },
+                { tipo: 'nome' as BuscaTipo, label: 'Nome' },
+                { tipo: 'cpf' as BuscaTipo, label: 'Cpf' },
+              ].map(({ tipo, label }) => (
+                <label key={tipo} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, cursor: 'pointer' }}>
+                  <Radio checked={buscaTipo === tipo} onClick={() => setBuscaTipo(tipo)} />
+                  {label}
+                </label>
+              ))}
+            </div>
+
+            {/* Content */}
+            <div style={{ flex: 1, overflow: 'hidden', display: 'flex', gap: 10 }}>
+              {/* Left sidebar */}
+              <div style={{ flex: '0 0 130px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {[
+                  { lista: 'os' as BuscaLista, label: 'OS' },
+                  { lista: 'excluidas' as BuscaLista, label: 'OS EXCLUÍDAS' },
+                  { lista: 'clientes' as BuscaLista, label: 'Clientes' },
+                ].map(({ lista, label }) => (
+                  <button key={lista} onClick={() => setBuscaLista(lista)} style={{
+                    background: buscaLista === lista ? '#3a3a38' : '#5a5854',
+                    border: '1px solid #2a2a28',
+                    padding: '10px 6px', fontSize: 12, fontWeight: 'bold',
+                    cursor: 'pointer', color: '#fff', textAlign: 'center',
+                  }}>{label}</button>
+                ))}
+              </div>
+
+              {/* Right */}
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, overflow: 'hidden' }}>
+                <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                  <input value={busca} onChange={e => setBusca(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && carregarBusca()}
+                    placeholder="Informação" style={{ ...INPUT, flex: 1 }} />
+                  <button onClick={carregarBusca} style={BTN}>Buscar</button>
+                </div>
+
+                <div style={{ flex: 1, overflow: 'auto', border: '1px solid #aaa' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, minWidth: 700 }}>
+                    <thead style={{ position: 'sticky', top: 0 }}>
+                      <tr style={{ background: '#c0bbb4' }}>
+                        {['Núm.','v.','DAV','Data','Nome','Cpf','Status','Tipo','Desc.','Valor Total','Valor Pago'].map(h => (
+                          <th key={h} style={{ border: '1px solid #aaa', padding: '4px 6px', fontWeight: 'bold', textAlign: 'left', fontSize: 11, whiteSpace: 'nowrap' }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {oslist.map((os, i) => (
+                        <tr key={os.id} style={{ background: i % 2 === 0 ? '#d8d4cc' : '#ccc9c2', cursor: 'pointer' }}
+                          onMouseEnter={e => (e.currentTarget.style.background = '#b8d4e8')}
+                          onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 0 ? '#d8d4cc' : '#ccc9c2')}>
+                          <td style={{ border: '1px solid #bbb', padding: '4px 6px', fontWeight: 'bold', color: '#1144aa' }}>#{os.numero}</td>
+                          <td style={{ border: '1px solid #bbb', padding: '4px 6px' }} />
+                          <td style={{ border: '1px solid #bbb', padding: '4px 6px' }} />
+                          <td style={{ border: '1px solid #bbb', padding: '4px 6px', whiteSpace: 'nowrap' }}>{new Date(os.created_at).toLocaleDateString('pt-BR')}</td>
+                          <td style={{ border: '1px solid #bbb', padding: '4px 6px' }}>{os.cliente_nome ?? '—'}</td>
+                          <td style={{ border: '1px solid #bbb', padding: '4px 6px' }} />
+                          <td style={{ border: '1px solid #bbb', padding: '4px 6px' }}>{os.status}</td>
+                          <td style={{ border: '1px solid #bbb', padding: '4px 6px' }}>{os.tipo}</td>
+                          <td style={{ border: '1px solid #bbb', padding: '4px 6px' }} />
+                          <td style={{ border: '1px solid #bbb', padding: '4px 6px', textAlign: 'right' }}>{os.valor_total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                          <td style={{ border: '1px solid #bbb', padding: '4px 6px' }} />
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {oslist.length === 0 && (
+                    <div style={{ padding: '24px', color: '#666', fontStyle: 'italic', textAlign: 'center', background: '#d8d4cc' }}>
+                      {busca ? 'Nenhuma OS encontrada.' : 'Clique em Buscar para pesquisar.'}
+                    </div>
+                  )}
+                </div>
+
+                {/* Bottom buttons */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6, flexShrink: 0 }}>
+                  <button style={BTN}>Excluir Pedido</button>
+                  <button style={BTN}>Editar Pedido</button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Bottom action bar */}
+      {/* ── Bottom bar ── */}
       <div style={{
         display: 'flex', alignItems: 'center',
         background: '#c0bbb4', borderTop: '2px solid #888',
-        padding: '6px 16px', gap: 0, flexShrink: 0,
+        padding: '4px 12px', flexShrink: 0,
       }}>
         {[
           { icon: '≡', label: 'Menu', onClick: () => navigate('/vision') },
@@ -453,14 +850,15 @@ export default function VisionOS() {
         ].map(({ icon, label, onClick }) => (
           <button key={label} onClick={onClick} style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center',
-            gap: 2, padding: '4px 20px',
-            background: 'none', border: 'none', cursor: 'pointer',
-            borderRight: '1px solid #999',
+            gap: 2, padding: '3px 20px', background: 'none', border: 'none',
+            cursor: 'pointer', borderRight: '1px solid #999',
           }}>
             <span style={{ fontSize: 18 }}>{icon}</span>
             <span style={{ fontSize: 10, color: '#333', fontWeight: 'bold', letterSpacing: '.04em' }}>{label}</span>
           </button>
         ))}
+        <div style={{ flex: 1 }} />
+        <span style={{ fontSize: 11, color: '#666', fontStyle: 'italic' }}>1.0.15</span>
       </div>
     </div>
   );
