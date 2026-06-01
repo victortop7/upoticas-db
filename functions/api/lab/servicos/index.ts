@@ -40,6 +40,31 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
   }
 };
 
+const ALLOWED_LISTA_FIELDS = new Set(['valor_padrao','valor_lista2','valor_lista3','valor_lista4','valor_lista5']);
+
+export const onRequestDelete = async ({ request, env }: { request: Request; env: Env }) => {
+  try {
+    const auth = await requireAuth(request, env);
+    if (auth instanceof Response) return auth;
+    const { tenant_id } = auth;
+
+    const url = new URL(request.url);
+    const action = url.searchParams.get('action');
+    const field = url.searchParams.get('field');
+
+    if (action === 'clear-lista' && field && ALLOWED_LISTA_FIELDS.has(field)) {
+      await env.DB.prepare(
+        `UPDATE lab_servicos_catalogo SET ${field} = 0 WHERE tenant_id = ?`
+      ).bind(tenant_id).run();
+      return json({ ok: true });
+    }
+
+    return json({ error: 'Parâmetros inválidos' }, 400);
+  } catch (err) {
+    return json({ error: 'Erro interno', detail: String(err) }, 500);
+  }
+};
+
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
   try {
     const auth = await requireAuth(request, env);

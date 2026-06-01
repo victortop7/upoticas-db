@@ -142,7 +142,7 @@ export default function LabServicos() {
     setErro(''); setModal(true);
   }
 
-  async function handleSave(e: React.FormEvent) {
+  async function handleSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault(); setSaving(true); setErro('');
     const payload = {
       codigo: form.codigo||null, nome: form.nome, unidade: form.unidade||null,
@@ -163,6 +163,23 @@ export default function LabServicos() {
   async function handleDelete(id: string) {
     if (!confirm('Excluir este serviço?')) return;
     try { await api.delete(`/lab/servicos/${id}`); load(); } catch {}
+  }
+
+  async function handleDeleteLista(idx: number) {
+    const nome = listaNomes[idx];
+    if (!confirm(`Excluir a lista "${nome}"?\n\nIsso vai zerar todos os preços desta lista em todos os produtos. Os produtos não serão excluídos.`)) return;
+    const field = LISTA_FIELDS[idx];
+    const cfgKey = `tab_lista_${idx + 1}`;
+    try {
+      await Promise.all([
+        api.delete(`/lab/servicos?action=clear-lista&field=${field}`),
+        api.put('/lab/configuracoes', { [cfgKey]: '' }),
+      ]);
+      setListasAtivas(a => Math.max(2, a - 1));
+      setListaNomes(n => n.map((v, i) => i === idx ? (idx === 0 ? 'PREÇO 1' : `PREÇO ${idx + 1}`) : v));
+      setListaFiltro(null);
+      load();
+    } catch { alert('Erro ao excluir lista'); }
   }
 
   async function saveInlinePrice(id: string, field: string, value: string) {
@@ -242,18 +259,29 @@ export default function LabServicos() {
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))', gap:'12px' }}>
             {LISTA_FIELDS.slice(0, listasAtivas).map((_, i) => {
               const count = contarProdutosLista(i);
+              const isUltima = i === listasAtivas - 1 && listasAtivas > 2;
               return (
-                <button key={i} onClick={() => { setBusca(''); setListaFiltro(i); }}
-                  style={{ padding:'20px 16px', background:R.panel, border:`2px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', textAlign:'left', display:'flex', flexDirection:'column', gap:'8px', transition:'background 0.1s' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = '#e8e4d8')}
-                  onMouseLeave={e => (e.currentTarget.style.background = R.panel)}>
-                  <span style={{ fontSize:'11px', fontWeight:'700', color:'#888', textTransform:'uppercase', letterSpacing:'0.5px' }}>LISTA {i + 1}</span>
-                  <span style={{ fontSize:'16px', fontWeight:'700', color:'#003300' }}>{listaNomes[i]}</span>
-                  <span style={{ fontSize:'11px', fontFamily:"'Courier New', monospace", color:'#555' }}>
-                    {count} produto(s) com preço
-                  </span>
-                  <span style={{ fontSize:'10px', color:'#008800', fontWeight:'700', marginTop:'4px' }}>▶ ENTRAR NA LISTA</span>
-                </button>
+                <div key={i} style={{ position:'relative', background:R.panel, border:`2px outset ${R.bdr}` }}>
+                  <button onClick={() => { setBusca(''); setListaFiltro(i); }}
+                    style={{ width:'100%', padding:'20px 16px', background:'transparent', border:'none', cursor:'pointer', fontFamily:'inherit', textAlign:'left', display:'flex', flexDirection:'column', gap:'8px' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = '#e8e4d8')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                    <span style={{ fontSize:'11px', fontWeight:'700', color:'#888', textTransform:'uppercase', letterSpacing:'0.5px' }}>LISTA {i + 1}</span>
+                    <span style={{ fontSize:'16px', fontWeight:'700', color:'#003300' }}>{listaNomes[i]}</span>
+                    <span style={{ fontSize:'11px', fontFamily:"'Courier New', monospace", color:'#555' }}>
+                      {count} produto(s) com preço
+                    </span>
+                    <span style={{ fontSize:'10px', color:'#008800', fontWeight:'700', marginTop:'4px' }}>▶ ENTRAR NA LISTA</span>
+                  </button>
+                  {isUltima && (
+                    <button
+                      onClick={e => { e.stopPropagation(); handleDeleteLista(i); }}
+                      title="Excluir esta lista"
+                      style={{ position:'absolute', top:'8px', right:'8px', padding:'3px 8px', fontSize:'11px', fontWeight:'700', background:'#ffdddd', color:'#880000', border:'1px outset #cc0000', cursor:'pointer', fontFamily:'inherit' }}>
+                      🗑 EXCLUIR
+                    </button>
+                  )}
+                </div>
               );
             })}
           </div>
@@ -296,10 +324,18 @@ export default function LabServicos() {
                     style={{ padding:'2px 8px', fontSize:'11px', fontWeight:'700', background:'rgba(255,255,255,0.15)', color:R.hdrTxt, border:'1px solid rgba(255,255,255,0.3)', cursor:'pointer', fontFamily:'inherit' }}>
                     ✏️ Renomear
                   </button>
-                  <button onClick={openNovo}
-                    style={{ padding:'2px 10px', fontSize:'11px', fontWeight:'700', background:'#ccffcc', color:'#003300', border:'1px outset #005500', cursor:'pointer', fontFamily:'inherit', marginLeft:'auto' }}>
-                    + NOVO PRODUTO
-                  </button>
+                  <div style={{ marginLeft:'auto', display:'flex', gap:'6px' }}>
+                    {listaFiltro !== null && listaFiltro === listasAtivas - 1 && listasAtivas > 2 && (
+                      <button onClick={() => handleDeleteLista(listaFiltro)}
+                        style={{ padding:'2px 10px', fontSize:'11px', fontWeight:'700', background:'#ffdddd', color:'#880000', border:'1px outset #cc0000', cursor:'pointer', fontFamily:'inherit' }}>
+                        🗑 EXCLUIR LISTA
+                      </button>
+                    )}
+                    <button onClick={openNovo}
+                      style={{ padding:'2px 10px', fontSize:'11px', fontWeight:'700', background:'#ccffcc', color:'#003300', border:'1px outset #005500', cursor:'pointer', fontFamily:'inherit' }}>
+                      + NOVO PRODUTO
+                    </button>
+                  </div>
                 </>
               )}
             </div>
