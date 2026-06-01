@@ -171,6 +171,25 @@ export default function LabAdmin() {
   const [criarForm, setCriarForm] = useState({ nome_lab: '', nome_responsavel: '', email: '', senha: '', plano: 'trial', dias_trial: '14', licenca_expira: '' });
   const [criarErro, setCriarErro] = useState('');
   const [criarSucesso, setCriarSucesso] = useState<null | { email: string; senha: string; nome_lab: string }>(null);
+  const [impersonando, setImpersonando] = useState<string | null>(null);
+
+  async function handleImpersonate(tenantId: string, tipo: string) {
+    if (!confirm('Entrar no sistema deste cliente?')) return;
+    setImpersonando(tenantId);
+    try {
+      const res = await fetch('/api/admin/impersonate', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${secret}` },
+        body: JSON.stringify({ tenant_id: tenantId }),
+      });
+      if (!res.ok) { const d = await res.json() as { error?: string }; throw new Error(d.error || 'Erro'); }
+      window.location.href = tipo === 'lab' ? '/lab/dashboard' : '/dashboard';
+    } catch (e: unknown) {
+      alert('Erro ao entrar: ' + (e instanceof Error ? e.message : String(e)));
+      setImpersonando(null);
+    }
+  }
 
   const load = useCallback(async (s: string) => {
     setLoading(true); setErro('');
@@ -386,7 +405,13 @@ export default function LabAdmin() {
                 return (
                   <tr key={t.id} style={{ background: i % 2 === 0 ? R.panel : R.alt, borderBottom: `1px solid ${R.bdr}` }}>
                     <td style={{ padding: '7px 10px' }}>
-                      <div style={{ fontSize: '12px', fontWeight: '700', color: '#000' }}>{t.nome}</div>
+                      <div
+                        onClick={() => handleImpersonate(t.id, t.tipo)}
+                        title="Clique para entrar no sistema deste cliente"
+                        style={{ fontSize: '12px', fontWeight: '700', color: '#005500', cursor: 'pointer', textDecoration: 'underline', display: 'inline-block' }}
+                      >
+                        {impersonando === t.id ? '⏳ Entrando...' : t.nome}
+                      </div>
                       <div style={{ fontSize: '10px', color: '#555', fontFamily: "'Courier New', monospace" }}>{t.email}</div>
                     </td>
                     <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#333' }}>{t.tipo.toUpperCase()}</td>
