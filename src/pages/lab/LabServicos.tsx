@@ -95,6 +95,7 @@ export default function LabServicos() {
   const [nomeLista, setNomeLista] = useState('');
   const [novaListaModal, setNovaListaModal] = useState(false);
   const [novaListaNome, setNovaListaNome] = useState('');
+  const [confirmarDeleteLista, setConfirmarDeleteLista] = useState<number | null>(null);
 
   function load() {
     setLoading(true);
@@ -165,9 +166,10 @@ export default function LabServicos() {
     try { await api.delete(`/lab/servicos/${id}`); load(); } catch {}
   }
 
-  async function handleDeleteLista(idx: number) {
-    const nome = listaNomes[idx];
-    if (!confirm(`Excluir a lista "${nome}"?\n\nIsso vai zerar todos os preços desta lista em todos os produtos. Os produtos não serão excluídos.`)) return;
+  async function confirmarEExcluirLista() {
+    const idx = confirmarDeleteLista;
+    if (idx === null) return;
+    setConfirmarDeleteLista(null);
     const field = LISTA_FIELDS[idx];
     const cfgKey = `tab_lista_${idx + 1}`;
     try {
@@ -176,7 +178,7 @@ export default function LabServicos() {
         api.put('/lab/configuracoes', { [cfgKey]: '' }),
       ]);
       setListasAtivas(a => Math.max(2, a - 1));
-      setListaNomes(n => n.map((v, i) => i === idx ? (idx === 0 ? 'PREÇO 1' : `PREÇO ${idx + 1}`) : v));
+      setListaNomes(n => n.map((v, i) => i === idx ? `PREÇO ${idx + 1}` : v));
       setListaFiltro(null);
       load();
     } catch { alert('Erro ao excluir lista'); }
@@ -259,7 +261,6 @@ export default function LabServicos() {
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))', gap:'12px' }}>
             {LISTA_FIELDS.slice(0, listasAtivas).map((_, i) => {
               const count = contarProdutosLista(i);
-              const isUltima = i === listasAtivas - 1 && listasAtivas > 2;
               return (
                 <div key={i} style={{ position:'relative', background:R.panel, border:`2px outset ${R.bdr}` }}>
                   <button onClick={() => { setBusca(''); setListaFiltro(i); }}
@@ -273,14 +274,6 @@ export default function LabServicos() {
                     </span>
                     <span style={{ fontSize:'10px', color:'#008800', fontWeight:'700', marginTop:'4px' }}>▶ ENTRAR NA LISTA</span>
                   </button>
-                  {isUltima && (
-                    <button
-                      onClick={e => { e.stopPropagation(); handleDeleteLista(i); }}
-                      title="Excluir esta lista"
-                      style={{ position:'absolute', top:'8px', right:'8px', padding:'3px 8px', fontSize:'11px', fontWeight:'700', background:'#ffdddd', color:'#880000', border:'1px outset #cc0000', cursor:'pointer', fontFamily:'inherit' }}>
-                      🗑 EXCLUIR
-                    </button>
-                  )}
                 </div>
               );
             })}
@@ -326,7 +319,7 @@ export default function LabServicos() {
                   </button>
                   <div style={{ marginLeft:'auto', display:'flex', gap:'6px' }}>
                     {listaFiltro !== null && listaFiltro === listasAtivas - 1 && listasAtivas > 2 && (
-                      <button onClick={() => handleDeleteLista(listaFiltro)}
+                      <button onClick={() => setConfirmarDeleteLista(listaFiltro)}
                         style={{ padding:'2px 10px', fontSize:'11px', fontWeight:'700', background:'#ffdddd', color:'#880000', border:'1px outset #cc0000', cursor:'pointer', fontFamily:'inherit' }}>
                         🗑 EXCLUIR LISTA
                       </button>
@@ -406,6 +399,33 @@ export default function LabServicos() {
             )}
           </div>
         </>
+      )}
+
+      {/* Modal Confirmar Excluir Lista */}
+      {confirmarDeleteLista !== null && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:400, display:'flex', alignItems:'center', justifyContent:'center' }}>
+          <div style={{ background:R.panel, border:`2px outset ${R.bdr}`, width:'100%', maxWidth:'360px' }}>
+            <div style={{ background:'#880000', color:'#fff', padding:'6px 14px', fontSize:'12px', fontWeight:'700', letterSpacing:'1px' }}>
+              ⚠ EXCLUIR LISTA
+            </div>
+            <div style={{ padding:'20px 16px', display:'flex', flexDirection:'column', gap:'16px' }}>
+              <div style={{ fontSize:'13px', color:'#222', lineHeight:'1.6' }}>
+                Deseja excluir a lista <strong>"{listaNomes[confirmarDeleteLista]}"</strong>?<br />
+                <span style={{ fontSize:'11px', color:'#666' }}>Todos os preços desta lista serão zerados. Os produtos não serão excluídos.</span>
+              </div>
+              <div style={{ display:'flex', gap:'10px' }}>
+                <button onClick={() => setConfirmarDeleteLista(null)}
+                  style={{ flex:1, padding:'10px', fontSize:'13px', fontWeight:'700', background:R.alt, color:'#333', border:`2px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', letterSpacing:'0.5px' }}>
+                  NÃO
+                </button>
+                <button onClick={confirmarEExcluirLista}
+                  style={{ flex:1, padding:'10px', fontSize:'13px', fontWeight:'700', background:'#880000', color:'#fff', border:'2px outset #cc0000', cursor:'pointer', fontFamily:'inherit', letterSpacing:'0.5px' }}>
+                  SIM, EXCLUIR
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Modal Nova Lista */}
