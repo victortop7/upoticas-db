@@ -172,6 +172,9 @@ export default function LabAdmin() {
   const [criarErro, setCriarErro] = useState('');
   const [criarSucesso, setCriarSucesso] = useState<null | { email: string; senha: string; nome_lab: string }>(null);
   const [impersonando, setImpersonando] = useState<string | null>(null);
+  const [restaurarTenant, setRestaurarTenant] = useState<Tenant | null>(null);
+  const [restForm, setRestForm] = useState({ lista1: '', lista2: '', lista3: '', restore_precos: true });
+  const [restMsg, setRestMsg] = useState('');
 
   async function handleImpersonate(tenantId: string, tipo: string) {
     if (!confirm('Entrar no sistema deste cliente?')) return;
@@ -188,6 +191,29 @@ export default function LabAdmin() {
     } catch (e: unknown) {
       alert('Erro ao entrar: ' + (e instanceof Error ? e.message : String(e)));
       setImpersonando(null);
+    }
+  }
+
+  async function handleRestaurar() {
+    if (!restaurarTenant) return;
+    setRestMsg('Restaurando...');
+    try {
+      const res = await fetch('/api/admin/restore-servicos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${secret}` },
+        body: JSON.stringify({
+          tenant_id: restaurarTenant.id,
+          lista1: restForm.lista1 || undefined,
+          lista2: restForm.lista2 || undefined,
+          lista3: restForm.lista3 || undefined,
+          restore_precos: restForm.restore_precos,
+        }),
+      });
+      const d = await res.json() as { ok?: boolean; error?: string; config_restored?: number; products_updated?: number };
+      if (!res.ok) throw new Error(d.error || 'Erro');
+      setRestMsg(`✅ Listas restauradas! Config: ${d.config_restored}, Produtos: ${d.products_updated}`);
+    } catch (e: unknown) {
+      setRestMsg('❌ Erro: ' + (e instanceof Error ? e.message : String(e)));
     }
   }
 
@@ -431,6 +457,10 @@ export default function LabAdmin() {
                           style={{ padding: '3px 10px', fontSize: '11px', fontWeight: '700', background: '#ddffee', color: '#005500', border: '1px outset #88ccaa', cursor: 'pointer', fontFamily: 'inherit' }}>
                           EXCLUIR
                         </button>
+                        <button onClick={() => { setRestaurarTenant(t); setRestForm({ lista1: '', lista2: '', lista3: '', restore_precos: true }); setRestMsg(''); }}
+                          style={{ padding: '3px 10px', fontSize: '11px', fontWeight: '700', background: '#fff0cc', color: '#886600', border: '1px outset #ccaa44', cursor: 'pointer', fontFamily: 'inherit' }}>
+                          🔄
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -582,6 +612,53 @@ export default function LabAdmin() {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Restaurar Listas */}
+      {restaurarTenant && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: R.panel, border: `2px outset ${R.bdr}`, width: '420px' }}>
+            <div style={{ background: 'linear-gradient(90deg,#886600,#cc9900)', color: '#fff', padding: '6px 14px', fontWeight: '700', fontSize: '12px', letterSpacing: '1px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>🔄 RESTAURAR LISTAS — {restaurarTenant.nome}</span>
+              <button onClick={() => setRestaurarTenant(null)} style={{ background: 'none', border: '1px solid #ffe', color: '#ffe', padding: '1px 6px', cursor: 'pointer', fontFamily: 'inherit' }}>✕</button>
+            </div>
+            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ fontSize: '11px', color: '#444', background: '#fffbe6', border: '1px solid #ccaa44', padding: '8px 10px' }}>
+                Digite os nomes das listas que deseja restaurar. Deixe em branco para não alterar.
+              </div>
+              {[
+                { label: 'Nome da Lista 1', key: 'lista1' as const },
+                { label: 'Nome da Lista 2', key: 'lista2' as const },
+                { label: 'Nome da Lista 3', key: 'lista3' as const },
+              ].map(({ label, key }) => (
+                <div key={key}>
+                  <div style={{ fontSize: '10px', fontWeight: '700', color: '#444', textTransform: 'uppercase', marginBottom: '4px' }}>{label}</div>
+                  <input value={restForm[key]} onChange={e => setRestForm(f => ({ ...f, [key]: e.target.value }))}
+                    style={{ ...INP, width: '100%' }} placeholder={`ex: tabela caucaia`} />
+                </div>
+              ))}
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', cursor: 'pointer' }}>
+                <input type="checkbox" checked={restForm.restore_precos} onChange={e => setRestForm(f => ({ ...f, restore_precos: e.target.checked }))} />
+                Restaurar preços do catálogo padrão
+              </label>
+              {restMsg && (
+                <div style={{ fontSize: '12px', fontWeight: '700', padding: '8px 10px', background: restMsg.startsWith('✅') ? '#ccffcc' : '#ffcccc', color: restMsg.startsWith('✅') ? '#005500' : '#880000', border: `1px solid ${restMsg.startsWith('✅') ? '#005500' : '#880000'}` }}>
+                  {restMsg}
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button onClick={() => setRestaurarTenant(null)}
+                  style={{ flex: 1, padding: '8px', fontSize: '12px', fontWeight: '700', background: R.alt, color: '#333', border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit' }}>
+                  FECHAR
+                </button>
+                <button onClick={handleRestaurar}
+                  style={{ flex: 2, padding: '8px', fontSize: '12px', fontWeight: '700', background: 'linear-gradient(90deg,#886600,#cc9900)', color: '#fff', border: '1px outset #cc9900', cursor: 'pointer', fontFamily: 'inherit' }}>
+                  🔄 RESTAURAR AGORA
+                </button>
+              </div>
             </div>
           </div>
         </div>
