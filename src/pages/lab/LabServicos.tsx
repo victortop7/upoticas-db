@@ -96,6 +96,7 @@ export default function LabServicos() {
   const [novaListaModal, setNovaListaModal] = useState(false);
   const [novaListaNome, setNovaListaNome] = useState('');
   const [confirmarDeleteLista, setConfirmarDeleteLista] = useState<number | null>(null);
+  const [confirmarDeleteProduto, setConfirmarDeleteProduto] = useState<{ id: string; nome: string } | null>(null);
 
   function load() {
     setLoading(true);
@@ -162,8 +163,8 @@ export default function LabServicos() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('Excluir este serviço?')) return;
     try { await api.delete(`/lab/servicos/${id}`); load(); } catch {}
+    setConfirmarDeleteProduto(null);
   }
 
   async function confirmarEExcluirLista() {
@@ -389,7 +390,7 @@ export default function LabServicos() {
                         </td>
                         <td style={{ padding:'4px 6px', whiteSpace:'nowrap', textAlign:'center' }}>
                           <button onClick={() => openEdit(s)} style={{ fontSize:'11px', padding:'2px 8px', background:R.alt, color:'#333', border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', marginRight:'3px' }}>✏️</button>
-                          <button onClick={() => handleDelete(s.id)} style={{ fontSize:'11px', padding:'2px 6px', background:'#ffeeee', color:'#880000', border:'1px outset #cc0000', cursor:'pointer', fontFamily:'inherit' }}>✕</button>
+                          <button onClick={() => setConfirmarDeleteProduto({ id: s.id, nome: s.nome })} style={{ fontSize:'11px', padding:'2px 6px', background:'#ffeeee', color:'#880000', border:'1px outset #cc0000', cursor:'pointer', fontFamily:'inherit' }}>✕</button>
                         </td>
                       </tr>
                     );
@@ -399,6 +400,34 @@ export default function LabServicos() {
             )}
           </div>
         </>
+      )}
+
+      {/* Modal Confirmar Excluir Produto */}
+      {confirmarDeleteProduto && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:400, display:'flex', alignItems:'center', justifyContent:'center' }}>
+          <div style={{ background:R.panel, border:`2px outset ${R.bdr}`, width:'100%', maxWidth:'360px' }}>
+            <div style={{ background:'#880000', color:'#fff', padding:'6px 14px', fontSize:'12px', fontWeight:'700', letterSpacing:'1px' }}>
+              ⚠ EXCLUIR PRODUTO
+            </div>
+            <div style={{ padding:'20px 16px', display:'flex', flexDirection:'column', gap:'16px' }}>
+              <div style={{ fontSize:'13px', color:'#222', lineHeight:'1.6' }}>
+                Deseja excluir o produto:<br />
+                <strong style={{ color:'#880000' }}>{confirmarDeleteProduto.nome}</strong>?<br />
+                <span style={{ fontSize:'11px', color:'#666' }}>O produto será removido do catálogo.</span>
+              </div>
+              <div style={{ display:'flex', gap:'10px' }}>
+                <button onClick={() => setConfirmarDeleteProduto(null)}
+                  style={{ flex:1, padding:'10px', fontSize:'13px', fontWeight:'700', background:R.alt, color:'#333', border:`2px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', letterSpacing:'0.5px' }}>
+                  NÃO
+                </button>
+                <button onClick={() => handleDelete(confirmarDeleteProduto.id)}
+                  style={{ flex:1, padding:'10px', fontSize:'13px', fontWeight:'700', background:'#880000', color:'#fff', border:'2px outset #cc0000', cursor:'pointer', fontFamily:'inherit', letterSpacing:'0.5px' }}>
+                  SIM, EXCLUIR
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Modal Confirmar Excluir Lista */}
