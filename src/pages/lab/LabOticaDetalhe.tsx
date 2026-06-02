@@ -275,7 +275,7 @@ export default function LabOticaDetalhe() {
               <input value={form.codigo ?? ''} onKeyDown={nextField} onChange={e => setF('codigo', e.target.value)} style={INP} placeholder="001" />
             </div>
             <div>
-              <label style={LBL}>Nome Completo *</label>
+              <label style={LBL}>Razão Social *</label>
               <input value={form.nome ?? ''} onKeyDown={nextField} onChange={e => setF('nome', e.target.value)} style={INP} required />
             </div>
             <div>

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 
-interface Otica { id: string; codigo?: string; nome: string; cnpj?: string; telefone?: string; email?: string; cidade?: string; uf?: string; ativo: number; }
+interface Otica { id: string; codigo?: string; nome: string; nome_reduzido?: string; cnpj?: string; telefone?: string; email?: string; cidade?: string; uf?: string; ativo: number; }
 
 const R = { bg:'#c8c4b0', panel:'#d4d0c8', alt:'#dedad2', bdr:'#b0aca4', hdr:'linear-gradient(90deg,#005500,#008800)', hdrTxt:'#ccffcc', hdrBdr:'#007700', txt:'#000', inp:'#fff' };
 const INP: React.CSSProperties = { width:'100%', padding:'5px 8px', fontSize:'12px', background:R.inp, border:'1px solid #999', color:R.txt, outline:'none', boxSizing:'border-box', fontFamily:"'Courier New', monospace" };
@@ -59,7 +59,7 @@ export default function LabOticas() {
                   onMouseEnter={e => (e.currentTarget.style.background = '#d0f0d0')}
                   onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 0 ? R.panel : R.alt)}>
                   <td style={{ padding: '7px 12px', fontFamily: "'Courier New', monospace", fontSize: '11px', color: '#555' }}>{o.codigo || '—'}</td>
-                  <td style={{ padding: '7px 12px', fontSize: '12px', fontWeight: '700', color: R.txt }}>{o.nome}</td>
+                  <td style={{ padding: '7px 12px', fontSize: '12px', fontWeight: '700', color: R.txt }}>{o.nome_reduzido || o.nome}</td>
                   <td style={{ padding: '7px 12px', fontFamily: "'Courier New', monospace", fontSize: '11px', color: '#333' }}>{o.cnpj || '—'}</td>
                   <td style={{ padding: '7px 12px', fontSize: '11px', color: '#333' }}>{o.telefone || '—'}</td>
                   <td style={{ padding: '7px 12px', fontSize: '11px', color: '#333' }}>{o.email || '—'}</td>
