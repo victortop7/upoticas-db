@@ -47,7 +47,7 @@ export default function LabOticas() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead style={{ position: 'sticky', top: 0 }}>
               <tr style={{ background: R.hdr }}>
-                {['CÓD', 'NOME', 'CNPJ', 'TELEFONE', 'E-MAIL', 'CIDADE/UF', 'STATUS'].map(h => (
+                {['CÓD', 'NOME REDUZIDO', 'CNPJ', 'TELEFONE', 'E-MAIL', 'CIDADE/UF', 'STATUS'].map(h => (
                   <th key={h} style={{ padding: '6px 12px', textAlign: 'left', fontSize: '10px', fontWeight: '700', color: R.hdrTxt, letterSpacing: '0.5px', border: `1px solid ${R.hdrBdr}`, whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
               </tr>
