@@ -13,33 +13,34 @@ interface Contato {
 }
 const CONTATO_INI: Contato = { departamento: '', contato: '', telefone: '', ramal: '', fax: '', celular: '', sms: false, email: '' };
 
+const RX = { bg:'#c8c4b0', panel:'#d4d0c8', alt:'#dedad2', bdr:'#b0aca4', hdr:'linear-gradient(90deg,#005500,#008800)', hdrTxt:'#ccffcc', hdrBdr:'#007700', txt:'#000' };
 const INP: React.CSSProperties = {
-  width: '100%', padding: '5px 7px', fontSize: '12px', background: 'var(--surface-alt)',
-  border: '1px solid var(--border)', borderRadius: '5px', color: 'var(--text)',
-  outline: 'none', boxSizing: 'border-box', fontFamily: 'var(--mono)',
+  width: '100%', padding: '5px 7px', fontSize: '12px', background: '#fff',
+  border: `1px solid ${RX.bdr}`, borderRadius: '0', color: RX.txt,
+  outline: 'none', boxSizing: 'border-box', fontFamily: "'Courier New', monospace",
 };
 const LBL: React.CSSProperties = {
-  fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)',
+  fontSize: '10px', fontWeight: '700', color: '#444',
   textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '3px',
 };
 const SEC: React.CSSProperties = {
-  background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px',
+  background: RX.panel, border: `2px inset ${RX.bdr}`,
   padding: '12px 14px',
 };
 const SEC_TITLE: React.CSSProperties = {
   fontSize: '10px', fontWeight: '700', color: '#005500', textTransform: 'uppercase',
-  letterSpacing: '1px', marginBottom: '10px', borderBottom: '1px solid var(--border)', paddingBottom: '5px',
+  letterSpacing: '1px', marginBottom: '10px', borderBottom: `1px solid ${RX.bdr}`, paddingBottom: '5px',
 };
 const TH: React.CSSProperties = {
-  padding: '5px 6px', fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)',
-  textTransform: 'uppercase', background: 'var(--surface-alt)', borderBottom: '1px solid var(--border)',
+  padding: '5px 6px', fontSize: '10px', fontWeight: '700', color: RX.hdrTxt,
+  textTransform: 'uppercase', background: '#005500', borderBottom: `1px solid ${RX.hdrBdr}`,
   whiteSpace: 'nowrap', textAlign: 'center',
 };
 const TD: React.CSSProperties = { padding: '2px 3px', verticalAlign: 'middle' };
 const TINP: React.CSSProperties = {
-  width: '100%', padding: '3px 5px', fontSize: '11px', background: 'var(--surface-alt)',
-  border: '1px solid var(--border)', borderRadius: '4px', color: 'var(--text)',
-  outline: 'none', fontFamily: 'var(--mono)',
+  width: '100%', padding: '3px 5px', fontSize: '11px', background: '#fff',
+  border: `1px solid ${RX.bdr}`, borderRadius: '0', color: RX.txt,
+  outline: 'none', fontFamily: "'Courier New', monospace",
 };
 
 
@@ -187,7 +188,15 @@ export default function LabOticaDetalhe() {
       .finally(() => setLoading(false));
   }
 
-  useEffect(() => { load(); }, [id]);
+  useEffect(() => {
+    if (id === 'new') {
+      setData({ otica: {}, ordens: [], stats: {} });
+      setEditando(true);
+      setLoading(false);
+      return;
+    }
+    load();
+  }, [id]);
 
   function setF(k: string, v: unknown) { setForm((f: Record<string, unknown>) => ({ ...f, [k]: v })); }
   function setCont(arr: Contato[], i: number, k: keyof Contato, v: unknown) {
@@ -197,26 +206,28 @@ export default function LabOticaDetalhe() {
   async function handleSave() {
     setSaving(true);
     try {
-      await api.put(`/lab/oticas/${id}`, {
-        ...form,
-        contatos: [...contatos, ...contatosMfe],
-        condicoes_pgto: condicoes,
-      });
-      setEditando(false);
-      load();
+      const payload = { ...form, contatos: [...contatos, ...contatosMfe], condicoes_pgto: condicoes };
+      if (id === 'new') {
+        const res = await api.post<{ id: string }>('/lab/oticas', payload);
+        navigate(`/lab/oticas/${res.id}`);
+      } else {
+        await api.put(`/lab/oticas/${id}`, payload);
+        setEditando(false);
+        load();
+      }
     } catch {}
     setSaving(false);
   }
 
-  if (loading) return <div style={{ padding: '48px', color: 'var(--text-muted)', fontSize: '14px' }}>Carregando...</div>;
-  if (!data) return <div style={{ padding: '48px', color: 'var(--red)', fontSize: '14px' }}>Ótica não encontrada.</div>;
+  if (loading) return <div style={{ padding: '48px', color: '#666', fontSize: '14px' }}>Carregando...</div>;
+  if (!data) return <div style={{ padding: '48px', color: '#cc0000', fontSize: '14px' }}>Ótica não encontrada.</div>;
 
   const { otica, ordens, stats } = data;
 
   // ===== MODO EDIÇÃO =====
   if (editando) {
     return (
-      <div style={{ height: '100%', overflowY: 'auto', padding: '16px', background: 'var(--bg)' }}>
+      <div style={{ height: '100%', overflowY: 'auto', padding: '16px', background: RX.bg, fontFamily: "'Montserrat', sans-serif" }}>
 
         {/* Topo: código + nome + nome reduzido + datas */}
         <div style={{ ...SEC, marginBottom: '12px' }}>
@@ -234,12 +245,12 @@ export default function LabOticaDetalhe() {
               <input value={form.nome_reduzido ?? ''} onChange={e => setF('nome_reduzido', e.target.value)} style={INP} />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-              <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>Data Cadastro</div>
-              <div style={{ fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>
+              <div style={{ fontSize: '10px', color: '#666', fontWeight: '700', textTransform: 'uppercase' }}>Data Cadastro</div>
+              <div style={{ fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#555' }}>
                 {otica.created_at ? new Date(otica.created_at).toLocaleDateString('pt-BR') : '—'}
               </div>
-              <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', marginTop: '2px' }}>Atualização</div>
-              <div style={{ fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{new Date().toLocaleDateString('pt-BR')}</div>
+              <div style={{ fontSize: '10px', color: '#666', fontWeight: '700', textTransform: 'uppercase', marginTop: '2px' }}>Atualização</div>
+              <div style={{ fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#555' }}>{new Date().toLocaleDateString('pt-BR')}</div>
             </div>
           </div>
         </div>
@@ -293,7 +304,7 @@ export default function LabOticaDetalhe() {
               <div><label style={LBL}>Vendedor</label><input value={form.vendedor_id ?? ''} onChange={e => setF('vendedor_id', e.target.value)} style={INP} /></div>
               <div>
                 <label style={LBL}>Vias Pedido</label>
-                <select value={form.vias_pedido ?? 1} onChange={e => setF('vias_pedido', e.target.value)} style={{ ...INP, fontFamily: 'var(--sans)' }}>
+                <select value={form.vias_pedido ?? 1} onChange={e => setF('vias_pedido', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                   {[0,1,2,3].map(n => <option key={n} value={n}>{n}</option>)}
                 </select>
               </div>
@@ -303,7 +314,7 @@ export default function LabOticaDetalhe() {
               <div><label style={LBL}>Comissão (%)</label><input type="number" step="0.01" value={form.comissao ?? ''} onChange={e => setF('comissao', e.target.value)} style={INP} /></div>
               <div>
                 <label style={LBL}>Vias OS</label>
-                <select value={form.vias_os ?? 0} onChange={e => setF('vias_os', e.target.value)} style={{ ...INP, fontFamily: 'var(--sans)' }}>
+                <select value={form.vias_os ?? 0} onChange={e => setF('vias_os', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                   {[0,1,2,3].map(n => <option key={n} value={n}>{n}</option>)}
                 </select>
               </div>
@@ -315,13 +326,13 @@ export default function LabOticaDetalhe() {
             <div style={SEC_TITLE}>Parâmetros Comerciais</div>
             <div style={{ marginBottom: '6px' }}>
               <label style={LBL}>Lista de Preços</label>
-              <select value={form.lista_preco ?? 1} onChange={e => setF('lista_preco', e.target.value)} style={{ ...INP, fontFamily: 'var(--sans)' }}>
+              <select value={form.lista_preco ?? 1} onChange={e => setF('lista_preco', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                 {[1,2,3,4,5,6,7,8,9].map(n => <option key={n} value={n}>Lista {n}</option>)}
               </select>
             </div>
             <div style={{ marginBottom: '6px' }}>
               <label style={LBL}>Classificação</label>
-              <select value={form.classificacao_cli ?? ''} onChange={e => setF('classificacao_cli', e.target.value)} style={{ ...INP, fontFamily: 'var(--sans)' }}>
+              <select value={form.classificacao_cli ?? ''} onChange={e => setF('classificacao_cli', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                 <option value="">—</option>
                 <option value="A">A</option><option value="B">B</option>
                 <option value="C">C</option><option value="D">D</option>
@@ -330,7 +341,7 @@ export default function LabOticaDetalhe() {
             </div>
             <div style={{ marginBottom: '6px' }}>
               <label style={LBL}>Tipo de Fechamento</label>
-              <select value={form.tipo_fechamento ?? ''} onChange={e => setF('tipo_fechamento', e.target.value)} style={{ ...INP, fontFamily: 'var(--sans)' }}>
+              <select value={form.tipo_fechamento ?? ''} onChange={e => setF('tipo_fechamento', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                 <option value="">—</option>
                 <option value="1">1 - Mensal</option>
                 <option value="2">2 - Quinzenal</option>
@@ -340,7 +351,7 @@ export default function LabOticaDetalhe() {
             </div>
             <div style={{ marginBottom: '6px' }}>
               <label style={LBL}>Tipo de Faturamento</label>
-              <select value={form.tipo_faturamento ?? ''} onChange={e => setF('tipo_faturamento', e.target.value)} style={{ ...INP, fontFamily: 'var(--sans)' }}>
+              <select value={form.tipo_faturamento ?? ''} onChange={e => setF('tipo_faturamento', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                 <option value="">—</option>
                 <option value="1">1 - Normal</option>
                 <option value="2">2 - Contrato</option>
@@ -349,7 +360,7 @@ export default function LabOticaDetalhe() {
             </div>
             <div style={{ marginBottom: '6px' }}>
               <label style={LBL}>Via de Transporte</label>
-              <select value={form.via_transporte ?? '0'} onChange={e => setF('via_transporte', e.target.value)} style={{ ...INP, fontFamily: 'var(--sans)' }}>
+              <select value={form.via_transporte ?? '0'} onChange={e => setF('via_transporte', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                 <option value="0">0 - Própria</option>
                 <option value="1">1 - Transportadora</option>
                 <option value="2">2 - Motoboy</option>
@@ -358,19 +369,19 @@ export default function LabOticaDetalhe() {
             </div>
             <div style={{ marginBottom: '6px' }}>
               <label style={LBL}>Tipo de ICMS</label>
-              <select value={form.tipo_icms ?? ''} onChange={e => setF('tipo_icms', e.target.value)} style={{ ...INP, fontFamily: 'var(--sans)' }}>
+              <select value={form.tipo_icms ?? ''} onChange={e => setF('tipo_icms', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                 <option value="">—</option>
                 <option value="1">1 - Contribuinte</option>
                 <option value="2">2 - Não Contribuinte</option>
                 <option value="3">3 - Isento</option>
               </select>
             </div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '7px', cursor: 'pointer', fontSize: '12px', color: 'var(--text)', marginBottom: '12px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '7px', cursor: 'pointer', fontSize: '12px', color: '#000', marginBottom: '12px' }}>
               <input type="checkbox" checked={!!form.banco_cobranca} onChange={e => setF('banco_cobranca', e.target.checked ? 1 : 0)} />
               Banco de Cobrança
             </label>
 
-            <div style={{ borderTop: '1px solid var(--border)', paddingTop: '10px' }}>
+            <div style={{ borderTop: '1px solid #b0aca4', paddingTop: '10px' }}>
               <div style={SEC_TITLE}>Crédito / Situação</div>
               <div style={{ marginBottom: '6px' }}>
                 <label style={LBL}>Limite de Crédito (R$)</label>
@@ -382,7 +393,7 @@ export default function LabOticaDetalhe() {
               </div>
               <div style={{ marginBottom: '6px' }}>
                 <label style={LBL}>Situação</label>
-                <select value={form.situacao ?? ''} onChange={e => setF('situacao', e.target.value)} style={{ ...INP, fontFamily: 'var(--sans)' }}>
+                <select value={form.situacao ?? ''} onChange={e => setF('situacao', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                   <option value="">—</option>
                   <option value="A">A - Ativo</option>
                   <option value="I">I - Inativo</option>
@@ -422,7 +433,7 @@ export default function LabOticaDetalhe() {
             <div>
               <label style={LBL}>Observações</label>
               <textarea value={form.observacao ?? ''} onChange={e => setF('observacao', e.target.value)} rows={6}
-                style={{ ...INP, fontFamily: 'var(--sans)', resize: 'vertical' }} />
+                style={{ ...INP, fontFamily: "'Montserrat', sans-serif", resize: 'vertical' }} />
             </div>
           </div>
         </div>
@@ -440,7 +451,7 @@ export default function LabOticaDetalhe() {
             </thead>
             <tbody>
               {contatos.map((c, i) => (
-                <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
+                <tr key={i} style={{ borderBottom: '1px solid #b0aca4' }}>
                   <td style={TD}><input value={c.departamento} onChange={e => setContatos(setCont(contatos, i, 'departamento', e.target.value))} style={TINP} /></td>
                   <td style={TD}><input value={c.contato} onChange={e => setContatos(setCont(contatos, i, 'contato', e.target.value))} style={TINP} /></td>
                   <td style={TD}><input value={c.telefone} onChange={e => setContatos(setCont(contatos, i, 'telefone', e.target.value))} style={{ ...TINP, width: '110px' }} /></td>
@@ -452,8 +463,8 @@ export default function LabOticaDetalhe() {
                 </tr>
               ))}
               {contatosMfe.map((c, i) => (
-                <tr key={`mfe${i}`} style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface-alt)' }}>
-                  <td style={{ ...TD, fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', paddingLeft: '6px', whiteSpace: 'nowrap' }}>ENVIO DE MFE</td>
+                <tr key={`mfe${i}`} style={{ borderBottom: '1px solid #b0aca4', background: '#dedad2' }}>
+                  <td style={{ ...TD, fontSize: '10px', fontWeight: '700', color: '#666', paddingLeft: '6px', whiteSpace: 'nowrap' }}>ENVIO DE MFE</td>
                   <td style={TD}><input value={c.contato} onChange={e => setContatosMfe(setCont(contatosMfe, i, 'contato', e.target.value))} style={TINP} /></td>
                   <td style={TD}><input value={c.telefone} onChange={e => setContatosMfe(setCont(contatosMfe, i, 'telefone', e.target.value))} style={{ ...TINP, width: '110px' }} /></td>
                   <td style={TD}></td><td style={TD}></td>
@@ -481,15 +492,14 @@ export default function LabOticaDetalhe() {
         </div>
 
         {/* Botões */}
-        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', paddingBottom: '24px' }}>
-          <button onClick={() => setEditando(false)} style={{ padding: '9px 22px', fontSize: '13px', background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>
-            Cancelar
+        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', paddingBottom: '24px' }}>
+          <button
+            onClick={() => id === 'new' ? navigate('/lab/oticas') : setEditando(false)}
+            style={{ padding: '7px 20px', fontSize: '12px', fontWeight: '700', background: RX.alt, color: RX.txt, border: `1px outset ${RX.bdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
+            CANCELAR
           </button>
-          <button onClick={() => navigate(`/lab/ordens/nova?otica=${id}`)} style={{ padding: '9px 18px', fontSize: '13px', fontWeight: '600', background: 'var(--surface-alt)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>
-            Imprimir
-          </button>
-          <button onClick={handleSave} disabled={saving} style={{ padding: '9px 28px', fontSize: '13px', fontWeight: '700', background: saving ? 'var(--text-muted)' : '#005500', color: '#fff', border: 'none', borderRadius: '7px', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
-            {saving ? 'Salvando...' : 'Gravar'}
+          <button onClick={handleSave} disabled={saving} style={{ padding: '7px 28px', fontSize: '12px', fontWeight: '700', background: '#005500', color: RX.hdrTxt, border: `1px outset ${RX.hdrBdr}`, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
+            {saving ? 'SALVANDO...' : 'GRAVAR'}
           </button>
         </div>
       </div>
