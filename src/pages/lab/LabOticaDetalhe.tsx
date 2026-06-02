@@ -57,6 +57,7 @@ export default function LabOticaDetalhe() {
   const [contatosMfe, setContatosMfe] = useState<Contato[]>(Array.from({ length: 3 }, () => ({ ...CONTATO_INI })));
   const [condicoes, setCondicoes] = useState<string[]>(Array(9).fill(''));
   const [saving, setSaving] = useState(false);
+  const [confirmarGravar, setConfirmarGravar] = useState(false);
   const [filtroOS, setFiltroOS] = useState('');
   const [filtroDataIni, setFiltroDataIni] = useState('');
   const [filtroDataFim, setFiltroDataFim] = useState('');
@@ -537,10 +538,42 @@ export default function LabOticaDetalhe() {
             style={{ padding: '7px 20px', fontSize: '12px', fontWeight: '700', background: RX.alt, color: RX.txt, border: `1px outset ${RX.bdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
             CANCELAR
           </button>
-          <button onClick={handleSave} disabled={saving} style={{ padding: '7px 28px', fontSize: '12px', fontWeight: '700', background: '#005500', color: RX.hdrTxt, border: `1px outset ${RX.hdrBdr}`, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
-            {saving ? 'SALVANDO...' : 'GRAVAR'}
+          <button
+            onClick={() => setConfirmarGravar(true)}
+            disabled={saving}
+            onKeyDown={e => e.key === 'Enter' && e.preventDefault()}
+            style={{ padding: '7px 28px', fontSize: '12px', fontWeight: '700', background: '#005500', color: RX.hdrTxt, border: `1px outset ${RX.hdrBdr}`, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
+            GRAVAR
           </button>
         </div>
+
+        {/* Modal confirmar gravar */}
+        {confirmarGravar && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ background: RX.panel, border: `2px outset ${RX.bdr}`, width: '340px' }}>
+              <div style={{ background: RX.hdr, color: RX.hdrTxt, padding: '6px 14px', fontSize: '12px', fontWeight: '700', letterSpacing: '1px' }}>
+                CONFIRMAR GRAVAÇÃO
+              </div>
+              <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ fontSize: '13px', color: '#222' }}>
+                  Deseja gravar os dados da ótica?
+                </div>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    onClick={() => setConfirmarGravar(false)}
+                    style={{ flex: 1, padding: '10px', fontSize: '13px', fontWeight: '700', background: RX.alt, color: RX.txt, border: `2px outset ${RX.bdr}`, cursor: 'pointer', fontFamily: 'inherit' }}>
+                    NÃO
+                  </button>
+                  <button
+                    onClick={() => { setConfirmarGravar(false); handleSave(); }}
+                    style={{ flex: 1, padding: '10px', fontSize: '13px', fontWeight: '700', background: '#005500', color: RX.hdrTxt, border: `2px outset ${RX.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit' }}>
+                    SIM, GRAVAR
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
