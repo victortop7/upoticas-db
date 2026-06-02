@@ -60,6 +60,8 @@ export default function LabOticaDetalhe() {
   const [filtroOS, setFiltroOS] = useState('');
   const [filtroDataIni, setFiltroDataIni] = useState('');
   const [filtroDataFim, setFiltroDataFim] = useState('');
+  const [listaNomes, setListaNomes] = useState<string[]>(['PREÇO 1','PREÇO 2','PREÇO 3','PREÇO 4','PREÇO 5']);
+  const [listasAtivas, setListasAtivas] = useState(5);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async function imprimirRelatorio(oticaId: string, nomeOtica: string, lista: any[]) {
@@ -187,6 +189,25 @@ export default function LabOticaDetalhe() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }
+
+  useEffect(() => {
+    // Carrega nomes das listas do laboratório
+    api.get<Record<string, string>>('/lab/configuracoes').then(cfg => {
+      const nomes = [
+        cfg['tab_lista_1'] || 'PREÇO 1',
+        cfg['tab_lista_2'] || 'PREÇO 2',
+        cfg['tab_lista_3'] || 'PREÇO 3',
+        cfg['tab_lista_4'] || 'PREÇO 4',
+        cfg['tab_lista_5'] || 'PREÇO 5',
+      ];
+      setListaNomes(nomes);
+      let ativas = 2;
+      for (let i = 2; i < 5; i++) {
+        if (cfg[`tab_lista_${i + 1}`]) ativas = i + 1;
+      }
+      setListasAtivas(Math.max(2, ativas));
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (id === 'new') {
@@ -327,7 +348,9 @@ export default function LabOticaDetalhe() {
             <div style={{ marginBottom: '6px' }}>
               <label style={LBL}>Lista de Preços</label>
               <select value={form.lista_preco ?? 1} onChange={e => setF('lista_preco', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
-                {[1,2,3,4,5,6,7,8,9].map(n => <option key={n} value={n}>Lista {n}</option>)}
+                {listaNomes.slice(0, listasAtivas).map((nome, i) => (
+                  <option key={i + 1} value={i + 1}>{nome}</option>
+                ))}
               </select>
             </div>
             <div style={{ marginBottom: '6px' }}>
@@ -550,7 +573,7 @@ export default function LabOticaDetalhe() {
             {otica.nome}
             {otica.nome_reduzido && <span style={{ fontSize:'11px', opacity:0.8, marginLeft:'8px' }}>({otica.nome_reduzido})</span>}
           </div>
-          <span style={{ fontSize:'11px', color:'#555' }}>{[otica.cidade, otica.uf].filter(Boolean).join('/')}{otica.lista_preco ? ` · Lista ${otica.lista_preco}` : ''}</span>
+          <span style={{ fontSize:'11px', color:'#555' }}>{[otica.cidade, otica.uf].filter(Boolean).join('/')}{otica.lista_preco ? ` · ${listaNomes[otica.lista_preco - 1] || `Lista ${otica.lista_preco}`}` : ''}</span>
         </div>
         <div style={{ display:'flex', gap:'6px' }}>
           <button onClick={() => setEditando(true)}
@@ -586,7 +609,7 @@ export default function LabOticaDetalhe() {
           <div style={{ background:RV.hdr, color:RV.hdrTxt, padding:'3px 8px', fontSize:'10px', fontWeight:'700', letterSpacing:'1px', marginBottom:'8px', border:`1px outset ${RV.hdrBdr}` }}>INFORMAÇÕES</div>
           {[
             ['CÓDIGO', otica.codigo],
-            ['LISTA DE PREÇOS', otica.lista_preco ? `Lista ${otica.lista_preco}` : null],
+            ['LISTA DE PREÇOS', otica.lista_preco ? (listaNomes[otica.lista_preco - 1] || `Lista ${otica.lista_preco}`) : null],
             ['COND. PAGAMENTO', otica.condicao_pgto],
             ['CNPJ', otica.cnpj],
             ['IE', otica.inscricao_estadual],
