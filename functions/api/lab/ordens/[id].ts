@@ -37,6 +37,34 @@ export const onRequestGet = async ({ request, env, params }: { request: Request;
   }
 };
 
+export const onRequestDelete = async ({ request, env, params }: { request: Request; env: Env; params: Record<string, string> }) => {
+  try {
+    const auth = await requireAuth(request, env);
+    if (auth instanceof Response) return auth;
+    const { tenant_id } = auth;
+    const { id } = params;
+
+    // Verifica se a OS pertence ao tenant
+    const ordem = await env.DB.prepare(
+      'SELECT id FROM lab_ordens WHERE id = ? AND tenant_id = ?'
+    ).bind(id, tenant_id).first();
+
+    if (!ordem) return json({ error: 'Ordem não encontrada' }, 404);
+
+    // Exclui cascata
+    await env.DB.batch([
+      env.DB.prepare('DELETE FROM lab_servicos_os WHERE ordem_id = ?').bind(id),
+      env.DB.prepare('DELETE FROM lab_receita WHERE ordem_id = ?').bind(id),
+      env.DB.prepare('DELETE FROM lab_armacao WHERE ordem_id = ?').bind(id),
+      env.DB.prepare('DELETE FROM lab_ordens WHERE id = ? AND tenant_id = ?').bind(id, tenant_id),
+    ]);
+
+    return json({ ok: true });
+  } catch (err) {
+    return json({ error: 'Erro interno', detail: String(err) }, 500);
+  }
+};
+
 export const onRequestPatch = async ({ request, env, params }: { request: Request; env: Env; params: Record<string, string> }) => {
   try {
     const auth = await requireAuth(request, env);

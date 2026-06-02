@@ -22,6 +22,16 @@ export default function LabOrdemDetalhe() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [confirmarExcluir, setConfirmarExcluir] = useState(false);
+  const [excluindo, setExcluindo] = useState(false);
+
+  async function handleExcluir() {
+    setExcluindo(true);
+    try {
+      await api.delete(`/lab/ordens/${id}`);
+      navigate('/lab/ordens');
+    } catch { setExcluindo(false); }
+  }
 
   function load() {
     setLoading(true);
@@ -80,14 +90,54 @@ export default function LabOrdemDetalhe() {
             <div style={{ fontSize: '13px', color: 'var(--text-dim)', marginTop: '2px' }}>{ordem.otica_nome}</div>
           </div>
         </div>
-        <Link
-          to={`/lab/ordens/${id}/imprimir`}
-          target="_blank"
-          style={{ padding: '9px 18px', fontSize: '13px', fontWeight: '600', background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'none', display: 'inline-block' }}
-        >
-          Imprimir OS
-        </Link>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <Link
+            to={`/lab/ordens/${id}/imprimir`}
+            target="_blank"
+            style={{ padding: '9px 18px', fontSize: '13px', fontWeight: '600', background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'none', display: 'inline-block' }}
+          >
+            Imprimir OS
+          </Link>
+          <button
+            onClick={() => setConfirmarExcluir(true)}
+            style={{ padding: '9px 18px', fontSize: '13px', fontWeight: '600', background: 'var(--red-dim)', color: 'var(--red)', border: '1px solid var(--red)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}
+          >
+            Excluir OS
+          </button>
+        </div>
       </div>
+
+      {/* Modal confirmar exclusão */}
+      {confirmarExcluir && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', width: '360px', overflow: 'hidden' }}>
+            <div style={{ background: 'var(--red-dim)', borderBottom: '1px solid var(--red)', padding: '14px 18px' }}>
+              <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--red)' }}>⚠ Excluir Ordem de Serviço</div>
+            </div>
+            <div style={{ padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ fontSize: '14px', color: 'var(--text)', lineHeight: 1.6 }}>
+                Deseja excluir a <strong>OS #{String(ordem.numero).padStart(4, '0')}</strong>?<br />
+                <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Receita, armação e serviços serão removidos. Esta ação não pode ser desfeita.</span>
+              </div>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  onClick={() => setConfirmarExcluir(false)}
+                  style={{ flex: 1, padding: '10px', fontSize: '13px', fontWeight: '700', background: 'transparent', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}
+                >
+                  NÃO
+                </button>
+                <button
+                  onClick={handleExcluir}
+                  disabled={excluindo}
+                  style={{ flex: 1, padding: '10px', fontSize: '13px', fontWeight: '700', background: 'var(--red)', color: '#fff', border: 'none', borderRadius: '8px', cursor: excluindo ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}
+                >
+                  {excluindo ? 'Excluindo...' : 'SIM, EXCLUIR'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Alterar Status */}
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px 20px', marginBottom: '16px' }}>
