@@ -214,10 +214,26 @@ export default function LabOticaDetalhe() {
       setData({ otica: {}, ordens: [], stats: {} });
       setEditando(true);
       setLoading(false);
+      // Busca próximo código disponível
+      api.get<{ next: string }>('/lab/oticas?next_codigo=1').then(r => {
+        setForm((f: Record<string, unknown>) => ({ ...f, codigo: r.next }));
+      }).catch(() => {});
       return;
     }
     load();
   }, [id]);
+
+  function nextField(e: React.KeyboardEvent) {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    const container = (e.currentTarget as HTMLElement).closest('[data-form]');
+    if (!container) return;
+    const els = Array.from(container.querySelectorAll<HTMLElement>(
+      'input:not([disabled]),select:not([disabled]),textarea:not([disabled])'
+    )).filter(el => el.offsetParent !== null);
+    const i = els.indexOf(e.currentTarget as HTMLElement);
+    if (i >= 0 && i < els.length - 1) els[i + 1].focus();
+  }
 
   function setF(k: string, v: unknown) { setForm((f: Record<string, unknown>) => ({ ...f, [k]: v })); }
   function setCont(arr: Contato[], i: number, k: keyof Contato, v: unknown) {
@@ -248,22 +264,22 @@ export default function LabOticaDetalhe() {
   // ===== MODO EDIÇÃO =====
   if (editando) {
     return (
-      <div style={{ height: '100%', overflowY: 'auto', padding: '16px', background: RX.bg, fontFamily: "'Montserrat', sans-serif" }}>
+      <div style={{ height: '100%', overflowY: 'auto', padding: '16px', background: RX.bg, fontFamily: "'Montserrat', sans-serif" }} data-form="true">
 
         {/* Topo: código + nome + nome reduzido + datas */}
         <div style={{ ...SEC, marginBottom: '12px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '90px 1fr 200px 160px', gap: '10px', alignItems: 'end' }}>
             <div>
               <label style={LBL}>Código</label>
-              <input value={form.codigo ?? ''} onChange={e => setF('codigo', e.target.value)} style={INP} placeholder="001" />
+              <input value={form.codigo ?? ''} onKeyDown={nextField} onChange={e => setF('codigo', e.target.value)} style={INP} placeholder="001" />
             </div>
             <div>
               <label style={LBL}>Nome Completo *</label>
-              <input value={form.nome ?? ''} onChange={e => setF('nome', e.target.value)} style={INP} required />
+              <input value={form.nome ?? ''} onKeyDown={nextField} onChange={e => setF('nome', e.target.value)} style={INP} required />
             </div>
             <div>
               <label style={LBL}>Nome Reduzido</label>
-              <input value={form.nome_reduzido ?? ''} onChange={e => setF('nome_reduzido', e.target.value)} style={INP} />
+              <input value={form.nome_reduzido ?? ''} onKeyDown={nextField} onChange={e => setF('nome_reduzido', e.target.value)} style={INP} />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
               <div style={{ fontSize: '10px', color: '#666', fontWeight: '700', textTransform: 'uppercase' }}>Data Cadastro</div>
@@ -285,57 +301,57 @@ export default function LabOticaDetalhe() {
             <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '8px', marginBottom: '8px' }}>
               <div>
                 <label style={LBL}>CEP</label>
-                <input value={form.cep ?? ''} onChange={e => setF('cep', e.target.value)} style={INP} placeholder="00000-000" />
+                <input value={form.cep ?? ''} onKeyDown={nextField} onChange={e => setF('cep', e.target.value)} style={INP} placeholder="00000-000" />
               </div>
               <div>
                 <label style={LBL}>Endereço</label>
-                <input value={form.endereco ?? ''} onChange={e => setF('endereco', e.target.value)} style={INP} />
+                <input value={form.endereco ?? ''} onKeyDown={nextField} onChange={e => setF('endereco', e.target.value)} style={INP} />
               </div>
             </div>
             <div style={{ marginBottom: '6px' }}>
               <label style={LBL}>Complemento</label>
-              <input value={form.complemento ?? ''} onChange={e => setF('complemento', e.target.value)} style={INP} />
+              <input value={form.complemento ?? ''} onKeyDown={nextField} onChange={e => setF('complemento', e.target.value)} style={INP} />
             </div>
             <div style={{ marginBottom: '6px' }}>
               <label style={LBL}>Bairro</label>
-              <input value={form.bairro ?? ''} onChange={e => setF('bairro', e.target.value)} style={INP} />
+              <input value={form.bairro ?? ''} onKeyDown={nextField} onChange={e => setF('bairro', e.target.value)} style={INP} />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 50px', gap: '8px', marginBottom: '6px' }}>
-              <div><label style={LBL}>Cidade</label><input value={form.cidade ?? ''} onChange={e => setF('cidade', e.target.value)} style={INP} /></div>
-              <div><label style={LBL}>UF</label><input value={form.uf ?? ''} onChange={e => setF('uf', e.target.value)} style={INP} maxLength={2} /></div>
+              <div><label style={LBL}>Cidade</label><input value={form.cidade ?? ''} onKeyDown={nextField} onChange={e => setF('cidade', e.target.value)} style={INP} /></div>
+              <div><label style={LBL}>UF</label><input value={form.uf ?? ''} onKeyDown={nextField} onChange={e => setF('uf', e.target.value)} style={INP} maxLength={2} /></div>
             </div>
             <div style={{ marginBottom: '6px' }}>
               <label style={LBL}>Código Município/IBGE</label>
-              <input value={form.codigo_ibge ?? ''} onChange={e => setF('codigo_ibge', e.target.value)} style={INP} />
+              <input value={form.codigo_ibge ?? ''} onKeyDown={nextField} onChange={e => setF('codigo_ibge', e.target.value)} style={INP} />
             </div>
             <div style={{ marginBottom: '6px' }}>
               <label style={LBL}>CNPJ</label>
-              <input value={form.cnpj ?? ''} onChange={e => setF('cnpj', e.target.value)} style={INP} />
+              <input value={form.cnpj ?? ''} onKeyDown={nextField} onChange={e => setF('cnpj', e.target.value)} style={INP} />
             </div>
             <div style={{ marginBottom: '6px' }}>
               <label style={LBL}>Inscrição Estadual</label>
-              <input value={form.inscricao_estadual ?? ''} onChange={e => setF('inscricao_estadual', e.target.value)} style={INP} />
+              <input value={form.inscricao_estadual ?? ''} onKeyDown={nextField} onChange={e => setF('inscricao_estadual', e.target.value)} style={INP} />
             </div>
             <div style={{ marginBottom: '8px' }}>
               <label style={LBL}>Inscrição Municipal</label>
-              <input value={form.inscricao_municipal ?? ''} onChange={e => setF('inscricao_municipal', e.target.value)} style={INP} />
+              <input value={form.inscricao_municipal ?? ''} onKeyDown={nextField} onChange={e => setF('inscricao_municipal', e.target.value)} style={INP} />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr 80px', gap: '8px', marginBottom: '6px' }}>
-              <div><label style={LBL}>Área</label><input value={form.area ?? ''} onChange={e => setF('area', e.target.value)} style={INP} /></div>
-              <div><label style={LBL}>Vendedor</label><input value={form.vendedor_id ?? ''} onChange={e => setF('vendedor_id', e.target.value)} style={INP} /></div>
+              <div><label style={LBL}>Área</label><input value={form.area ?? ''} onKeyDown={nextField} onChange={e => setF('area', e.target.value)} style={INP} /></div>
+              <div><label style={LBL}>Vendedor</label><input value={form.vendedor_id ?? ''} onKeyDown={nextField} onChange={e => setF('vendedor_id', e.target.value)} style={INP} /></div>
               <div>
                 <label style={LBL}>Vias Pedido</label>
-                <select value={form.vias_pedido ?? 1} onChange={e => setF('vias_pedido', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
+                <select value={form.vias_pedido ?? 1} onKeyDown={nextField} onChange={e => setF('vias_pedido', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                   {[0,1,2,3].map(n => <option key={n} value={n}>{n}</option>)}
                 </select>
               </div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr 80px', gap: '8px' }}>
-              <div><label style={LBL}>Rota</label><input value={form.rota_entrega ?? ''} onChange={e => setF('rota_entrega', e.target.value)} style={INP} /></div>
-              <div><label style={LBL}>Comissão (%)</label><input type="number" step="0.01" value={form.comissao ?? ''} onChange={e => setF('comissao', e.target.value)} style={INP} /></div>
+              <div><label style={LBL}>Rota</label><input value={form.rota_entrega ?? ''} onKeyDown={nextField} onChange={e => setF('rota_entrega', e.target.value)} style={INP} /></div>
+              <div><label style={LBL}>Comissão (%)</label><input type="number" step="0.01" value={form.comissao ?? ''} onKeyDown={nextField} onChange={e => setF('comissao', e.target.value)} style={INP} /></div>
               <div>
                 <label style={LBL}>Vias OS</label>
-                <select value={form.vias_os ?? 0} onChange={e => setF('vias_os', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
+                <select value={form.vias_os ?? 0} onKeyDown={nextField} onChange={e => setF('vias_os', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                   {[0,1,2,3].map(n => <option key={n} value={n}>{n}</option>)}
                 </select>
               </div>
@@ -347,7 +363,7 @@ export default function LabOticaDetalhe() {
             <div style={SEC_TITLE}>Parâmetros Comerciais</div>
             <div style={{ marginBottom: '6px' }}>
               <label style={LBL}>Lista de Preços</label>
-              <select value={form.lista_preco ?? 1} onChange={e => setF('lista_preco', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
+              <select value={form.lista_preco ?? 1} onKeyDown={nextField} onChange={e => setF('lista_preco', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                 {listaNomes.slice(0, listasAtivas).map((nome, i) => (
                   <option key={i + 1} value={i + 1}>{nome}</option>
                 ))}
@@ -355,7 +371,7 @@ export default function LabOticaDetalhe() {
             </div>
             <div style={{ marginBottom: '6px' }}>
               <label style={LBL}>Classificação</label>
-              <select value={form.classificacao_cli ?? ''} onChange={e => setF('classificacao_cli', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
+              <select value={form.classificacao_cli ?? ''} onKeyDown={nextField} onChange={e => setF('classificacao_cli', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                 <option value="">—</option>
                 <option value="A">A</option><option value="B">B</option>
                 <option value="C">C</option><option value="D">D</option>
@@ -364,7 +380,7 @@ export default function LabOticaDetalhe() {
             </div>
             <div style={{ marginBottom: '6px' }}>
               <label style={LBL}>Tipo de Fechamento</label>
-              <select value={form.tipo_fechamento ?? ''} onChange={e => setF('tipo_fechamento', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
+              <select value={form.tipo_fechamento ?? ''} onKeyDown={nextField} onChange={e => setF('tipo_fechamento', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                 <option value="">—</option>
                 <option value="1">1 - Mensal</option>
                 <option value="2">2 - Quinzenal</option>
@@ -374,7 +390,7 @@ export default function LabOticaDetalhe() {
             </div>
             <div style={{ marginBottom: '6px' }}>
               <label style={LBL}>Tipo de Faturamento</label>
-              <select value={form.tipo_faturamento ?? ''} onChange={e => setF('tipo_faturamento', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
+              <select value={form.tipo_faturamento ?? ''} onKeyDown={nextField} onChange={e => setF('tipo_faturamento', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                 <option value="">—</option>
                 <option value="1">1 - Normal</option>
                 <option value="2">2 - Contrato</option>
@@ -383,7 +399,7 @@ export default function LabOticaDetalhe() {
             </div>
             <div style={{ marginBottom: '6px' }}>
               <label style={LBL}>Via de Transporte</label>
-              <select value={form.via_transporte ?? '0'} onChange={e => setF('via_transporte', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
+              <select value={form.via_transporte ?? '0'} onKeyDown={nextField} onChange={e => setF('via_transporte', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                 <option value="0">0 - Própria</option>
                 <option value="1">1 - Transportadora</option>
                 <option value="2">2 - Motoboy</option>
@@ -392,7 +408,7 @@ export default function LabOticaDetalhe() {
             </div>
             <div style={{ marginBottom: '6px' }}>
               <label style={LBL}>Tipo de ICMS</label>
-              <select value={form.tipo_icms ?? ''} onChange={e => setF('tipo_icms', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
+              <select value={form.tipo_icms ?? ''} onKeyDown={nextField} onChange={e => setF('tipo_icms', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                 <option value="">—</option>
                 <option value="1">1 - Contribuinte</option>
                 <option value="2">2 - Não Contribuinte</option>
@@ -400,7 +416,7 @@ export default function LabOticaDetalhe() {
               </select>
             </div>
             <label style={{ display: 'flex', alignItems: 'center', gap: '7px', cursor: 'pointer', fontSize: '12px', color: '#000', marginBottom: '12px' }}>
-              <input type="checkbox" checked={!!form.banco_cobranca} onChange={e => setF('banco_cobranca', e.target.checked ? 1 : 0)} />
+              <input type="checkbox" checked={!!form.banco_cobranca} onKeyDown={nextField} onChange={e => setF('banco_cobranca', e.target.checked ? 1 : 0)} />
               Banco de Cobrança
             </label>
 
@@ -408,15 +424,15 @@ export default function LabOticaDetalhe() {
               <div style={SEC_TITLE}>Crédito / Situação</div>
               <div style={{ marginBottom: '6px' }}>
                 <label style={LBL}>Limite de Crédito (R$)</label>
-                <input type="number" step="0.01" value={form.limite_credito ?? ''} onChange={e => setF('limite_credito', e.target.value)} style={INP} />
+                <input type="number" step="0.01" value={form.limite_credito ?? ''} onKeyDown={nextField} onChange={e => setF('limite_credito', e.target.value)} style={INP} />
               </div>
               <div style={{ marginBottom: '6px' }}>
                 <label style={LBL}>Dias em Débito p/ Aceitar Vendas</label>
-                <input type="number" value={form.dias_debito ?? ''} onChange={e => setF('dias_debito', e.target.value)} style={INP} />
+                <input type="number" value={form.dias_debito ?? ''} onKeyDown={nextField} onChange={e => setF('dias_debito', e.target.value)} style={INP} />
               </div>
               <div style={{ marginBottom: '6px' }}>
                 <label style={LBL}>Situação</label>
-                <select value={form.situacao ?? ''} onChange={e => setF('situacao', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
+                <select value={form.situacao ?? ''} onKeyDown={nextField} onChange={e => setF('situacao', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                   <option value="">—</option>
                   <option value="A">A - Ativo</option>
                   <option value="I">I - Inativo</option>
@@ -425,11 +441,11 @@ export default function LabOticaDetalhe() {
               </div>
               <div style={{ marginBottom: '6px' }}>
                 <label style={LBL}>Ramo de Atividade</label>
-                <input value={form.ramo_atividade ?? ''} onChange={e => setF('ramo_atividade', e.target.value)} style={INP} />
+                <input value={form.ramo_atividade ?? ''} onKeyDown={nextField} onChange={e => setF('ramo_atividade', e.target.value)} style={INP} />
               </div>
               <div>
                 <label style={LBL}>Matriz / Rede / Grupo</label>
-                <input value={form.matriz_rede_grupo ?? ''} onChange={e => setF('matriz_rede_grupo', e.target.value)} style={INP} />
+                <input value={form.matriz_rede_grupo ?? ''} onKeyDown={nextField} onChange={e => setF('matriz_rede_grupo', e.target.value)} style={INP} />
               </div>
             </div>
           </div>
@@ -439,23 +455,23 @@ export default function LabOticaDetalhe() {
             <div style={SEC_TITLE}>Contato / Comunicação</div>
             <div style={{ marginBottom: '6px' }}>
               <label style={LBL}>Telefone Principal</label>
-              <input value={form.telefone ?? ''} onChange={e => setF('telefone', e.target.value)} style={INP} />
+              <input value={form.telefone ?? ''} onKeyDown={nextField} onChange={e => setF('telefone', e.target.value)} style={INP} />
             </div>
             <div style={{ marginBottom: '6px' }}>
               <label style={LBL}>E-mail</label>
-              <input type="email" value={form.email ?? ''} onChange={e => setF('email', e.target.value)} style={INP} />
+              <input type="email" value={form.email ?? ''} onKeyDown={nextField} onChange={e => setF('email', e.target.value)} style={INP} />
             </div>
             <div style={{ marginBottom: '6px' }}>
               <label style={LBL}>Cond. Pagamento Padrão</label>
-              <input value={form.condicao_pgto ?? ''} onChange={e => setF('condicao_pgto', e.target.value)} style={INP} placeholder="VV, F30..." />
+              <input value={form.condicao_pgto ?? ''} onKeyDown={nextField} onChange={e => setF('condicao_pgto', e.target.value)} style={INP} placeholder="VV, F30..." />
             </div>
             <div style={{ marginBottom: '6px' }}>
               <label style={LBL}>Desconto Padrão (%)</label>
-              <input type="number" step="0.01" value={form.desconto_padrao ?? ''} onChange={e => setF('desconto_padrao', e.target.value)} style={INP} />
+              <input type="number" step="0.01" value={form.desconto_padrao ?? ''} onKeyDown={nextField} onChange={e => setF('desconto_padrao', e.target.value)} style={INP} />
             </div>
             <div>
               <label style={LBL}>Observações</label>
-              <textarea value={form.observacao ?? ''} onChange={e => setF('observacao', e.target.value)} rows={6}
+              <textarea value={form.observacao ?? ''} onKeyDown={nextField} onChange={e => setF('observacao', e.target.value)} rows={6}
                 style={{ ...INP, fontFamily: "'Montserrat', sans-serif", resize: 'vertical' }} />
             </div>
           </div>

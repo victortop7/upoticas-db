@@ -7,6 +7,16 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
     if (auth instanceof Response) return auth;
     const { tenant_id } = auth;
 
+    const url = new URL(request.url);
+
+    // Retorna próximo código sequencial disponível
+    if (url.searchParams.has('next_codigo')) {
+      const row = await env.DB.prepare(
+        `SELECT COALESCE(MAX(CAST(codigo AS INTEGER)),0)+1 AS next FROM lab_oticas WHERE tenant_id=? AND codigo GLOB '[0-9]*'`
+      ).bind(tenant_id).first<{ next: number }>();
+      return json({ next: String(row?.next ?? 1).padStart(3, '0') });
+    }
+
     const result = await env.DB.prepare(
       'SELECT * FROM lab_oticas WHERE tenant_id = ? ORDER BY nome ASC'
     ).bind(tenant_id).all();
