@@ -252,6 +252,8 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
   const trObj = TRATAMENTOS.find(t => t.id === tratamento)!;
   const effect = EFFECTS[tratamento]?.[ambiente] ?? EFFECTS.ar.noite;
   const semSvg = getSemSvg(tratamento, ambiente);
+  // Usa fotos reais quando disponíveis
+  const useRealPhoto = tratamento === 'ar' && ambiente === 'noite';
 
   function move(clientX: number) {
     const rect = containerRef.current?.getBoundingClientRect();
@@ -304,18 +306,26 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
         style={{ flex: 1, position: 'relative', overflow: 'hidden', cursor: 'col-resize', userSelect: 'none' }}
       >
         {/* SEM base */}
-        <div style={{ position: 'absolute', inset: 0, background: SCENE_BG[ambiente], filter: effect.semFilter }} />
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: useRealPhoto
+            ? `url('/ar-sem.png') center/cover no-repeat`
+            : SCENE_BG[ambiente],
+          filter: useRealPhoto ? 'none' : effect.semFilter,
+        }} />
 
         {/* COM overlay — lado esquerdo */}
         <div style={{
           position: 'absolute', inset: 0,
-          background: SCENE_BG[ambiente],
-          filter: effect.comFilter,
+          background: useRealPhoto
+            ? `url('/ar-com.png') center/cover no-repeat`
+            : SCENE_BG[ambiente],
+          filter: useRealPhoto ? 'none' : effect.comFilter,
           clipPath: `inset(0 ${100 - divX}% 0 0)`,
         }} />
 
-        {/* SVG de defeito no lado SEM (direito) */}
-        {semSvg && (
+        {/* SVG de defeito no lado SEM (direito) — só quando não usa foto real */}
+        {!useRealPhoto && semSvg && (
           <div style={{ position: 'absolute', inset: 0, clipPath: `inset(0 0 0 ${divX}%)`, pointerEvents: 'none' }}>
             {semSvg}
           </div>
