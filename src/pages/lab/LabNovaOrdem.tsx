@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+﻿import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../../lib/api';
 import LabShapePicker from '../../components/LabShapePicker';
@@ -478,14 +478,14 @@ export default function LabNovaOrdem() {
                 onChange={e => { setOticaCod(e.target.value); setOticaErro(false); }}
                 onBlur={e => handleOticaLookup(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter' || e.key === 'Tab') handleOticaLookup(oticaCod); }}
-                style={{ ...INP, borderColor: oticaErro ? 'var(--red)' : undefined }}
+                style={{ ...INP, borderColor: oticaErro ? '#cc0000' : undefined }}
                 placeholder="Cód."
               />
             </div>
             <div>
               <label style={LBL}>Nome da Ótica</label>
-              <div style={{ ...INP, background: 'var(--surface)', color: oticaErro ? 'var(--red)' : oticaNome ? 'var(--text)' : 'var(--text-muted)', fontFamily: 'var(--sans)', minHeight: '32px', display: 'flex', alignItems: 'center' }}>
-                {oticaNome || <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>Digite o código ou nome acima...</span>}
+              <div style={{ ...INP, background: '#d4d0c8', color: oticaErro ? '#cc0000' : oticaNome ? '#000' : '#666', fontFamily: "'Montserrat', sans-serif", minHeight: '32px', display: 'flex', alignItems: 'center' }}>
+                {oticaNome || <span style={{ color: '#666', fontSize: '11px' }}>Digite o código ou nome acima...</span>}
               </div>
             </div>
             <div>
@@ -494,14 +494,14 @@ export default function LabNovaOrdem() {
             </div>
             <div>
               <label style={LBL}>Classif.</label>
-              <select value={classificacao} onChange={e => setClassificacao(e.target.value)} style={{ ...INP, fontFamily: 'var(--sans)' }}>
+              <select value={classificacao} onChange={e => setClassificacao(e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                 <option value="N">N - Normal</option>
                 <option value="E">E - Especial</option>
               </select>
             </div>
             <div>
               <label style={LBL}>Lista Preço</label>
-              <select value={listaPreco} onChange={e => setListaPreco(e.target.value)} style={{ ...INP, fontFamily: 'var(--sans)' }}>
+              <select value={listaPreco} onChange={e => setListaPreco(e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                 {listasDisponiveis.map(l => (
                   <option key={l.numero} value={l.numero}>{l.nome}</option>
                 ))}
@@ -541,7 +541,7 @@ export default function LabNovaOrdem() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '8px', marginBottom: '8px' }}>
             <div>
               <label style={LBL}>Operador</label>
-              <select value={operador} onChange={e => setOperador(e.target.value)} style={{ ...INP, fontFamily: 'var(--sans)' }}>
+              <select value={operador} onChange={e => setOperador(e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                 <option value="">— Operador</option>
                 {operadores.map(u => <option key={u.id} value={u.nome}>{u.nome}</option>)}
               </select>
@@ -574,11 +574,11 @@ export default function LabNovaOrdem() {
               <label style={LBL}>Caixa</label>
               <input value={caixa} onChange={e => setCaixa(e.target.value)} style={INP} />
             </div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', fontSize: '12px', color: 'var(--text)', paddingBottom: '2px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', fontSize: '12px', color: '#000', paddingBottom: '2px' }}>
               <input type="checkbox" checked={fluxoLab} onChange={e => setFluxoLab(e.target.checked)} />
               Fluxo LAB
             </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', fontSize: '12px', color: 'var(--text)', paddingBottom: '2px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', fontSize: '12px', color: '#000', paddingBottom: '2px' }}>
               <input type="checkbox" checked={etiqGarantia} onChange={e => setEtiqGarantia(e.target.checked)} />
               Etiq. Garantia
             </label>
@@ -635,7 +635,7 @@ export default function LabNovaOrdem() {
               <tbody>
                 {(['od', 'oe'] as const).map((o, i) => (
                   <tr key={o}>
-                    <td style={{ ...TD, fontSize: '11px', fontWeight: '700', color: 'var(--text-dim)', paddingRight: '6px', whiteSpace: 'nowrap' }}>O/{i === 0 ? 'D' : 'E'}</td>
+                    <td style={{ ...TD, fontSize: '11px', fontWeight: '700', color: '#555', paddingRight: '6px', whiteSpace: 'nowrap' }}>O/{i === 0 ? 'D' : 'E'}</td>
                     <td style={TD}><RxInput value={o === 'od' ? od.esf_longe : oe.esf_longe} onChange={v => updateOlho(o, 'esf_longe', v)} /></td>
                     <td style={TD}><RxInput value={o === 'od' ? od.cil_longe : oe.cil_longe} onChange={v => updateOlho(o, 'cil_longe', v)} /></td>
                     <td style={TD}><RxInput value={o === 'od' ? od.eixo_longe : oe.eixo_longe} onChange={v => updateOlho(o, 'eixo_longe', v)} width={44} /></td>
@@ -661,16 +661,16 @@ export default function LabNovaOrdem() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
               <div>
                 <label style={LBL}>Tipo</label>
-                <select value={armTipo} onChange={e => setArmTipo(e.target.value)} style={{ ...INP, fontFamily: 'var(--sans)' }}>
+                <select value={armTipo} onChange={e => setArmTipo(e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                   {ARM_TIPOS.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
                 </select>
               </div>
               <div>
                 <label style={LBL}>Shape</label>
                 <button type="button" onClick={() => setShowShapePicker(true)}
-                  style={{ ...INP, textAlign: 'left', cursor: 'pointer', color: armShape ? 'var(--text)' : 'var(--text-muted)', fontWeight: armShape ? '700' : '400', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between' }}>
+                  style={{ ...INP, textAlign: 'left', cursor: 'pointer', color: armShape ? '#000' : '#666', fontWeight: armShape ? '700' : '400', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between' }}>
                   <span>{armShape || '— Shape'}</span>
-                  <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>▼</span>
+                  <span style={{ fontSize: '10px', color: '#666' }}>▼</span>
                 </button>
               </div>
             </div>
@@ -691,7 +691,7 @@ export default function LabNovaOrdem() {
             <div style={{ marginBottom: '8px' }}>
               <label style={LBL}>Tipo de Lente</label>
               <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                <select value={lenteTipo} onChange={e => setLenteTipo(e.target.value)} style={{ ...INP, fontFamily: 'var(--sans)', flex: 1 }}>
+                <select value={lenteTipo} onChange={e => setLenteTipo(e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif", flex: 1 }}>
                   <option value="">— Tipo de lente</option>
                   {lenteTipos.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
                 </select>
@@ -731,12 +731,12 @@ export default function LabNovaOrdem() {
               <div><label style={LBL}>O/D</label><input value={lenteOd} onChange={e => setLenteOd(e.target.value)} style={INP} /></div>
               <div><label style={LBL}>O/E</label><input value={lenteOe} onChange={e => setLenteOe(e.target.value)} style={INP} /></div>
             </div>
-            <div style={{ borderTop: '1px solid var(--border)', paddingTop: '10px', display: 'grid', gridTemplateColumns: '100px auto', gap: '8px', alignItems: 'center' }}>
+            <div style={{ borderTop: '1px solid #b0aca4', paddingTop: '10px', display: 'grid', gridTemplateColumns: '100px auto', gap: '8px', alignItems: 'center' }}>
               <div>
                 <label style={LBL}>Caixa</label>
                 <input value={caixa} onChange={e => setCaixa(e.target.value)} style={INP} />
               </div>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', fontSize: '12px', color: 'var(--text)', paddingTop: '14px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', fontSize: '12px', color: '#000', paddingTop: '14px' }}>
                 <input type="checkbox" checked={etiqGarantia} onChange={e => setEtiqGarantia(e.target.checked)} />
                 Etiq. Garantia
               </label>
@@ -750,7 +750,7 @@ export default function LabNovaOrdem() {
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '800px' }}>
               <thead>
-                <tr style={{ background: 'var(--surface-alt)', borderBottom: '1px solid var(--border)' }}>
+                <tr style={{ background: '#dedad2', borderBottom: '1px solid #b0aca4' }}>
                   {[
                     { label: 'CÓDIGO', w: '80px', align: 'center' },
                     { label: 'DESCRIÇÃO', w: 'auto', align: 'left' },
@@ -771,7 +771,7 @@ export default function LabNovaOrdem() {
                 {cobranca.map((s, i) => {
                   const { bruto, liq } = calcItem(s);
                   return (
-                    <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
+                    <tr key={i} style={{ borderBottom: '1px solid #b0aca4' }}>
                       <td style={TD}>
                         <input
                           value={s.codigo}
@@ -792,21 +792,21 @@ export default function LabNovaOrdem() {
                         />
                       </td>
                       <td style={TD}><CobInput value={s.un} onChange={v => setCobItem(i, { un: v })} style={{ textAlign: 'center', width: '40px' }} /></td>
-                      <td style={{ ...TD, fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center' }}>
+                      <td style={{ ...TD, fontFamily: "'Courier New', monospace", fontSize: '11px', color: '#666', textAlign: 'center' }}>
                         {s.estoque || '—'}
                       </td>
                       <td style={TD}><CobInput value={s.qtd} onChange={v => setCobItem(i, { qtd: v })} style={{ textAlign: 'center', width: '50px' }} /></td>
                       <td style={TD}><CobInput value={s.pv_unit} onChange={v => setCobItem(i, { pv_unit: v })} style={{ textAlign: 'right', width: '75px' }} /></td>
-                      <td style={{ ...TD, fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text-dim)', textAlign: 'right', paddingRight: '8px' }}>
+                      <td style={{ ...TD, fontFamily: "'Courier New', monospace", fontSize: '12px', color: '#555', textAlign: 'right', paddingRight: '8px' }}>
                         {bruto > 0 ? bruto.toFixed(2).replace('.', ',') : ''}
                       </td>
                       <td style={TD}><CobInput value={s.perc_desc} onChange={v => setCobItem(i, { perc_desc: v })} style={{ textAlign: 'center', width: '55px' }} /></td>
-                      <td style={{ ...TD, fontFamily: 'var(--mono)', fontSize: '12px', fontWeight: liq > 0 ? '700' : '400', color: liq > 0 ? 'var(--text)' : 'var(--text-muted)', textAlign: 'right', paddingRight: '8px' }}>
+                      <td style={{ ...TD, fontFamily: "'Courier New', monospace", fontSize: '12px', fontWeight: liq > 0 ? '700' : '400', color: liq > 0 ? '#000' : '#666', textAlign: 'right', paddingRight: '8px' }}>
                         {liq > 0 ? liq.toFixed(2).replace('.', ',') : ''}
                       </td>
                       <td style={{ ...TD, textAlign: 'center' }}>
                         <button type="button" onClick={() => setCobranca(c => c.length > 1 ? c.filter((_, j) => j !== i) : c)}
-                          style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '14px', lineHeight: 1 }}>×</button>
+                          style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer', fontSize: '14px', lineHeight: 1 }}>×</button>
                       </td>
                     </tr>
                   );
@@ -816,13 +816,13 @@ export default function LabNovaOrdem() {
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px', alignItems: 'center' }}>
             <button type="button" onClick={() => setCobranca(c => [...c, { ...ITEM_COB_INI }])}
-              style={{ fontSize: '11px', color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '600' }}>
+              style={{ fontSize: '11px', color: '#003388', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '600' }}>
               + Adicionar linha
             </button>
-            <div style={{ display: 'flex', gap: '20px', fontFamily: 'var(--mono)', fontSize: '13px' }}>
-              {totalDesc > 0 && <span style={{ color: 'var(--red)' }}>Desc: R$ {totalDesc.toFixed(2).replace('.', ',')}</span>}
-              {totalFrete > 0 && <span style={{ color: 'var(--accent)' }}>Frete: R$ {totalFrete.toFixed(2).replace('.', ',')}</span>}
-              <span style={{ fontWeight: '700', color: 'var(--text)', fontSize: '15px' }}>
+            <div style={{ display: 'flex', gap: '20px', fontFamily: "'Courier New', monospace", fontSize: '13px' }}>
+              {totalDesc > 0 && <span style={{ color: '#cc0000' }}>Desc: R$ {totalDesc.toFixed(2).replace('.', ',')}</span>}
+              {totalFrete > 0 && <span style={{ color: '#003388' }}>Frete: R$ {totalFrete.toFixed(2).replace('.', ',')}</span>}
+              <span style={{ fontWeight: '700', color: '#000', fontSize: '15px' }}>
                 Total: R$ {totalFinal.toFixed(2).replace('.', ',')}
               </span>
             </div>
@@ -833,7 +833,7 @@ export default function LabNovaOrdem() {
         <div style={card}>
           <label style={LBL}>Observações</label>
           <textarea value={observacoes} onChange={e => setObservacoes(e.target.value)} rows={3}
-            style={{ ...INP, fontFamily: 'var(--sans)', resize: 'vertical' }} placeholder="Observações gerais..." />
+            style={{ ...INP, fontFamily: "'Montserrat', sans-serif", resize: 'vertical' }} placeholder="Observações gerais..." />
         </div>
 
         {/* ===== AÇÕES (step 2) ===== */}
