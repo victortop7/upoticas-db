@@ -30,11 +30,7 @@ const OPCOES: Record<ModuleKey, Opcao[]> = {
     { num: 5, label: 'CADASTRO DE TRANSPORTADORAS', to: '/lab/transportadoras' },
     { num: 6, label: 'CADASTRO DE OPERADORES',      to: '/lab/operadores' },
   ],
-  B: [
-    { num: 1, label: 'INCLUIR ÓTICA',     to: '/lab/oticas' },
-    { num: 2, label: 'ALTERAR DADOS',     to: '/lab/oticas' },
-    { num: 4, label: 'CONSULTA/LISTAGEM', to: '/lab/oticas' },
-  ],
+  B: [],
   C: [
     { num: 1, label: 'INCLUIR FORNECEDOR', to: '/lab/fornecedores' },
     { num: 2, label: 'ALTERAR DADOS',      to: '/lab/fornecedores' },
@@ -171,6 +167,7 @@ export default function LabLayout() {
   async function handleLogout() { await logout(); navigate('/login'); }
 
   const MODULO_ROTA: Partial<Record<ModuleKey, string>> = {
+    B: '/lab/oticas',
     D: '/lab/servicos',
   };
 
@@ -300,20 +297,6 @@ export default function LabLayout() {
           </div>
         )}
 
-        {/* ── Descrição para módulos sem submenu ── */}
-        {activeModule && opcoes.length === 0 && (() => {
-          const mod = MODULOS.find(m => m.letra === activeModule);
-          return mod ? (
-            <div style={{ width: '180px', background: dark ? '#1c1c1c' : '#d4d0c8', borderRight: `2px solid ${modBorder}`, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
-              <div style={{ background: 'linear-gradient(90deg,#005500,#008800)', color: '#ccffcc', textAlign: 'center', padding: '5px 12px', fontSize: '12px', fontWeight: '700', letterSpacing: '2px', border: `2px outset #007700`, borderBottom: 'none' }}>
-                {mod.letra} — {mod.icon}
-              </div>
-              <div style={{ border: `2px inset ${dark ? '#444' : '#808080'}`, padding: '12px 10px', fontSize: '11px', color: dark ? '#99bb99' : '#334433', lineHeight: 1.6 }}>
-                {mod.nome}
-              </div>
-            </div>
-          ) : null;
-        })()}
 
         {/* ── CONTEÚDO ── */}
         <div style={{ flex: 1, background: mainBg, overflow: 'auto', position: 'relative' }}>
