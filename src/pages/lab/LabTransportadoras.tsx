@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+﻿import { useEffect, useState, useCallback } from 'react';
 import { api } from '../../lib/api';
 
 interface Transportadora {
@@ -14,15 +14,15 @@ const ESTADOS_BR = ['AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS',
 
 const INP: React.CSSProperties = {
   width: '100%', padding: '7px 10px', fontSize: '13px', boxSizing: 'border-box',
-  background: 'var(--surface-alt)', border: '1px solid var(--border)',
-  borderRadius: '7px', color: 'var(--text)', outline: 'none', fontFamily: 'var(--mono)',
+  background: '#dedad2', border: '1px solid #b0aca4',
+  borderRadius: '7px', color: '#000', outline: 'none', fontFamily: "'Courier New', monospace",
 };
 const LBL: React.CSSProperties = {
-  fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)',
+  fontSize: '11px', fontWeight: '600', color: '#666',
   textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '4px',
 };
 const CARD: React.CSSProperties = {
-  background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px',
+  background: '#d4d0c8', border: '1px solid #b0aca4', borderRadius: '10px', padding: '16px',
 };
 
 const EMPTY: Omit<Transportadora, 'id' | 'codigo' | 'created_at'> = {
@@ -87,19 +87,19 @@ export default function LabTransportadoras() {
     return (
       <div style={{ padding: '24px', maxWidth: '860px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-          <button onClick={() => setModo('lista')} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '20px' }}>←</button>
-          <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: 'var(--text)' }}>
+          <button onClick={() => setModo('lista')} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer', fontSize: '20px' }}>←</button>
+          <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: '#000' }}>
             {modo === 'novo' ? 'Nova Transportadora' : `Editar — ${sel?.nome}`}
           </h1>
         </div>
 
-        {erro && <div style={{ background: 'var(--red-dim)', border: '1px solid var(--red)', borderRadius: '8px', padding: '10px 14px', marginBottom: '14px', fontSize: '13px', color: 'var(--red)' }}>{erro}</div>}
+        {erro && <div style={{ background: 'rgba(200,0,0,0.12)', border: '1px solid #cc0000', borderRadius: '8px', padding: '10px 14px', marginBottom: '14px', fontSize: '13px', color: '#cc0000' }}>{erro}</div>}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
           {/* Identificação */}
           <div style={CARD}>
-            <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Identificação</div>
+            <div style={{ fontSize: '11px', fontWeight: '700', color: '#000', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Identificação</div>
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '10px', marginBottom: '10px' }}>
               <div><label style={LBL}>Nome *</label><input value={form.nome} onChange={e => set('nome', e.target.value)} style={INP} /></div>
               <div><label style={LBL}>Nome Reduzido</label><input value={form.nome_reduzido ?? ''} onChange={e => set('nome_reduzido', e.target.value)} style={INP} /></div>
@@ -112,7 +112,7 @@ export default function LabTransportadoras() {
 
           {/* Endereço */}
           <div style={CARD}>
-            <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Endereço</div>
+            <div style={{ fontSize: '11px', fontWeight: '700', color: '#000', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Endereço</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '10px', marginBottom: '10px' }}>
               <div><label style={LBL}>Endereço</label><input value={form.endereco ?? ''} onChange={e => set('endereco', e.target.value)} style={INP} /></div>
               <div style={{ width: '120px' }}><label style={LBL}>CEP</label><input value={form.cep ?? ''} onChange={e => set('cep', e.target.value)} style={INP} placeholder="00000-000" /></div>
@@ -124,7 +124,7 @@ export default function LabTransportadoras() {
             </div>
             <div style={{ width: '100px' }}>
               <label style={LBL}>Estado</label>
-              <select value={form.estado ?? ''} onChange={e => set('estado', e.target.value)} style={{ ...INP, fontFamily: 'var(--sans)' }}>
+              <select value={form.estado ?? ''} onChange={e => set('estado', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                 <option value="">—</option>
                 {ESTADOS_BR.map(uf => <option key={uf} value={uf}>{uf}</option>)}
               </select>
@@ -133,7 +133,7 @@ export default function LabTransportadoras() {
 
           {/* Contato */}
           <div style={CARD}>
-            <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Contato</div>
+            <div style={{ fontSize: '11px', fontWeight: '700', color: '#000', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Contato</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
               <div><label style={LBL}>Telefone</label><input value={form.telefone ?? ''} onChange={e => set('telefone', e.target.value)} style={INP} /></div>
               <div><label style={LBL}>Celular</label><input value={form.celular ?? ''} onChange={e => set('celular', e.target.value)} style={INP} /></div>
@@ -144,14 +144,14 @@ export default function LabTransportadoras() {
           {/* Observações */}
           <div style={CARD}>
             <label style={LBL}>Observações</label>
-            <textarea value={form.observacoes ?? ''} onChange={e => set('observacoes', e.target.value)} rows={3} style={{ ...INP, fontFamily: 'var(--sans)', resize: 'vertical' }} />
+            <textarea value={form.observacoes ?? ''} onChange={e => set('observacoes', e.target.value)} rows={3} style={{ ...INP, fontFamily: "'Montserrat', sans-serif", resize: 'vertical' }} />
           </div>
 
           {/* Ações */}
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-            {modo === 'editar' && <button type="button" onClick={() => excluir(sel!.id)} style={{ padding: '9px 18px', fontSize: '13px', background: 'var(--red-dim)', color: 'var(--red)', border: '1px solid var(--red)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>Excluir</button>}
-            <button type="button" onClick={() => setModo('lista')} style={{ padding: '9px 22px', fontSize: '13px', background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
-            <button onClick={salvar} disabled={saving} style={{ padding: '9px 28px', fontSize: '13px', fontWeight: '600', background: saving ? 'var(--text-muted)' : '#005500', color: '#fff', border: 'none', borderRadius: '8px', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
+            {modo === 'editar' && <button type="button" onClick={() => excluir(sel!.id)} style={{ padding: '9px 18px', fontSize: '13px', background: 'rgba(200,0,0,0.12)', color: '#cc0000', border: '1px solid #cc0000', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>Excluir</button>}
+            <button type="button" onClick={() => setModo('lista')} style={{ padding: '9px 22px', fontSize: '13px', background: 'transparent', color: '#555', border: '1px solid #b0aca4', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
+            <button onClick={salvar} disabled={saving} style={{ padding: '9px 28px', fontSize: '13px', fontWeight: '600', background: saving ? '#666' : '#005500', color: '#fff', border: 'none', borderRadius: '8px', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
               {saving ? 'Salvando...' : 'Salvar'}
             </button>
           </div>
@@ -163,45 +163,45 @@ export default function LabTransportadoras() {
   return (
     <div style={{ padding: '28px', maxWidth: '900px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: 'var(--text)' }}>Transportadoras</h1>
+        <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: '#000' }}>Transportadoras</h1>
         <button onClick={openNovo} style={{ padding: '9px 20px', fontSize: '13px', fontWeight: '600', background: '#005500', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
           + Nova Transportadora
         </button>
       </div>
 
       <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar por nome, reduzido ou código..."
-        style={{ ...INP, marginBottom: '16px', background: 'var(--surface)', width: '340px' }} />
+        style={{ ...INP, marginBottom: '16px', background: '#d4d0c8', width: '340px' }} />
 
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px' }}>
+      <div style={{ background: '#d4d0c8', border: '1px solid #b0aca4', borderRadius: '10px' }}>
         {loading ? (
-          <div style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>Carregando...</div>
+          <div style={{ padding: '48px', textAlign: 'center', color: '#666', fontSize: '14px' }}>Carregando...</div>
         ) : filtradas.length === 0 ? (
-          <div style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>
+          <div style={{ padding: '48px', textAlign: 'center', color: '#666', fontSize: '14px' }}>
             Nenhuma transportadora. <button onClick={openNovo} style={{ color: '#005500', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '600' }}>Cadastrar →</button>
           </div>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr style={{ background: 'var(--surface-alt)', borderBottom: '1px solid var(--border)' }}>
+              <tr style={{ background: '#dedad2', borderBottom: '1px solid #b0aca4' }}>
                 {['Cód', 'Nome', 'Nome Reduzido', 'Cidade/UF', 'CNPJ', 'Telefone', ''].map(h => (
-                  <th key={h} style={{ padding: '9px 12px', textAlign: 'left', fontSize: '10px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
+                  <th key={h} style={{ padding: '9px 12px', textAlign: 'left', fontSize: '10px', fontWeight: '600', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filtradas.map(t => (
-                <tr key={t.id} style={{ borderBottom: '1px solid var(--border)', cursor: 'pointer' }}
+                <tr key={t.id} style={{ borderBottom: '1px solid #b0aca4', cursor: 'pointer' }}
                   onClick={() => openEditar(t)}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-alt)')}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#dedad2')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                  <td style={{ padding: '10px 12px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text-dim)' }}>{String(t.codigo).padStart(2, '0')}</td>
-                  <td style={{ padding: '10px 12px', fontSize: '13px', fontWeight: '600', color: 'var(--text)' }}>{t.nome}</td>
-                  <td style={{ padding: '10px 12px', fontSize: '12px', color: 'var(--text-dim)' }}>{t.nome_reduzido ?? '—'}</td>
-                  <td style={{ padding: '10px 12px', fontSize: '12px', color: 'var(--text-dim)' }}>{[t.cidade, t.estado].filter(Boolean).join('/') || '—'}</td>
-                  <td style={{ padding: '10px 12px', fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{t.cnpj ?? '—'}</td>
-                  <td style={{ padding: '10px 12px', fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{t.telefone ?? '—'}</td>
+                  <td style={{ padding: '10px 12px', fontFamily: "'Courier New', monospace", fontSize: '12px', color: '#555' }}>{String(t.codigo).padStart(2, '0')}</td>
+                  <td style={{ padding: '10px 12px', fontSize: '13px', fontWeight: '600', color: '#000' }}>{t.nome}</td>
+                  <td style={{ padding: '10px 12px', fontSize: '12px', color: '#555' }}>{t.nome_reduzido ?? '—'}</td>
+                  <td style={{ padding: '10px 12px', fontSize: '12px', color: '#555' }}>{[t.cidade, t.estado].filter(Boolean).join('/') || '—'}</td>
+                  <td style={{ padding: '10px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: '#555' }}>{t.cnpj ?? '—'}</td>
+                  <td style={{ padding: '10px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: '#555' }}>{t.telefone ?? '—'}</td>
                   <td style={{ padding: '10px 12px' }}>
-                    <button onClick={e => { e.stopPropagation(); excluir(t.id); }} style={{ fontSize: '12px', color: 'var(--red)', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
+                    <button onClick={e => { e.stopPropagation(); excluir(t.id); }} style={{ fontSize: '12px', color: '#cc0000', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
                   </td>
                 </tr>
               ))}
