@@ -18,8 +18,9 @@ function fmtDate(s: string | null) {
   return `${d}/${m}/${y}`;
 }
 
-const INP: React.CSSProperties = { padding: '7px 10px', fontSize: '13px', background: 'var(--surface-alt)', border: '1px solid var(--border)', borderRadius: '7px', color: 'var(--text)', outline: 'none', fontFamily: 'var(--mono)', width: '100%', boxSizing: 'border-box' };
-const LBL: React.CSSProperties = { fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '4px' };
+const R = { bg:'#c8c4b0', panel:'#d4d0c8', alt:'#dedad2', bdr:'#b0aca4', hdr:'linear-gradient(90deg,#005500,#008800)', hdrTxt:'#ccffcc', hdrBdr:'#007700', txt:'#000' };
+const INP: React.CSSProperties = { padding: '5px 8px', fontSize: '12px', background: '#fff', border: `1px solid ${R.bdr}`, borderRadius: 0, color: R.txt, outline: 'none', fontFamily: "'Courier New', monospace", width: '100%', boxSizing: 'border-box' };
+const LBL: React.CSSProperties = { fontSize: '10px', fontWeight: '700', color: '#444', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '3px' };
 
 export default function LabBancario() {
   const [lancamentos, setLancamentos] = useState<Lancamento[]>([]);
@@ -70,14 +71,14 @@ export default function LabBancario() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
 
       {/* Header */}
-      <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', background: 'var(--surface)', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-        <h2 style={{ margin: 0, fontSize: '17px', fontWeight: '700', color: 'var(--text)', marginRight: '8px' }}>Controle Bancário</h2>
-        <select value={contaSel} onChange={e => setContaSel(e.target.value)} style={{ ...INP, width: '200px', fontFamily: 'var(--sans)' }}>
+      <div style={{ padding: '14px 20px', borderBottom: '1px solid #b0aca4', background: '#d4d0c8', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <h2 style={{ margin: 0, fontSize: '17px', fontWeight: '700', color: '#000', marginRight: '8px' }}>Controle Bancário</h2>
+        <select value={contaSel} onChange={e => setContaSel(e.target.value)} style={{ ...INP, width: '200px', fontFamily: "'Montserrat', sans-serif" }}>
           <option value="">Todas as contas</option>
           {contas.map(c => <option key={c.codigo} value={c.codigo}>{c.codigo} — {c.nome}</option>)}
         </select>
         <input type="date" value={dataIni} onChange={e => setDataIni(e.target.value)} style={{ ...INP, width: '135px' }} />
-        <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>até</span>
+        <span style={{ fontSize: '11px', color: '#666' }}>até</span>
         <input type="date" value={dataFim} onChange={e => setDataFim(e.target.value)} style={{ ...INP, width: '135px' }} />
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
           <button onClick={() => setNovaModal(true)} style={{ padding: '7px 16px', fontSize: '12px', fontWeight: '600', background: '#005500', color: '#fff', border: 'none', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>+ Lançamento</button>
@@ -85,47 +86,47 @@ export default function LabBancario() {
       </div>
 
       {/* Filtros tipo + saldo */}
-      <div style={{ padding: '8px 20px', borderBottom: '1px solid var(--border)', display: 'flex', gap: '8px', alignItems: 'center' }}>
+      <div style={{ padding: '8px 20px', borderBottom: '1px solid #b0aca4', display: 'flex', gap: '8px', alignItems: 'center' }}>
         {[['', 'Todos'], ['C', 'Créditos'], ['D', 'Débitos']].map(([v, l]) => (
-          <button key={v} onClick={() => setTipoFiltro(v)} style={{ padding: '4px 12px', fontSize: '11px', fontWeight: '600', borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${tipoFiltro === v ? 'var(--border-light)' : 'var(--border)'}`, background: tipoFiltro === v ? 'var(--surface-alt)' : 'transparent', color: tipoFiltro === v ? 'var(--text)' : 'var(--text-muted)' }}>{l}</button>
+          <button key={v} onClick={() => setTipoFiltro(v)} style={{ padding: '4px 12px', fontSize: '11px', fontWeight: '600', borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${tipoFiltro === v ? '#b8b4ac' : '#b0aca4'}`, background: tipoFiltro === v ? '#dedad2' : 'transparent', color: tipoFiltro === v ? '#000' : '#666' }}>{l}</button>
         ))}
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: '20px', fontSize: '12px', fontFamily: 'var(--mono)' }}>
-          <span style={{ color: 'var(--green)' }}>Entradas: <b>{brl(entradas)}</b></span>
-          <span style={{ color: 'var(--red)' }}>Saídas: <b>{brl(saidas)}</b></span>
-          <span style={{ color: saldo >= 0 ? 'var(--green)' : 'var(--red)', fontWeight: '700' }}>Saldo: <b>{brl(saldo)}</b></span>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: '20px', fontSize: '12px', fontFamily: "'Courier New', monospace" }}>
+          <span style={{ color: '#006600' }}>Entradas: <b>{brl(entradas)}</b></span>
+          <span style={{ color: '#cc0000' }}>Saídas: <b>{brl(saidas)}</b></span>
+          <span style={{ color: saldo >= 0 ? '#006600' : '#cc0000', fontWeight: '700' }}>Saldo: <b>{brl(saldo)}</b></span>
         </div>
       </div>
 
       {/* Tabela */}
       <div style={{ flex: 1, overflowY: 'auto' }}>
-        {loading ? <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>Carregando...</div>
-          : lancamentos.length === 0 ? <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>Nenhum lançamento no período.</div>
+        {loading ? <div style={{ padding: '60px', textAlign: 'center', color: '#666' }}>Carregando...</div>
+          : lancamentos.length === 0 ? <div style={{ padding: '60px', textAlign: 'center', color: '#666' }}>Nenhum lançamento no período.</div>
           : <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead style={{ position: 'sticky', top: 0 }}>
-                <tr style={{ background: 'var(--surface-alt)', borderBottom: '1px solid var(--border)' }}>
+                <tr style={{ background: '#dedad2', borderBottom: '1px solid #b0aca4' }}>
                   {['Nº', 'Data Mov.', 'Conta', 'Descrição', 'Tipo', 'Valor', 'Saldo Parcial'].map(h => (
-                    <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: '10px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>{h}</th>
+                    <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: '10px', fontWeight: '600', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {lancamentos.map(l => (
-                  <tr key={l.id} style={{ borderBottom: '1px solid var(--border)' }}
-                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-alt)')}
+                  <tr key={l.id} style={{ borderBottom: '1px solid #b0aca4' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = '#dedad2')}
                     onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                    <td style={{ padding: '9px 12px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text-dim)' }}>#{String(l.numero).padStart(4,'0')}</td>
-                    <td style={{ padding: '9px 12px', fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--text-dim)', whiteSpace: 'nowrap' }}>{fmtDate(l.data_movimento)}</td>
-                    <td style={{ padding: '9px 12px', fontSize: '12px', color: 'var(--text-dim)' }}>{l.conta_codigo} — {l.conta_nome}</td>
-                    <td style={{ padding: '9px 12px', fontSize: '13px', color: 'var(--text)', maxWidth: '240px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.descricao}</td>
+                    <td style={{ padding: '9px 12px', fontFamily: "'Courier New', monospace", fontSize: '12px', color: '#555' }}>#{String(l.numero).padStart(4,'0')}</td>
+                    <td style={{ padding: '9px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: '#555', whiteSpace: 'nowrap' }}>{fmtDate(l.data_movimento)}</td>
+                    <td style={{ padding: '9px 12px', fontSize: '12px', color: '#555' }}>{l.conta_codigo} — {l.conta_nome}</td>
+                    <td style={{ padding: '9px 12px', fontSize: '13px', color: '#000', maxWidth: '240px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.descricao}</td>
                     <td style={{ padding: '9px 12px' }}>
-                      <span style={{ fontSize: '11px', fontWeight: '700', color: l.tipo === 'C' ? 'var(--green)' : 'var(--red)', background: l.tipo === 'C' ? 'var(--green-dim)' : 'var(--red-dim)', padding: '2px 8px', borderRadius: '20px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: '700', color: l.tipo === 'C' ? '#006600' : '#cc0000', background: l.tipo === 'C' ? 'rgba(0,102,0,0.15)' : 'rgba(200,0,0,0.12)', padding: '2px 8px', borderRadius: '20px' }}>
                         {l.tipo === 'C' ? '▲ Crédito' : '▼ Débito'}
                       </span>
                     </td>
-                    <td style={{ padding: '9px 12px', fontSize: '13px', fontFamily: 'var(--mono)', fontWeight: '700', color: l.tipo === 'C' ? 'var(--green)' : 'var(--red)', textAlign: 'right' }}>
+                    <td style={{ padding: '9px 12px', fontSize: '13px', fontFamily: "'Courier New', monospace", fontWeight: '700', color: l.tipo === 'C' ? '#006600' : '#cc0000', textAlign: 'right' }}>
                       {l.tipo === 'C' ? '+' : '-'}{brl(l.valor)}
                     </td>
-                    <td style={{ padding: '9px 12px', fontSize: '12px', fontFamily: 'var(--mono)', color: l.saldo_parcial >= 0 ? 'var(--text)' : 'var(--red)', textAlign: 'right' }}>{brl(l.saldo_parcial)}</td>
+                    <td style={{ padding: '9px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: l.saldo_parcial >= 0 ? '#000' : '#cc0000', textAlign: 'right' }}>{brl(l.saldo_parcial)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -135,20 +136,20 @@ export default function LabBancario() {
       {/* Modal Lançamento */}
       {novaModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '24px', width: '460px' }}>
-            <h3 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: '700', color: 'var(--text)' }}>Novo Lançamento Bancário</h3>
+          <div style={{ background: '#d4d0c8', border: '1px solid #b0aca4', borderRadius: '12px', padding: '24px', width: '460px' }}>
+            <h3 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: '700', color: '#000' }}>Novo Lançamento Bancário</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
                   <label style={LBL}>Conta *</label>
-                  <select value={novaForm.conta_codigo} onChange={e => setNovaForm(f => ({ ...f, conta_codigo: e.target.value }))} style={{ ...INP, fontFamily: 'var(--sans)' }}>
+                  <select value={novaForm.conta_codigo} onChange={e => setNovaForm(f => ({ ...f, conta_codigo: e.target.value }))} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                     <option value="">Selecionar conta...</option>
                     {contas.map(c => <option key={c.codigo} value={c.codigo}>{c.codigo} — {c.nome}</option>)}
                   </select>
                 </div>
                 <div>
                   <label style={LBL}>Tipo *</label>
-                  <select value={novaForm.tipo} onChange={e => setNovaForm(f => ({ ...f, tipo: e.target.value }))} style={{ ...INP, fontFamily: 'var(--sans)' }}>
+                  <select value={novaForm.tipo} onChange={e => setNovaForm(f => ({ ...f, tipo: e.target.value }))} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                     <option value="C">▲ Crédito (Entrada)</option>
                     <option value="D">▼ Débito (Saída)</option>
                   </select>
@@ -159,7 +160,7 @@ export default function LabBancario() {
                 <div><label style={LBL}>Valor *</label><input type="number" step="0.01" value={novaForm.valor} onChange={e => setNovaForm(f => ({ ...f, valor: e.target.value }))} style={INP} /></div>
                 <div><label style={LBL}>Data Movimento *</label><input type="date" value={novaForm.data_movimento} onChange={e => setNovaForm(f => ({ ...f, data_movimento: e.target.value }))} style={INP} /></div>
                 <div><label style={LBL}>Forma Pgto</label>
-                  <select value={novaForm.forma_pgto} onChange={e => setNovaForm(f => ({ ...f, forma_pgto: e.target.value }))} style={{ ...INP, fontFamily: 'var(--sans)' }}>
+                  <select value={novaForm.forma_pgto} onChange={e => setNovaForm(f => ({ ...f, forma_pgto: e.target.value }))} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                     <option value="">—</option>
                     {['Dinheiro','PIX','Transferência','Boleto','Cheque','Cartão','Depósito'].map(x => <option key={x} value={x}>{x}</option>)}
                   </select>
@@ -168,8 +169,8 @@ export default function LabBancario() {
               <div><label style={LBL}>Observações</label><input value={novaForm.observacoes} onChange={e => setNovaForm(f => ({ ...f, observacoes: e.target.value }))} style={INP} /></div>
             </div>
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '16px' }}>
-              <button onClick={() => setNovaModal(false)} style={{ padding: '8px 18px', fontSize: '13px', background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
-              <button onClick={lancar} disabled={salvando} style={{ padding: '8px 22px', fontSize: '13px', fontWeight: '600', background: salvando ? 'var(--text-muted)' : '#005500', color: '#fff', border: 'none', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>{salvando ? '...' : 'Lançar'}</button>
+              <button onClick={() => setNovaModal(false)} style={{ padding: '8px 18px', fontSize: '13px', background: 'transparent', color: '#555', border: '1px solid #b0aca4', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
+              <button onClick={lancar} disabled={salvando} style={{ padding: '8px 22px', fontSize: '13px', fontWeight: '600', background: salvando ? '#666' : '#005500', color: '#fff', border: 'none', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>{salvando ? '...' : 'Lançar'}</button>
             </div>
           </div>
         </div>

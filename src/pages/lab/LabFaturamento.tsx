@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+﻿import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 
@@ -25,9 +25,9 @@ function mesAtual() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
-const INP: React.CSSProperties = { padding: '7px 10px', fontSize: '13px', background: 'var(--surface-alt)', border: '1px solid var(--border)', borderRadius: '7px', color: 'var(--text)', outline: 'none', fontFamily: 'var(--mono)', width: '100%', boxSizing: 'border-box' };
-const LBL: React.CSSProperties = { fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '4px' };
-const STATUS_COLOR: Record<string, string> = { aberto: 'var(--amber)', emitido: 'var(--accent)', pago: 'var(--green)' };
+const INP: React.CSSProperties = { padding: '7px 10px', fontSize: '13px', background: '#fff', border: '1px solid #b0aca4', borderRadius:  0, color: '#000', outline: 'none', fontFamily: "'Courier New', monospace", width: '100%', boxSizing: 'border-box' };
+const LBL: React.CSSProperties = { fontSize: '11px', fontWeight: '600', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '4px' };
+const STATUS_COLOR: Record<string, string> = { aberto: '#886600', emitido: '#003388', pago: '#006600' };
 
 export default function LabFaturamento() {
   const navigate = useNavigate();
@@ -106,54 +106,54 @@ export default function LabFaturamento() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
 
       {/* Header */}
-      <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--border)', background: 'var(--surface)', display: 'flex', gap: '12px', alignItems: 'center' }}>
-        <h2 style={{ margin: 0, fontSize: '17px', fontWeight: '700', color: 'var(--text)' }}>Faturamento</h2>
+      <div style={{ padding: '12px 20px', borderBottom: '1px solid #b0aca4', background: '#d4d0c8', display: 'flex', gap: '12px', alignItems: 'center' }}>
+        <h2 style={{ margin: 0, fontSize: '17px', fontWeight: '700', color: '#000' }}>Faturamento</h2>
         <div style={{ display: 'flex', gap: '4px' }}>
           {[['fechamentos', 'Fechamentos'], ['gerar', 'Gerar Fechamento']].map(([v, l]) => (
             <button key={v} onClick={() => setAba(v as 'fechamentos' | 'gerar')}
-              style={{ padding: '5px 14px', fontSize: '12px', fontWeight: '600', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${aba === v ? '#005500' : 'var(--border)'}`, background: aba === v ? '#005500' : 'transparent', color: aba === v ? '#fff' : 'var(--text-muted)' }}>
+              style={{ padding: '5px 14px', fontSize: '12px', fontWeight: '600', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${aba === v ? '#005500' : '#b0aca4'}`, background: aba === v ? '#005500' : 'transparent', color: aba === v ? '#fff' : '#666' }}>
               {l}
             </button>
           ))}
         </div>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: '16px', fontSize: '12px', fontFamily: 'var(--mono)' }}>
-          <span style={{ color: 'var(--amber)' }}>A receber: <b>{brl(totalAberto)}</b></span>
-          <span style={{ color: 'var(--green)' }}>Recebido: <b>{brl(totalPago)}</b></span>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: '16px', fontSize: '12px', fontFamily: "'Courier New', monospace" }}>
+          <span style={{ color: '#886600' }}>A receber: <b>{brl(totalAberto)}</b></span>
+          <span style={{ color: '#006600' }}>Recebido: <b>{brl(totalPago)}</b></span>
         </div>
       </div>
 
       {/* ABA: FECHAMENTOS */}
       {aba === 'fechamentos' && (
         <>
-          <div style={{ padding: '8px 20px', borderBottom: '1px solid var(--border)', display: 'flex', gap: '8px' }}>
+          <div style={{ padding: '8px 20px', borderBottom: '1px solid #b0aca4', display: 'flex', gap: '8px' }}>
             {[['', 'Todos'], ['aberto', 'Em Aberto'], ['emitido', 'Emitidos'], ['pago', 'Pagos']].map(([v, l]) => (
-              <button key={v} onClick={() => setStatusFiltro(v)} style={{ padding: '4px 12px', fontSize: '11px', fontWeight: '600', borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${statusFiltro === v ? 'var(--border-light)' : 'var(--border)'}`, background: statusFiltro === v ? 'var(--surface-alt)' : 'transparent', color: statusFiltro === v ? 'var(--text)' : 'var(--text-muted)' }}>{l}</button>
+              <button key={v} onClick={() => setStatusFiltro(v)} style={{ padding: '4px 12px', fontSize: '11px', fontWeight: '600', borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${statusFiltro === v ? '#b8b4ac' : '#b0aca4'}`, background: statusFiltro === v ? '#dedad2' : 'transparent', color: statusFiltro === v ? '#000' : '#666' }}>{l}</button>
             ))}
           </div>
           <div style={{ flex: 1, overflowY: 'auto' }}>
-            {loading ? <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>Carregando...</div>
-              : fechamentos.length === 0 ? <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>Nenhum fechamento. Use "Gerar Fechamento" para criar.</div>
+            {loading ? <div style={{ padding: '60px', textAlign: 'center', color: '#666' }}>Carregando...</div>
+              : fechamentos.length === 0 ? <div style={{ padding: '60px', textAlign: 'center', color: '#666' }}>Nenhum fechamento. Use "Gerar Fechamento" para criar.</div>
               : <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead style={{ position: 'sticky', top: 0 }}>
-                    <tr style={{ background: 'var(--surface-alt)', borderBottom: '1px solid var(--border)' }}>
+                    <tr style={{ background: '#dedad2', borderBottom: '1px solid #b0aca4' }}>
                       {['Nº', 'Ótica', 'Período', 'OS', 'Bruto', 'Desconto', 'Líquido', 'Vencimento', 'Status', ''].map(h => (
-                        <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: '10px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>{h}</th>
+                        <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: '10px', fontWeight: '600', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {fechamentos.map(f => (
-                      <tr key={f.id} style={{ borderBottom: '1px solid var(--border)' }}
-                        onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-alt)')}
+                      <tr key={f.id} style={{ borderBottom: '1px solid #b0aca4' }}
+                        onMouseEnter={e => (e.currentTarget.style.background = '#dedad2')}
                         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                        <td style={{ padding: '9px 12px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text-dim)' }}>#{String(f.numero).padStart(4,'0')}</td>
-                        <td style={{ padding: '9px 12px', fontSize: '13px', color: 'var(--text)', maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.otica_nome}</td>
-                        <td style={{ padding: '9px 12px', fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--text-dim)', whiteSpace: 'nowrap' }}>{fmtDate(f.periodo_ini)} – {fmtDate(f.periodo_fim)}</td>
-                        <td style={{ padding: '9px 12px', fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--text-dim)', textAlign: 'center' }}>{f.qtd_os}</td>
-                        <td style={{ padding: '9px 12px', fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--text-dim)', textAlign: 'right' }}>{brl(f.valor_bruto)}</td>
-                        <td style={{ padding: '9px 12px', fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--red)', textAlign: 'right' }}>{f.desconto > 0 ? brl(f.desconto) : '—'}</td>
-                        <td style={{ padding: '9px 12px', fontSize: '13px', fontFamily: 'var(--mono)', fontWeight: '700', color: 'var(--text)', textAlign: 'right' }}>{brl(f.valor_liquido)}</td>
-                        <td style={{ padding: '9px 12px', fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--text-dim)', whiteSpace: 'nowrap' }}>{fmtDate(f.data_vencimento)}</td>
+                        <td style={{ padding: '9px 12px', fontFamily: "'Courier New', monospace", fontSize: '12px', color: '#555' }}>#{String(f.numero).padStart(4,'0')}</td>
+                        <td style={{ padding: '9px 12px', fontSize: '13px', color: '#000', maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.otica_nome}</td>
+                        <td style={{ padding: '9px 12px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#555', whiteSpace: 'nowrap' }}>{fmtDate(f.periodo_ini)} – {fmtDate(f.periodo_fim)}</td>
+                        <td style={{ padding: '9px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: '#555', textAlign: 'center' }}>{f.qtd_os}</td>
+                        <td style={{ padding: '9px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: '#555', textAlign: 'right' }}>{brl(f.valor_bruto)}</td>
+                        <td style={{ padding: '9px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: '#cc0000', textAlign: 'right' }}>{f.desconto > 0 ? brl(f.desconto) : '—'}</td>
+                        <td style={{ padding: '9px 12px', fontSize: '13px', fontFamily: "'Courier New', monospace", fontWeight: '700', color: '#000', textAlign: 'right' }}>{brl(f.valor_liquido)}</td>
+                        <td style={{ padding: '9px 12px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#555', whiteSpace: 'nowrap' }}>{fmtDate(f.data_vencimento)}</td>
                         <td style={{ padding: '9px 12px' }}>
                           <span style={{ fontSize: '10px', fontWeight: '600', color: STATUS_COLOR[f.status], background: `${STATUS_COLOR[f.status]}18`, padding: '2px 7px', borderRadius: '20px' }}>
                             {f.status === 'aberto' ? 'Em Aberto' : f.status === 'emitido' ? 'Emitido' : 'Pago'}
@@ -161,8 +161,8 @@ export default function LabFaturamento() {
                         </td>
                         <td style={{ padding: '9px 12px' }}>
                           <div style={{ display: 'flex', gap: '4px' }}>
-                            {f.status !== 'pago' && <button onClick={() => marcarPago(f.id)} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', border: '1px solid var(--green)', background: 'var(--green-dim)', color: 'var(--green)', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>Pago</button>}
-                            <button onClick={() => navigate(`/lab/ordens?otica_id=${f.otica_id}`)} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer', fontFamily: 'inherit' }}>OS →</button>
+                            {f.status !== 'pago' && <button onClick={() => marcarPago(f.id)} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', border: '1px solid #006600', background: 'rgba(0,102,0,0.15)', color: '#006600', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>Pago</button>}
+                            <button onClick={() => navigate(`/lab/ordens?otica_id=${f.otica_id}`)} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', border: '1px solid #b0aca4', background: 'transparent', color: '#666', cursor: 'pointer', fontFamily: 'inherit' }}>OS →</button>
                           </div>
                         </td>
                       </tr>
@@ -176,14 +176,14 @@ export default function LabFaturamento() {
       {/* ABA: GERAR */}
       {aba === 'gerar' && (
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px', marginBottom: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+          <div style={{ background: '#d4d0c8', border: '1px solid #b0aca4', borderRadius: '10px', padding: '16px', marginBottom: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
             <div>
               <label style={LBL}>Mês de Referência</label>
               <input type="month" value={mes} onChange={e => setMes(e.target.value)} style={{ ...INP, width: '160px' }} />
             </div>
             <div>
               <label style={LBL}>Ótica (opcional)</label>
-              <select value={oticaFiltro} onChange={e => setOticaFiltro(e.target.value)} style={{ ...INP, width: '200px', fontFamily: 'var(--sans)' }}>
+              <select value={oticaFiltro} onChange={e => setOticaFiltro(e.target.value)} style={{ ...INP, width: '200px', fontFamily: "'Montserrat', sans-serif" }}>
                 <option value="">Todas as óticas</option>
                 {oticas.map(o => <option key={o.id} value={o.id}>{o.nome}</option>)}
               </select>
@@ -202,15 +202,15 @@ export default function LabFaturamento() {
           </div>
 
           {resumo.length > 0 && (
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px' }}>
-              <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', fontSize: '12px', fontWeight: '700', color: 'var(--text)' }}>
+            <div style={{ background: '#d4d0c8', border: '1px solid #b0aca4', borderRadius: '10px' }}>
+              <div style={{ padding: '12px 16px', borderBottom: '1px solid #b0aca4', fontSize: '12px', fontWeight: '700', color: '#000' }}>
                 OSes do período — {mes} ({resumo.reduce((a, r) => a + r.qtd_os, 0)} OS, {brl(resumo.reduce((a, r) => a + r.valor_total, 0))})
               </div>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr style={{ background: 'var(--surface-alt)', borderBottom: '1px solid var(--border)' }}>
+                  <tr style={{ background: '#dedad2', borderBottom: '1px solid #b0aca4' }}>
                     {['Ótica', 'Qtd OS', 'Valor Total', 'Líquido (c/ desconto)', ''].map(h => (
-                      <th key={h} style={{ padding: '8px 14px', textAlign: 'left', fontSize: '10px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
+                      <th key={h} style={{ padding: '8px 14px', textAlign: 'left', fontSize: '10px', fontWeight: '600', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -219,16 +219,16 @@ export default function LabFaturamento() {
                     const desc = parseFloat(desconto) || 0;
                     const liq = Math.max(0, r.valor_total - desc);
                     return (
-                      <tr key={r.otica_id} style={{ borderBottom: '1px solid var(--border)' }}>
-                        <td style={{ padding: '12px 14px', fontSize: '13px', fontWeight: '600', color: 'var(--text)' }}>{r.otica_nome}</td>
-                        <td style={{ padding: '12px 14px', fontSize: '13px', fontFamily: 'var(--mono)', color: 'var(--text-dim)', textAlign: 'center' }}>{r.qtd_os}</td>
-                        <td style={{ padding: '12px 14px', fontSize: '13px', fontFamily: 'var(--mono)', color: 'var(--text)' }}>{brl(r.valor_total)}</td>
-                        <td style={{ padding: '12px 14px', fontSize: '13px', fontFamily: 'var(--mono)', fontWeight: '700', color: 'var(--green)' }}>{brl(liq)}</td>
+                      <tr key={r.otica_id} style={{ borderBottom: '1px solid #b0aca4' }}>
+                        <td style={{ padding: '12px 14px', fontSize: '13px', fontWeight: '600', color: '#000' }}>{r.otica_nome}</td>
+                        <td style={{ padding: '12px 14px', fontSize: '13px', fontFamily: "'Courier New', monospace", color: '#555', textAlign: 'center' }}>{r.qtd_os}</td>
+                        <td style={{ padding: '12px 14px', fontSize: '13px', fontFamily: "'Courier New', monospace", color: '#000' }}>{brl(r.valor_total)}</td>
+                        <td style={{ padding: '12px 14px', fontSize: '13px', fontFamily: "'Courier New', monospace", fontWeight: '700', color: '#006600' }}>{brl(liq)}</td>
                         <td style={{ padding: '12px 14px' }}>
                           <button
                             onClick={() => gerarFechamento(r.otica_id, r.qtd_os, r.valor_total)}
                             disabled={gerandoId === r.otica_id}
-                            style={{ padding: '6px 16px', fontSize: '12px', fontWeight: '600', background: gerandoId === r.otica_id ? 'var(--text-muted)' : '#005500', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                            style={{ padding: '6px 16px', fontSize: '12px', fontWeight: '600', background: gerandoId === r.otica_id ? '#666' : '#005500', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit' }}>
                             {gerandoId === r.otica_id ? 'Gerando...' : 'Gerar Fechamento'}
                           </button>
                         </td>
