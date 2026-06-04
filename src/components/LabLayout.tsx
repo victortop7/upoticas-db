@@ -31,22 +31,10 @@ const OPCOES: Record<ModuleKey, Opcao[]> = {
     { num: 6, label: 'CADASTRO DE OPERADORES',      to: '/lab/operadores' },
   ],
   B: [],
-  C: [
-    { num: 1, label: 'INCLUIR FORNECEDOR', to: '/lab/fornecedores' },
-    { num: 2, label: 'ALTERAR DADOS',      to: '/lab/fornecedores' },
-    { num: 4, label: 'CONSULTA/LISTAGEM',  to: '/lab/fornecedores' },
-  ],
+  C: [],
   D: [],
-  E: [
-    { num: 1, label: 'INCLUIR ITEM DE ESTOQUE', to: '/lab/estoque' },
-    { num: 2, label: 'ALTERAR DADOS',           to: '/lab/estoque' },
-    { num: 4, label: 'CONSULTA/LISTAGEM',       to: '/lab/estoque' },
-  ],
-  F: [
-    { num: 1, label: 'ENTRADA DE MERCADORIA', to: '/lab/estoque' },
-    { num: 2, label: 'SAÍDA DE MERCADORIA',   to: '/lab/estoque' },
-    { num: 3, label: 'CONSULTA/LISTAGEM',     to: '/lab/estoque' },
-  ],
+  E: [],
+  F: [],
   G: [
     { num: 1, label: 'EMITIR OS / PEDIDO',  to: '/lab/ordens/nova' },
     { num: 2, label: 'CONSULTA/LISTAGEM',   to: '/lab/ordens' },
@@ -168,7 +156,10 @@ export default function LabLayout() {
 
   const MODULO_ROTA: Partial<Record<ModuleKey, string>> = {
     B: '/lab/oticas',
+    C: '/lab/fornecedores',
     D: '/lab/servicos',
+    E: '/lab/estoque',
+    F: '/lab/estoque',
   };
 
   function clickModule(letra: ModuleKey, ativo: boolean) {
