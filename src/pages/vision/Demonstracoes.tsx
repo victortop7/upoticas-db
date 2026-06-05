@@ -252,8 +252,7 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
   const trObj = TRATAMENTOS.find(t => t.id === tratamento)!;
   const effect = EFFECTS[tratamento]?.[ambiente] ?? EFFECTS.ar.noite;
   const semSvg = getSemSvg(tratamento, ambiente);
-  // Usa fotos reais quando disponíveis
-  const useRealPhoto = tratamento === 'ar' && ambiente === 'noite';
+  const useRealPhoto = tratamento === 'ar';
 
   function move(clientX: number) {
     const rect = containerRef.current?.getBoundingClientRect();
@@ -309,7 +308,7 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
         <div style={{
           position: 'absolute', inset: 0,
           background: useRealPhoto
-            ? `url('/ar-sem.png') center/cover no-repeat`
+            ? `url('/tratamento%20de%20antirreflexo/sem%20antirreflexo.png') center/cover no-repeat`
             : SCENE_BG[ambiente],
           filter: useRealPhoto ? 'none' : effect.semFilter,
         }} />
@@ -318,7 +317,7 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
         <div style={{
           position: 'absolute', inset: 0,
           background: useRealPhoto
-            ? `url('/ar-com.png') center/cover no-repeat`
+            ? `url('/tratamento%20de%20antirreflexo/com%20antirreflexo.png') center/cover no-repeat`
             : SCENE_BG[ambiente],
           filter: useRealPhoto ? 'none' : effect.comFilter,
           clipPath: `inset(0 ${100 - divX}% 0 0)`,
