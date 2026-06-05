@@ -252,7 +252,18 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
   const trObj = TRATAMENTOS.find(t => t.id === tratamento)!;
   const effect = EFFECTS[tratamento]?.[ambiente] ?? EFFECTS.ar.noite;
   const semSvg = getSemSvg(tratamento, ambiente);
-  const useRealPhoto = tratamento === 'ar';
+  const REAL_PHOTOS: Record<string, { com: string; sem: string }> = {
+    ar: {
+      com: '/tratamento%20de%20antirreflexo/com%20antirreflexo.png',
+      sem: '/tratamento%20de%20antirreflexo/sem%20antirreflexo.png',
+    },
+    az: {
+      com: '/tratamento%20de%20antirreflexo%20azul/com%20luz%20azul.png',
+      sem: '/tratamento%20de%20antirreflexo%20azul/sem%20luz%20azul.png',
+    },
+  };
+  const realPhoto = REAL_PHOTOS[tratamento] ?? null;
+  const useRealPhoto = !!realPhoto;
 
   function move(clientX: number) {
     const rect = containerRef.current?.getBoundingClientRect();
@@ -277,7 +288,7 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
         {/* SEM base */}
         {useRealPhoto ? (
           <img
-            src="/tratamento%20de%20antirreflexo/sem%20antirreflexo.png"
+            src={realPhoto!.sem}
             draggable={false}
             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', pointerEvents: 'none' }}
           />
@@ -288,7 +299,7 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
         {/* COM overlay — lado esquerdo */}
         {useRealPhoto ? (
           <img
-            src="/tratamento%20de%20antirreflexo/com%20antirreflexo.png"
+            src={realPhoto!.com}
             draggable={false}
             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', clipPath: `inset(0 ${100 - divX}% 0 0)`, pointerEvents: 'none' }}
           />
