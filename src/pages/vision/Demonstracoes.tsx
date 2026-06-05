@@ -307,18 +307,20 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
         {/* SEM base */}
         <div style={{
           position: 'absolute', inset: 0,
-          background: useRealPhoto
-            ? `url('/tratamento%20de%20antirreflexo/sem%20antirreflexo.png') center/cover no-repeat`
-            : SCENE_BG[ambiente],
+          background: useRealPhoto ? 'none' : SCENE_BG[ambiente],
+          backgroundImage: useRealPhoto ? `url('/tratamento%20de%20antirreflexo/sem%20antirreflexo.png')` : undefined,
+          backgroundSize: useRealPhoto ? '100% 100%' : undefined,
+          backgroundRepeat: 'no-repeat',
           filter: useRealPhoto ? 'none' : effect.semFilter,
         }} />
 
         {/* COM overlay — lado esquerdo */}
         <div style={{
           position: 'absolute', inset: 0,
-          background: useRealPhoto
-            ? `url('/tratamento%20de%20antirreflexo/com%20antirreflexo.png') center/cover no-repeat`
-            : SCENE_BG[ambiente],
+          background: useRealPhoto ? 'none' : SCENE_BG[ambiente],
+          backgroundImage: useRealPhoto ? `url('/tratamento%20de%20antirreflexo/com%20antirreflexo.png')` : undefined,
+          backgroundSize: useRealPhoto ? '100% 100%' : undefined,
+          backgroundRepeat: 'no-repeat',
           filter: useRealPhoto ? 'none' : effect.comFilter,
           clipPath: `inset(0 ${100 - divX}% 0 0)`,
         }} />
