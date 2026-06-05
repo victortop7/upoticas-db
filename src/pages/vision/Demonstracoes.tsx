@@ -261,25 +261,8 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
   }
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {/* Ambientes — barra slim no topo */}
-      <div style={{ display: 'flex', gap: 4, padding: '8px 16px', borderBottom: '1px solid #12141c', flexShrink: 0 }}>
-        {AMBIENTES.map(a => (
-          <button key={a.id} onClick={() => setAmbiente(a.id)} style={{
-            padding: '4px 10px', borderRadius: 20, cursor: 'pointer',
-            background: ambiente === a.id ? '#1e2030' : 'transparent',
-            border: `1px solid ${ambiente === a.id ? '#2a2d3e' : '#1e2030'}`,
-            color: ambiente === a.id ? '#f0f0f5' : '#4b5563',
-            fontSize: 11.5, fontFamily: 'var(--sans)',
-            display: 'flex', alignItems: 'center', gap: 4, transition: 'all .15s',
-          }}>
-            <span style={{ fontSize: 13 }}>{a.emoji}</span>
-            <span>{a.label}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Comparador */}
+    <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+      {/* Comparador — ocupa tudo */}
       <div
         ref={containerRef}
         onMouseDown={() => { dragging.current = true; }}
@@ -289,28 +272,29 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
         onTouchStart={() => { dragging.current = true; }}
         onTouchMove={e => move(e.touches[0].clientX)}
         onTouchEnd={() => { dragging.current = false; }}
-        style={{ flex: 1, position: 'relative', overflow: 'hidden', cursor: 'col-resize', userSelect: 'none' }}
+        style={{ position: 'absolute', inset: 0, cursor: 'col-resize', userSelect: 'none', overflow: 'hidden' }}
       >
         {/* SEM base */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: useRealPhoto ? 'none' : SCENE_BG[ambiente],
-          backgroundImage: useRealPhoto ? `url('/tratamento%20de%20antirreflexo/sem%20antirreflexo.png')` : undefined,
-          backgroundSize: useRealPhoto ? '100% 100%' : undefined,
-          backgroundRepeat: 'no-repeat',
-          filter: useRealPhoto ? 'none' : effect.semFilter,
-        }} />
+        {useRealPhoto ? (
+          <img
+            src="/tratamento%20de%20antirreflexo/sem%20antirreflexo.png"
+            draggable={false}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', pointerEvents: 'none' }}
+          />
+        ) : (
+          <div style={{ position: 'absolute', inset: 0, background: SCENE_BG[ambiente], filter: effect.semFilter }} />
+        )}
 
         {/* COM overlay — lado esquerdo */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: useRealPhoto ? 'none' : SCENE_BG[ambiente],
-          backgroundImage: useRealPhoto ? `url('/tratamento%20de%20antirreflexo/com%20antirreflexo.png')` : undefined,
-          backgroundSize: useRealPhoto ? '100% 100%' : undefined,
-          backgroundRepeat: 'no-repeat',
-          filter: useRealPhoto ? 'none' : effect.comFilter,
-          clipPath: `inset(0 ${100 - divX}% 0 0)`,
-        }} />
+        {useRealPhoto ? (
+          <img
+            src="/tratamento%20de%20antirreflexo/com%20antirreflexo.png"
+            draggable={false}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', clipPath: `inset(0 ${100 - divX}% 0 0)`, pointerEvents: 'none' }}
+          />
+        ) : (
+          <div style={{ position: 'absolute', inset: 0, background: SCENE_BG[ambiente], filter: effect.comFilter, clipPath: `inset(0 ${100 - divX}% 0 0)` }} />
+        )}
 
         {/* SVG de defeito no lado SEM (direito) — só quando não usa foto real */}
         {!useRealPhoto && semSvg && (
@@ -338,38 +322,61 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
           </div>
         </div>
 
-        {/* Tratamentos — overlay vertical direito */}
+        {/* Painel direito — tratamentos + ambientes (ambientes só para não-AR) */}
         <div
           onMouseDown={e => e.stopPropagation()}
           onTouchStart={e => e.stopPropagation()}
           style={{
             position: 'absolute', top: 0, right: 0, bottom: 0,
             width: 172, display: 'flex', flexDirection: 'column', justifyContent: 'center',
-            background: 'linear-gradient(to left, rgba(0,0,0,.72) 60%, transparent)',
+            background: 'linear-gradient(to left, rgba(0,0,0,.75) 55%, transparent)',
             zIndex: 10,
           }}
         >
           {TRATAMENTOS.map(t => (
             <button key={t.id} onClick={() => setTratamento(t.id)} style={{
               background: 'none', border: 'none', cursor: 'pointer',
-              padding: '10px 20px 10px 16px',
+              padding: '9px 20px 9px 16px',
               textAlign: 'left', width: '100%',
               display: 'flex', alignItems: 'center', gap: 8,
               transition: 'all .15s',
             }}>
               <div style={{
-                width: 3, height: 16, borderRadius: 2, flexShrink: 0,
+                width: 3, height: 14, borderRadius: 2, flexShrink: 0,
                 background: tratamento === t.id ? t.cor : 'transparent',
                 transition: 'background .15s',
               }} />
               <span style={{
-                fontSize: 12, fontWeight: tratamento === t.id ? 700 : 500,
+                fontSize: 11.5, fontWeight: tratamento === t.id ? 700 : 500,
                 fontFamily: 'var(--sans)', letterSpacing: '.06em', textTransform: 'uppercase',
-                color: tratamento === t.id ? '#f0f0f5' : 'rgba(255,255,255,.35)',
+                color: tratamento === t.id ? '#f0f0f5' : 'rgba(255,255,255,.32)',
                 transition: 'color .15s',
               }}>{t.label}</span>
             </button>
           ))}
+
+          {!useRealPhoto && (
+            <>
+              <div style={{ height: 1, background: 'rgba(255,255,255,.08)', margin: '6px 16px 4px' }} />
+              {AMBIENTES.map(a => (
+                <button key={a.id} onClick={() => setAmbiente(a.id)} style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  padding: '7px 20px 7px 16px',
+                  textAlign: 'left', width: '100%',
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  transition: 'all .15s',
+                }}>
+                  <span style={{ fontSize: 13, lineHeight: 1 }}>{a.emoji}</span>
+                  <span style={{
+                    fontSize: 11, fontWeight: ambiente === a.id ? 700 : 400,
+                    fontFamily: 'var(--sans)', letterSpacing: '.05em',
+                    color: ambiente === a.id ? '#f0f0f5' : 'rgba(255,255,255,.28)',
+                    transition: 'color .15s',
+                  }}>{a.label}</span>
+                </button>
+              ))}
+            </>
+          )}
         </div>
 
         {/* Labels */}
