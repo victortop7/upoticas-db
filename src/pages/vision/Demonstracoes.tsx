@@ -261,8 +261,8 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
   }
 
   return (
-    <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
-      {/* Comparador — ocupa tudo */}
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      {/* Comparador */}
       <div
         ref={containerRef}
         onMouseDown={() => { dragging.current = true; }}
@@ -272,7 +272,7 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
         onTouchStart={() => { dragging.current = true; }}
         onTouchMove={e => move(e.touches[0].clientX)}
         onTouchEnd={() => { dragging.current = false; }}
-        style={{ position: 'absolute', inset: 0, cursor: 'col-resize', userSelect: 'none', overflow: 'hidden' }}
+        style={{ flex: 1, position: 'relative', cursor: 'col-resize', userSelect: 'none', overflow: 'hidden' }}
       >
         {/* SEM base */}
         {useRealPhoto ? (
@@ -322,68 +322,11 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
           </div>
         </div>
 
-        {/* Painel direito — tratamentos + ambientes (ambientes só para não-AR) */}
-        <div
-          onMouseDown={e => e.stopPropagation()}
-          onTouchStart={e => e.stopPropagation()}
-          style={{
-            position: 'absolute', top: 0, right: 0, bottom: 0,
-            width: 172, display: 'flex', flexDirection: 'column', justifyContent: 'center',
-            background: 'linear-gradient(to left, rgba(0,0,0,.75) 55%, transparent)',
-            zIndex: 10,
-          }}
-        >
-          {TRATAMENTOS.map(t => (
-            <button key={t.id} onClick={() => setTratamento(t.id)} style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              padding: '9px 20px 9px 16px',
-              textAlign: 'left', width: '100%',
-              display: 'flex', alignItems: 'center', gap: 8,
-              transition: 'all .15s',
-            }}>
-              <div style={{
-                width: 3, height: 14, borderRadius: 2, flexShrink: 0,
-                background: tratamento === t.id ? t.cor : 'transparent',
-                transition: 'background .15s',
-              }} />
-              <span style={{
-                fontSize: 11.5, fontWeight: tratamento === t.id ? 700 : 500,
-                fontFamily: 'var(--sans)', letterSpacing: '.06em', textTransform: 'uppercase',
-                color: tratamento === t.id ? '#f0f0f5' : 'rgba(255,255,255,.32)',
-                transition: 'color .15s',
-              }}>{t.label}</span>
-            </button>
-          ))}
-
-          {!useRealPhoto && (
-            <>
-              <div style={{ height: 1, background: 'rgba(255,255,255,.08)', margin: '6px 16px 4px' }} />
-              {AMBIENTES.map(a => (
-                <button key={a.id} onClick={() => setAmbiente(a.id)} style={{
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  padding: '7px 20px 7px 16px',
-                  textAlign: 'left', width: '100%',
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  transition: 'all .15s',
-                }}>
-                  <span style={{ fontSize: 13, lineHeight: 1 }}>{a.emoji}</span>
-                  <span style={{
-                    fontSize: 11, fontWeight: ambiente === a.id ? 700 : 400,
-                    fontFamily: 'var(--sans)', letterSpacing: '.05em',
-                    color: ambiente === a.id ? '#f0f0f5' : 'rgba(255,255,255,.28)',
-                    transition: 'color .15s',
-                  }}>{a.label}</span>
-                </button>
-              ))}
-            </>
-          )}
-        </div>
-
         {/* Labels */}
         <div style={{ position: 'absolute', bottom: 64, left: 16, fontSize: 11, color: '#e2e8f0', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
           ✓ COM {trObj.label.toUpperCase()}
         </div>
-        <div style={{ position: 'absolute', bottom: 64, right: 188, fontSize: 11, color: '#9ca3af', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', bottom: 64, right: 16, fontSize: 11, color: '#9ca3af', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
           ✗ SEM
         </div>
 
@@ -400,6 +343,73 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
             {effect.description}
           </div>
         </div>
+      </div>
+
+      {/* Barra de tratamentos — fundo, estilo tab-bar dark */}
+      <div style={{
+        background: '#07080e',
+        borderTop: '1px solid rgba(255,255,255,0.07)',
+        padding: '8px 12px 10px',
+        flexShrink: 0,
+        display: 'flex', gap: 4,
+        overflowX: 'auto', scrollbarWidth: 'none',
+      }}>
+        {TRATAMENTOS.map(t => (
+          <button key={t.id} onClick={() => setTratamento(t.id)} style={{
+            flexShrink: 0,
+            minWidth: 64,
+            background: tratamento === t.id ? `${t.cor}22` : 'rgba(255,255,255,0.04)',
+            border: `1px solid ${tratamento === t.id ? t.cor : 'rgba(255,255,255,0.07)'}`,
+            borderRadius: 14,
+            cursor: 'pointer',
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            gap: 5, padding: '8px 10px',
+            transition: 'all .15s',
+            WebkitTapHighlightColor: 'transparent',
+          }}>
+            <div style={{
+              width: 8, height: 8, borderRadius: '50%',
+              background: tratamento === t.id ? t.cor : 'rgba(255,255,255,0.25)',
+              transition: 'background .15s',
+            }} />
+            <span style={{
+              fontSize: 9.5, fontWeight: tratamento === t.id ? 700 : 500,
+              fontFamily: 'var(--sans)', letterSpacing: '.05em', textTransform: 'uppercase',
+              color: tratamento === t.id ? '#f0f0f5' : 'rgba(255,255,255,0.38)',
+              transition: 'color .15s', whiteSpace: 'nowrap',
+            }}>{t.label}</span>
+          </button>
+        ))}
+
+        {!useRealPhoto && (
+          <>
+            <div style={{ width: 1, background: 'rgba(255,255,255,0.08)', margin: '4px 4px', flexShrink: 0 }} />
+            {AMBIENTES.map(a => (
+              <button key={a.id} onClick={() => setAmbiente(a.id)} style={{
+                flexShrink: 0,
+                minWidth: 56,
+                background: ambiente === a.id ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.04)',
+                border: `1px solid ${ambiente === a.id ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.07)'}`,
+                borderRadius: 14,
+                cursor: 'pointer',
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center',
+                gap: 4, padding: '7px 8px',
+                transition: 'all .15s',
+                WebkitTapHighlightColor: 'transparent',
+              }}>
+                <span style={{ fontSize: 14, lineHeight: 1 }}>{a.emoji}</span>
+                <span style={{
+                  fontSize: 9, fontWeight: ambiente === a.id ? 700 : 400,
+                  fontFamily: 'var(--sans)', letterSpacing: '.05em',
+                  color: ambiente === a.id ? '#f0f0f5' : 'rgba(255,255,255,0.35)',
+                  transition: 'color .15s',
+                }}>{a.label}</span>
+              </button>
+            ))}
+          </>
+        )}
       </div>
     </div>
   );

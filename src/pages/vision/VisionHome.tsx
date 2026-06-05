@@ -399,17 +399,18 @@ export default function VisionHome() {
         )}
       </div>
 
-      {/* Faixa de módulos — tab-bar dark */}
+      {/* Faixa de módulos */}
       <div style={{
-        background: '#07080e',
-        borderTop: '1px solid rgba(255,255,255,0.07)',
-        padding: '10px 12px 12px',
+        background: '#fff',
+        borderTop: '1px solid #e2e8f0',
+        padding: '14px 18px',
         flexShrink: 0,
-        boxShadow: '0 -4px 24px rgba(0,0,0,0.3)',
+        boxShadow: '0 -4px 20px rgba(0,0,0,0.06)',
       }}>
         <div style={{
-          display: 'flex', gap: 6,
+          display: 'flex', gap: 10,
           overflowX: 'auto', scrollbarWidth: 'none',
+          paddingBottom: 2,
         }}>
           {MODULES.map(mod => {
             const isOpen = openSubmenu === mod.submenu && mod.submenu !== null;
@@ -420,22 +421,22 @@ export default function VisionHome() {
                 onClick={e => { e.stopPropagation(); handleModule(mod); }}
                 style={{
                   flexShrink: 0,
-                  width: 80, minHeight: 72,
-                  background: isOpen ? 'rgba(37,99,235,0.18)' : 'rgba(255,255,255,0.04)',
-                  border: `1px solid ${isOpen ? 'rgba(37,99,235,0.5)' : 'rgba(255,255,255,0.07)'}`,
-                  borderRadius: 16,
+                  width: 110, minHeight: 128,
+                  background: isOpen ? '#eff6ff' : '#fff',
+                  border: `1.5px solid ${isOpen ? '#2563eb' : '#e2e8f0'}`,
+                  borderRadius: 14,
                   cursor: mod.active ? 'pointer' : 'default',
                   display: 'flex', flexDirection: 'column',
                   alignItems: 'center', justifyContent: 'center',
-                  gap: 7, padding: '10px 6px',
+                  gap: 10, padding: '14px 8px',
                   position: 'relative', overflow: 'hidden',
-                  opacity: mod.comingSoon ? 0.45 : 1,
+                  opacity: mod.comingSoon ? 0.65 : 1,
                   transition: 'transform 0.1s, border-color 0.15s, background 0.15s',
                   WebkitTapHighlightColor: 'transparent',
                 }}
                 onPointerDown={e => {
                   if (!mod.active) return;
-                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.93)';
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.95)';
                 }}
                 onPointerUp={e => {
                   (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
@@ -444,23 +445,19 @@ export default function VisionHome() {
                   (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
                 }}
               >
-                {/* Ícone recolorido para branco */}
-                <div style={{ filter: isOpen ? 'none' : 'brightness(0) invert(1) opacity(0.7)' }}>
-                  {mod.icon}
-                </div>
+                {mod.icon}
                 <span style={{
-                  fontSize: 9.5, fontWeight: 600,
-                  color: isOpen ? '#60a5fa' : 'rgba(255,255,255,0.55)',
+                  fontSize: 10.5, fontWeight: 700, color: isOpen ? '#1d4ed8' : '#1e293b',
                   textAlign: 'center', textTransform: 'uppercase',
-                  letterSpacing: '0.06em', lineHeight: 1.3,
+                  letterSpacing: '0.05em', lineHeight: 1.3,
                   whiteSpace: 'pre-line',
                 }}>{mod.label}</span>
 
                 {mod.comingSoon && (
                   <div style={{
                     position: 'absolute', bottom: 0, left: 0, right: 0,
-                    background: '#dc2626', padding: '2px 0',
-                    fontSize: 7, fontWeight: 800, color: '#fff',
+                    background: '#dc2626', padding: '3px 0',
+                    fontSize: 8, fontWeight: 800, color: '#fff',
                     textAlign: 'center', letterSpacing: '0.1em', textTransform: 'uppercase',
                   }}>EM BREVE</div>
                 )}
