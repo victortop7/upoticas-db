@@ -316,74 +316,86 @@ export default function VisionHome() {
           </div>
         </div>
 
-        {/* Submenu demo — painel compacto no canto inferior direito */}
+        {/* Overlay escuro + faixa de submenu — cobre o hero inteiro */}
         {openSubmenu === 'demo' && (
-          <div
-            data-submenu="true"
-            onClick={e => e.stopPropagation()}
-            style={{
-              position: 'absolute', bottom: 16, right: 16,
-              background: 'rgba(7, 8, 14, 0.94)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: 20,
-              padding: '14px 12px',
-              zIndex: 10,
-              display: 'flex', flexDirection: 'column', gap: 4,
-              minWidth: 150,
-              animation: 'popIn 0.18s cubic-bezier(0.22,1,0.36,1)',
-            }}
-          >
-            <div style={{
-              fontSize: 8.5, color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--mono)',
-              textTransform: 'uppercase', letterSpacing: '0.14em',
-              marginBottom: 6, paddingInline: 4, fontWeight: 700,
-            }}>
-              Demonstrações
+          <>
+            <div
+              style={{
+                position: 'absolute', inset: 0,
+                background: 'rgba(5, 10, 30, 0.72)',
+                zIndex: 9,
+                animation: 'fadeIn 0.18s ease',
+              }}
+            />
+            <div
+              data-submenu="true"
+              onClick={e => e.stopPropagation()}
+              style={{
+                position: 'absolute',
+                top: '50%', left: 0, right: 0,
+                transform: 'translateY(-50%)',
+                background: 'rgba(12, 22, 58, 0.92)',
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
+                borderTop: '1px solid rgba(255,255,255,0.1)',
+                borderBottom: '1px solid rgba(255,255,255,0.1)',
+                padding: '24px 0 28px',
+                zIndex: 10,
+                animation: 'slideIn 0.22s cubic-bezier(0.22,1,0.36,1)',
+              }}
+            >
+              <div style={{
+                fontSize: 9, color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--mono)',
+                textTransform: 'uppercase', letterSpacing: '0.16em', marginBottom: 22,
+                textAlign: 'center', fontWeight: 700,
+              }}>
+                Demonstrações de Lentes
+              </div>
+              <div style={{
+                display: 'flex', gap: 12,
+                justifyContent: 'center', alignItems: 'center',
+                paddingInline: 24,
+              }}>
+                {DEMO_ITEMS.map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => handleDemoItem(item)}
+                    style={{
+                      background: 'rgba(255,255,255,0.06)',
+                      border: '1px solid rgba(255,255,255,0.12)',
+                      borderRadius: 16,
+                      padding: '20px 16px',
+                      cursor: 'pointer',
+                      display: 'flex', flexDirection: 'column',
+                      alignItems: 'center', gap: 12,
+                      minWidth: 88, flex: '0 0 auto',
+                      transition: 'background 0.12s, transform 0.1s',
+                      WebkitTapHighlightColor: 'transparent',
+                    }}
+                    onPointerDown={e => {
+                      (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.16)';
+                      (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.93)';
+                    }}
+                    onPointerUp={e => {
+                      (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.06)';
+                      (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                    }}
+                    onPointerLeave={e => {
+                      (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.06)';
+                      (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                    }}
+                  >
+                    {item.icon}
+                    <span style={{
+                      fontSize: 10.5, color: 'rgba(255,255,255,0.88)',
+                      fontWeight: 600, letterSpacing: '0.05em',
+                      textTransform: 'uppercase',
+                    }}>{item.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
-            {DEMO_ITEMS.map(item => (
-              <button
-                key={item.id}
-                onClick={() => handleDemoItem(item)}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  borderRadius: 12,
-                  padding: '9px 10px',
-                  cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', gap: 10,
-                  width: '100%', textAlign: 'left',
-                  transition: 'background 0.12s',
-                  WebkitTapHighlightColor: 'transparent',
-                }}
-                onPointerEnter={e => {
-                  (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.08)';
-                }}
-                onPointerLeave={e => {
-                  (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-                }}
-                onPointerDown={e => {
-                  (e.currentTarget as HTMLButtonElement).style.background = 'rgba(37,99,235,0.2)';
-                }}
-                onPointerUp={e => {
-                  (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.08)';
-                }}
-              >
-                <div style={{ flexShrink: 0, width: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {/* ícone reduzido */}
-                  <svg width="22" height="22" viewBox="0 0 38 38">
-                    {item.icon.props.children}
-                  </svg>
-                </div>
-                <span style={{
-                  fontSize: 11.5, color: 'rgba(255,255,255,0.82)',
-                  fontWeight: 600, letterSpacing: '0.04em',
-                  textTransform: 'uppercase', fontFamily: 'var(--sans)',
-                }}>{item.label}</span>
-              </button>
-            ))}
-          </div>
+          </>
         )}
 
         {/* Hint na home normal */}
@@ -472,9 +484,9 @@ export default function VisionHome() {
           from { opacity: 0; }
           to   { opacity: 1; }
         }
-        @keyframes popIn {
-          from { opacity: 0; transform: scale(0.88) translateY(12px); transform-origin: bottom right; }
-          to   { opacity: 1; transform: scale(1) translateY(0); transform-origin: bottom right; }
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateY(calc(-50% + 24px)); }
+          to   { opacity: 1; transform: translateY(-50%); }
         }
       `}</style>
     </div>
