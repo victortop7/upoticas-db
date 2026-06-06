@@ -254,8 +254,8 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
   const semSvg = getSemSvg(tratamento, ambiente);
   const REAL_PHOTOS: Record<string, { com: string; sem: string }> = {
     ar: {
-      com: '/tratamento%20de%20antirreflexo/COM%20TRATAMENTO%20DE%20ANTIRREFLEXO.png',
-      sem: '/tratamento%20de%20antirreflexo/SEM%20TRATAMENTO%20DE%20ANTIRREFLEXO.png',
+      com: '/tratamento%20de%20antirreflexo/com%20anti-reflexo.png',
+      sem: '/tratamento%20de%20antirreflexo/sem%20anti-reflexo.png',
     },
     az: {
       com: '/tratamento%20de%20antirreflexo%20azul/com%20luz%20azul.png',
