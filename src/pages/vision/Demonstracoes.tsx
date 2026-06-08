@@ -373,19 +373,19 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
             <button key={t.id} onClick={() => setTratamento(t.id)} style={{
               background: tratamento === t.id ? 'rgba(255,255,255,0.12)' : 'transparent',
               border: 'none', cursor: 'pointer',
-              padding: '10px 18px 10px 14px',
+              padding: '12px 18px 12px 14px',
               textAlign: 'left', width: '100%',
               display: 'flex', alignItems: 'center', gap: 10,
               transition: 'background .15s',
               WebkitTapHighlightColor: 'transparent',
             }}>
               <div style={{
-                width: 3, height: 16, borderRadius: 2, flexShrink: 0,
+                width: 3, height: 18, borderRadius: 2, flexShrink: 0,
                 background: tratamento === t.id ? t.cor : 'transparent',
                 transition: 'background .15s',
               }} />
               <span style={{
-                fontSize: 11.5, fontWeight: tratamento === t.id ? 700 : 400,
+                fontSize: 14, fontWeight: tratamento === t.id ? 700 : 400,
                 fontFamily: 'var(--sans)', letterSpacing: '.07em', textTransform: 'uppercase',
                 color: tratamento === t.id ? '#ffffff' : 'rgba(255,255,255,0.45)',
                 transition: 'color .15s',
