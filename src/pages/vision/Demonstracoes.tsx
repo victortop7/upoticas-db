@@ -261,6 +261,10 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
       com: '/tratamento%20de%20antirreflexo%20azul/com%20luz%20azul.png',
       sem: '/tratamento%20de%20antirreflexo%20azul/sem%20luz%20azul.png',
     },
+    ab: {
+      com: '/tratamento%20anti-abrasivo/COM%20ANTI-ABRASIVO.png',
+      sem: '/tratamento%20anti-abrasivo/SEM%20ANTI-ABRASIVO-2%2C.png',
+    },
   };
   const realPhoto = REAL_PHOTOS[tratamento] ?? null;
   const useRealPhoto = !!realPhoto;
