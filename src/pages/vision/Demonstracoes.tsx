@@ -598,10 +598,10 @@ export default function Demonstracoes() {
         <div
           onClick={e => e.stopPropagation()}
           style={{
-            position: 'fixed', bottom: 72, right: 0,
+            position: 'fixed', bottom: 100, right: 16,
             background: 'rgba(7,8,14,0.97)',
             border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: '16px 16px 0 0',
+            borderRadius: 16,
             padding: '14px 8px 10px',
             zIndex: 100,
             minWidth: 160,
@@ -632,44 +632,50 @@ export default function Demonstracoes() {
         </div>
       )}
 
-      {/* Bottom nav — Menu | Extras | OS */}
+      {/* Bottom nav — canto inferior direito */}
       <div style={{
-        background: '#07080e',
-        borderTop: '1px solid rgba(255,255,255,0.07)',
-        display: 'flex',
-        flexShrink: 0,
+        position: 'fixed', bottom: 16, right: 16,
+        background: 'rgba(7,8,14,0.95)',
+        border: '1px solid rgba(255,255,255,0.1)',
+        borderRadius: 18,
+        display: 'flex', gap: 0,
         zIndex: 50,
+        overflow: 'hidden',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
       }}>
         {[
           {
             id: 'menu', label: 'Menu',
-            icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/></svg>,
+            icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/></svg>,
             action: () => { setShowExtras(false); navigate('/vision'); },
             active: false,
           },
           {
             id: 'extras', label: 'Extras',
-            icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><ellipse cx="12" cy="12" rx="9" ry="6"/><ellipse cx="12" cy="12" rx="4" ry="3"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg>,
+            icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><ellipse cx="12" cy="12" rx="9" ry="6"/><ellipse cx="12" cy="12" rx="4" ry="3"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg>,
             action: (e: React.MouseEvent) => { e.stopPropagation(); setShowExtras(p => !p); },
             active: showExtras,
           },
           {
             id: 'os', label: 'OS',
-            icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="13" y2="15"/><polyline points="13 16 15 18 19 14"/></svg>,
+            icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="13" y2="15"/><polyline points="13 16 15 18 19 14"/></svg>,
             action: () => { setShowExtras(false); navigate('/vision/os'); },
             active: false,
           },
-        ].map(btn => (
+        ].map((btn, i, arr) => (
           <button key={btn.id} onClick={btn.action as any} style={{
-            flex: 1, background: 'none', border: 'none', cursor: 'pointer',
+            background: btn.active ? 'rgba(59,130,246,0.15)' : 'none',
+            border: 'none', cursor: 'pointer',
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            gap: 5, padding: '10px 8px 12px',
-            color: btn.active ? '#3b82f6' : 'rgba(255,255,255,0.45)',
-            transition: 'color .15s',
+            gap: 4, padding: '10px 16px 11px',
+            borderRight: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.07)' : 'none',
+            color: btn.active ? '#3b82f6' : 'rgba(255,255,255,0.5)',
+            transition: 'color .15s, background .15s',
             WebkitTapHighlightColor: 'transparent',
+            minWidth: 58,
           }}>
             {btn.icon}
-            <span style={{ fontSize: 10, fontWeight: 600, fontFamily: 'var(--sans)', letterSpacing: '.06em', textTransform: 'uppercase' }}>{btn.label}</span>
+            <span style={{ fontSize: 9.5, fontWeight: 600, fontFamily: 'var(--sans)', letterSpacing: '.06em', textTransform: 'uppercase' }}>{btn.label}</span>
           </button>
         ))}
       </div>
