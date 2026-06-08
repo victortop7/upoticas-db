@@ -547,25 +547,30 @@ export default function Demonstracoes() {
   const initialTab: Tab = validTabs.includes(rawTab as Tab) ? (rawTab as Tab) : 'superficie';
 
   const [tab, setTab] = useState<Tab>(initialTab);
+  const [showExtras, setShowExtras] = useState(false);
   const navigate = useNavigate();
 
+  const DEMO_ITEMS_NAV = [
+    { id: 'digital',    label: 'Digital',    tab: 'superficie' },
+    { id: 'campos',     label: 'Campos',     tab: 'superficie' },
+    { id: 'adicao',     label: 'Adição',     tab: 'superficie' },
+    { id: 'photo',      label: 'Photo',      tab: 'fotossensivel' },
+    { id: 'ar',         label: 'AR',         tab: 'visao' },
+    { id: 'polarizado', label: 'Polarizado', tab: 'visao' },
+    { id: 'espessura',  label: 'Espessura',  tab: 'superficie' },
+  ];
+
   return (
-    <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: '#050508', overflow: 'hidden' }}>
+    <div
+      style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: '#050508', overflow: 'hidden' }}
+      onClick={() => setShowExtras(false)}
+    >
       {/* Top bar */}
       <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '0 20px', height: 48,
         background: '#07080e', borderBottom: '1px solid #12141c', flexShrink: 0,
       }}>
-        <button onClick={() => navigate('/vision')} style={{
-          background: 'none', border: 'none', cursor: 'pointer',
-          display: 'flex', alignItems: 'center', gap: 8, color: '#6b7280',
-          fontSize: 13, fontFamily: 'var(--sans)', padding: 0,
-        }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6" /></svg>
-          Voltar
-        </button>
-
         <div style={{ display: 'flex', gap: 0 }}>
           {([
             ['superficie', 'SUPERFÍCIE'],
@@ -582,13 +587,99 @@ export default function Demonstracoes() {
             }}>{label}</button>
           ))}
         </div>
-
-        <div style={{ width: 80 }} />
       </div>
 
       {tab === 'superficie' && <Superficie initialDemo={demo} />}
       {tab === 'visao' && <Visao initialDemo={demo} />}
       {tab === 'fotossensivel' && <Fotossensivel />}
+
+      {/* Extras popup — lista de simulações */}
+      {showExtras && (
+        <div
+          onClick={e => e.stopPropagation()}
+          style={{
+            position: 'fixed', bottom: 72, right: 0,
+            background: 'rgba(7,8,14,0.97)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: '16px 16px 0 0',
+            padding: '14px 8px 10px',
+            zIndex: 100,
+            minWidth: 160,
+            animation: 'popUp 0.18s cubic-bezier(0.22,1,0.36,1)',
+          }}
+        >
+          <div style={{ fontSize: 8.5, color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.14em', marginBottom: 8, paddingInline: 8, fontWeight: 700 }}>
+            Simulações
+          </div>
+          {DEMO_ITEMS_NAV.map(item => (
+            <button key={item.id} onClick={() => {
+              setTab(item.tab as Tab);
+              navigate(`/vision/demonstracoes?tab=${item.tab}&demo=${item.id}`);
+              setShowExtras(false);
+            }} style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 10,
+              width: '100%', padding: '9px 10px', borderRadius: 10,
+              transition: 'background .12s', WebkitTapHighlightColor: 'transparent',
+            }}
+            onPointerEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.08)'; }}
+            onPointerLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'none'; }}
+            >
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#3b82f6', flexShrink: 0 }} />
+              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.82)', fontWeight: 600, fontFamily: 'var(--sans)', textTransform: 'uppercase', letterSpacing: '.04em' }}>{item.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Bottom nav — Menu | Extras | OS */}
+      <div style={{
+        background: '#07080e',
+        borderTop: '1px solid rgba(255,255,255,0.07)',
+        display: 'flex',
+        flexShrink: 0,
+        zIndex: 50,
+      }}>
+        {[
+          {
+            id: 'menu', label: 'Menu',
+            icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/></svg>,
+            action: () => { setShowExtras(false); navigate('/vision'); },
+            active: false,
+          },
+          {
+            id: 'extras', label: 'Extras',
+            icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><ellipse cx="12" cy="12" rx="9" ry="6"/><ellipse cx="12" cy="12" rx="4" ry="3"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg>,
+            action: (e: React.MouseEvent) => { e.stopPropagation(); setShowExtras(p => !p); },
+            active: showExtras,
+          },
+          {
+            id: 'os', label: 'OS',
+            icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="13" y2="15"/><polyline points="13 16 15 18 19 14"/></svg>,
+            action: () => { setShowExtras(false); navigate('/vision/os'); },
+            active: false,
+          },
+        ].map(btn => (
+          <button key={btn.id} onClick={btn.action as any} style={{
+            flex: 1, background: 'none', border: 'none', cursor: 'pointer',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            gap: 5, padding: '10px 8px 12px',
+            color: btn.active ? '#3b82f6' : 'rgba(255,255,255,0.45)',
+            transition: 'color .15s',
+            WebkitTapHighlightColor: 'transparent',
+          }}>
+            {btn.icon}
+            <span style={{ fontSize: 10, fontWeight: 600, fontFamily: 'var(--sans)', letterSpacing: '.06em', textTransform: 'uppercase' }}>{btn.label}</span>
+          </button>
+        ))}
+      </div>
+
+      <style>{`
+        @keyframes popUp {
+          from { opacity: 0; transform: translateY(12px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 }
