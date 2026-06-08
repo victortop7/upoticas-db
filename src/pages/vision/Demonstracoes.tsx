@@ -358,73 +358,66 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
             {effect.description}
           </div>
         </div>
-      </div>
-
-      {/* Barra de tratamentos — fundo, estilo tab-bar dark */}
-      <div style={{
-        background: '#07080e',
-        borderTop: '1px solid rgba(255,255,255,0.07)',
-        padding: '8px 12px 10px',
-        flexShrink: 0,
-        display: 'flex', gap: 4,
-        overflowX: 'auto', scrollbarWidth: 'none',
-      }}>
-        {TRATAMENTOS.map(t => (
-          <button key={t.id} onClick={() => setTratamento(t.id)} style={{
-            flexShrink: 0,
-            minWidth: 64,
-            background: tratamento === t.id ? `${t.cor}22` : 'rgba(255,255,255,0.04)',
-            border: `1px solid ${tratamento === t.id ? t.cor : 'rgba(255,255,255,0.07)'}`,
-            borderRadius: 14,
-            cursor: 'pointer',
-            display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center',
-            gap: 5, padding: '8px 10px',
-            transition: 'all .15s',
-            WebkitTapHighlightColor: 'transparent',
-          }}>
-            <div style={{
-              width: 8, height: 8, borderRadius: '50%',
-              background: tratamento === t.id ? t.cor : 'rgba(255,255,255,0.25)',
+        {/* Painel de tratamentos — overlay vertical direito */}
+        <div
+          onMouseDown={e => e.stopPropagation()}
+          onTouchStart={e => e.stopPropagation()}
+          style={{
+            position: 'absolute', top: 0, right: 0, bottom: 0,
+            display: 'flex', flexDirection: 'column', justifyContent: 'center',
+            background: 'linear-gradient(to left, rgba(0,0,0,0.78) 60%, transparent)',
+            paddingRight: 4, zIndex: 10, minWidth: 160,
+          }}
+        >
+          {TRATAMENTOS.map(t => (
+            <button key={t.id} onClick={() => setTratamento(t.id)} style={{
+              background: tratamento === t.id ? 'rgba(255,255,255,0.12)' : 'transparent',
+              border: 'none', cursor: 'pointer',
+              padding: '10px 18px 10px 14px',
+              textAlign: 'left', width: '100%',
+              display: 'flex', alignItems: 'center', gap: 10,
               transition: 'background .15s',
-            }} />
-            <span style={{
-              fontSize: 9.5, fontWeight: tratamento === t.id ? 700 : 500,
-              fontFamily: 'var(--sans)', letterSpacing: '.05em', textTransform: 'uppercase',
-              color: tratamento === t.id ? '#f0f0f5' : 'rgba(255,255,255,0.38)',
-              transition: 'color .15s', whiteSpace: 'nowrap',
-            }}>{t.label}</span>
-          </button>
-        ))}
+              WebkitTapHighlightColor: 'transparent',
+            }}>
+              <div style={{
+                width: 3, height: 16, borderRadius: 2, flexShrink: 0,
+                background: tratamento === t.id ? t.cor : 'transparent',
+                transition: 'background .15s',
+              }} />
+              <span style={{
+                fontSize: 11.5, fontWeight: tratamento === t.id ? 700 : 400,
+                fontFamily: 'var(--sans)', letterSpacing: '.07em', textTransform: 'uppercase',
+                color: tratamento === t.id ? '#ffffff' : 'rgba(255,255,255,0.45)',
+                transition: 'color .15s',
+              }}>{t.label}</span>
+            </button>
+          ))}
 
-        {!useRealPhoto && (
-          <>
-            <div style={{ width: 1, background: 'rgba(255,255,255,0.08)', margin: '4px 4px', flexShrink: 0 }} />
-            {AMBIENTES.map(a => (
-              <button key={a.id} onClick={() => setAmbiente(a.id)} style={{
-                flexShrink: 0,
-                minWidth: 56,
-                background: ambiente === a.id ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.04)',
-                border: `1px solid ${ambiente === a.id ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.07)'}`,
-                borderRadius: 14,
-                cursor: 'pointer',
-                display: 'flex', flexDirection: 'column',
-                alignItems: 'center', justifyContent: 'center',
-                gap: 4, padding: '7px 8px',
-                transition: 'all .15s',
-                WebkitTapHighlightColor: 'transparent',
-              }}>
-                <span style={{ fontSize: 14, lineHeight: 1 }}>{a.emoji}</span>
-                <span style={{
-                  fontSize: 9, fontWeight: ambiente === a.id ? 700 : 400,
-                  fontFamily: 'var(--sans)', letterSpacing: '.05em',
-                  color: ambiente === a.id ? '#f0f0f5' : 'rgba(255,255,255,0.35)',
-                  transition: 'color .15s',
-                }}>{a.label}</span>
-              </button>
-            ))}
-          </>
-        )}
+          {!useRealPhoto && (
+            <>
+              <div style={{ height: 1, background: 'rgba(255,255,255,0.08)', margin: '4px 14px' }} />
+              {AMBIENTES.map(a => (
+                <button key={a.id} onClick={() => setAmbiente(a.id)} style={{
+                  background: ambiente === a.id ? 'rgba(255,255,255,0.1)' : 'transparent',
+                  border: 'none', cursor: 'pointer',
+                  padding: '7px 18px 7px 14px',
+                  textAlign: 'left', width: '100%',
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  transition: 'background .15s',
+                  WebkitTapHighlightColor: 'transparent',
+                }}>
+                  <span style={{ fontSize: 13 }}>{a.emoji}</span>
+                  <span style={{
+                    fontSize: 10.5, fontWeight: ambiente === a.id ? 700 : 400,
+                    fontFamily: 'var(--sans)', letterSpacing: '.05em',
+                    color: ambiente === a.id ? '#ffffff' : 'rgba(255,255,255,0.38)',
+                    transition: 'color .15s',
+                  }}>{a.label}</span>
+                </button>
+              ))}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
