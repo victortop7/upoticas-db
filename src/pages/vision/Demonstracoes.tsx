@@ -364,8 +364,8 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
           onTouchStart={e => e.stopPropagation()}
           style={{
             position: 'absolute', top: 0, right: 0, bottom: 0,
-            display: 'flex', flexDirection: 'column', justifyContent: 'center',
-            background: 'linear-gradient(to left, rgba(0,0,0,0.78) 60%, transparent)',
+            display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: 48,
+            background: 'linear-gradient(to left, rgba(0,0,0,0.45) 55%, transparent)',
             paddingRight: 4, zIndex: 10, minWidth: 160,
           }}
         >
