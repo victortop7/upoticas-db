@@ -558,30 +558,6 @@ export default function Demonstracoes() {
       style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: '#050508', overflow: 'hidden' }}
       onClick={() => setShowExtras(false)}
     >
-      {/* Top bar */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '0 20px', height: 48,
-        background: '#07080e', borderBottom: '1px solid #12141c', flexShrink: 0,
-      }}>
-        <div style={{ display: 'flex', gap: 0 }}>
-          {([
-            ['superficie', 'SUPERFÍCIE'],
-            ['visao', 'VISÃO'],
-            ['fotossensivel', 'SIMULAÇÃO'],
-          ] as [Tab, string][]).map(([t, label]) => (
-            <button key={t} onClick={() => setTab(t)} style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              padding: '0 20px', height: 48,
-              fontSize: 11, fontWeight: 700, letterSpacing: '.1em',
-              color: tab === t ? '#f0f0f5' : '#374151',
-              borderBottom: tab === t ? '2px solid #3b82f6' : '2px solid transparent',
-              fontFamily: 'var(--mono)', transition: 'color .15s',
-            }}>{label}</button>
-          ))}
-        </div>
-      </div>
-
       {tab === 'superficie' && <Superficie initialDemo={demo} />}
       {tab === 'visao' && <Visao initialDemo={demo} />}
       {tab === 'fotossensivel' && <Fotossensivel />}
