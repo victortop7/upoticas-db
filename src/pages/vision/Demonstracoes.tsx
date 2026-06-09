@@ -1,19 +1,17 @@
 import { useState, useRef, type ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
-type Tab = 'superficie' | 'visao' | 'fotossensivel';
+type Tab = 'superficie' | 'visao' | 'simulacao';
 
 const TRATAMENTOS = [
-  { id: 'ar',  label: 'Anti-Reflexo',  cor: '#3b82f6' },
-  { id: 'az',  label: 'Luz Azul',      cor: '#8b5cf6' },
-  { id: 'ft',  label: 'Fotossensível', cor: '#f59e0b' },
-  { id: 'ab',  label: 'Anti-Abrasivo', cor: '#22c55e' },
-  { id: 'ae',  label: 'Anti-Estático', cor: '#ec4899' },
-  { id: 'ed',  label: 'Est. Dourada',  cor: '#fbbf24' },
-  { id: 'hf',  label: 'Hidrofóbico',   cor: '#06b6d4' },
+  { id: 'ar',  label: 'Anti-Reflexo',   cor: '#3b82f6' },
+  { id: 'az',  label: 'Luz Azul',       cor: '#8b5cf6' },
+  { id: 'ab',  label: 'Anti-Abrasivo',  cor: '#22c55e' },
+  { id: 'ae',  label: 'Anti-Estático',  cor: '#ec4899' },
+  { id: 'ed',  label: 'Est. Dourada',   cor: '#fbbf24' },
+  { id: 'hf',  label: 'Hidrofóbico',    cor: '#06b6d4' },
   { id: 'lr',  label: 'Lipo-Repelente', cor: '#14b8a6' },
-  { id: 'uv',  label: 'Proteção UV',   cor: '#ef4444' },
-  { id: 'pol', label: 'Polarizado',    cor: '#f97316' },
+  { id: 'uv',  label: 'Proteção UV',    cor: '#ef4444' },
 ];
 
 const AMBIENTES = [
@@ -474,99 +472,161 @@ function Fotossensivel() {
 
   const uvLevel = valor < 25 ? 'Ambiente interno' : valor < 55 ? 'Nublado — UV presente' : valor < 80 ? 'Sol direto' : 'Sol forte — UV intenso';
   const uvIcon = valor < 25 ? '🏠' : valor < 55 ? '⛅' : valor < 80 ? '🌤️' : '☀️';
-  const lensLabel = valor < 10 ? 'CLARA' : valor < 40 ? `${Math.round(pct * 100)}% ATIVA` : `${Math.round(pct * 100)}% ESCURA`;
+  const lensLabel = valor < 10 ? 'INCOLOR' : valor < 40 ? `${Math.round(pct * 100)}% ATIVA` : `${Math.round(pct * 100)}% ESCURA`;
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '28px 40px', gap: 28 }}>
-      {/* Cena com lente sobreposta */}
-      <div style={{ display: 'flex', gap: 40, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
-        {/* Cena outdoor */}
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px 32px', gap: 24 }}>
+      <div style={{ display: 'flex', gap: 32, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
         <div style={{
-          width: 300, height: 200, borderRadius: 20, overflow: 'hidden', position: 'relative',
+          width: 280, height: 186, borderRadius: 18, overflow: 'hidden', position: 'relative',
           background: SCENE_BG.sol, border: '1px solid #1e2030',
           boxShadow: '0 8px 32px rgba(0,0,0,.4)',
         }}>
-          {/* Overlay da lente fotossensível */}
           <div style={{
             position: 'absolute', inset: 0,
             background: `rgba(${darkR},${darkG},${darkB},${darkA})`,
             transition: 'background .35s ease',
           }} />
-          {/* Ícone UV */}
-          <div style={{ position: 'absolute', top: 14, right: 14, fontSize: 28 }}>{uvIcon}</div>
-          {/* Estado da lente */}
+          <div style={{ position: 'absolute', top: 12, right: 12, fontSize: 26 }}>{uvIcon}</div>
           <div style={{
-            position: 'absolute', bottom: 14, left: '50%', transform: 'translateX(-50%)',
-            background: 'rgba(0,0,0,.65)', borderRadius: 8, padding: '5px 14px',
-            fontSize: 12, fontFamily: 'var(--mono)', fontWeight: 700,
+            position: 'absolute', bottom: 12, left: '50%', transform: 'translateX(-50%)',
+            background: 'rgba(0,0,0,.65)', borderRadius: 8, padding: '4px 12px',
+            fontSize: 11, fontFamily: 'var(--mono)', fontWeight: 700,
             color: pct < .1 ? '#9ca3af' : `rgba(${220 - Math.round(pct*80)},${180 - Math.round(pct*60)},${60 - Math.round(pct*40)},1)`,
             whiteSpace: 'nowrap',
           }}>{lensLabel}</div>
         </div>
 
-        {/* Info UV */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minWidth: 220 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minWidth: 200 }}>
           <div>
-            <div style={{ fontSize: 11, color: '#374151', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 6 }}>Intensidade UV</div>
-            <div style={{ height: 8, background: '#1e2030', borderRadius: 4, overflow: 'hidden' }}>
-              <div style={{
-                height: '100%', borderRadius: 4,
-                width: `${valor}%`,
-                background: `linear-gradient(to right, #1e3a5f, #3b82f6, #f59e0b, #ef4444)`,
-                transition: 'width 0s',
-              }} />
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontSize: 10, color: '#374151', fontFamily: 'var(--mono)' }}>
-              <span>0 UV</span><span>UV máx</span>
+            <div style={{ fontSize: 10, color: '#374151', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 5 }}>Intensidade UV</div>
+            <div style={{ height: 7, background: '#1e2030', borderRadius: 4, overflow: 'hidden' }}>
+              <div style={{ height: '100%', borderRadius: 4, width: `${valor}%`, background: `linear-gradient(to right, #1e3a5f, #3b82f6, #f59e0b, #ef4444)`, transition: 'width 0s' }} />
             </div>
           </div>
-
-          {/* Escala de escurecimento */}
-          <div style={{ background: '#07080e', borderRadius: 14, padding: '14px 16px', border: '1px solid #1e2030' }}>
-            <div style={{ fontSize: 11, color: '#374151', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 10 }}>Estado atual</div>
+          <div style={{ background: '#07080e', borderRadius: 12, padding: '12px 14px', border: '1px solid #1e2030' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{
-                width: 44, height: 44, borderRadius: '50%', border: '2px solid #2a2d3e',
+                width: 38, height: 38, borderRadius: '50%', border: '2px solid #2a2d3e', flexShrink: 0,
                 background: pct < .05 ? 'rgba(200,220,255,.15)' : `rgba(${darkR*2},${darkG*2},${darkB*2},${Math.min(darkA+.1, 1)})`,
                 transition: 'background .35s',
               }} />
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: '#f0f0f5', fontFamily: 'var(--mono)' }}>
-                  {uvIcon} {uvLevel}
-                </div>
-                <div style={{ fontSize: 11, color: '#6b7280', marginTop: 3 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#f0f0f5', fontFamily: 'var(--mono)' }}>{uvIcon} {uvLevel}</div>
+                <div style={{ fontSize: 11, color: '#6b7280', marginTop: 2 }}>
                   {pct < .05 ? 'Lente transparente' : `Filtrando ${Math.round(pct * 100)}% da luz`}
                 </div>
               </div>
             </div>
           </div>
-
-          <p style={{ margin: 0, fontSize: 12, color: '#6b7280', lineHeight: 1.65, background: '#07080e', borderRadius: 12, padding: '12px 16px', border: '1px solid #1e2030' }}>
-            Tecnologia fotocromática que escurece automaticamente ao detectar raios UV. Volta ao estado claro em ambientes fechados em segundos.
+          <p style={{ margin: 0, fontSize: 11, color: '#6b7280', lineHeight: 1.6, background: '#07080e', borderRadius: 10, padding: '10px 14px', border: '1px solid #1e2030' }}>
+            Escurece automaticamente ao detectar raios UV. Volta ao estado claro em ambientes fechados.
           </p>
         </div>
       </div>
 
-      {/* Slider */}
-      <div style={{ width: '100%', maxWidth: 500 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <span style={{ fontSize: 22 }}>🏠</span>
-          <span style={{ fontSize: 12, color: '#374151', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.08em' }}>
-            Intensidade da Luz Solar / UV
-          </span>
-          <span style={{ fontSize: 22 }}>☀️</span>
+      <div style={{ width: '100%', maxWidth: 460 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <span style={{ fontSize: 20 }}>🏠</span>
+          <span style={{ fontSize: 11, color: '#374151', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.08em' }}>Intensidade da Luz Solar / UV</span>
+          <span style={{ fontSize: 20 }}>☀️</span>
         </div>
         <div style={{ position: 'relative', height: 10, background: '#1e2030', borderRadius: 5 }}>
-          <div style={{
-            position: 'absolute', left: 0, top: 0, bottom: 0,
-            width: `${valor}%`, borderRadius: 5,
-            background: `linear-gradient(to right, #1e3a5f, #3b82f6 40%, #f59e0b 70%, #ef4444)`,
-          }} />
-          <input type="range" min={0} max={100} value={valor}
-            onChange={e => setValor(Number(e.target.value))}
+          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${valor}%`, borderRadius: 5, background: `linear-gradient(to right, #1e3a5f, #3b82f6 40%, #f59e0b 70%, #ef4444)` }} />
+          <input type="range" min={0} max={100} value={valor} onChange={e => setValor(Number(e.target.value))}
             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', margin: 0 }} />
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Polarizado ────────────────────────────────────────────────────────────────
+function Polarizado() {
+  const [glare, setGlare] = useState(70);
+  const pct = glare / 100;
+
+  const glareLabel = glare < 20 ? 'Pouco reflexo' : glare < 50 ? 'Reflexo moderado' : glare < 80 ? 'Reflexo intenso' : 'Reflexo máximo';
+  const glareIcon = glare < 20 ? '😌' : glare < 50 ? '😐' : glare < 80 ? '😣' : '🥴';
+
+  const semFilter = `brightness(${.65 + pct * .25}) contrast(${1.1 + pct * .25}) saturate(${.7 - pct * .2})`;
+  const comFilter = `brightness(${.96 + pct * .04}) contrast(1.08) saturate(${1.1 + pct * .1})`;
+
+  return (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px 32px', gap: 24 }}>
+      <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
+        {/* SEM polarizado */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+          <div style={{
+            width: 220, height: 146, borderRadius: 14, overflow: 'hidden', position: 'relative',
+            background: SCENE_BG.sol, border: '1px solid #1e2030',
+            filter: semFilter, transition: 'filter .2s',
+          }}>
+            <GlareRings />
+          </div>
+          <span style={{ fontSize: 10, color: '#ef4444', fontFamily: 'var(--mono)', fontWeight: 700, letterSpacing: '.08em' }}>✗ SEM POLARIZADO</span>
+        </div>
+
+        {/* COM polarizado */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+          <div style={{
+            width: 220, height: 146, borderRadius: 14, overflow: 'hidden', position: 'relative',
+            background: SCENE_BG.sol, border: '1px solid #1e2030',
+            filter: comFilter, transition: 'filter .2s',
+          }} />
+          <span style={{ fontSize: 10, color: '#22c55e', fontFamily: 'var(--mono)', fontWeight: 700, letterSpacing: '.08em' }}>✓ COM POLARIZADO</span>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 190 }}>
+          <div style={{ background: '#07080e', borderRadius: 12, padding: '12px 14px', border: '1px solid #1e2030' }}>
+            <div style={{ fontSize: 10, color: '#374151', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 8 }}>Nível de reflexo</div>
+            <div style={{ fontSize: 24, marginBottom: 4 }}>{glareIcon}</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#f0f0f5', fontFamily: 'var(--mono)' }}>{glareLabel}</div>
+            <div style={{ fontSize: 11, color: '#6b7280', marginTop: 3 }}>Polarizado elimina {Math.round(pct * 98)}% dos reflexos</div>
+          </div>
+          <p style={{ margin: 0, fontSize: 11, color: '#6b7280', lineHeight: 1.6, background: '#07080e', borderRadius: 10, padding: '10px 14px', border: '1px solid #1e2030' }}>
+            Filtro que bloqueia reflexos horizontais de superfícies como asfalto, água e vidro.
+          </p>
+        </div>
+      </div>
+
+      <div style={{ width: '100%', maxWidth: 460 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <span style={{ fontSize: 20 }}>😌</span>
+          <span style={{ fontSize: 11, color: '#374151', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.08em' }}>Intensidade dos Reflexos</span>
+          <span style={{ fontSize: 20 }}>🥴</span>
+        </div>
+        <div style={{ position: 'relative', height: 10, background: '#1e2030', borderRadius: 5 }}>
+          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${glare}%`, borderRadius: 5, background: `linear-gradient(to right, #1e3a5f, #f59e0b 60%, #ef4444)` }} />
+          <input type="range" min={0} max={100} value={glare} onChange={e => setGlare(Number(e.target.value))}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', margin: 0 }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Simulação (Fotossensível + Polarizado) ───────────────────────────────────
+function Simulacao() {
+  const [tipo, setTipo] = useState<'fotossensivel' | 'polarizado'>('fotossensivel');
+  return (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      {/* Toggle topo */}
+      <div style={{ display: 'flex', gap: 0, background: '#07080e', borderRadius: 0, padding: '10px 16px', borderBottom: '1px solid #1e2030' }}>
+        {([
+          { id: 'fotossensivel', label: 'Fotossensível' },
+          { id: 'polarizado',    label: 'Polarizado' },
+        ] as const).map(t => (
+          <button key={t.id} onClick={() => setTipo(t.id)} style={{
+            padding: '7px 20px', borderRadius: 8, border: 'none', cursor: 'pointer',
+            background: tipo === t.id ? '#1e2030' : 'transparent',
+            color: tipo === t.id ? '#f0f0f5' : '#4b5563',
+            fontSize: 13, fontWeight: 600, fontFamily: 'var(--sans)',
+            textTransform: 'uppercase', letterSpacing: '.06em', transition: 'all .15s',
+          }}>{t.label}</button>
+        ))}
+      </div>
+      {tipo === 'fotossensivel' ? <Fotossensivel /> : <Polarizado />}
     </div>
   );
 }
@@ -576,7 +636,7 @@ export default function Demonstracoes() {
   const [params] = useSearchParams();
   const rawTab = params.get('tab') ?? 'superficie';
   const demo = params.get('demo') ?? '';
-  const validTabs: Tab[] = ['superficie', 'visao', 'fotossensivel'];
+  const validTabs: Tab[] = ['superficie', 'visao', 'simulacao'];
   const initialTab: Tab = validTabs.includes(rawTab as Tab) ? (rawTab as Tab) : 'superficie';
 
   const [tab, setTab] = useState<Tab>(initialTab);
@@ -584,13 +644,13 @@ export default function Demonstracoes() {
   const navigate = useNavigate();
 
   const DEMO_ITEMS_NAV = [
-    { id: 'digital',    label: 'Digital',    tab: 'superficie' },
-    { id: 'campos',     label: 'Campos',     tab: 'superficie' },
-    { id: 'adicao',     label: 'Adição',     tab: 'superficie' },
-    { id: 'photo',      label: 'Photo',      tab: 'fotossensivel' },
-    { id: 'ar',         label: 'AR',         tab: 'visao' },
-    { id: 'polarizado', label: 'Polarizado', tab: 'visao' },
-    { id: 'espessura',  label: 'Espessura',  tab: 'superficie' },
+    { id: 'digital',    label: 'Digital',       tab: 'superficie' },
+    { id: 'campos',     label: 'Campos',        tab: 'superficie' },
+    { id: 'adicao',     label: 'Adição',        tab: 'superficie' },
+    { id: 'photo',      label: 'Fotossensível', tab: 'simulacao'  },
+    { id: 'polarizado', label: 'Polarizado',    tab: 'simulacao'  },
+    { id: 'ar',         label: 'AR',            tab: 'visao'      },
+    { id: 'espessura',  label: 'Espessura',     tab: 'superficie' },
   ];
 
   return (
@@ -600,7 +660,7 @@ export default function Demonstracoes() {
     >
       {tab === 'superficie' && <Superficie initialDemo={demo} />}
       {tab === 'visao' && <Visao initialDemo={demo} />}
-      {tab === 'fotossensivel' && <Fotossensivel />}
+      {tab === 'simulacao' && <Simulacao />}
 
       {/* Extras popup — lista de simulações */}
       {showExtras && (
@@ -640,6 +700,37 @@ export default function Demonstracoes() {
           ))}
         </div>
       )}
+
+      {/* Tab bar — SUPERFÍCIE | VISÃO | SIMULAÇÃO */}
+      <div style={{
+        position: 'fixed', bottom: 16, left: '50%', transform: 'translateX(-50%)',
+        background: 'rgba(7,8,14,0.95)',
+        border: '1px solid rgba(255,255,255,0.1)',
+        borderRadius: 18,
+        display: 'flex', gap: 0,
+        zIndex: 50,
+        overflow: 'hidden',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
+      }}>
+        {([
+          { id: 'superficie', label: 'Superfície' },
+          { id: 'visao',      label: 'Visão'      },
+          { id: 'simulacao',  label: 'Simulação'  },
+        ] as const).map((t, i) => (
+          <button key={t.id} onClick={() => { setShowExtras(false); setTab(t.id); }} style={{
+            background: tab === t.id ? 'rgba(59,130,246,0.15)' : 'none',
+            border: 'none', cursor: 'pointer',
+            padding: '10px 20px 11px',
+            borderRight: i < 2 ? '1px solid rgba(255,255,255,0.07)' : 'none',
+            color: tab === t.id ? '#3b82f6' : 'rgba(255,255,255,0.5)',
+            transition: 'color .15s, background .15s',
+            WebkitTapHighlightColor: 'transparent',
+            minWidth: 80,
+          }}>
+            <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'var(--sans)', letterSpacing: '.07em', textTransform: 'uppercase' }}>{t.label}</span>
+          </button>
+        ))}
+      </div>
 
       {/* Bottom nav — canto inferior direito */}
       <div style={{
