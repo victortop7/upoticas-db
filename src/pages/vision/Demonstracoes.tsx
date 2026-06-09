@@ -11,6 +11,7 @@ const TRATAMENTOS = [
   { id: 'ae',  label: 'Anti-Estático', cor: '#ec4899' },
   { id: 'ed',  label: 'Est. Dourada',  cor: '#fbbf24' },
   { id: 'hf',  label: 'Hidrofóbico',   cor: '#06b6d4' },
+  { id: 'lr',  label: 'Lipo-Repelente', cor: '#14b8a6' },
   { id: 'uv',  label: 'Proteção UV',   cor: '#ef4444' },
   { id: 'pol', label: 'Polarizado',    cor: '#f97316' },
 ];
@@ -105,6 +106,13 @@ const EFFECTS: Record<string, Record<string, Effect>> = {
     sol:     { semFilter: 'brightness(.9) saturate(.88)', comFilter: 'brightness(1.0) sepia(.28) saturate(1.22) hue-rotate(-10deg)', description: 'Brilho dourado ao sol — estilo e proteção' },
     tela:    { semFilter: 'brightness(.86) saturate(.82)', comFilter: 'brightness(.98) sepia(.18) saturate(1.08)', description: 'Toque dourado premium na sua visão digital' },
     leitura: { semFilter: 'brightness(.9) saturate(.86)', comFilter: 'brightness(1.02) sepia(.24) saturate(1.15) hue-rotate(-8deg)', description: 'Leitura com estilo — tonalidade quente e aconchegante' },
+  },
+  lr: {
+    noite:   { semFilter: 'brightness(.74) blur(.4px) contrast(.88)', comFilter: 'brightness(1.0)', description: 'Gorduras e óleos repelidos — visão nítida à noite' },
+    chuva:   { semFilter: 'brightness(.7) blur(.5px)', comFilter: 'brightness(.92)', description: 'Sem marcas de chuva e gordura — lente sempre limpa' },
+    sol:     { semFilter: 'brightness(.84) blur(.35px) contrast(.9)', comFilter: 'brightness(1.0)', description: 'Protetor solar e óleos escorregam da lente' },
+    tela:    { semFilter: 'brightness(.76) blur(.45px)', comFilter: 'brightness(1.02)', description: 'Digitais e gordura eliminadas — tela perfeitamente visível' },
+    leitura: { semFilter: 'brightness(.8) blur(.38px) contrast(.88)', comFilter: 'brightness(1.04)', description: 'Zero marcas de dedos — leitura sem distração' },
   },
 };
 
@@ -288,6 +296,14 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
     ed: {
       com: '/tratamento%20estico%20dourado/COM%20ESTETICA-LUZ%20AZUL.png',
       sem: '/tratamento%20estico%20dourado/SEM%20ESTETICA-DOURADO.png',
+    },
+    hf: {
+      com: '/tratamento%20hidro-fobico/COM%20HIDRO-FOBICO.png',
+      sem: '/tratamento%20hidro-fobico/SEM%20HIDRO-FOBICO-2.png',
+    },
+    lr: {
+      com: '/tratamento%20lipo-repelente/COM%20LIPO-REPELENTE.png',
+      sem: '/tratamento%20lipo-repelente/SEM%20LIPO-REPELENTE-2.png',
     },
   };
   const realPhoto = REAL_PHOTOS[tratamento] ?? null;
