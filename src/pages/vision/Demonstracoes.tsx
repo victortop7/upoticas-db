@@ -185,77 +185,39 @@ function Superficie({ initialDemo }: { initialDemo?: string }) {
     initialDemo === 'digital' ? 'digital' : 'convencional'
   );
 
+  const FOTOS = {
+    convencional: '/lentes%20convencionais%20e%20digitais/convencional.png',
+    digital:      '/lentes%20convencionais%20e%20digitais/digital.png',
+  };
+
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 32, padding: '24px 40px' }}>
-      <div style={{ display: 'flex', gap: 0, background: '#07080e', borderRadius: 10, padding: 3, border: '1px solid #1e2030' }}>
+    <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+      {/* Foto full-screen */}
+      <img
+        key={tipo}
+        src={FOTOS[tipo]}
+        draggable={false}
+        style={{
+          position: 'absolute', inset: 0, width: '100%', height: '100%',
+          objectFit: 'cover', objectPosition: 'center',
+          transition: 'opacity .25s',
+        }}
+      />
+
+      {/* Toggle — topo esquerdo */}
+      <div style={{ position: 'absolute', top: 20, left: 20, display: 'flex', flexDirection: 'column', gap: 8, zIndex: 10 }}>
         {(['convencional', 'digital'] as const).map(t => (
           <button key={t} onClick={() => setTipo(t)} style={{
-            padding: '8px 24px', borderRadius: 8, border: 'none', cursor: 'pointer',
-            background: tipo === t ? '#1e2030' : 'transparent',
-            color: tipo === t ? '#f0f0f5' : '#4b5563',
-            fontSize: 13, fontWeight: 600, fontFamily: 'var(--sans)',
-            textTransform: 'uppercase', letterSpacing: '.06em', transition: 'all .15s',
+            padding: '10px 22px', borderRadius: 8, border: 'none', cursor: 'pointer',
+            background: tipo === t ? 'rgba(255,255,255,0.92)' : 'rgba(0,0,0,0.45)',
+            color: tipo === t ? '#111827' : 'rgba(255,255,255,0.65)',
+            fontSize: 13, fontWeight: 700, fontFamily: 'var(--sans)',
+            textTransform: 'uppercase', letterSpacing: '.07em',
+            boxShadow: tipo === t ? '0 2px 12px rgba(0,0,0,.25)' : 'none',
+            transition: 'all .15s',
+            WebkitTapHighlightColor: 'transparent',
           }}>{t}</button>
         ))}
-      </div>
-
-      <div style={{ display: 'flex', gap: 60, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-          <div style={{ background: '#07080e', border: '1px solid #1e2030', borderRadius: 20, padding: 32 }}>
-            {tipo === 'convencional' ? (
-              <svg viewBox="0 0 220 180" width="220" height="180">
-                {[10,22,36,52,70,88,105].map((r, i) => (
-                  <ellipse key={i} cx="110" cy="90" rx={r * 1.5} ry={r}
-                    fill="none" stroke="#3b82f6" strokeWidth={i === 0 ? 1.8 : .7} strokeOpacity={.5 - i * .05} />
-                ))}
-                <ellipse cx="110" cy="90" rx="14" ry="10" fill="#3b82f630" stroke="#3b82f6" strokeWidth="2" />
-              </svg>
-            ) : (
-              <svg viewBox="0 0 220 180" width="220" height="180">
-                <defs>
-                  <linearGradient id="gdig2" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#3b82f6" stopOpacity=".04" />
-                    <stop offset="55%" stopColor="#3b82f6" stopOpacity=".22" />
-                    <stop offset="100%" stopColor="#3b82f6" stopOpacity=".04" />
-                  </linearGradient>
-                </defs>
-                <ellipse cx="110" cy="90" rx="100" ry="70" fill="url(#gdig2)" stroke="#3b82f6" strokeWidth="1.5" strokeOpacity=".5" />
-                <ellipse cx="88" cy="72" rx="28" ry="14" fill="#3b82f6" fillOpacity=".15" />
-                {[0,1,2,3].map(i => (
-                  <line key={i} x1={30+i*53} y1="25" x2={30+i*53} y2="155" stroke="#3b82f6" strokeWidth=".4" strokeOpacity=".15" />
-                ))}
-                {[0,1,2].map(i => (
-                  <line key={i} x1="10" y1={50+i*40} x2="210" y2={50+i*40} stroke="#3b82f6" strokeWidth=".4" strokeOpacity=".15" />
-                ))}
-              </svg>
-            )}
-          </div>
-          <div style={{ fontSize: 11, color: tipo === 'convencional' ? '#6b7280' : '#3b82f6', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.1em', fontWeight: 700 }}>
-            {tipo}
-          </div>
-        </div>
-
-        <div style={{ maxWidth: 320, display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <h3 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#f0f0f5', letterSpacing: '-.3px' }}>
-            {tipo === 'convencional' ? 'Lente Convencional' : 'Lente Digital'}
-          </h3>
-          <p style={{ margin: 0, fontSize: 14, color: '#6b7280', lineHeight: 1.7 }}>
-            {tipo === 'convencional'
-              ? 'Produzida com geração esférica e anéis concêntricos. Apresenta aberrações ópticas nas regiões periféricas, podendo gerar distorções e menor nitidez fora do eixo visual.'
-              : 'Fresada ponto a ponto por computador com precisão de 0,01 mm. Superfície perfeitamente suave, sem anéis. Maior nitidez, menor distorção e mais conforto visual em toda a lente.'}
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {(tipo === 'convencional'
-              ? ['Processo de fabricação tradicional', 'Aberrações periféricas presentes', 'Custo mais acessível']
-              : ['Fresagem CNC ponto a ponto', 'Sem aberrações periféricas', 'Máxima nitidez e conforto']
-            ).map((item, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 5, height: 5, borderRadius: '50%', background: tipo === 'digital' ? '#3b82f6' : '#374151', flexShrink: 0 }} />
-                <span style={{ fontSize: 13, color: '#4b5563' }}>{item}</span>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );
