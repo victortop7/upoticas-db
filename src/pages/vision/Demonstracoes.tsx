@@ -8,6 +8,8 @@ const TRATAMENTOS = [
   { id: 'az',  label: 'Luz Azul',      cor: '#8b5cf6' },
   { id: 'ft',  label: 'Fotossensível', cor: '#f59e0b' },
   { id: 'ab',  label: 'Anti-Abrasivo', cor: '#22c55e' },
+  { id: 'ae',  label: 'Anti-Estático', cor: '#ec4899' },
+  { id: 'ed',  label: 'Est. Dourada',  cor: '#fbbf24' },
   { id: 'hf',  label: 'Hidrofóbico',   cor: '#06b6d4' },
   { id: 'uv',  label: 'Proteção UV',   cor: '#ef4444' },
   { id: 'pol', label: 'Polarizado',    cor: '#f97316' },
@@ -89,6 +91,20 @@ const EFFECTS: Record<string, Record<string, Effect>> = {
     sol:     { semFilter: 'brightness(.8) contrast(1.32) saturate(.68)', comFilter: 'brightness(1.0) contrast(1.12) saturate(1.22)', description: 'Reflexos horizontais eliminados — cores vibrantes' },
     tela:    { semFilter: 'brightness(.85) contrast(1.1)', comFilter: 'brightness(1.02)', description: 'Reflexos de telas LCD — comportamento normal com polarizado' },
     leitura: { semFilter: 'brightness(.83) contrast(1.12)', comFilter: 'brightness(1.02) contrast(1.02) saturate(1.06)', description: 'Reflexos de papel eliminados — leitura ao ar livre' },
+  },
+  ae: {
+    noite:   { semFilter: 'brightness(.8) blur(.3px) contrast(.9)', comFilter: 'brightness(1.02)', description: 'Poeira e partículas repelidas — visão nítida à noite' },
+    chuva:   { semFilter: 'brightness(.78) blur(.25px)', comFilter: 'brightness(.92)', description: 'Estática eliminada — sem acúmulo em dias úmidos' },
+    sol:     { semFilter: 'brightness(.86) contrast(.93) blur(.22px)', comFilter: 'brightness(1.0)', description: 'Superfície anti-estática limpa — sem poeira' },
+    tela:    { semFilter: 'brightness(.78) blur(.35px)', comFilter: 'brightness(1.02)', description: 'Campos elétricos repelidos — lente sempre limpa' },
+    leitura: { semFilter: 'brightness(.83) blur(.28px) contrast(.9)', comFilter: 'brightness(1.04)', description: 'Zero partículas na lente — foco total na leitura' },
+  },
+  ed: {
+    noite:   { semFilter: 'brightness(.88) saturate(.85)', comFilter: 'brightness(.96) sepia(.22) saturate(1.18) hue-rotate(-8deg)', description: 'Estética dourada elegante — identidade visual única' },
+    chuva:   { semFilter: 'brightness(.74) saturate(.8)', comFilter: 'brightness(.88) sepia(.2) saturate(1.12)', description: 'Tonalidade dourada vibrante mesmo em dias nublados' },
+    sol:     { semFilter: 'brightness(.9) saturate(.88)', comFilter: 'brightness(1.0) sepia(.28) saturate(1.22) hue-rotate(-10deg)', description: 'Brilho dourado ao sol — estilo e proteção' },
+    tela:    { semFilter: 'brightness(.86) saturate(.82)', comFilter: 'brightness(.98) sepia(.18) saturate(1.08)', description: 'Toque dourado premium na sua visão digital' },
+    leitura: { semFilter: 'brightness(.9) saturate(.86)', comFilter: 'brightness(1.02) sepia(.24) saturate(1.15) hue-rotate(-8deg)', description: 'Leitura com estilo — tonalidade quente e aconchegante' },
   },
 };
 
@@ -258,12 +274,20 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
       sem: '/tratamento%20de%20antirreflexo/sem%20anti-reflexo.png',
     },
     az: {
-      com: '/tratamento%20de%20antirreflexo%20azul/com%20luz%20azul.png',
-      sem: '/tratamento%20de%20antirreflexo%20azul/sem%20luz%20azul.png',
+      com: '/tratamento%20luz%20azul/COM%20LUZ-AZUL-2.png',
+      sem: '/tratamento%20luz%20azul/SEM%20LUZ-AZUL.png',
     },
     ab: {
       com: '/tratamento%20anti-abrasivo/COM%20ANTI-ABRASIVO.png',
       sem: '/tratamento%20anti-abrasivo/SEM%20ANTI-ABRASIVO-2%2C.png',
+    },
+    ae: {
+      com: '/tratamento%20anti-estatico/COM%20ANTI-ESTATICO.png',
+      sem: '/tratamento%20anti-estatico/SEM%20ANTI-ESTATICO.png',
+    },
+    ed: {
+      com: '/tratamento%20estico%20dourado/COM%20ESTETICA-LUZ%20AZUL.png',
+      sem: '/tratamento%20estico%20dourado/SEM%20ESTETICA-DOURADO.png',
     },
   };
   const realPhoto = REAL_PHOTOS[tratamento] ?? null;
