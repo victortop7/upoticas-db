@@ -204,8 +204,8 @@ function Superficie({ initialDemo }: { initialDemo?: string }) {
         }}
       />
 
-      {/* Toggle — topo esquerdo */}
-      <div style={{ position: 'absolute', top: 20, left: 20, display: 'flex', flexDirection: 'column', gap: 8, zIndex: 10 }}>
+      {/* Toggle — topo direito */}
+      <div style={{ position: 'absolute', top: 20, right: 20, display: 'flex', flexDirection: 'column', gap: 8, zIndex: 10 }}>
         {(['convencional', 'digital'] as const).map(t => (
           <button key={t} onClick={() => setTipo(t)} style={{
             padding: '10px 22px', borderRadius: 8, border: 'none', cursor: 'pointer',
