@@ -290,20 +290,20 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
       sem: '/tratamento%20anti-abrasivo/SEM%20ANTI-ABRASIVO-2%2C.png',
     },
     ae: {
-      com: '/tratamento%20anti-estatico/COM%20ANTI-ESTATICO.png',
-      sem: '/tratamento%20anti-estatico/SEM%20ANTI-ESTATICO.png',
+      com: '/tratamento%20anti-estatico/COM%20ANTI-ESTATICO.jpg',
+      sem: '/tratamento%20anti-estatico/SEM%20ANTI-ESTATICO.jpg',
     },
     ed: {
-      com: '/tratamento%20estico%20dourado/COM%20ESTETICA-LUZ%20AZUL.png',
-      sem: '/tratamento%20estico%20dourado/SEM%20ESTETICA-DOURADO.png',
+      com: '/tratamento%20estico%20dourado/COM%20ESTETICA-LUZ%20AZUL.jpg',
+      sem: '/tratamento%20estico%20dourado/SEM%20ESTETICA-DOURADO.jpg',
     },
     hf: {
-      com: '/tratamento%20hidro-fobico/COM%20HIDRO-FOBICO.png',
-      sem: '/tratamento%20hidro-fobico/SEM%20HIDRO-FOBICO-2.png',
+      com: '/tratamento%20hidro-fobico/COM%20HIDRO-FOBICO.jpg',
+      sem: '/tratamento%20hidro-fobico/SEM%20HIDRO-FOBICO-2.jpg',
     },
     lr: {
-      com: '/tratamento%20lipo-repelente/COM%20LIPO-REPELENTE.png',
-      sem: '/tratamento%20lipo-repelente/SEM%20LIPO-REPELENTE-2.png',
+      com: '/tratamento%20lipo-repelente/COM%20LIPO-REPELENTE.jpg',
+      sem: '/tratamento%20lipo-repelente/SEM%20LIPO-REPELENTE-2.jpg',
     },
   };
   const realPhoto = REAL_PHOTOS[tratamento] ?? null;
