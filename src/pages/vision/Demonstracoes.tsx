@@ -223,6 +223,194 @@ function Superficie({ initialDemo }: { initialDemo?: string }) {
   );
 }
 
+// ─── Demonstração Proteção UV ──────────────────────────────────────────────────
+function UVDemo() {
+  const [protegido, setProtegido] = useState(true);
+  const [intensidade, setIntensidade] = useState(75);
+
+  const uvIndex = Math.round((intensidade / 100) * 11);
+  const uvNivel =
+    uvIndex <= 2 ? { label: 'Baixo', cor: '#22c55e' } :
+    uvIndex <= 5 ? { label: 'Moderado', cor: '#f59e0b' } :
+    uvIndex <= 7 ? { label: 'Alto', cor: '#f97316' } :
+    uvIndex <= 10 ? { label: 'Muito Alto', cor: '#ef4444' } :
+    { label: 'Extremo', cor: '#a855f7' };
+
+  const numRaios = 7;
+
+  return (
+    <div style={{
+      position: 'absolute', inset: 0, zIndex: 5, overflow: 'hidden',
+      background: 'radial-gradient(ellipse at 50% -10%, #1a1530 0%, #0d0a18 45%, #060409 100%)',
+      display: 'flex', flexDirection: 'column',
+    }}>
+      {/* Cena — sol → raios → lente → olho */}
+      <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
+        {/* Sol */}
+        <div style={{
+          position: 'absolute', top: '6%', left: '50%', transform: 'translateX(-50%)',
+          width: 80, height: 80, borderRadius: '50%',
+          background: 'radial-gradient(circle, #fff7d6 0%, #fde047 35%, #f59e0b 70%, rgba(245,158,11,0) 100%)',
+          boxShadow: '0 0 60px 20px rgba(253,224,71,.35)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <span style={{ fontSize: 11, fontFamily: 'var(--mono)', fontWeight: 700, color: '#7c2d12', letterSpacing: '.05em' }}>UV</span>
+        </div>
+
+        {/* Raios UV */}
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none"
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+          {Array.from({ length: numRaios }).map((_, i) => {
+            const x = 22 + i * (56 / (numRaios - 1));
+            const visivel = i < Math.ceil((intensidade / 100) * numRaios);
+            if (!visivel) return null;
+            return (
+              <line
+                key={i}
+                x1="50" y1="14"
+                x2={x} y2={protegido ? 46 : 82}
+                stroke={uvNivel.cor}
+                strokeWidth="0.7"
+                strokeLinecap="round"
+                strokeDasharray="3 4"
+                opacity={protegido ? 0.85 : 0.7}
+                style={{ animation: `uvflow ${0.7 + i * 0.06}s linear infinite` }}
+              />
+            );
+          })}
+        </svg>
+
+        {/* Lente */}
+        <div style={{
+          position: 'absolute', top: '44%', left: '50%', transform: 'translate(-50%,-50%)',
+          width: 200, height: 64,
+        }}>
+          <svg viewBox="0 0 200 64" width="200" height="64">
+            <defs>
+              <linearGradient id="lensgrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor={protegido ? 'rgba(168,85,247,.45)' : 'rgba(255,255,255,.12)'} />
+                <stop offset="50%" stopColor={protegido ? 'rgba(124,58,237,.25)' : 'rgba(255,255,255,.05)'} />
+                <stop offset="100%" stopColor={protegido ? 'rgba(168,85,247,.45)' : 'rgba(255,255,255,.12)'} />
+              </linearGradient>
+            </defs>
+            <ellipse cx="100" cy="32" rx="96" ry="28"
+              fill="url(#lensgrad)"
+              stroke={protegido ? '#a855f7' : 'rgba(255,255,255,.3)'}
+              strokeWidth={protegido ? 2 : 1}
+              style={{ transition: 'all .3s' }}
+            />
+            {protegido && (
+              <ellipse cx="100" cy="32" rx="96" ry="28" fill="none" stroke="#c084fc" strokeWidth="1" opacity="0.5"
+                style={{ animation: 'uvpulse 1.8s ease-in-out infinite' }} />
+            )}
+          </svg>
+          {/* Escudo de bloqueio */}
+          {protegido && (
+            <div style={{
+              position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)',
+              fontSize: 9, fontFamily: 'var(--mono)', fontWeight: 700, color: '#c084fc',
+              background: 'rgba(88,28,135,.5)', padding: '2px 8px', borderRadius: 999,
+              letterSpacing: '.08em', whiteSpace: 'nowrap',
+            }}>🛡️ BLOQUEADO</div>
+          )}
+        </div>
+
+        {/* Olho */}
+        <div style={{
+          position: 'absolute', top: '78%', left: '50%', transform: 'translate(-50%,-50%)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+        }}>
+          <div style={{
+            fontSize: 40, filter: protegido ? 'none' : 'drop-shadow(0 0 12px rgba(239,68,68,.8))',
+            transition: 'filter .3s',
+          }}>{protegido ? '👁️' : '😣'}</div>
+          <div style={{
+            fontSize: 9.5, fontFamily: 'var(--mono)', fontWeight: 700, letterSpacing: '.06em',
+            color: protegido ? '#22c55e' : '#ef4444',
+            background: protegido ? 'rgba(34,197,94,.12)' : 'rgba(239,68,68,.15)',
+            border: `1px solid ${protegido ? 'rgba(34,197,94,.3)' : 'rgba(239,68,68,.4)'}`,
+            padding: '3px 10px', borderRadius: 999, whiteSpace: 'nowrap',
+          }}>{protegido ? '✓ RETINA PROTEGIDA' : '✗ RADIAÇÃO NA RETINA'}</div>
+        </div>
+
+        {/* Toggle COM/SEM — topo esquerdo */}
+        <div style={{ position: 'absolute', top: 16, left: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {([
+            { v: true,  label: 'Com Proteção' },
+            { v: false, label: 'Sem Proteção' },
+          ] as const).map(o => (
+            <button key={String(o.v)} onClick={() => setProtegido(o.v)} style={{
+              padding: '9px 16px', borderRadius: 8, border: 'none', cursor: 'pointer',
+              background: protegido === o.v ? (o.v ? '#a855f7' : '#ef4444') : 'rgba(0,0,0,.4)',
+              color: protegido === o.v ? '#fff' : 'rgba(255,255,255,.55)',
+              fontSize: 12, fontWeight: 700, fontFamily: 'var(--sans)',
+              textTransform: 'uppercase', letterSpacing: '.06em', transition: 'all .15s',
+              WebkitTapHighlightColor: 'transparent',
+            }}>{o.label}</button>
+          ))}
+        </div>
+
+        {/* Cards UVA / UVB — topo, ao lado do sol */}
+        <div style={{ position: 'absolute', top: 16, left: '50%', transform: 'translateX(-50%)', marginTop: 96, display: 'flex', gap: 8 }}>
+          {['UVA', 'UVB'].map(tipo => (
+            <div key={tipo} style={{
+              background: 'rgba(7,8,14,.7)', border: `1px solid ${protegido ? 'rgba(168,85,247,.4)' : 'rgba(239,68,68,.35)'}`,
+              borderRadius: 10, padding: '8px 12px', textAlign: 'center', minWidth: 72,
+            }}>
+              <div style={{ fontSize: 9, color: '#6b7280', fontFamily: 'var(--mono)', letterSpacing: '.1em', marginBottom: 2 }}>{tipo}</div>
+              <div style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--mono)', color: protegido ? '#c084fc' : '#ef4444' }}>
+                {protegido ? '100%' : '0%'}
+              </div>
+              <div style={{ fontSize: 8, color: '#6b7280', fontFamily: 'var(--mono)', letterSpacing: '.04em' }}>
+                {protegido ? 'bloqueado' : 'passando'}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Painel inferior — índice UV + slider */}
+      <div style={{ padding: '14px 20px 18px', borderTop: '1px solid rgba(255,255,255,.06)', background: 'rgba(7,8,14,.6)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, maxWidth: 520, margin: '0 auto 10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{
+              width: 38, height: 38, borderRadius: 10, background: uvNivel.cor,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 17, fontWeight: 800, fontFamily: 'var(--mono)', color: '#fff',
+            }}>{uvIndex}</div>
+            <div>
+              <div style={{ fontSize: 9, color: '#6b7280', fontFamily: 'var(--mono)', letterSpacing: '.1em', textTransform: 'uppercase' }}>Índice UV</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: uvNivel.cor, fontFamily: 'var(--sans)' }}>{uvNivel.label}</div>
+            </div>
+          </div>
+          <div style={{ fontSize: 11, color: '#9ca3af', fontFamily: 'var(--sans)', maxWidth: 240, textAlign: 'right', lineHeight: 1.4 }}>
+            {protegido
+              ? 'Lente bloqueia 100% dos raios UVA e UVB — proteção total da retina e prevenção de catarata.'
+              : 'Sem proteção, a radiação UV atinge diretamente a retina, acelerando o envelhecimento ocular.'}
+          </div>
+        </div>
+        <div style={{ maxWidth: 520, margin: '0 auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+            <span style={{ fontSize: 16 }}>⛅</span>
+            <span style={{ fontSize: 10, color: '#6b7280', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.08em' }}>Intensidade Solar</span>
+            <span style={{ fontSize: 16 }}>☀️</span>
+          </div>
+          <div style={{ position: 'relative', height: 8, background: '#1e2030', borderRadius: 4 }}>
+            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${intensidade}%`, borderRadius: 4, background: 'linear-gradient(to right,#22c55e,#f59e0b 55%,#ef4444 80%,#a855f7)' }} />
+            <input type="range" min={0} max={100} value={intensidade} onChange={e => setIntensidade(Number(e.target.value))}
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', margin: 0 }} />
+          </div>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes uvflow { from { stroke-dashoffset: 14; } to { stroke-dashoffset: 0; } }
+        @keyframes uvpulse { 0%,100% { opacity: .2; } 50% { opacity: .7; } }
+      `}</style>
+    </div>
+  );
+}
+
 // ─── Visão COM/SEM ─────────────────────────────────────────────────────────────
 function Visao({ initialDemo }: { initialDemo?: string }) {
   const [tratamento, setTratamento] = useState(
@@ -310,8 +498,11 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
         onTouchStart={() => { dragging.current = true; }}
         onTouchMove={e => move(e.touches[0].clientX)}
         onTouchEnd={() => { dragging.current = false; }}
-        style={{ flex: 1, position: 'relative', cursor: 'col-resize', userSelect: 'none', overflow: 'hidden' }}
+        style={{ flex: 1, position: 'relative', cursor: tratamento === 'uv' ? 'default' : 'col-resize', userSelect: 'none', overflow: 'hidden' }}
       >
+        {/* Demonstração dedicada Proteção UV */}
+        {tratamento === 'uv' && <UVDemo />}
+
         {/* SEM base */}
         {useRealPhoto ? (
           <img
@@ -361,6 +552,7 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
         </div>
 
         {/* Botão demonstração automática */}
+        {tratamento !== 'uv' && (
         <button
           onMouseDown={e => e.stopPropagation()}
           onTouchStart={e => e.stopPropagation()}
@@ -383,8 +575,11 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
             {autoDemo ? 'Pausar' : 'Demonstrar'}
           </span>
         </button>
+        )}
 
-        {/* Labels */}
+        {/* Labels + Descrição (escondidos na demo UV) */}
+        {tratamento !== 'uv' && (
+        <>
         <div style={{ position: 'absolute', bottom: 64, left: 16, fontSize: 11, color: '#e2e8f0', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
           ✓ COM {trObj.label.toUpperCase()}
         </div>
@@ -405,6 +600,8 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
             {effect.description}
           </div>
         </div>
+        </>
+        )}
         {/* Painel de tratamentos — overlay vertical direito */}
         <div
           onMouseDown={e => e.stopPropagation()}
