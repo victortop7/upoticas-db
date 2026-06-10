@@ -60,6 +60,7 @@ import MapaVisual from './pages/vision/MapaVisual';
 import Demonstracoes from './pages/vision/Demonstracoes';
 import VisionOS from './pages/vision/VisionOS';
 import VisionAtendimentos from './pages/vision/VisionAtendimentos';
+import VendaIndicativa from './pages/vision/VendaIndicativa';
 
 export default function App() {
   return (
@@ -132,6 +133,7 @@ export default function App() {
           <Route element={<VisionLayout />}>
             <Route path="/vision" element={<VisionHome />} />
             <Route path="/vision/mapa-visual" element={<MapaVisual />} />
+            <Route path="/vision/venda-indicativa" element={<VendaIndicativa />} />
             <Route path="/vision/demonstracoes" element={<Demonstracoes />} />
             <Route path="/vision/os" element={<VisionOS />} />
             <Route path="/vision/atendimentos" element={<VisionAtendimentos />} />

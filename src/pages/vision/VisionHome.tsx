@@ -137,6 +137,22 @@ const MODULES = [
     ),
   },
   {
+    id: 'venda-indicativa',
+    label: 'Venda\nIndicativa',
+    path: '/vision/venda-indicativa',
+    active: true,
+    submenu: null,
+    icon: (
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none">
+        <path d="M5 4h14a1 1 0 0 1 1 1v3H4V5a1 1 0 0 1 1-1z" stroke="#2563eb" strokeWidth="1.4" strokeLinejoin="round" />
+        <path d="M4 8h16v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V8z" stroke="#2563eb" strokeWidth="1.4" strokeLinejoin="round" />
+        <line x1="8" y1="12" x2="16" y2="12" stroke="#2563eb" strokeWidth="1.2" strokeLinecap="round" />
+        <line x1="8" y1="16" x2="13" y2="16" stroke="#2563eb" strokeWidth="1.2" strokeLinecap="round" />
+        <text x="17" y="17.5" fill="#2563eb" fontSize="6" fontWeight="800" fontFamily="sans-serif">$</text>
+      </svg>
+    ),
+  },
+  {
     id: 'lentes',
     label: 'Lentes',
     path: '/vision/mapa-visual',
