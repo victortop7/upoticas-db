@@ -1,4 +1,4 @@
-import { useState, useRef, type ReactNode } from 'react';
+import { useState, useRef, useEffect, type ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 type Tab = 'superficie' | 'visao' | 'simulacao';
@@ -230,8 +230,30 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
   );
   const [ambiente, setAmbiente] = useState('noite');
   const [divX, setDivX] = useState(50);
+  const [autoDemo, setAutoDemo] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
+
+  // Demonstração automática — divisor desliza sozinho de um lado ao outro
+  useEffect(() => {
+    if (!autoDemo) return;
+    let frame: number;
+    let dir = -1;
+    const animate = () => {
+      setDivX(prev => {
+        let next = prev + dir * 0.7;
+        if (next <= 12) { next = 12; dir = 1; }
+        if (next >= 88) { next = 88; dir = -1; }
+        return next;
+      });
+      frame = requestAnimationFrame(animate);
+    };
+    frame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frame);
+  }, [autoDemo]);
+
+  // Ao trocar de tratamento, reinicia a demo no centro
+  useEffect(() => { if (!autoDemo) setDivX(50); }, [tratamento, autoDemo]);
 
   const trObj = TRATAMENTOS.find(t => t.id === tratamento)!;
   const effect = EFFECTS[tratamento]?.[ambiente] ?? EFFECTS.ar.noite;
@@ -272,6 +294,7 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
   function move(clientX: number) {
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return;
+    if (autoDemo) setAutoDemo(false);
     setDivX(Math.min(90, Math.max(10, ((clientX - rect.left) / rect.width) * 100)));
   }
 
@@ -336,6 +359,30 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1e2030" strokeWidth="2.5" strokeLinecap="round" style={{ marginLeft: -8 }}><polyline points="9 18 15 12 9 6" /></svg>
           </div>
         </div>
+
+        {/* Botão demonstração automática */}
+        <button
+          onMouseDown={e => e.stopPropagation()}
+          onTouchStart={e => e.stopPropagation()}
+          onClick={() => setAutoDemo(p => !p)}
+          style={{
+            position: 'absolute', bottom: 100, left: 16, zIndex: 11,
+            display: 'flex', alignItems: 'center', gap: 8,
+            background: autoDemo ? trObj.cor : 'rgba(0,0,0,.7)',
+            border: `1px solid ${autoDemo ? trObj.cor : 'rgba(255,255,255,0.15)'}`,
+            borderRadius: 999, padding: '7px 14px 7px 11px', cursor: 'pointer',
+            transition: 'all .15s', WebkitTapHighlightColor: 'transparent',
+          }}
+        >
+          {autoDemo ? (
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="#fff"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+          ) : (
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="#fff"><polygon points="6 4 20 12 6 20"/></svg>
+          )}
+          <span style={{ fontSize: 10.5, color: '#fff', fontFamily: 'var(--mono)', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase' }}>
+            {autoDemo ? 'Pausar' : 'Demonstrar'}
+          </span>
+        </button>
 
         {/* Labels */}
         <div style={{ position: 'absolute', bottom: 64, left: 16, fontSize: 11, color: '#e2e8f0', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
