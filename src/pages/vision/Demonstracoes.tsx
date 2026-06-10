@@ -246,20 +246,43 @@ function UVDemo() {
     }}>
       {/* Cena — sol → raios → lente → olho */}
       <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
-        {/* Sol */}
+        {/* Sol realista com corona e raios */}
         <div style={{
-          position: 'absolute', top: '6%', left: '50%', transform: 'translateX(-50%)',
-          width: 80, height: 80, borderRadius: '50%',
-          background: 'radial-gradient(circle, #fff7d6 0%, #fde047 35%, #f59e0b 70%, rgba(245,158,11,0) 100%)',
-          boxShadow: '0 0 60px 20px rgba(253,224,71,.35)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          position: 'absolute', top: '4%', left: '50%', transform: 'translateX(-50%)',
+          width: 200, height: 200, pointerEvents: 'none',
         }}>
-          <span style={{ fontSize: 11, fontFamily: 'var(--mono)', fontWeight: 700, color: '#7c2d12', letterSpacing: '.05em' }}>UV</span>
+          {/* raios de sol girando */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'conic-gradient(from 0deg, transparent 0deg, rgba(253,224,71,.18) 8deg, transparent 16deg, transparent 30deg, rgba(253,224,71,.14) 38deg, transparent 46deg, transparent 60deg, rgba(253,224,71,.18) 68deg, transparent 76deg, transparent 90deg, rgba(253,224,71,.14) 98deg, transparent 106deg, transparent 120deg, rgba(253,224,71,.18) 128deg, transparent 136deg, transparent 150deg, rgba(253,224,71,.14) 158deg, transparent 166deg, transparent 180deg, rgba(253,224,71,.18) 188deg, transparent 196deg, transparent 210deg, rgba(253,224,71,.14) 218deg, transparent 226deg, transparent 240deg, rgba(253,224,71,.18) 248deg, transparent 256deg, transparent 270deg, rgba(253,224,71,.14) 278deg, transparent 286deg, transparent 300deg, rgba(253,224,71,.18) 308deg, transparent 316deg, transparent 330deg, rgba(253,224,71,.14) 338deg, transparent 346deg, transparent 360deg)',
+            borderRadius: '50%', filter: 'blur(2px)',
+            animation: 'sunrays 28s linear infinite',
+          }} />
+          {/* corona externa */}
+          <div style={{
+            position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+            width: 130, height: 130, borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(253,224,71,.5) 0%, rgba(245,158,11,.25) 40%, transparent 70%)',
+            filter: 'blur(6px)', animation: 'uvpulse 3s ease-in-out infinite',
+          }} />
+          {/* disco solar */}
+          <div style={{
+            position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+            width: 76, height: 76, borderRadius: '50%',
+            background: 'radial-gradient(circle at 42% 38%, #ffffff 0%, #fff7d6 22%, #fde047 50%, #f59e0b 82%, #ea7c0b 100%)',
+            boxShadow: '0 0 50px 12px rgba(253,224,71,.6), inset -6px -6px 18px rgba(234,124,11,.5)',
+          }} />
         </div>
 
-        {/* Raios UV */}
+        {/* Raios UV com glow */}
         <svg viewBox="0 0 100 100" preserveAspectRatio="none"
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+          <defs>
+            <filter id="uvglow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="0.9" result="b" />
+              <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+            </filter>
+          </defs>
           {Array.from({ length: numRaios }).map((_, i) => {
             const x = 22 + i * (56 / (numRaios - 1));
             const visivel = i < Math.ceil((intensidade / 100) * numRaios);
@@ -267,63 +290,118 @@ function UVDemo() {
             return (
               <line
                 key={i}
-                x1="50" y1="14"
-                x2={x} y2={protegido ? 46 : 82}
+                x1="50" y1="13"
+                x2={x} y2={protegido ? 45 : 80}
                 stroke={uvNivel.cor}
-                strokeWidth="0.7"
+                strokeWidth="1.1"
                 strokeLinecap="round"
-                strokeDasharray="3 4"
-                opacity={protegido ? 0.85 : 0.7}
+                strokeDasharray="2 5"
+                opacity={protegido ? 0.9 : 0.78}
+                filter="url(#uvglow)"
                 style={{ animation: `uvflow ${0.7 + i * 0.06}s linear infinite` }}
               />
             );
           })}
         </svg>
 
-        {/* Lente */}
+        {/* Lente de vidro realista */}
         <div style={{
           position: 'absolute', top: '44%', left: '50%', transform: 'translate(-50%,-50%)',
-          width: 200, height: 64,
+          width: 220, height: 76,
         }}>
-          <svg viewBox="0 0 200 64" width="200" height="64">
+          <svg viewBox="0 0 220 76" width="220" height="76" style={{ overflow: 'visible' }}>
             <defs>
-              <linearGradient id="lensgrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor={protegido ? 'rgba(168,85,247,.45)' : 'rgba(255,255,255,.12)'} />
-                <stop offset="50%" stopColor={protegido ? 'rgba(124,58,237,.25)' : 'rgba(255,255,255,.05)'} />
-                <stop offset="100%" stopColor={protegido ? 'rgba(168,85,247,.45)' : 'rgba(255,255,255,.12)'} />
+              <radialGradient id="glassbody" cx="42%" cy="32%" r="75%">
+                <stop offset="0%" stopColor={protegido ? 'rgba(216,180,254,.55)' : 'rgba(255,255,255,.22)'} />
+                <stop offset="55%" stopColor={protegido ? 'rgba(168,85,247,.32)' : 'rgba(220,235,255,.1)'} />
+                <stop offset="100%" stopColor={protegido ? 'rgba(124,58,237,.4)' : 'rgba(200,220,255,.06)'} />
+              </radialGradient>
+              <linearGradient id="glassrim" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor={protegido ? '#d8b4fe' : 'rgba(255,255,255,.55)'} />
+                <stop offset="100%" stopColor={protegido ? '#7c3aed' : 'rgba(255,255,255,.18)'} />
               </linearGradient>
             </defs>
-            <ellipse cx="100" cy="32" rx="96" ry="28"
-              fill="url(#lensgrad)"
-              stroke={protegido ? '#a855f7' : 'rgba(255,255,255,.3)'}
-              strokeWidth={protegido ? 2 : 1}
-              style={{ transition: 'all .3s' }}
-            />
+            {/* corpo do vidro */}
+            <ellipse cx="110" cy="38" rx="106" ry="33" fill="url(#glassbody)"
+              stroke="url(#glassrim)" strokeWidth={protegido ? 2.2 : 1.4}
+              style={{ transition: 'all .3s' }} />
+            {/* brilho especular superior */}
+            <path d="M 30 22 Q 110 8 190 22 Q 150 26 110 26 Q 70 26 30 22 Z"
+              fill="rgba(255,255,255,.4)" opacity="0.7" />
+            {/* reflexo curvo */}
+            <ellipse cx="74" cy="30" rx="34" ry="9" fill="rgba(255,255,255,.22)"
+              transform="rotate(-18 74 30)" />
+            {/* halo de proteção pulsante */}
             {protegido && (
-              <ellipse cx="100" cy="32" rx="96" ry="28" fill="none" stroke="#c084fc" strokeWidth="1" opacity="0.5"
+              <ellipse cx="110" cy="38" rx="106" ry="33" fill="none" stroke="#c084fc" strokeWidth="1.5"
+                opacity="0.6" filter="url(#uvglow)"
                 style={{ animation: 'uvpulse 1.8s ease-in-out infinite' }} />
             )}
           </svg>
           {/* Escudo de bloqueio */}
           {protegido && (
             <div style={{
-              position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)',
-              fontSize: 9, fontFamily: 'var(--mono)', fontWeight: 700, color: '#c084fc',
-              background: 'rgba(88,28,135,.5)', padding: '2px 8px', borderRadius: 999,
+              position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)',
+              fontSize: 9, fontFamily: 'var(--mono)', fontWeight: 700, color: '#e9d5ff',
+              background: 'rgba(88,28,135,.65)', border: '1px solid rgba(192,132,252,.5)',
+              padding: '3px 10px', borderRadius: 999,
               letterSpacing: '.08em', whiteSpace: 'nowrap',
-            }}>🛡️ BLOQUEADO</div>
+            }}>🛡️ UV BLOQUEADO</div>
           )}
         </div>
 
-        {/* Olho */}
+        {/* Olho humano realista (SVG) */}
         <div style={{
-          position: 'absolute', top: '78%', left: '50%', transform: 'translate(-50%,-50%)',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+          position: 'absolute', top: '79%', left: '50%', transform: 'translate(-50%,-50%)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
         }}>
-          <div style={{
-            fontSize: 40, filter: protegido ? 'none' : 'drop-shadow(0 0 12px rgba(239,68,68,.8))',
+          <svg width="116" height="68" viewBox="0 0 116 68" style={{
+            filter: protegido ? 'drop-shadow(0 0 8px rgba(34,197,94,.35))' : 'drop-shadow(0 0 14px rgba(239,68,68,.7))',
             transition: 'filter .3s',
-          }}>{protegido ? '👁️' : '😣'}</div>
+          }}>
+            <defs>
+              <radialGradient id="iris" cx="50%" cy="45%" r="55%">
+                <stop offset="0%" stopColor={protegido ? '#6ea8d8' : '#b45c4a'} />
+                <stop offset="55%" stopColor={protegido ? '#3b6e9c' : '#8a3a2c'} />
+                <stop offset="100%" stopColor={protegido ? '#22425f' : '#5c241a'} />
+              </radialGradient>
+              <clipPath id="eyeclip">
+                <path d="M 8 34 Q 58 2 108 34 Q 58 66 8 34 Z" />
+              </clipPath>
+            </defs>
+            {/* esclera (branco do olho) */}
+            <path d="M 8 34 Q 58 2 108 34 Q 58 66 8 34 Z"
+              fill={protegido ? '#f4f6f8' : '#fbe4e0'} stroke="#cbd5e1" strokeWidth="0.6" />
+            {/* veias quando sem proteção */}
+            {!protegido && (
+              <g clipPath="url(#eyeclip)" stroke="#e57373" strokeWidth="0.7" opacity="0.7" fill="none">
+                <path d="M 12 32 Q 24 30 34 36" />
+                <path d="M 14 40 Q 26 42 36 38" />
+                <path d="M 104 30 Q 92 30 82 37" />
+                <path d="M 102 40 Q 90 42 80 38" />
+              </g>
+            )}
+            {/* íris */}
+            <g clipPath="url(#eyeclip)">
+              <circle cx="58" cy="34" r="22" fill="url(#iris)" />
+              {/* fibras da íris */}
+              <g stroke={protegido ? '#bcd6ec' : '#d89a8c'} strokeWidth="0.5" opacity="0.5">
+                {Array.from({ length: 16 }).map((_, i) => {
+                  const a = (i / 16) * Math.PI * 2;
+                  return <line key={i} x1={58 + Math.cos(a) * 8} y1={34 + Math.sin(a) * 8}
+                    x2={58 + Math.cos(a) * 21} y2={34 + Math.sin(a) * 21} />;
+                })}
+              </g>
+              {/* pupila */}
+              <circle cx="58" cy="34" r={protegido ? 9 : 7} fill="#0a0a0c" style={{ transition: 'r .3s' }} />
+              {/* reflexo de luz */}
+              <circle cx="52" cy="28" r="3.2" fill="rgba(255,255,255,.9)" />
+              <circle cx="63" cy="38" r="1.6" fill="rgba(255,255,255,.6)" />
+            </g>
+            {/* contorno pálpebra */}
+            <path d="M 8 34 Q 58 2 108 34" fill="none" stroke={protegido ? '#94a3b8' : '#c2766a'} strokeWidth="1.6" strokeLinecap="round" />
+            <path d="M 8 34 Q 58 66 108 34" fill="none" stroke={protegido ? '#b8c2cf' : '#d89488'} strokeWidth="1.2" strokeLinecap="round" />
+          </svg>
           <div style={{
             fontSize: 9.5, fontFamily: 'var(--mono)', fontWeight: 700, letterSpacing: '.06em',
             color: protegido ? '#22c55e' : '#ef4444',
@@ -405,7 +483,8 @@ function UVDemo() {
 
       <style>{`
         @keyframes uvflow { from { stroke-dashoffset: 14; } to { stroke-dashoffset: 0; } }
-        @keyframes uvpulse { 0%,100% { opacity: .2; } 50% { opacity: .7; } }
+        @keyframes uvpulse { 0%,100% { opacity: .35; } 50% { opacity: .85; } }
+        @keyframes sunrays { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       `}</style>
     </div>
   );
