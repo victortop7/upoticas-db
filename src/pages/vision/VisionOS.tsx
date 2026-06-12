@@ -128,80 +128,90 @@ function totalOS(data: OSData) {
   return Math.max(0, lente + armacao - desc + acres);
 }
 
-// ── Glasses SVG ────────────────────────────────────────────────────────────────
+// ── Glasses SVG (armação wayfarer) ─────────────────────────────────────────────
 function GlassesSVG({ data }: { data: OSData }) {
   const v = (val: string) => val || '';
+  const FRAME = '#2e2e32';
+  const ARROW = '#6e6e73';
+  const LBL = '#8e8e93';
   return (
-    <svg viewBox="0 0 720 260" width="100%" style={{ display: 'block', background: '#e9e9ee' }}>
-      {/* Lentes */}
-      <rect x="55" y="55" width="250" height="155" rx="26" fill="rgba(180,200,220,0.25)" stroke="#555" strokeWidth="15" />
-      <rect x="415" y="55" width="250" height="155" rx="26" fill="rgba(180,200,220,0.25)" stroke="#555" strokeWidth="15" />
+    <svg viewBox="0 0 720 290" width="100%" style={{ display: 'block', background: '#e9e9ee' }}>
+      {/* ── Armação wayfarer ── */}
+      {/* Lente esquerda */}
+      <path
+        d="M 64,84 L 300,92 C 308,92 311,98 310,106 L 298,202 C 294,228 281,237 254,239 L 116,244 C 85,244 70,232 67,206 L 56,106 C 55,90 58,84 64,84 Z"
+        fill="rgba(160,180,205,0.16)" stroke={FRAME} strokeWidth="14" strokeLinejoin="round"
+      />
+      {/* Lente direita (espelhada) */}
+      <path
+        d="M 656,84 L 420,92 C 412,92 409,98 410,106 L 422,202 C 426,228 439,237 466,239 L 604,244 C 635,244 650,232 653,206 L 664,106 C 665,90 662,84 656,84 Z"
+        fill="rgba(160,180,205,0.16)" stroke={FRAME} strokeWidth="14" strokeLinejoin="round"
+      />
       {/* Ponte */}
-      <path d="M305 115 Q360 96 415 115" fill="none" stroke="#555" strokeWidth="13" />
+      <path d="M 310,108 C 330,90 390,90 410,108" fill="none" stroke={FRAME} strokeWidth="13" strokeLinecap="round" />
       {/* Hastes */}
-      <line x1="55" y1="112" x2="8" y2="112" stroke="#555" strokeWidth="13" strokeLinecap="round" />
-      <line x1="665" y1="112" x2="712" y2="112" stroke="#555" strokeWidth="13" strokeLinecap="round" />
+      <path d="M 57,100 L 16,94" stroke={FRAME} strokeWidth="11" strokeLinecap="round" fill="none" />
+      <path d="M 663,100 L 704,94" stroke={FRAME} strokeWidth="11" strokeLinecap="round" fill="none" />
+      {/* Rebites (detalhe wayfarer) */}
+      <ellipse cx="80" cy="96" rx="5.5" ry="3.5" fill="#f4f4f6" transform="rotate(-12,80,96)" />
+      <ellipse cx="640" cy="96" rx="5.5" ry="3.5" fill="#f4f4f6" transform="rotate(12,640,96)" />
 
-      {/* ── Setas e rótulos ── */}
-      {/* DNP OD */}
-      <line x1="360" y1="28" x2="540" y2="28" stroke="#444" strokeWidth="1.2" />
-      <polygon points="360,24 360,32 354,28" fill="#444" />
-      <polygon points="540,24 540,32 546,28" fill="#444" />
-      <text x="450" y="20" textAnchor="middle" fontSize="12" fontFamily="Arial" fontWeight="bold" fill="#222">DNP OD</text>
-      {/* DNP OE */}
-      <line x1="180" y1="28" x2="360" y2="28" stroke="#444" strokeWidth="1.2" />
-      <polygon points="180,24 180,32 174,28" fill="#444" />
-      <text x="270" y="20" textAnchor="middle" fontSize="12" fontFamily="Arial" fontWeight="bold" fill="#222">DNP OE</text>
+      {/* ── Linha central ── */}
+      <line x1="360" y1="20" x2="360" y2="86" stroke={ARROW} strokeWidth="1" strokeDasharray="3 3" />
 
-      {/* VERTICAL - seta central */}
-      <line x1="360" y1="55" x2="360" y2="210" stroke="#444" strokeWidth="1.2" />
-      <polygon points="356,55 364,55 360,49" fill="#444" />
-      <polygon points="356,210 364,210 360,216" fill="#444" />
-      <text x="372" y="138" fontSize="11" fontFamily="Arial" fill="#333">VERTICAL</text>
+      {/* ── DNP OE (esquerda) ── */}
+      <line x1="183" y1="34" x2="360" y2="34" stroke={ARROW} strokeWidth="1.2" />
+      <polygon points="183,30 183,38 176,34" fill={ARROW} />
+      <text x="248" y="24" textAnchor="middle" fontSize="11" fontWeight="600" fill={LBL}>DNP OE</text>
+      <rect x="245" y="40" width="50" height="20" rx="5" fill="#fff" stroke="#c7c7cc" strokeWidth="1" />
+      <text x="270" y="54" textAnchor="middle" fontSize="12" fill="#1c1c1e">{v(data.arm_dnp_oe)}</text>
 
-      {/* PONTE rótulo */}
-      <text x="360" y="170" textAnchor="middle" fontSize="11" fontFamily="Arial" fill="#333">PONTE</text>
+      {/* ── DNP OD (direita) ── */}
+      <line x1="360" y1="34" x2="537" y2="34" stroke={ARROW} strokeWidth="1.2" />
+      <polygon points="537,30 537,38 544,34" fill={ARROW} />
+      <text x="472" y="24" textAnchor="middle" fontSize="11" fontWeight="600" fill={LBL}>DNP OD</text>
+      <rect x="425" y="40" width="50" height="20" rx="5" fill="#fff" stroke="#c7c7cc" strokeWidth="1" />
+      <text x="450" y="54" textAnchor="middle" fontSize="12" fill="#1c1c1e">{v(data.arm_dnp_od)}</text>
 
-      {/* ARO - horizontal direita */}
-      <line x1="415" y1="228" x2="665" y2="228" stroke="#444" strokeWidth="1.2" />
-      <polygon points="415,224 415,232 409,228" fill="#444" />
-      <polygon points="665,224 665,232 671,228" fill="#444" />
-      <text x="540" y="244" textAnchor="middle" fontSize="11" fontFamily="Arial" fill="#333">ARO</text>
+      {/* ── VERTICAL (dentro da lente esquerda) ── */}
+      <line x1="150" y1="92" x2="150" y2="236" stroke={ARROW} strokeWidth="1.2" />
+      <polygon points="146,92 154,92 150,85" fill={ARROW} />
+      <polygon points="146,236 154,236 150,243" fill={ARROW} />
+      <text x="150" y="140" textAnchor="middle" fontSize="10" fontWeight="600" fill={LBL}>VERTICAL</text>
+      <rect x="125" y="148" width="50" height="20" rx="5" fill="#fff" stroke="#c7c7cc" strokeWidth="1" />
+      <text x="150" y="162" textAnchor="middle" fontSize="12" fill="#1c1c1e">{v(data.arm_vertical)}</text>
 
-      {/* ALT PUPILAR OD - esquerda */}
-      <line x1="46" y1="55" x2="46" y2="210" stroke="#444" strokeWidth="1.2" />
-      <polygon points="42,55 50,55 46,49" fill="#444" />
-      <polygon points="42,210 50,210 46,216" fill="#444" />
-      <text x="30" y="133" fontSize="10" fontFamily="Arial" fill="#333" textAnchor="middle" transform="rotate(-90,30,133)">ALT PUPILAR OD</text>
+      {/* ── PONTE (entre as lentes) ── */}
+      <line x1="314" y1="172" x2="406" y2="172" stroke={ARROW} strokeWidth="1.2" />
+      <polygon points="314,168 314,176 307,172" fill={ARROW} />
+      <polygon points="406,168 406,176 413,172" fill={ARROW} />
+      <text x="360" y="163" textAnchor="middle" fontSize="10" fontWeight="600" fill={LBL}>PONTE</text>
+      <rect x="335" y="180" width="50" height="20" rx="5" fill="#fff" stroke="#c7c7cc" strokeWidth="1" />
+      <text x="360" y="194" textAnchor="middle" fontSize="12" fill="#1c1c1e">{v(data.arm_ponte)}</text>
 
-      {/* ALT PUPILAR OE - direita */}
-      <line x1="674" y1="55" x2="674" y2="210" stroke="#444" strokeWidth="1.2" />
-      <polygon points="670,55 678,55 674,49" fill="#444" />
-      <polygon points="670,210 678,210 674,216" fill="#444" />
-      <text x="692" y="133" fontSize="10" fontFamily="Arial" fill="#333" textAnchor="middle" transform="rotate(90,692,133)">ALT PUPILAR OE</text>
+      {/* ── ARO (largura da lente direita) ── */}
+      <line x1="416" y1="150" x2="658" y2="150" stroke={ARROW} strokeWidth="1.2" />
+      <polygon points="416,146 416,154 409,150" fill={ARROW} />
+      <polygon points="658,146 658,154 665,150" fill={ARROW} />
+      <text x="537" y="141" textAnchor="middle" fontSize="10" fontWeight="600" fill={LBL}>ARO</text>
+      <rect x="512" y="158" width="50" height="20" rx="5" fill="#fff" stroke="#c7c7cc" strokeWidth="1" />
+      <text x="537" y="172" textAnchor="middle" fontSize="12" fill="#1c1c1e">{v(data.arm_aro)}</text>
 
-      {/* ── Caixas de valores ── */}
-      {/* DNP OD */}
-      <rect x="425" y="32" width="50" height="20" fill="#fff" stroke="#c7c7cc" strokeWidth="1" />
-      <text x="450" y="46" textAnchor="middle" fontSize="12" fontFamily="Arial" fill="#000">{v(data.arm_dnp_od)}</text>
-      {/* DNP OE */}
-      <rect x="245" y="32" width="50" height="20" fill="#fff" stroke="#c7c7cc" strokeWidth="1" />
-      <text x="270" y="46" textAnchor="middle" fontSize="12" fontFamily="Arial" fill="#000">{v(data.arm_dnp_oe)}</text>
-      {/* VERTICAL */}
-      <rect x="335" y="127" width="50" height="20" fill="#fff" stroke="#c7c7cc" strokeWidth="1" />
-      <text x="360" y="141" textAnchor="middle" fontSize="12" fontFamily="Arial" fill="#000">{v(data.arm_vertical)}</text>
-      {/* PONTE */}
-      <rect x="335" y="174" width="50" height="20" fill="#fff" stroke="#c7c7cc" strokeWidth="1" />
-      <text x="360" y="188" textAnchor="middle" fontSize="12" fontFamily="Arial" fill="#000">{v(data.arm_ponte)}</text>
-      {/* ARO */}
-      <rect x="515" y="232" width="50" height="20" fill="#fff" stroke="#c7c7cc" strokeWidth="1" />
-      <text x="540" y="246" textAnchor="middle" fontSize="12" fontFamily="Arial" fill="#000">{v(data.arm_aro)}</text>
-      {/* ALT PUPILAR OD */}
-      <rect x="14" y="225" width="50" height="20" fill="#fff" stroke="#c7c7cc" strokeWidth="1" />
-      <text x="39" y="239" textAnchor="middle" fontSize="12" fontFamily="Arial" fill="#000">{v(data.arm_alt_pupilar_od)}</text>
-      {/* ALT PUPILAR OE */}
-      <rect x="656" y="225" width="50" height="20" fill="#fff" stroke="#c7c7cc" strokeWidth="1" />
-      <text x="681" y="239" textAnchor="middle" fontSize="12" fontFamily="Arial" fill="#000">{v(data.arm_alt_pupilar_oe)}</text>
+      {/* ── ALT PUPILAR OD (lateral esquerda) ── */}
+      <line x1="38" y1="84" x2="38" y2="244" stroke={ARROW} strokeWidth="1.2" />
+      <polygon points="34,84 42,84 38,77" fill={ARROW} />
+      <polygon points="34,244 42,244 38,251" fill={ARROW} />
+      <text x="24" y="164" fontSize="9.5" fontWeight="600" fill={LBL} textAnchor="middle" transform="rotate(-90,24,164)">ALT PUPILAR OD</text>
+      <rect x="13" y="256" width="50" height="20" rx="5" fill="#fff" stroke="#c7c7cc" strokeWidth="1" />
+      <text x="38" y="270" textAnchor="middle" fontSize="12" fill="#1c1c1e">{v(data.arm_alt_pupilar_od)}</text>
+
+      {/* ── ALT PUPILAR OE (lateral direita) ── */}
+      <line x1="682" y1="84" x2="682" y2="244" stroke={ARROW} strokeWidth="1.2" />
+      <polygon points="678,84 686,84 682,77" fill={ARROW} />
+      <polygon points="678,244 686,244 682,251" fill={ARROW} />
+      <text x="696" y="164" fontSize="9.5" fontWeight="600" fill={LBL} textAnchor="middle" transform="rotate(90,696,164)">ALT PUPILAR OE</text>
+      <rect x="657" y="256" width="50" height="20" rx="5" fill="#fff" stroke="#c7c7cc" strokeWidth="1" />
+      <text x="682" y="270" textAnchor="middle" fontSize="12" fill="#1c1c1e">{v(data.arm_alt_pupilar_oe)}</text>
     </svg>
   );
 }
