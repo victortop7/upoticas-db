@@ -485,7 +485,7 @@ export default function VisionHome() {
           display: 'flex', gap: 22,
           overflowX: 'auto', scrollbarWidth: 'none',
           paddingBottom: 4, paddingTop: 4,
-          justifyContent: 'safe center',
+          justifyContent: 'flex-start',
         }}>
           {MODULES.map((mod, i) => {
             const isOpen = openSubmenu === mod.submenu && mod.submenu !== null;
@@ -523,7 +523,7 @@ export default function VisionHome() {
                 <div style={{
                   width: 62, height: 62, borderRadius: 15,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: mod.grad,
+                  background: 'linear-gradient(180deg, #3ba6ff 0%, #007aff 100%)',
                   color: '#fff',
                   boxShadow: isOpen
                     ? '0 8px 22px rgba(10,108,255,0.45), inset 0 1px 0 rgba(255,255,255,0.35)'
