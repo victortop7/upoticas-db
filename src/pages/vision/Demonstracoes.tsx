@@ -181,42 +181,132 @@ function getSemSvg(tratamento: string, ambiente: string): ReactNode | null {
 
 // ─── Superfície ───────────────────────────────────────────────────────────────
 function Superficie({ initialDemo }: { initialDemo?: string }) {
-  const [tipo, setTipo] = useState<'convencional' | 'digital'>(
+  const [tipo, setTipo] = useState<'convencional' | 'digital' | 'demonstracao'>(
     initialDemo === 'digital' ? 'digital' : 'convencional'
   );
+  const [divX, setDivX] = useState(50);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
 
   const FOTOS = {
     convencional: '/lentes%20convencionais%20e%20digitais/convencional.png',
     digital:      '/lentes%20convencionais%20e%20digitais/digital.png',
   };
+  const DEMO_FOTOS = {
+    com: '/lentes/digital-balao.jpg',          // digital — nítida
+    sem: '/lentes/convencional-balao.jpg',     // convencional — periferia embaçada
+  };
+
+  function move(clientX: number) {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    setDivX(Math.min(90, Math.max(10, ((clientX - rect.left) / rect.width) * 100)));
+  }
 
   return (
-    <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
-      {/* Foto full-screen */}
-      <img
-        key={tipo}
-        src={FOTOS[tipo]}
-        draggable={false}
-        style={{
-          position: 'absolute', inset: 0, width: '100%', height: '100%',
-          objectFit: 'cover', objectPosition: 'center',
-          transition: 'opacity .25s',
-        }}
-      />
+    <div
+      ref={containerRef}
+      onMouseDown={() => { if (tipo === 'demonstracao') dragging.current = true; }}
+      onMouseMove={e => { if (dragging.current) move(e.clientX); }}
+      onMouseUp={() => { dragging.current = false; }}
+      onMouseLeave={() => { dragging.current = false; }}
+      onTouchStart={() => { if (tipo === 'demonstracao') dragging.current = true; }}
+      onTouchMove={e => { if (dragging.current) move(e.touches[0].clientX); }}
+      onTouchEnd={() => { dragging.current = false; }}
+      style={{ flex: 1, position: 'relative', overflow: 'hidden', cursor: tipo === 'demonstracao' ? 'col-resize' : 'default', userSelect: 'none' }}
+    >
+      {tipo !== 'demonstracao' ? (
+        /* Foto full-screen */
+        <img
+          key={tipo}
+          src={FOTOS[tipo]}
+          draggable={false}
+          style={{
+            position: 'absolute', inset: 0, width: '100%', height: '100%',
+            objectFit: 'cover', objectPosition: 'center',
+            transition: 'opacity .25s',
+          }}
+        />
+      ) : (
+        /* Comparador DIGITAL × CONVENCIONAL */
+        <>
+          {/* CONVENCIONAL — base (direita) */}
+          <img
+            src={DEMO_FOTOS.sem}
+            draggable={false}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', pointerEvents: 'none' }}
+          />
+          {/* DIGITAL — overlay esquerda */}
+          <img
+            src={DEMO_FOTOS.com}
+            draggable={false}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', clipPath: `inset(0 ${100 - divX}% 0 0)`, pointerEvents: 'none' }}
+          />
+
+          {/* Divisor */}
+          <div style={{
+            position: 'absolute', top: 0, bottom: 0,
+            left: `${divX}%`, transform: 'translateX(-50%)',
+            width: 2, background: 'rgba(255,255,255,.9)',
+            boxShadow: '0 0 12px rgba(255,255,255,.5)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            pointerEvents: 'none',
+          }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: '50%',
+              background: '#fff', boxShadow: '0 2px 16px rgba(0,0,0,.5)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1e2030" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6" /></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1e2030" strokeWidth="2.5" strokeLinecap="round" style={{ marginLeft: -8 }}><polyline points="9 18 15 12 9 6" /></svg>
+            </div>
+          </div>
+
+          {/* Labels */}
+          <div style={{ position: 'absolute', bottom: 64, left: 16, fontSize: 11, color: '#e2e8f0', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
+            ✓ DIGITAL
+          </div>
+          <div style={{ position: 'absolute', bottom: 64, right: 16, fontSize: 11, color: '#9ca3af', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
+            ✗ CONVENCIONAL
+          </div>
+
+          {/* Descrição */}
+          <div style={{
+            position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)',
+            background: 'rgba(0,0,0,.78)', borderRadius: 12, padding: '10px 20px',
+            width: 'max-content', maxWidth: 420, textAlign: 'center', pointerEvents: 'none',
+          }}>
+            <div style={{ fontSize: 10, color: '#3b82f6', fontWeight: 700, fontFamily: 'var(--mono)', marginBottom: 4, letterSpacing: '.06em', textTransform: 'uppercase' }}>
+              Digital × Convencional
+            </div>
+            <div style={{ fontSize: 12, color: '#9ca3af', lineHeight: 1.5 }}>
+              Lente digital: nitidez em todo o campo visual — sem distorção periférica
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Toggle — topo direito */}
-      <div style={{ position: 'absolute', top: 20, right: 20, display: 'flex', flexDirection: 'column', gap: 8, zIndex: 10 }}>
-        {(['convencional', 'digital'] as const).map(t => (
-          <button key={t} onClick={() => setTipo(t)} style={{
+      <div
+        onMouseDown={e => e.stopPropagation()}
+        onTouchStart={e => e.stopPropagation()}
+        style={{ position: 'absolute', top: 20, right: 20, display: 'flex', flexDirection: 'column', gap: 8, zIndex: 10 }}
+      >
+        {([
+          { id: 'convencional',  label: 'Convencional'  },
+          { id: 'digital',       label: 'Digital'       },
+          { id: 'demonstracao',  label: 'Demonstração'  },
+        ] as const).map(t => (
+          <button key={t.id} onClick={() => setTipo(t.id)} style={{
             padding: '10px 22px', borderRadius: 8, border: 'none', cursor: 'pointer',
-            background: tipo === t ? 'rgba(255,255,255,0.92)' : 'rgba(0,0,0,0.45)',
-            color: tipo === t ? '#111827' : 'rgba(255,255,255,0.65)',
+            background: tipo === t.id ? 'rgba(255,255,255,0.92)' : 'rgba(0,0,0,0.45)',
+            color: tipo === t.id ? '#111827' : 'rgba(255,255,255,0.65)',
             fontSize: 13, fontWeight: 700, fontFamily: 'var(--sans)',
             textTransform: 'uppercase', letterSpacing: '.07em',
-            boxShadow: tipo === t ? '0 2px 12px rgba(0,0,0,.25)' : 'none',
+            boxShadow: tipo === t.id ? '0 2px 12px rgba(0,0,0,.25)' : 'none',
             transition: 'all .15s',
             WebkitTapHighlightColor: 'transparent',
-          }}>{t}</button>
+          }}>{t.label}</button>
         ))}
       </div>
     </div>
