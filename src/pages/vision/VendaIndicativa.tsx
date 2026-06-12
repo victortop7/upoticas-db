@@ -213,19 +213,31 @@ export default function VendaIndicativa() {
         }}>
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(232,240,254,0.82) 0%, rgba(219,234,254,0.6) 100%)' }} />
           <Header titulo="Venda Indicativa" />
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 28 }}>
-            <div style={{ fontSize: 22, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.4px' }}>Escolha o tipo de lente</div>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 30 }}>
+            <div style={{ textAlign: 'center', animation: 'viRise .5s cubic-bezier(0.22,1,0.36,1) both' }}>
+              <div style={{ fontSize: 10, color: '#64748b', fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 8 }}>◆ Venda Indicativa ◆</div>
+              <div style={{ fontSize: 24, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.5px' }}>Escolha o tipo de lente</div>
+            </div>
             <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', justifyContent: 'center' }}>
-              {TIPOS_LENTE.map(t => (
-                <button key={t.id} onClick={() => escolherTipo(t.id)} style={cardTipo}
-                  onPointerDown={e => (e.currentTarget.style.transform = 'scale(0.95)')}
-                  onPointerUp={e => (e.currentTarget.style.transform = 'scale(1)')}
-                  onPointerLeave={e => (e.currentTarget.style.transform = 'scale(1)')}>
-                  {t.icon}
+              {TIPOS_LENTE.map((t, i) => (
+                <button key={t.id} onClick={() => escolherTipo(t.id)}
+                  style={{ ...cardTipo, animation: `viRise .5s cubic-bezier(0.22,1,0.36,1) ${0.08 + i * 0.07}s both` }}
+                  onPointerDown={e => { e.currentTarget.style.transform = 'scale(0.95)'; e.currentTarget.style.boxShadow = '0 4px 18px rgba(37,99,235,0.3)'; }}
+                  onPointerUp={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = cardTipo.boxShadow as string; }}
+                  onPointerLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = cardTipo.boxShadow as string; }}>
+                  <div style={{
+                    width: 64, height: 64, borderRadius: 18,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'linear-gradient(135deg, rgba(37,99,235,0.10), rgba(124,58,237,0.08))',
+                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.8)',
+                  }}>
+                    {t.icon}
+                  </div>
                   <span style={{ fontSize: 13, fontWeight: 700, color: '#1e293b', textTransform: 'uppercase', letterSpacing: '.04em' }}>{t.label}</span>
                 </button>
               ))}
             </div>
+            <style>{`@keyframes viRise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }`}</style>
           </div>
         </div>
       )}
@@ -244,11 +256,12 @@ export default function VendaIndicativa() {
               Escolha uma tabela
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 14, maxWidth: 980, margin: '0 auto' }}>
-              {tabelasFiltradas.map(t => (
-                <button key={t.id} onClick={() => escolherTabela(t)} style={cardMarca}
-                  onPointerDown={e => (e.currentTarget.style.transform = 'scale(0.96)')}
-                  onPointerUp={e => (e.currentTarget.style.transform = 'scale(1)')}
-                  onPointerLeave={e => (e.currentTarget.style.transform = 'scale(1)')}>
+              {tabelasFiltradas.map((t, i) => (
+                <button key={t.id} onClick={() => escolherTabela(t)}
+                  style={{ ...cardMarca, animation: `viRise .45s cubic-bezier(0.22,1,0.36,1) ${i * 0.04}s both` }}
+                  onPointerDown={e => { e.currentTarget.style.transform = 'scale(0.96)'; e.currentTarget.style.borderColor = '#2563eb'; }}
+                  onPointerUp={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.borderColor = '#e2e8f0'; }}
+                  onPointerLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.borderColor = '#e2e8f0'; }}>
                   <div style={{
                     fontSize: 18, fontWeight: 900, letterSpacing: '-0.5px', color: t.cor,
                     fontFamily: 'var(--sans)',
@@ -257,6 +270,7 @@ export default function VendaIndicativa() {
                 </button>
               ))}
             </div>
+            <style>{`@keyframes viRise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }`}</style>
           </div>
         </div>
       )}
@@ -368,15 +382,18 @@ export default function VendaIndicativa() {
 }
 
 const cardTipo: React.CSSProperties = {
-  width: 150, height: 150, background: 'rgba(255,255,255,0.95)',
-  border: '1.5px solid rgba(255,255,255,0.9)', borderRadius: 18,
-  boxShadow: '0 8px 28px rgba(0,0,0,0.1)', cursor: 'pointer',
+  width: 158, height: 168,
+  background: 'rgba(255,255,255,0.78)',
+  backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+  border: '1.5px solid rgba(255,255,255,0.95)', borderRadius: 22,
+  boxShadow: '0 10px 36px rgba(15,23,42,0.12), inset 0 1px 0 rgba(255,255,255,0.9)', cursor: 'pointer',
   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14,
-  transition: 'transform .1s', WebkitTapHighlightColor: 'transparent',
+  transition: 'transform .12s, box-shadow .15s', WebkitTapHighlightColor: 'transparent',
 };
 const cardMarca: React.CSSProperties = {
-  background: '#fff', border: '1.5px solid #e2e8f0', borderRadius: 14,
-  boxShadow: '0 2px 10px rgba(0,0,0,0.05)', cursor: 'pointer',
+  background: 'linear-gradient(170deg, #ffffff 0%, #f8fafc 100%)',
+  border: '1.5px solid #e2e8f0', borderRadius: 16,
+  boxShadow: '0 2px 12px rgba(15,23,42,0.06)', cursor: 'pointer',
   padding: '22px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-  minHeight: 90, transition: 'transform .1s', WebkitTapHighlightColor: 'transparent',
+  minHeight: 92, transition: 'transform .12s, border-color .15s', WebkitTapHighlightColor: 'transparent',
 };

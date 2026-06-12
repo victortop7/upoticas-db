@@ -681,12 +681,14 @@ export default function Demonstracoes() {
           onClick={e => e.stopPropagation()}
           style={{
             position: 'fixed', bottom: 100, right: 16,
-            background: 'rgba(7,8,14,0.97)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: 16,
+            background: 'rgba(8,11,22,0.88)',
+            backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
+            border: '1px solid rgba(120,160,255,0.2)',
+            borderRadius: 18,
             padding: '14px 8px 10px',
             zIndex: 100,
             minWidth: 160,
+            boxShadow: '0 12px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08)',
             animation: 'popUp 0.18s cubic-bezier(0.22,1,0.36,1)',
           }}
         >
@@ -717,13 +719,14 @@ export default function Demonstracoes() {
       {/* Tab bar — SUPERFÍCIE | VISÃO | SIMULAÇÃO */}
       <div style={{
         position: 'fixed', bottom: 16, left: '50%', transform: 'translateX(-50%)',
-        background: 'rgba(7,8,14,0.95)',
-        border: '1px solid rgba(255,255,255,0.1)',
-        borderRadius: 18,
+        background: 'rgba(8,11,22,0.78)',
+        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+        border: '1px solid rgba(120,160,255,0.18)',
+        borderRadius: 20,
         display: 'flex', gap: 0,
         zIndex: 50,
         overflow: 'hidden',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.08)',
       }}>
         {([
           { id: 'superficie', label: 'Superfície' },
@@ -748,13 +751,14 @@ export default function Demonstracoes() {
       {/* Bottom nav — canto inferior direito */}
       <div style={{
         position: 'fixed', bottom: 16, right: 16,
-        background: 'rgba(7,8,14,0.95)',
-        border: '1px solid rgba(255,255,255,0.1)',
-        borderRadius: 18,
+        background: 'rgba(8,11,22,0.78)',
+        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+        border: '1px solid rgba(120,160,255,0.18)',
+        borderRadius: 20,
         display: 'flex', gap: 0,
         zIndex: 50,
         overflow: 'hidden',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.08)',
       }}>
         {[
           {

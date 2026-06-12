@@ -107,14 +107,14 @@ const MODULES = [
     active: true,
     submenu: null,
     icon: (
-      <svg width="44" height="44" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="9" stroke="#2563eb" strokeWidth="1.4" />
-        <circle cx="12" cy="12" r="5" stroke="#2563eb" strokeWidth="1.4" />
-        <circle cx="12" cy="12" r="2" fill="#2563eb" />
-        <line x1="12" y1="3" x2="12" y2="7" stroke="#2563eb" strokeWidth="1.4" strokeLinecap="round" />
-        <line x1="12" y1="17" x2="12" y2="21" stroke="#2563eb" strokeWidth="1.4" strokeLinecap="round" />
-        <line x1="3" y1="12" x2="7" y2="12" stroke="#2563eb" strokeWidth="1.4" strokeLinecap="round" />
-        <line x1="17" y1="12" x2="21" y2="12" stroke="#2563eb" strokeWidth="1.4" strokeLinecap="round" />
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.4" />
+        <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.4" />
+        <circle cx="12" cy="12" r="2" fill="currentColor" />
+        <line x1="12" y1="3" x2="12" y2="7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+        <line x1="12" y1="17" x2="12" y2="21" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+        <line x1="3" y1="12" x2="7" y2="12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+        <line x1="17" y1="12" x2="21" y2="12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
       </svg>
     ),
   },
@@ -125,13 +125,13 @@ const MODULES = [
     active: true,
     submenu: 'demo',
     icon: (
-      <svg width="44" height="44" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="4" stroke="#2563eb" strokeWidth="1.4" />
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.4" />
         {[0,45,90,135,180,225,270,315].map((deg, i) => {
           const r2 = deg * Math.PI / 180;
           const x1 = 12 + 6 * Math.cos(r2), y1 = 12 + 6 * Math.sin(r2);
           const x2 = 12 + 9 * Math.cos(r2), y2 = 12 + 9 * Math.sin(r2);
-          return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#2563eb" strokeWidth="1.4" strokeLinecap="round" />;
+          return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />;
         })}
       </svg>
     ),
@@ -143,12 +143,11 @@ const MODULES = [
     active: true,
     submenu: null,
     icon: (
-      <svg width="44" height="44" viewBox="0 0 24 24" fill="none">
-        <path d="M5 4h14a1 1 0 0 1 1 1v3H4V5a1 1 0 0 1 1-1z" stroke="#2563eb" strokeWidth="1.4" strokeLinejoin="round" />
-        <path d="M4 8h16v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V8z" stroke="#2563eb" strokeWidth="1.4" strokeLinejoin="round" />
-        <line x1="8" y1="12" x2="16" y2="12" stroke="#2563eb" strokeWidth="1.2" strokeLinecap="round" />
-        <line x1="8" y1="16" x2="13" y2="16" stroke="#2563eb" strokeWidth="1.2" strokeLinecap="round" />
-        <text x="17" y="17.5" fill="#2563eb" fontSize="6" fontWeight="800" fontFamily="sans-serif">$</text>
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+        <path d="M5 4h14a1 1 0 0 1 1 1v3H4V5a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+        <path d="M4 8h16v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V8z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+        <line x1="8" y1="12" x2="16" y2="12" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+        <line x1="8" y1="16" x2="13" y2="16" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
       </svg>
     ),
   },
@@ -159,10 +158,10 @@ const MODULES = [
     active: true,
     submenu: null,
     icon: (
-      <svg width="44" height="44" viewBox="0 0 24 24" fill="none">
-        <path d="M12 3C7 3 3 7 3 12s4 9 9 9 9-4 9-9-4-9-9-9z" stroke="#2563eb" strokeWidth="1.4" />
-        <path d="M12 6c-3.3 0-6 2.7-6 6s2.7 6 6 6" stroke="#2563eb" strokeWidth="1.4" strokeLinecap="round" />
-        <path d="M15 9c1.1.8 2 2.1 2 3" stroke="#2563eb" strokeWidth="1.4" strokeLinecap="round" />
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+        <path d="M12 3C7 3 3 7 3 12s4 9 9 9 9-4 9-9-4-9-9-9z" stroke="currentColor" strokeWidth="1.4" />
+        <path d="M12 6c-3.3 0-6 2.7-6 6s2.7 6 6 6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+        <path d="M15 9c1.1.8 2 2.1 2 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
       </svg>
     ),
   },
@@ -173,13 +172,11 @@ const MODULES = [
     active: true,
     submenu: null,
     icon: (
-      <svg width="44" height="44" viewBox="0 0 24 24" fill="none">
-        <rect x="4" y="3" width="16" height="18" rx="2" stroke="#2563eb" strokeWidth="1.4" />
-        <text x="12" y="10" textAnchor="middle" fill="#2563eb" fontSize="4" fontFamily="monospace" fontWeight="700">F P</text>
-        <text x="12" y="14" textAnchor="middle" fill="#2563eb" fontSize="3.5" fontFamily="monospace">T O Z</text>
-        <text x="12" y="17.5" textAnchor="middle" fill="#2563eb" fontSize="3" fontFamily="monospace">L P E D</text>
-        <circle cx="17" cy="16" r="3" fill="#2563eb" fillOpacity="0.1" stroke="#2563eb" strokeWidth="1" />
-        <circle cx="17" cy="16" r="1.2" fill="#2563eb" />
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+        <rect x="4" y="3" width="16" height="18" rx="2" stroke="currentColor" strokeWidth="1.4" />
+        <text x="12" y="10" textAnchor="middle" fill="currentColor" fontSize="4" fontFamily="monospace" fontWeight="700">F P</text>
+        <text x="12" y="14" textAnchor="middle" fill="currentColor" fontSize="3.5" fontFamily="monospace">T O Z</text>
+        <text x="12" y="17.5" textAnchor="middle" fill="currentColor" fontSize="3" fontFamily="monospace">L P E D</text>
       </svg>
     ),
   },
@@ -190,11 +187,11 @@ const MODULES = [
     active: true,
     submenu: null,
     icon: (
-      <svg width="44" height="44" viewBox="0 0 24 24" fill="none">
-        <rect x="3" y="3" width="18" height="18" rx="2" stroke="#2563eb" strokeWidth="1.4" />
-        <line x1="7" y1="17" x2="7" y2="12" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" />
-        <line x1="12" y1="17" x2="12" y2="7" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" />
-        <line x1="17" y1="17" x2="17" y2="10" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" />
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="1.4" />
+        <line x1="7" y1="17" x2="7" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        <line x1="12" y1="17" x2="12" y2="7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        <line x1="17" y1="17" x2="17" y2="10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
       </svg>
     ),
   },
@@ -205,12 +202,12 @@ const MODULES = [
     active: true,
     submenu: null,
     icon: (
-      <svg width="44" height="44" viewBox="0 0 24 24" fill="none">
-        <rect x="5" y="2" width="14" height="20" rx="2" stroke="#2563eb" strokeWidth="1.4" />
-        <line x1="8" y1="7" x2="16" y2="7" stroke="#2563eb" strokeWidth="1.2" strokeLinecap="round" />
-        <line x1="8" y1="11" x2="16" y2="11" stroke="#2563eb" strokeWidth="1.2" strokeLinecap="round" />
-        <line x1="8" y1="15" x2="13" y2="15" stroke="#2563eb" strokeWidth="1.2" strokeLinecap="round" />
-        <polyline points="13 16 15 18 19 14" stroke="#2563eb" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+        <rect x="5" y="2" width="14" height="20" rx="2" stroke="currentColor" strokeWidth="1.4" />
+        <line x1="8" y1="7" x2="16" y2="7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+        <line x1="8" y1="11" x2="16" y2="11" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+        <line x1="8" y1="15" x2="13" y2="15" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+        <polyline points="13 16 15 18 19 14" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
   },
@@ -222,9 +219,9 @@ const MODULES = [
     comingSoon: true,
     submenu: null,
     icon: (
-      <svg width="44" height="44" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="8" r="4" stroke="#2563eb" strokeWidth="1.4" />
-        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#2563eb" strokeWidth="1.4" strokeLinecap="round" />
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.4" />
+        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
       </svg>
     ),
   },
@@ -236,11 +233,11 @@ const MODULES = [
     comingSoon: true,
     submenu: null,
     icon: (
-      <svg width="44" height="44" viewBox="0 0 24 24" fill="none">
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="#2563eb" strokeWidth="1.4" />
-        <circle cx="12" cy="12" r="3" stroke="#2563eb" strokeWidth="1.4" />
-        <line x1="12" y1="2" x2="12" y2="4" stroke="#2563eb" strokeWidth="1.4" strokeLinecap="round" />
-        <line x1="12" y1="20" x2="12" y2="22" stroke="#2563eb" strokeWidth="1.4" strokeLinecap="round" />
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="1.4" />
+        <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.4" />
+        <line x1="12" y1="2" x2="12" y2="4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+        <line x1="12" y1="20" x2="12" y2="22" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
       </svg>
     ),
   },
@@ -290,44 +287,77 @@ export default function VisionHome() {
         backgroundSize: 'cover',
         backgroundPosition: 'center center',
       }}>
-        {/* Overlay claro sobre a foto para manter identidade visual */}
+        {/* Overlay com gradiente refinado */}
         <div style={{
           position: 'absolute', inset: 0,
-          background: 'linear-gradient(135deg, rgba(232,240,254,0.78) 0%, rgba(219,234,254,0.55) 50%, rgba(219,234,254,0.35) 100%)',
+          background: 'linear-gradient(120deg, rgba(238,244,255,0.88) 0%, rgba(224,236,254,0.55) 45%, rgba(219,234,254,0.18) 100%)',
+          pointerEvents: 'none',
+        }} />
+        {/* Brilho azul difuso no canto */}
+        <div style={{
+          position: 'absolute', top: '-20%', left: '-10%',
+          width: '55%', height: '70%',
+          background: 'radial-gradient(ellipse, rgba(59,130,246,0.14) 0%, transparent 65%)',
+          pointerEvents: 'none',
+          animation: 'breathe 7s ease-in-out infinite',
+        }} />
+        {/* Linha de luz que varre o hero */}
+        <div style={{
+          position: 'absolute', top: 0, bottom: 0, width: 180,
+          background: 'linear-gradient(100deg, transparent 0%, rgba(255,255,255,0.35) 50%, transparent 100%)',
+          transform: 'skewX(-12deg)',
+          animation: 'sweep 9s ease-in-out infinite',
+          pointerEvents: 'none',
+        }} />
+        {/* Fade inferior em direção à faixa de módulos */}
+        <div style={{
+          position: 'absolute', left: 0, right: 0, bottom: 0, height: 90,
+          background: 'linear-gradient(to top, rgba(240,244,248,0.9), transparent)',
           pointerEvents: 'none',
         }} />
 
         {/* Logo + card ótica */}
-        <div style={{ position: 'absolute', top: 28, left: 32, pointerEvents: 'none' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
+        <div style={{ position: 'absolute', top: 28, left: 32, pointerEvents: 'none', animation: 'riseIn .6s cubic-bezier(0.22,1,0.36,1) both' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: 18 }}>
             <div style={{
-              width: 38, height: 38, borderRadius: 11,
-              background: 'linear-gradient(135deg, #1d4ed8, #7c3aed)',
+              width: 40, height: 40, borderRadius: 12,
+              background: 'linear-gradient(135deg, #1d4ed8 0%, #4f46e5 55%, #7c3aed 100%)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 17, fontWeight: 800, color: '#fff',
+              boxShadow: '0 8px 24px rgba(29,78,216,0.35), inset 0 1px 0 rgba(255,255,255,0.3)',
             }}>V</div>
             <div>
-              <div style={{ fontSize: 19, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.4px' }}>
-                Conect<span style={{ color: '#1d4ed8' }}>Vision</span>
+              <div style={{ fontSize: 20, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.5px' }}>
+                Conect<span style={{
+                  background: 'linear-gradient(90deg, #1d4ed8, #7c3aed)',
+                  WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent',
+                }}>Vision</span>
               </div>
-              <div style={{ fontSize: 10.5, color: '#64748b', letterSpacing: '0.06em' }}>SISTEMA PARA ÓTICAS</div>
+              <div style={{ fontSize: 10, color: '#64748b', letterSpacing: '0.14em', fontWeight: 600 }}>SISTEMA PARA ÓTICAS</div>
             </div>
           </div>
 
           <div style={{
-            background: 'rgba(255,255,255,0.92)',
-            backdropFilter: 'blur(12px)',
-            borderRadius: 14,
-            padding: '14px 20px',
-            border: '1px solid rgba(255,255,255,0.8)',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-            minWidth: 220,
+            background: 'rgba(255,255,255,0.72)',
+            backdropFilter: 'blur(18px)',
+            WebkitBackdropFilter: 'blur(18px)',
+            borderRadius: 16,
+            padding: '15px 22px',
+            border: '1px solid rgba(255,255,255,0.9)',
+            boxShadow: '0 8px 32px rgba(15,23,42,0.10), inset 0 1px 0 rgba(255,255,255,0.9)',
+            minWidth: 230,
           }}>
-            <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 3 }}>Ótica conectada</div>
-            <div style={{ fontSize: 17, fontWeight: 700, color: '#0f172a' }}>{tenant?.nome ?? 'Sua Ótica'}</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 6 }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e' }} />
-              <span style={{ fontSize: 11, color: '#22c55e', fontWeight: 600 }}>Sistema ativo</span>
+            <div style={{ fontSize: 10.5, color: '#94a3b8', marginBottom: 4, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 600 }}>Ótica conectada</div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: '#0f172a', letterSpacing: '-0.2px' }}>{tenant?.nome ?? 'Sua Ótica'}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
+              <span style={{ position: 'relative', display: 'inline-flex', width: 7, height: 7 }}>
+                <span style={{
+                  position: 'absolute', inset: 0, borderRadius: '50%',
+                  background: '#22c55e', animation: 'ping 2s cubic-bezier(0,0,0.2,1) infinite',
+                }} />
+                <span style={{ position: 'relative', width: 7, height: 7, borderRadius: '50%', background: '#22c55e' }} />
+              </span>
+              <span style={{ fontSize: 11, color: '#16a34a', fontWeight: 700, letterSpacing: '0.03em' }}>Sistema ativo</span>
             </div>
           </div>
         </div>
@@ -338,9 +368,11 @@ export default function VisionHome() {
             <div
               style={{
                 position: 'absolute', inset: 0,
-                background: 'rgba(5, 10, 30, 0.72)',
+                background: 'rgba(4, 9, 28, 0.74)',
+                backdropFilter: 'blur(3px)',
+                WebkitBackdropFilter: 'blur(3px)',
                 zIndex: 9,
-                animation: 'fadeIn 0.18s ease',
+                animation: 'fadeIn 0.2s ease',
               }}
             />
             <div
@@ -350,61 +382,68 @@ export default function VisionHome() {
                 position: 'absolute',
                 top: '50%', left: 0, right: 0,
                 transform: 'translateY(-50%)',
-                background: 'rgba(12, 22, 58, 0.92)',
-                backdropFilter: 'blur(24px)',
-                WebkitBackdropFilter: 'blur(24px)',
-                borderTop: '1px solid rgba(255,255,255,0.1)',
-                borderBottom: '1px solid rgba(255,255,255,0.1)',
-                padding: '24px 0 28px',
+                background: 'linear-gradient(135deg, rgba(13, 24, 64, 0.92), rgba(20, 16, 58, 0.92))',
+                backdropFilter: 'blur(28px)',
+                WebkitBackdropFilter: 'blur(28px)',
+                borderTop: '1px solid rgba(120,160,255,0.22)',
+                borderBottom: '1px solid rgba(120,160,255,0.22)',
+                padding: '26px 0 30px',
                 zIndex: 10,
-                animation: 'slideIn 0.22s cubic-bezier(0.22,1,0.36,1)',
+                animation: 'slideIn 0.25s cubic-bezier(0.22,1,0.36,1)',
               }}
             >
               <div style={{
-                fontSize: 9, color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--mono)',
-                textTransform: 'uppercase', letterSpacing: '0.16em', marginBottom: 22,
+                fontSize: 9, color: 'rgba(165,190,255,0.55)', fontFamily: 'var(--mono)',
+                textTransform: 'uppercase', letterSpacing: '0.22em', marginBottom: 22,
                 textAlign: 'center', fontWeight: 700,
               }}>
-                Demonstrações de Lentes
+                ◆ Demonstrações de Lentes ◆
               </div>
               <div style={{
                 display: 'flex', gap: 12,
                 justifyContent: 'center', alignItems: 'center',
                 paddingInline: 24,
               }}>
-                {DEMO_ITEMS.map(item => (
+                {DEMO_ITEMS.map((item, i) => (
                   <button
                     key={item.id}
                     onClick={() => handleDemoItem(item)}
                     style={{
-                      background: 'rgba(255,255,255,0.06)',
-                      border: '1px solid rgba(255,255,255,0.12)',
-                      borderRadius: 16,
+                      background: 'linear-gradient(160deg, rgba(255,255,255,0.10), rgba(255,255,255,0.03))',
+                      border: '1px solid rgba(140,170,255,0.2)',
+                      borderRadius: 18,
                       padding: '20px 16px',
                       cursor: 'pointer',
                       display: 'flex', flexDirection: 'column',
                       alignItems: 'center', gap: 12,
-                      minWidth: 88, flex: '0 0 auto',
-                      transition: 'background 0.12s, transform 0.1s',
+                      minWidth: 90, flex: '0 0 auto',
+                      transition: 'background 0.15s, transform 0.12s, border-color 0.15s, box-shadow 0.15s',
                       WebkitTapHighlightColor: 'transparent',
+                      animation: `riseIn .4s cubic-bezier(0.22,1,0.36,1) ${i * 0.05}s both`,
                     }}
                     onPointerDown={e => {
-                      (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.16)';
-                      (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.93)';
+                      const el = e.currentTarget as HTMLButtonElement;
+                      el.style.background = 'linear-gradient(160deg, rgba(96,140,255,0.28), rgba(96,140,255,0.10))';
+                      el.style.transform = 'scale(0.93)';
+                      el.style.boxShadow = '0 0 26px rgba(96,140,255,0.35)';
                     }}
                     onPointerUp={e => {
-                      (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.06)';
-                      (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                      const el = e.currentTarget as HTMLButtonElement;
+                      el.style.background = 'linear-gradient(160deg, rgba(255,255,255,0.10), rgba(255,255,255,0.03))';
+                      el.style.transform = 'scale(1)';
+                      el.style.boxShadow = 'none';
                     }}
                     onPointerLeave={e => {
-                      (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.06)';
-                      (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                      const el = e.currentTarget as HTMLButtonElement;
+                      el.style.background = 'linear-gradient(160deg, rgba(255,255,255,0.10), rgba(255,255,255,0.03))';
+                      el.style.transform = 'scale(1)';
+                      el.style.boxShadow = 'none';
                     }}
                   >
                     {item.icon}
                     <span style={{
-                      fontSize: 10.5, color: 'rgba(255,255,255,0.88)',
-                      fontWeight: 600, letterSpacing: '0.05em',
+                      fontSize: 10.5, color: 'rgba(235,242,255,0.92)',
+                      fontWeight: 600, letterSpacing: '0.06em',
                       textTransform: 'uppercase',
                     }}>{item.label}</span>
                   </button>
@@ -417,30 +456,32 @@ export default function VisionHome() {
         {/* Hint na home normal */}
         {!openSubmenu && (
           <div style={{
-            position: 'absolute', bottom: 18, left: 0, right: 0,
-            textAlign: 'center', fontSize: 11, color: '#94a3b8',
-            fontFamily: 'var(--sans)', letterSpacing: '0.03em',
-            pointerEvents: 'none',
+            position: 'absolute', bottom: 16, left: 0, right: 0,
+            textAlign: 'center', fontSize: 11, color: '#7d8aa3',
+            fontFamily: 'var(--sans)', letterSpacing: '0.08em',
+            pointerEvents: 'none', fontWeight: 600, textTransform: 'uppercase',
           }}>
-            Selecione um módulo abaixo para começar
+            Selecione um módulo para começar
           </div>
         )}
       </div>
 
       {/* Faixa de módulos */}
       <div style={{
-        background: '#fff',
-        borderTop: '1px solid #e2e8f0',
-        padding: '14px 18px',
+        background: 'rgba(255,255,255,0.86)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderTop: '1px solid rgba(226,232,240,0.9)',
+        padding: '16px 18px',
         flexShrink: 0,
-        boxShadow: '0 -4px 20px rgba(0,0,0,0.06)',
+        boxShadow: '0 -8px 32px rgba(15,23,42,0.07)',
       }}>
         <div style={{
-          display: 'flex', gap: 10,
+          display: 'flex', gap: 12,
           overflowX: 'auto', scrollbarWidth: 'none',
           paddingBottom: 2,
         }}>
-          {MODULES.map(mod => {
+          {MODULES.map((mod, i) => {
             const isOpen = openSubmenu === mod.submenu && mod.submenu !== null;
             return (
               <button
@@ -449,22 +490,28 @@ export default function VisionHome() {
                 onClick={e => { e.stopPropagation(); handleModule(mod); }}
                 style={{
                   flexShrink: 0,
-                  width: 110, minHeight: 128,
-                  background: isOpen ? '#eff6ff' : '#fff',
-                  border: `1.5px solid ${isOpen ? '#2563eb' : '#e2e8f0'}`,
-                  borderRadius: 14,
+                  width: 112, minHeight: 132,
+                  background: isOpen
+                    ? 'linear-gradient(170deg, #eff6ff 0%, #e0eaff 100%)'
+                    : 'linear-gradient(170deg, #ffffff 0%, #f8fafc 100%)',
+                  border: `1.5px solid ${isOpen ? '#2563eb' : '#e6ebf2'}`,
+                  borderRadius: 18,
                   cursor: mod.active ? 'pointer' : 'default',
                   display: 'flex', flexDirection: 'column',
                   alignItems: 'center', justifyContent: 'center',
-                  gap: 10, padding: '14px 8px',
+                  gap: 11, padding: '14px 8px',
                   position: 'relative', overflow: 'hidden',
-                  opacity: mod.comingSoon ? 0.65 : 1,
-                  transition: 'transform 0.1s, border-color 0.15s, background 0.15s',
+                  opacity: mod.comingSoon ? 0.6 : 1,
+                  boxShadow: isOpen
+                    ? '0 8px 24px rgba(37,99,235,0.22)'
+                    : '0 2px 10px rgba(15,23,42,0.05)',
+                  transition: 'transform 0.12s, border-color 0.18s, background 0.18s, box-shadow 0.18s',
                   WebkitTapHighlightColor: 'transparent',
+                  animation: `riseIn .5s cubic-bezier(0.22,1,0.36,1) ${0.05 + i * 0.04}s both`,
                 }}
                 onPointerDown={e => {
                   if (!mod.active) return;
-                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.95)';
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.94)';
                 }}
                 onPointerUp={e => {
                   (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
@@ -473,9 +520,23 @@ export default function VisionHome() {
                   (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
                 }}
               >
-                {mod.icon}
+                {/* Ícone em pastilha gradiente */}
+                <div style={{
+                  width: 54, height: 54, borderRadius: 16,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: isOpen
+                    ? 'linear-gradient(135deg, #2563eb, #4f46e5)'
+                    : 'linear-gradient(135deg, rgba(37,99,235,0.10), rgba(124,58,237,0.08))',
+                  color: isOpen ? '#fff' : '#2563eb',
+                  boxShadow: isOpen
+                    ? '0 6px 18px rgba(37,99,235,0.4)'
+                    : 'inset 0 1px 0 rgba(255,255,255,0.8)',
+                  transition: 'background 0.18s, color 0.18s, box-shadow 0.18s',
+                }}>
+                  {mod.icon}
+                </div>
                 <span style={{
-                  fontSize: 10.5, fontWeight: 700, color: isOpen ? '#1d4ed8' : '#1e293b',
+                  fontSize: 10.5, fontWeight: 700, color: isOpen ? '#1d4ed8' : '#27354a',
                   textAlign: 'center', textTransform: 'uppercase',
                   letterSpacing: '0.05em', lineHeight: 1.3,
                   whiteSpace: 'pre-line',
@@ -484,10 +545,11 @@ export default function VisionHome() {
                 {mod.comingSoon && (
                   <div style={{
                     position: 'absolute', bottom: 0, left: 0, right: 0,
-                    background: '#dc2626', padding: '3px 0',
+                    background: 'linear-gradient(90deg, #dc2626, #f97316)',
+                    padding: '3px 0',
                     fontSize: 8, fontWeight: 800, color: '#fff',
-                    textAlign: 'center', letterSpacing: '0.1em', textTransform: 'uppercase',
-                  }}>EM BREVE</div>
+                    textAlign: 'center', letterSpacing: '0.12em', textTransform: 'uppercase',
+                  }}>Em breve</div>
                 )}
               </button>
             );
@@ -503,6 +565,24 @@ export default function VisionHome() {
         @keyframes slideIn {
           from { opacity: 0; transform: translateY(calc(-50% + 24px)); }
           to   { opacity: 1; transform: translateY(-50%); }
+        }
+        @keyframes riseIn {
+          from { opacity: 0; transform: translateY(14px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes ping {
+          0%   { transform: scale(1); opacity: .8; }
+          75%, 100% { transform: scale(2.4); opacity: 0; }
+        }
+        @keyframes breathe {
+          0%, 100% { opacity: .6; }
+          50%      { opacity: 1; }
+        }
+        @keyframes sweep {
+          0%       { left: -30%; opacity: 0; }
+          12%      { opacity: 1; }
+          38%      { left: 110%; opacity: 0; }
+          100%     { left: 110%; opacity: 0; }
         }
       `}</style>
     </div>
