@@ -272,7 +272,7 @@ function Superficie({ initialDemo }: { initialDemo?: string }) {
 
           {/* Descrição */}
           <div style={{
-            position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)',
+            position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)',
             background: 'rgba(0,0,0,.78)', borderRadius: 12, padding: '10px 20px',
             width: 'max-content', maxWidth: 420, textAlign: 'center', pointerEvents: 'none',
           }}>
@@ -488,7 +488,7 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
 
         {/* Descrição */}
         <div style={{
-          position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)',
+          position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)',
           background: 'rgba(0,0,0,.78)', borderRadius: 12, padding: '10px 20px',
           width: 'max-content', maxWidth: 400, textAlign: 'center', pointerEvents: 'none',
         }}>
