@@ -98,7 +98,7 @@ const DEMO_ITEMS = [
   },
 ];
 
-// ─── Módulos ──────────────────────────────────────────────────────────────
+// ─── Módulos (estilo iOS — cada app com seu gradiente) ─────────────────────
 const MODULES = [
   {
     id: 'mapa-visual',
@@ -106,6 +106,7 @@ const MODULES = [
     path: '/vision/mapa-visual',
     active: true,
     submenu: null,
+    grad: 'linear-gradient(180deg, #3ba6ff 0%, #0a6cff 100%)',
     icon: (
       <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
         <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.4" />
@@ -124,6 +125,7 @@ const MODULES = [
     path: '/vision/demonstracoes',
     active: true,
     submenu: 'demo',
+    grad: 'linear-gradient(180deg, #c45cff 0%, #8e2de2 100%)',
     icon: (
       <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
         <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.4" />
@@ -142,6 +144,7 @@ const MODULES = [
     path: '/vision/venda-indicativa',
     active: true,
     submenu: null,
+    grad: 'linear-gradient(180deg, #41d96b 0%, #1faf4a 100%)',
     icon: (
       <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
         <path d="M5 4h14a1 1 0 0 1 1 1v3H4V5a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
@@ -157,6 +160,7 @@ const MODULES = [
     path: '/vision/mapa-visual',
     active: true,
     submenu: null,
+    grad: 'linear-gradient(180deg, #55d0f5 0%, #1f9ed8 100%)',
     icon: (
       <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
         <path d="M12 3C7 3 3 7 3 12s4 9 9 9 9-4 9-9-4-9-9-9z" stroke="currentColor" strokeWidth="1.4" />
@@ -171,6 +175,7 @@ const MODULES = [
     path: '/vision/atendimentos',
     active: true,
     submenu: null,
+    grad: 'linear-gradient(180deg, #ffb340 0%, #f08c00 100%)',
     icon: (
       <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
         <rect x="4" y="3" width="16" height="18" rx="2" stroke="currentColor" strokeWidth="1.4" />
@@ -186,6 +191,7 @@ const MODULES = [
     path: '/vision/atendimentos',
     active: true,
     submenu: null,
+    grad: 'linear-gradient(180deg, #7d7aff 0%, #5352d4 100%)',
     icon: (
       <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
         <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="1.4" />
@@ -201,6 +207,7 @@ const MODULES = [
     path: '/vision/os',
     active: true,
     submenu: null,
+    grad: 'linear-gradient(180deg, #ff6482 0%, #e63057 100%)',
     icon: (
       <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
         <rect x="5" y="2" width="14" height="20" rx="2" stroke="currentColor" strokeWidth="1.4" />
@@ -218,6 +225,7 @@ const MODULES = [
     active: false,
     comingSoon: true,
     submenu: null,
+    grad: 'linear-gradient(180deg, #ff5e9a 0%, #d63384 100%)',
     icon: (
       <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
         <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.4" />
@@ -232,6 +240,7 @@ const MODULES = [
     active: false,
     comingSoon: true,
     submenu: null,
+    grad: 'linear-gradient(180deg, #6fd9e7 0%, #2bb3c7 100%)',
     icon: (
       <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="1.4" />
@@ -320,18 +329,15 @@ export default function VisionHome() {
         <div style={{ position: 'absolute', top: 28, left: 32, pointerEvents: 'none', animation: 'riseIn .6s cubic-bezier(0.22,1,0.36,1) both' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: 18 }}>
             <div style={{
-              width: 40, height: 40, borderRadius: 12,
-              background: 'linear-gradient(135deg, #1d4ed8 0%, #4f46e5 55%, #7c3aed 100%)',
+              width: 40, height: 40, borderRadius: 11,
+              background: 'linear-gradient(180deg, #3ba6ff 0%, #007aff 100%)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 17, fontWeight: 800, color: '#fff',
-              boxShadow: '0 8px 24px rgba(29,78,216,0.35), inset 0 1px 0 rgba(255,255,255,0.3)',
+              boxShadow: '0 6px 18px rgba(0,122,255,0.35), inset 0 1px 0 rgba(255,255,255,0.4)',
             }}>V</div>
             <div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.5px' }}>
-                Conect<span style={{
-                  background: 'linear-gradient(90deg, #1d4ed8, #7c3aed)',
-                  WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent',
-                }}>Vision</span>
+              <div style={{ fontSize: 20, fontWeight: 700, color: '#0f172a', letterSpacing: '-0.5px' }}>
+                Conect<span style={{ color: '#007aff' }}>Vision</span>
               </div>
               <div style={{ fontSize: 10, color: '#64748b', letterSpacing: '0.14em', fontWeight: 600 }}>SISTEMA PARA ÓTICAS</div>
             </div>
@@ -466,20 +472,20 @@ export default function VisionHome() {
         )}
       </div>
 
-      {/* Faixa de módulos */}
+      {/* Dock estilo iOS — ícones de app */}
       <div style={{
-        background: 'rgba(255,255,255,0.86)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderTop: '1px solid rgba(226,232,240,0.9)',
-        padding: '16px 18px',
+        background: 'rgba(248,250,253,0.78)',
+        backdropFilter: 'blur(28px) saturate(1.6)',
+        WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
+        borderTop: '0.5px solid rgba(60,60,67,0.18)',
+        padding: '18px 20px 16px',
         flexShrink: 0,
-        boxShadow: '0 -8px 32px rgba(15,23,42,0.07)',
       }}>
         <div style={{
-          display: 'flex', gap: 12,
+          display: 'flex', gap: 22,
           overflowX: 'auto', scrollbarWidth: 'none',
-          paddingBottom: 2,
+          paddingBottom: 4, paddingTop: 4,
+          justifyContent: 'safe center',
         }}>
           {MODULES.map((mod, i) => {
             const isOpen = openSubmenu === mod.submenu && mod.submenu !== null;
@@ -490,28 +496,21 @@ export default function VisionHome() {
                 onClick={e => { e.stopPropagation(); handleModule(mod); }}
                 style={{
                   flexShrink: 0,
-                  width: 112, minHeight: 132,
-                  background: isOpen
-                    ? 'linear-gradient(170deg, #eff6ff 0%, #e0eaff 100%)'
-                    : 'linear-gradient(170deg, #ffffff 0%, #f8fafc 100%)',
-                  border: `1.5px solid ${isOpen ? '#2563eb' : '#e6ebf2'}`,
-                  borderRadius: 18,
+                  width: 76,
+                  background: 'none', border: 'none',
                   cursor: mod.active ? 'pointer' : 'default',
                   display: 'flex', flexDirection: 'column',
-                  alignItems: 'center', justifyContent: 'center',
-                  gap: 11, padding: '14px 8px',
-                  position: 'relative', overflow: 'hidden',
-                  opacity: mod.comingSoon ? 0.6 : 1,
-                  boxShadow: isOpen
-                    ? '0 8px 24px rgba(37,99,235,0.22)'
-                    : '0 2px 10px rgba(15,23,42,0.05)',
-                  transition: 'transform 0.12s, border-color 0.18s, background 0.18s, box-shadow 0.18s',
+                  alignItems: 'center', gap: 7,
+                  padding: 0,
+                  position: 'relative',
+                  opacity: mod.comingSoon ? 0.55 : 1,
+                  transition: 'transform 0.14s cubic-bezier(0.3,1.4,0.5,1)',
                   WebkitTapHighlightColor: 'transparent',
                   animation: `riseIn .5s cubic-bezier(0.22,1,0.36,1) ${0.05 + i * 0.04}s both`,
                 }}
                 onPointerDown={e => {
                   if (!mod.active) return;
-                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.94)';
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.88)';
                 }}
                 onPointerUp={e => {
                   (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
@@ -520,37 +519,48 @@ export default function VisionHome() {
                   (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
                 }}
               >
-                {/* Ícone em pastilha gradiente */}
+                {/* Ícone squircle estilo app iOS */}
                 <div style={{
-                  width: 54, height: 54, borderRadius: 16,
+                  width: 62, height: 62, borderRadius: 15,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: isOpen
-                    ? 'linear-gradient(135deg, #2563eb, #4f46e5)'
-                    : 'linear-gradient(135deg, rgba(37,99,235,0.10), rgba(124,58,237,0.08))',
-                  color: isOpen ? '#fff' : '#2563eb',
+                  background: mod.grad,
+                  color: '#fff',
                   boxShadow: isOpen
-                    ? '0 6px 18px rgba(37,99,235,0.4)'
-                    : 'inset 0 1px 0 rgba(255,255,255,0.8)',
-                  transition: 'background 0.18s, color 0.18s, box-shadow 0.18s',
+                    ? '0 8px 22px rgba(10,108,255,0.45), inset 0 1px 0 rgba(255,255,255,0.35)'
+                    : '0 4px 14px rgba(15,23,42,0.18), inset 0 1px 0 rgba(255,255,255,0.35)',
+                  outline: isOpen ? '2.5px solid rgba(0,122,255,0.85)' : 'none',
+                  outlineOffset: 3,
+                  position: 'relative',
+                  transition: 'box-shadow 0.18s',
                 }}>
                   {mod.icon}
+                  {/* brilho superior do ícone (vidro) */}
+                  <div style={{
+                    position: 'absolute', top: 0, left: 0, right: 0, height: '46%',
+                    borderRadius: '15px 15px 40% 40%',
+                    background: 'linear-gradient(to bottom, rgba(255,255,255,0.28), rgba(255,255,255,0.02))',
+                    pointerEvents: 'none',
+                  }} />
+                  {/* badge "em breve" estilo notificação iOS */}
+                  {mod.comingSoon && (
+                    <div style={{
+                      position: 'absolute', top: -7, right: -7,
+                      background: '#ff3b30', borderRadius: 999,
+                      padding: '2.5px 7px',
+                      fontSize: 7.5, fontWeight: 800, color: '#fff',
+                      letterSpacing: '0.05em', textTransform: 'uppercase',
+                      boxShadow: '0 2px 8px rgba(255,59,48,0.5)',
+                      border: '1.5px solid rgba(255,255,255,0.9)',
+                      whiteSpace: 'nowrap',
+                    }}>breve</div>
+                  )}
                 </div>
                 <span style={{
-                  fontSize: 10.5, fontWeight: 700, color: isOpen ? '#1d4ed8' : '#27354a',
-                  textAlign: 'center', textTransform: 'uppercase',
-                  letterSpacing: '0.05em', lineHeight: 1.3,
+                  fontSize: 10.5, fontWeight: 500, color: isOpen ? '#007aff' : '#3a4255',
+                  textAlign: 'center',
+                  letterSpacing: '-0.01em', lineHeight: 1.2,
                   whiteSpace: 'pre-line',
-                }}>{mod.label}</span>
-
-                {mod.comingSoon && (
-                  <div style={{
-                    position: 'absolute', bottom: 0, left: 0, right: 0,
-                    background: 'linear-gradient(90deg, #dc2626, #f97316)',
-                    padding: '3px 0',
-                    fontSize: 8, fontWeight: 800, color: '#fff',
-                    textAlign: 'center', letterSpacing: '0.12em', textTransform: 'uppercase',
-                  }}>Em breve</div>
-                )}
+                }}>{mod.label.replace('\n', ' ')}</span>
               </button>
             );
           })}

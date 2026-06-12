@@ -27,7 +27,7 @@ export default function VisionLayout() {
       height: '100dvh',
       background: '#050508',
       color: '#f0f0f5',
-      fontFamily: 'var(--sans)',
+      fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', Roboto, sans-serif",
       display: 'flex',
       flexDirection: 'column',
       overflow: 'hidden',

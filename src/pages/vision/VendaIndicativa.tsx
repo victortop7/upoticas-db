@@ -134,35 +134,37 @@ function BottomNav({ onBack }: { onBack?: () => void }) {
   const navigate = useNavigate();
   return (
     <div style={{
-      flexShrink: 0, background: '#fff', borderTop: '1px solid #e2e8f0',
-      display: 'flex', alignItems: 'center', padding: '10px 16px', gap: 4,
-      boxShadow: '0 -4px 20px rgba(0,0,0,0.05)',
+      flexShrink: 0,
+      background: 'rgba(249,249,251,0.82)',
+      backdropFilter: 'blur(24px) saturate(1.6)', WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
+      borderTop: '0.5px solid rgba(60,60,67,0.22)',
+      display: 'flex', alignItems: 'center', padding: '8px 16px', gap: 4,
     }}>
       {onBack && (
         <button onClick={onBack} style={navBtn(false)}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#007aff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
           <span style={navLabel}>Voltar</span>
         </button>
       )}
       <button onClick={() => navigate('/vision')} style={navBtn(false)}>
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="1.8" strokeLinecap="round"><line x1="3" y1="7" x2="21" y2="7" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="17" x2="21" y2="17" /></svg>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#007aff" strokeWidth="1.8" strokeLinecap="round"><line x1="3" y1="7" x2="21" y2="7" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="17" x2="21" y2="17" /></svg>
         <span style={navLabel}>Menu</span>
       </button>
       <div style={{ flex: 1 }} />
       <button onClick={() => navigate('/vision/os')} style={navBtn(false)}>
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="1.8" strokeLinecap="round"><rect x="5" y="2" width="14" height="20" rx="2" /><line x1="8" y1="7" x2="16" y2="7" /><line x1="8" y1="11" x2="16" y2="11" /><line x1="8" y1="15" x2="13" y2="15" /></svg>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#007aff" strokeWidth="1.8" strokeLinecap="round"><rect x="5" y="2" width="14" height="20" rx="2" /><line x1="8" y1="7" x2="16" y2="7" /><line x1="8" y1="11" x2="16" y2="11" /><line x1="8" y1="15" x2="13" y2="15" /></svg>
         <span style={navLabel}>O.S.</span>
       </button>
     </div>
   );
 }
 const navBtn = (active: boolean): React.CSSProperties => ({
-  background: active ? '#eff6ff' : 'none', border: 'none', cursor: 'pointer',
-  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-  padding: '6px 14px', borderRadius: 10, WebkitTapHighlightColor: 'transparent',
+  background: active ? 'rgba(0,122,255,0.10)' : 'none', border: 'none', cursor: 'pointer',
+  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+  padding: '6px 16px', borderRadius: 12, WebkitTapHighlightColor: 'transparent',
 });
 const navLabel: React.CSSProperties = {
-  fontSize: 9.5, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '.05em',
+  fontSize: 10, fontWeight: 500, color: '#007aff', letterSpacing: '-0.01em',
 };
 
 // ─── Cabeçalho com logo da ótica ─────────────────────────────────────────────
@@ -171,13 +173,14 @@ function Header({ titulo }: { titulo: string }) {
     <div style={{ position: 'absolute', top: 24, left: 28, zIndex: 5, pointerEvents: 'none' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
         <div style={{
-          width: 34, height: 34, borderRadius: 10,
-          background: 'linear-gradient(135deg, #1d4ed8, #7c3aed)',
+          width: 34, height: 34, borderRadius: 9,
+          background: 'linear-gradient(180deg, #3ba6ff 0%, #007aff 100%)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 15, fontWeight: 800, color: '#fff',
+          boxShadow: '0 4px 12px rgba(0,122,255,0.3), inset 0 1px 0 rgba(255,255,255,0.4)',
         }}>V</div>
-        <div style={{ fontSize: 16, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.3px' }}>
-          Conect<span style={{ color: '#1d4ed8' }}>Vision</span>
+        <div style={{ fontSize: 16, fontWeight: 700, color: '#0f172a', letterSpacing: '-0.3px' }}>
+          Conect<span style={{ color: '#007aff' }}>Vision</span>
         </div>
       </div>
       <div style={{ fontSize: 12, color: '#64748b', fontWeight: 600, paddingLeft: 2 }}>{titulo}</div>
@@ -290,16 +293,21 @@ export default function VendaIndicativa() {
                 return (
                   <button key={i} onClick={() => setProdutoIdx(i)} style={{
                     width: '100%', textAlign: 'left', cursor: 'pointer',
-                    background: ativo ? '#eff6ff' : 'transparent',
-                    borderLeft: `3px solid ${ativo ? '#2563eb' : 'transparent'}`,
-                    borderTop: 'none', borderRight: 'none', borderBottom: '1px solid #f1f5f9',
-                    padding: '13px 16px', display: 'flex', flexDirection: 'column', gap: 4,
+                    background: ativo ? 'rgba(0,122,255,0.08)' : 'transparent',
+                    border: 'none', borderBottom: '0.5px solid rgba(60,60,67,0.15)',
+                    padding: '13px 14px 13px 16px',
+                    display: 'flex', alignItems: 'center', gap: 10,
                     WebkitTapHighlightColor: 'transparent', transition: 'background .12s',
                   }}>
-                    <span style={{ fontSize: 12.5, fontWeight: 700, color: ativo ? '#1d4ed8' : '#1e293b' }}>{p.nome}</span>
-                    <span style={{ fontSize: 13, fontWeight: 800, color: ativo ? '#1d4ed8' : '#475569', fontFamily: 'var(--mono)' }}>
-                      {p.valorParcela > 0 ? `${p.parcelas}x ${p.valorParcela.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'A definir'}
-                    </span>
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: '#1c1c1e', letterSpacing: '-0.01em' }}>{p.nome}</span>
+                      <span style={{ fontSize: 13.5, fontWeight: 700, color: ativo ? '#007aff' : '#8e8e93', fontFamily: 'var(--mono)' }}>
+                        {p.valorParcela > 0 ? `${p.parcelas}x ${p.valorParcela.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'A definir'}
+                      </span>
+                    </div>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={ativo ? '#007aff' : '#c7c7cc'} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
                   </button>
                 );
               })}

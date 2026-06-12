@@ -716,49 +716,49 @@ export default function Demonstracoes() {
         </div>
       )}
 
-      {/* Tab bar — SUPERFÍCIE | VISÃO | SIMULAÇÃO */}
+      {/* Segmented control estilo iOS — SUPERFÍCIE | VISÃO | SIMULAÇÃO */}
       <div style={{
         position: 'fixed', bottom: 16, left: '50%', transform: 'translateX(-50%)',
-        background: 'rgba(8,11,22,0.78)',
-        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-        border: '1px solid rgba(120,160,255,0.18)',
-        borderRadius: 20,
-        display: 'flex', gap: 0,
+        background: 'rgba(118,118,128,0.28)',
+        backdropFilter: 'blur(24px) saturate(1.6)', WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
+        borderRadius: 12,
+        display: 'flex', gap: 2,
         zIndex: 50,
-        overflow: 'hidden',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.08)',
+        padding: 3,
+        boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
       }}>
         {([
           { id: 'superficie', label: 'Superfície' },
           { id: 'visao',      label: 'Visão'      },
           { id: 'simulacao',  label: 'Simulação'  },
-        ] as const).map((t, i) => (
+        ] as const).map(t => (
           <button key={t.id} onClick={() => { setShowExtras(false); setTab(t.id); }} style={{
-            background: tab === t.id ? 'rgba(59,130,246,0.15)' : 'none',
+            background: tab === t.id ? 'rgba(99,99,102,0.95)' : 'transparent',
             border: 'none', cursor: 'pointer',
-            padding: '10px 20px 11px',
-            borderRight: i < 2 ? '1px solid rgba(255,255,255,0.07)' : 'none',
-            color: tab === t.id ? '#3b82f6' : 'rgba(255,255,255,0.5)',
-            transition: 'color .15s, background .15s',
+            padding: '8px 22px',
+            borderRadius: 9,
+            color: tab === t.id ? '#fff' : 'rgba(235,235,245,0.62)',
+            boxShadow: tab === t.id ? '0 3px 10px rgba(0,0,0,0.35), inset 0 0.5px 0 rgba(255,255,255,0.2)' : 'none',
+            transition: 'color .18s, background .18s, box-shadow .18s',
             WebkitTapHighlightColor: 'transparent',
-            minWidth: 80,
+            minWidth: 96,
           }}>
-            <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'var(--sans)', letterSpacing: '.07em', textTransform: 'uppercase' }}>{t.label}</span>
+            <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: '-0.01em' }}>{t.label}</span>
           </button>
         ))}
       </div>
 
-      {/* Bottom nav — canto inferior direito */}
+      {/* Bottom nav — canto inferior direito (tab bar iOS) */}
       <div style={{
         position: 'fixed', bottom: 16, right: 16,
-        background: 'rgba(8,11,22,0.78)',
-        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-        border: '1px solid rgba(120,160,255,0.18)',
-        borderRadius: 20,
+        background: 'rgba(28,28,30,0.74)',
+        backdropFilter: 'blur(24px) saturate(1.6)', WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
+        border: '0.5px solid rgba(255,255,255,0.12)',
+        borderRadius: 22,
         display: 'flex', gap: 0,
         zIndex: 50,
         overflow: 'hidden',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.08)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
       }}>
         {[
           {
@@ -779,20 +779,19 @@ export default function Demonstracoes() {
             action: () => { setShowExtras(false); navigate('/vision/os'); },
             active: false,
           },
-        ].map((btn, i, arr) => (
+        ].map(btn => (
           <button key={btn.id} onClick={btn.action as any} style={{
-            background: btn.active ? 'rgba(59,130,246,0.15)' : 'none',
+            background: 'none',
             border: 'none', cursor: 'pointer',
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            gap: 4, padding: '10px 16px 11px',
-            borderRight: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.07)' : 'none',
-            color: btn.active ? '#3b82f6' : 'rgba(255,255,255,0.5)',
-            transition: 'color .15s, background .15s',
+            gap: 3, padding: '9px 18px 8px',
+            color: btn.active ? '#0a84ff' : 'rgba(235,235,245,0.6)',
+            transition: 'color .15s',
             WebkitTapHighlightColor: 'transparent',
-            minWidth: 58,
+            minWidth: 62,
           }}>
             {btn.icon}
-            <span style={{ fontSize: 9.5, fontWeight: 600, fontFamily: 'var(--sans)', letterSpacing: '.06em', textTransform: 'uppercase' }}>{btn.label}</span>
+            <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: '-0.01em' }}>{btn.label}</span>
           </button>
         ))}
       </div>
