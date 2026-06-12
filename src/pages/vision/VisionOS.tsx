@@ -75,23 +75,24 @@ const ADD_VALS = ['', ...Array.from({ length: 16 }, (_, i) => '+' + ((i + 1) * 0
 const BASE_VALS = ['', 'IN', 'OUT', 'UP', 'DOWN'];
 const ARM_TIPOS = ['---', 'Aro fechado', 'Nylon', 'Parafuso', 'Balgriff', 'Sem aro'];
 
-const BG = '#d4d0c8';
-const BORDER = '#888';
+const BG = '#f2f2f7';
+const BORDER = '#d1d1d6';
 const LABEL: React.CSSProperties = {
-  fontSize: 11, color: '#444', fontStyle: 'italic',
-  fontFamily: 'Arial, sans-serif', display: 'block', marginBottom: 1,
+  fontSize: 11, color: '#8e8e93', fontWeight: 600,
+  letterSpacing: '-0.01em', display: 'block', marginBottom: 2,
 };
 const INPUT: React.CSSProperties = {
   background: '#fff', border: `1px solid ${BORDER}`,
-  padding: '4px 6px', fontSize: 13, fontFamily: 'Arial, sans-serif',
-  color: '#000', outline: 'none', width: '100%',
-  boxSizing: 'border-box', borderRadius: 0,
+  padding: '6px 10px', fontSize: 13.5, fontFamily: 'inherit',
+  color: '#1c1c1e', outline: 'none', width: '100%',
+  boxSizing: 'border-box', borderRadius: 9,
 };
-const SEL: React.CSSProperties = { ...INPUT, padding: '3px 2px', cursor: 'pointer' };
+const SEL: React.CSSProperties = { ...INPUT, padding: '5px 6px', cursor: 'pointer' };
 const BTN: React.CSSProperties = {
-  background: '#4a4a48', border: '1px solid #333',
-  padding: '6px 14px', fontSize: 12, fontWeight: 'bold',
-  cursor: 'pointer', color: '#fff', whiteSpace: 'nowrap', borderRadius: 0,
+  background: '#007aff', border: 'none',
+  padding: '8px 16px', fontSize: 13, fontWeight: 600,
+  cursor: 'pointer', color: '#fff', whiteSpace: 'nowrap', borderRadius: 10,
+  letterSpacing: '-0.01em',
 };
 
 function F({ label, value, onChange, placeholder = '', type = 'text', style = {} }: {
@@ -110,12 +111,12 @@ function F({ label, value, onChange, placeholder = '', type = 'text', style = {}
 function Radio({ checked, onClick }: { checked: boolean; onClick: () => void }) {
   return (
     <div onClick={onClick} style={{
-      width: 16, height: 16, borderRadius: '50%', border: '2px solid #666',
+      width: 18, height: 18, borderRadius: '50%',
+      border: checked ? '5.5px solid #007aff' : '2px solid #c7c7cc',
       background: '#fff', boxSizing: 'border-box', cursor: 'pointer',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-    }}>
-      {checked && <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#1144cc' }} />}
-    </div>
+      flexShrink: 0,
+      transition: 'border .15s',
+    }} />
   );
 }
 
@@ -131,7 +132,7 @@ function totalOS(data: OSData) {
 function GlassesSVG({ data }: { data: OSData }) {
   const v = (val: string) => val || '';
   return (
-    <svg viewBox="0 0 720 260" width="100%" style={{ display: 'block', background: '#c8c4bc' }}>
+    <svg viewBox="0 0 720 260" width="100%" style={{ display: 'block', background: '#e9e9ee' }}>
       {/* Lentes */}
       <rect x="55" y="55" width="250" height="155" rx="26" fill="rgba(180,200,220,0.25)" stroke="#555" strokeWidth="15" />
       <rect x="415" y="55" width="250" height="155" rx="26" fill="rgba(180,200,220,0.25)" stroke="#555" strokeWidth="15" />
@@ -181,25 +182,25 @@ function GlassesSVG({ data }: { data: OSData }) {
 
       {/* ── Caixas de valores ── */}
       {/* DNP OD */}
-      <rect x="425" y="32" width="50" height="20" fill="#fff" stroke="#888" strokeWidth="1" />
+      <rect x="425" y="32" width="50" height="20" fill="#fff" stroke="#c7c7cc" strokeWidth="1" />
       <text x="450" y="46" textAnchor="middle" fontSize="12" fontFamily="Arial" fill="#000">{v(data.arm_dnp_od)}</text>
       {/* DNP OE */}
-      <rect x="245" y="32" width="50" height="20" fill="#fff" stroke="#888" strokeWidth="1" />
+      <rect x="245" y="32" width="50" height="20" fill="#fff" stroke="#c7c7cc" strokeWidth="1" />
       <text x="270" y="46" textAnchor="middle" fontSize="12" fontFamily="Arial" fill="#000">{v(data.arm_dnp_oe)}</text>
       {/* VERTICAL */}
-      <rect x="335" y="127" width="50" height="20" fill="#fff" stroke="#888" strokeWidth="1" />
+      <rect x="335" y="127" width="50" height="20" fill="#fff" stroke="#c7c7cc" strokeWidth="1" />
       <text x="360" y="141" textAnchor="middle" fontSize="12" fontFamily="Arial" fill="#000">{v(data.arm_vertical)}</text>
       {/* PONTE */}
-      <rect x="335" y="174" width="50" height="20" fill="#fff" stroke="#888" strokeWidth="1" />
+      <rect x="335" y="174" width="50" height="20" fill="#fff" stroke="#c7c7cc" strokeWidth="1" />
       <text x="360" y="188" textAnchor="middle" fontSize="12" fontFamily="Arial" fill="#000">{v(data.arm_ponte)}</text>
       {/* ARO */}
-      <rect x="515" y="232" width="50" height="20" fill="#fff" stroke="#888" strokeWidth="1" />
+      <rect x="515" y="232" width="50" height="20" fill="#fff" stroke="#c7c7cc" strokeWidth="1" />
       <text x="540" y="246" textAnchor="middle" fontSize="12" fontFamily="Arial" fill="#000">{v(data.arm_aro)}</text>
       {/* ALT PUPILAR OD */}
-      <rect x="14" y="225" width="50" height="20" fill="#fff" stroke="#888" strokeWidth="1" />
+      <rect x="14" y="225" width="50" height="20" fill="#fff" stroke="#c7c7cc" strokeWidth="1" />
       <text x="39" y="239" textAnchor="middle" fontSize="12" fontFamily="Arial" fill="#000">{v(data.arm_alt_pupilar_od)}</text>
       {/* ALT PUPILAR OE */}
-      <rect x="656" y="225" width="50" height="20" fill="#fff" stroke="#888" strokeWidth="1" />
+      <rect x="656" y="225" width="50" height="20" fill="#fff" stroke="#c7c7cc" strokeWidth="1" />
       <text x="681" y="239" textAnchor="middle" fontSize="12" fontFamily="Arial" fill="#000">{v(data.arm_alt_pupilar_oe)}</text>
     </svg>
   );
@@ -268,14 +269,16 @@ export default function VisionOS() {
   return (
     <div style={{
       height: '100dvh', display: 'flex', flexDirection: 'column',
-      background: BG, fontFamily: 'Arial, sans-serif', userSelect: 'none', overflow: 'hidden',
+      background: BG, userSelect: 'none', overflow: 'hidden', color: '#1c1c1e',
     }}>
 
-      {/* ── Header ── */}
+      {/* ── Header resumo do cliente ── */}
       <div style={{
         display: 'flex', alignItems: 'center',
-        background: '#b8c8d8', borderBottom: '1px solid #8899aa',
-        padding: '3px 0', flexShrink: 0, fontSize: 12,
+        background: 'rgba(249,249,251,0.85)',
+        backdropFilter: 'blur(24px) saturate(1.6)', WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
+        borderBottom: '0.5px solid rgba(60,60,67,0.22)',
+        padding: '6px 0', flexShrink: 0, fontSize: 12,
       }}>
         {[
           ['Cliente', data.cliente_nome],
@@ -285,35 +288,55 @@ export default function VisionOS() {
           ['Nascimento', data.cliente_nascimento],
         ].map(([label, val], i) => (
           <div key={i} style={{
-            flex: 1, display: 'flex', gap: 4, padding: '0 12px',
-            borderRight: i < 4 ? '1px solid #99aabc' : 'none',
+            flex: 1, display: 'flex', gap: 5, padding: '0 12px',
+            borderRight: i < 4 ? '0.5px solid rgba(60,60,67,0.18)' : 'none',
           }}>
-            <span style={{ fontWeight: 'bold', color: '#223', whiteSpace: 'nowrap' }}>{label}:</span>
-            <span style={{ color: val ? '#000' : '#889', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{val || ''}</span>
+            <span style={{ fontWeight: 600, color: '#8e8e93', whiteSpace: 'nowrap' }}>{label}:</span>
+            <span style={{ color: val ? '#1c1c1e' : '#c7c7cc', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{val || ''}</span>
           </div>
         ))}
       </div>
 
-      {/* ── Tab bar ── */}
-      <div style={{ display: 'flex', alignItems: 'stretch', background: '#3c3c3c', flexShrink: 0 }}>
+      {/* ── Nav + tabs estilo iOS ── */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 8,
+        background: 'rgba(249,249,251,0.85)',
+        backdropFilter: 'blur(24px) saturate(1.6)', WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
+        borderBottom: '0.5px solid rgba(60,60,67,0.22)',
+        padding: '7px 12px', flexShrink: 0,
+      }}>
         <div style={{
-          padding: '0 16px', display: 'flex', alignItems: 'center',
-          background: '#2a2a2a', color: '#ccc',
-          fontSize: 12, fontWeight: 'bold', letterSpacing: '.06em',
-          borderRight: '1px solid #555', cursor: 'pointer', whiteSpace: 'nowrap',
+          display: 'flex', alignItems: 'center', gap: 2,
+          color: '#007aff', fontSize: 15, fontWeight: 500,
+          cursor: 'pointer', whiteSpace: 'nowrap', padding: '4px 6px',
+          WebkitTapHighlightColor: 'transparent',
         }} onClick={() => navigate('/vision')}>
-          ← ORDEM DE SERVIÇO
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#007aff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+          O.S.
         </div>
-        {TABS.map(([t, label]) => (
-          <button key={t} onClick={() => setTab(t)} style={{
-            background: tab === t ? BG : 'transparent',
-            border: 'none', borderRight: '1px solid #555',
-            padding: '8px 20px', cursor: 'pointer',
-            fontSize: 12, fontWeight: 'bold', letterSpacing: '.05em',
-            color: tab === t ? '#000' : '#bbb',
-          }}>{label}</button>
-        ))}
-        <div style={{ flex: 1 }} />
+        <div style={{
+          flex: 1, display: 'flex', justifyContent: 'center',
+        }}>
+          <div style={{
+            background: 'rgba(118,118,128,0.12)',
+            borderRadius: 10, padding: 2.5, display: 'flex', gap: 2,
+          }}>
+            {TABS.map(([t, label]) => (
+              <button key={t} onClick={() => setTab(t)} style={{
+                background: tab === t ? '#fff' : 'transparent',
+                border: 'none',
+                padding: '6px 18px', cursor: 'pointer', borderRadius: 8,
+                fontSize: 12.5, fontWeight: 600, letterSpacing: '-0.01em',
+                color: tab === t ? '#1c1c1e' : 'rgba(60,60,67,0.6)',
+                boxShadow: tab === t ? '0 2px 8px rgba(0,0,0,0.12)' : 'none',
+                transition: 'all .18s',
+                WebkitTapHighlightColor: 'transparent',
+                textTransform: 'capitalize',
+              }}>{label.charAt(0) + label.slice(1).toLowerCase()}</button>
+            ))}
+          </div>
+        </div>
+        <div style={{ width: 50 }} />
       </div>
 
       {/* ── Conteúdo ── */}
@@ -326,10 +349,10 @@ export default function VisionOS() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontSize: 13, fontWeight: 'bold' }}>Cliente:</span>
-                <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#1144cc', border: '3px solid #fff', boxShadow: '0 0 0 2px #1144cc', flexShrink: 0 }} />
+                <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#007aff', border: '3px solid #fff', boxShadow: '0 0 0 2px #1144cc', flexShrink: 0 }} />
                 <span style={{ fontSize: 13, fontStyle: 'italic' }}>É o Paciente</span>
               </div>
-              <button style={{ background: '#e8e4e0', border: '2px outset #ccc', padding: '4px 16px', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' }}>
+              <button style={{ background: '#fff', border: '1px solid #d1d1d6', borderRadius: 9, color: '#007aff', padding: '4px 16px', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' }}>
                 PESQUISA
               </button>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
@@ -397,7 +420,7 @@ export default function VisionOS() {
             <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
               <label style={LABEL}>OBSERVAÇÃO</label>
               <textarea value={data.cliente_obs} onChange={e => set('cliente_obs')(e.target.value)}
-                style={{ ...INPUT, resize: 'none', flex: 1, minHeight: 52, fontFamily: 'Arial' }} />
+                style={{ ...INPUT, resize: 'none', flex: 1, minHeight: 52, fontFamily: 'inherit' }} />
             </div>
           </div>
         )}
@@ -408,24 +431,24 @@ export default function VisionOS() {
             <div style={{ fontSize: 14, fontWeight: 'bold' }}>Receita:</div>
 
             {/* Prescription table */}
-            <div style={{ overflowX: 'auto', border: '1px solid #999' }}>
+            <div style={{ overflowX: 'auto', border: '1px solid #d1d1d6' }}>
               <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 700 }}>
                 <thead>
-                  <tr style={{ background: '#c8c4bc' }}>
-                    <th style={{ border: '1px solid #aaa', width: 38, padding: '4px' }} />
-                    <th style={{ border: '1px solid #aaa', padding: '4px 6px', fontSize: 11, fontWeight: 'normal', fontStyle: 'italic', color: '#333' }}>ESF</th>
-                    <th style={{ border: '1px solid #aaa', padding: '4px 6px', fontSize: 11, fontWeight: 'normal', fontStyle: 'italic', color: '#333' }}>CIL</th>
-                    <th style={{ border: '1px solid #aaa', padding: '4px 6px', fontSize: 11, fontWeight: 'normal', fontStyle: 'italic', color: '#333' }}>EIXO</th>
-                    <th style={{ border: '1px solid #aaa', padding: '4px 6px', fontSize: 11, fontWeight: 'normal', fontStyle: 'italic', color: '#333' }}>ADIÇÃO</th>
-                    <th style={{ border: '1px solid #aaa', padding: '4px 6px', fontSize: 11, fontWeight: 'normal', fontStyle: 'italic', color: '#333' }}>DNP</th>
-                    <th style={{ border: '1px solid #aaa', padding: '4px 6px', fontSize: 11, fontWeight: 'normal', fontStyle: 'italic', color: '#333' }}>ALT</th>
-                    <th colSpan={2} style={{ border: '1px solid #aaa', padding: '3px 6px', fontSize: 10, fontWeight: 'normal', color: '#444', textAlign: 'center' }}>PRISMA HORIZONTAL</th>
-                    <th colSpan={2} style={{ border: '1px solid #aaa', padding: '3px 6px', fontSize: 10, fontWeight: 'normal', color: '#444', textAlign: 'center' }}>PRISMA VERTICAL</th>
+                  <tr style={{ background: '#e9e9ee' }}>
+                    <th style={{ border: '1px solid #d1d1d6', width: 38, padding: '4px' }} />
+                    <th style={{ border: '1px solid #d1d1d6', padding: '4px 6px', fontSize: 11, fontWeight: 'normal', fontStyle: 'italic', color: '#333' }}>ESF</th>
+                    <th style={{ border: '1px solid #d1d1d6', padding: '4px 6px', fontSize: 11, fontWeight: 'normal', fontStyle: 'italic', color: '#333' }}>CIL</th>
+                    <th style={{ border: '1px solid #d1d1d6', padding: '4px 6px', fontSize: 11, fontWeight: 'normal', fontStyle: 'italic', color: '#333' }}>EIXO</th>
+                    <th style={{ border: '1px solid #d1d1d6', padding: '4px 6px', fontSize: 11, fontWeight: 'normal', fontStyle: 'italic', color: '#333' }}>ADIÇÃO</th>
+                    <th style={{ border: '1px solid #d1d1d6', padding: '4px 6px', fontSize: 11, fontWeight: 'normal', fontStyle: 'italic', color: '#333' }}>DNP</th>
+                    <th style={{ border: '1px solid #d1d1d6', padding: '4px 6px', fontSize: 11, fontWeight: 'normal', fontStyle: 'italic', color: '#333' }}>ALT</th>
+                    <th colSpan={2} style={{ border: '1px solid #d1d1d6', padding: '3px 6px', fontSize: 10, fontWeight: 'normal', color: '#444', textAlign: 'center' }}>PRISMA HORIZONTAL</th>
+                    <th colSpan={2} style={{ border: '1px solid #d1d1d6', padding: '3px 6px', fontSize: 10, fontWeight: 'normal', color: '#444', textAlign: 'center' }}>PRISMA VERTICAL</th>
                   </tr>
-                  <tr style={{ background: '#c8c4bc' }}>
-                    {[...Array(7)].map((_, i) => <th key={i} style={{ border: '1px solid #aaa' }} />)}
+                  <tr style={{ background: '#e9e9ee' }}>
+                    {[...Array(7)].map((_, i) => <th key={i} style={{ border: '1px solid #d1d1d6' }} />)}
                     {['PRISMA', 'BASE', 'PRISMA', 'BASE'].map((h, i) => (
-                      <th key={i} style={{ border: '1px solid #aaa', padding: '2px 4px', fontSize: 10, fontWeight: 'normal', fontStyle: 'italic', color: '#555' }}>{h}</th>
+                      <th key={i} style={{ border: '1px solid #d1d1d6', padding: '2px 4px', fontSize: 10, fontWeight: 'normal', fontStyle: 'italic', color: '#555' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -435,58 +458,58 @@ export default function VisionOS() {
                     { olho: 'OE', fields: ['oe_esf','oe_cil','oe_eixo','oe_adicao','oe_dnp','oe_alt','oe_prisma_h','oe_base_h','oe_prisma_v','oe_base_v'] },
                   ].map(({ olho, fields }) => (
                     <tr key={olho}>
-                      <td style={{ border: '1px solid #aaa', background: '#c8c4bc', fontWeight: 'bold', fontSize: 13, textAlign: 'center', padding: '4px' }}>{olho}</td>
+                      <td style={{ border: '1px solid #d1d1d6', background: '#e9e9ee', fontWeight: 'bold', fontSize: 13, textAlign: 'center', padding: '4px' }}>{olho}</td>
                       {/* ESF */}
-                      <td style={{ border: '1px solid #aaa', padding: 2 }}>
+                      <td style={{ border: '1px solid #d1d1d6', padding: 2 }}>
                         <select value={data[fields[0] as keyof OSData]} onChange={e => set(fields[0] as keyof OSData)(e.target.value)} style={{ ...SEL, width: 82 }}>
                           {ESF_VALS.map(v => <option key={v} value={v}>{v}</option>)}
                         </select>
                       </td>
                       {/* CIL */}
-                      <td style={{ border: '1px solid #aaa', padding: 2 }}>
+                      <td style={{ border: '1px solid #d1d1d6', padding: 2 }}>
                         <select value={data[fields[1] as keyof OSData]} onChange={e => set(fields[1] as keyof OSData)(e.target.value)} style={{ ...SEL, width: 82 }}>
                           {CIL_VALS.map(v => <option key={v} value={v}>{v}</option>)}
                         </select>
                       </td>
                       {/* EIXO */}
-                      <td style={{ border: '1px solid #aaa', padding: 2 }}>
+                      <td style={{ border: '1px solid #d1d1d6', padding: 2 }}>
                         <input value={data[fields[2] as keyof OSData]} onChange={e => set(fields[2] as keyof OSData)(e.target.value)}
-                          style={{ ...INPUT, width: 56, textAlign: 'center', background: '#e8e8e8' }} placeholder="0°" />
+                          style={{ ...INPUT, width: 56, textAlign: 'center', background: '#f2f2f7' }} placeholder="0°" />
                       </td>
                       {/* ADIÇÃO */}
-                      <td style={{ border: '1px solid #aaa', padding: 2 }}>
+                      <td style={{ border: '1px solid #d1d1d6', padding: 2 }}>
                         <select value={data[fields[3] as keyof OSData]} onChange={e => set(fields[3] as keyof OSData)(e.target.value)} style={{ ...SEL, width: 76 }}>
                           {ADD_VALS.map(v => <option key={v} value={v}>{v}</option>)}
                         </select>
                       </td>
                       {/* DNP */}
-                      <td style={{ border: '1px solid #aaa', padding: 2 }}>
+                      <td style={{ border: '1px solid #d1d1d6', padding: 2 }}>
                         <input value={data[fields[4] as keyof OSData]} onChange={e => set(fields[4] as keyof OSData)(e.target.value)}
                           style={{ ...INPUT, width: 60, textAlign: 'center' }} placeholder="32.0" />
                       </td>
                       {/* ALT */}
-                      <td style={{ border: '1px solid #aaa', padding: 2 }}>
+                      <td style={{ border: '1px solid #d1d1d6', padding: 2 }}>
                         <input value={data[fields[5] as keyof OSData]} onChange={e => set(fields[5] as keyof OSData)(e.target.value)}
                           style={{ ...INPUT, width: 60, textAlign: 'center' }} placeholder="22.0" />
                       </td>
                       {/* PRISMA H */}
-                      <td style={{ border: '1px solid #aaa', padding: 2 }}>
+                      <td style={{ border: '1px solid #d1d1d6', padding: 2 }}>
                         <input value={data[fields[6] as keyof OSData]} onChange={e => set(fields[6] as keyof OSData)(e.target.value)}
                           style={{ ...INPUT, width: 60, textAlign: 'center' }} placeholder="0.00" />
                       </td>
                       {/* BASE H */}
-                      <td style={{ border: '1px solid #aaa', padding: 2 }}>
+                      <td style={{ border: '1px solid #d1d1d6', padding: 2 }}>
                         <select value={data[fields[7] as keyof OSData]} onChange={e => set(fields[7] as keyof OSData)(e.target.value)} style={{ ...SEL, width: 72 }}>
                           {BASE_VALS.map(v => <option key={v} value={v}>{v}</option>)}
                         </select>
                       </td>
                       {/* PRISMA V */}
-                      <td style={{ border: '1px solid #aaa', padding: 2 }}>
+                      <td style={{ border: '1px solid #d1d1d6', padding: 2 }}>
                         <input value={data[fields[8] as keyof OSData]} onChange={e => set(fields[8] as keyof OSData)(e.target.value)}
                           style={{ ...INPUT, width: 60, textAlign: 'center' }} placeholder="0.00" />
                       </td>
                       {/* BASE V */}
-                      <td style={{ border: '1px solid #aaa', padding: 2 }}>
+                      <td style={{ border: '1px solid #d1d1d6', padding: 2 }}>
                         <select value={data[fields[9] as keyof OSData]} onChange={e => set(fields[9] as keyof OSData)(e.target.value)} style={{ ...SEL, width: 72 }}>
                           {BASE_VALS.map(v => <option key={v} value={v}>{v}</option>)}
                         </select>
@@ -501,8 +524,8 @@ export default function VisionOS() {
             <div style={{ display: 'flex', gap: 12, flex: 1 }}>
               {/* Left empty box + eye btn */}
               <div style={{ flex: '0 0 200px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <div style={{ flex: 1, border: '1px solid #999', background: '#c0bcb4', minHeight: 100 }} />
-                <button style={{ background: '#3d5266', border: '2px outset #5577aa', padding: '10px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ flex: 1, border: '1px solid #d1d1d6', background: '#e9e9ee', minHeight: 100 }} />
+                <button style={{ background: '#007aff', border: 'none', borderRadius: 10, padding: '10px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <svg viewBox="0 0 64 42" width="64" height="42" fill="none">
                     <rect x="3" y="8" width="58" height="30" rx="5" stroke="white" strokeWidth="3" />
                     <ellipse cx="22" cy="23" rx="8" ry="8" stroke="white" strokeWidth="2.5" />
@@ -523,7 +546,7 @@ export default function VisionOS() {
                 <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
                   <F label="Nome Médico" value={data.medico_nome} onChange={set('medico_nome')} placeholder="Dr. Nome" style={{ flex: 1 }} />
                   <F label="CRM" value={data.medico_crm} onChange={set('medico_crm')} placeholder="00000/UF" style={{ flex: '0 0 120px' }} />
-                  <button style={{ ...BTN, background: '#e8e4e0', color: '#000', border: '2px outset #ccc', alignSelf: 'flex-end' }}>
+                  <button style={{ ...BTN, background: '#fff', color: '#007aff', border: '1px solid #d1d1d6', alignSelf: 'flex-end' }}>
                     Selecionar Médico
                   </button>
                 </div>
@@ -535,7 +558,7 @@ export default function VisionOS() {
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                   <label style={LABEL}>Observação</label>
                   <textarea value={data.receita_obs} onChange={e => set('receita_obs')(e.target.value)}
-                    style={{ ...INPUT, resize: 'none', flex: 1, minHeight: 80, fontFamily: 'Arial' }} />
+                    style={{ ...INPUT, resize: 'none', flex: 1, minHeight: 80, fontFamily: 'inherit' }} />
                 </div>
               </div>
             </div>
@@ -558,13 +581,13 @@ export default function VisionOS() {
                 <GlassesSVG data={data} />
 
                 {/* OD/OE lab table */}
-                <div style={{ overflowX: 'auto', border: '1px solid #999' }}>
+                <div style={{ overflowX: 'auto', border: '1px solid #d1d1d6' }}>
                   <table style={{ borderCollapse: 'collapse', minWidth: 500 }}>
                     <thead>
-                      <tr style={{ background: '#c0bbb4' }}>
-                        <th style={{ border: '1px solid #aaa', padding: '3px 6px', width: 36 }} />
+                      <tr style={{ background: '#e9e9ee' }}>
+                        <th style={{ border: '1px solid #d1d1d6', padding: '3px 6px', width: 36 }} />
                         {['ESF','CIL','EIXO','ADIÇÃO','DNP','ALT','PRISMA','BASE','PRISMA','BASE'].map((h, i) => (
-                          <th key={i} style={{ border: '1px solid #aaa', padding: '3px 5px', fontSize: 10, fontWeight: 'normal', fontStyle: 'italic', color: '#333' }}>{h}</th>
+                          <th key={i} style={{ border: '1px solid #d1d1d6', padding: '3px 5px', fontSize: 10, fontWeight: 'normal', fontStyle: 'italic', color: '#333' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -574,9 +597,9 @@ export default function VisionOS() {
                         { olho: 'OE', fields: ['oe_esf','oe_cil','oe_eixo','oe_adicao','oe_dnp','oe_alt','oe_prisma_h','oe_base_h','oe_prisma_v','oe_base_v'] },
                       ].map(({ olho, fields }) => (
                         <tr key={olho}>
-                          <td style={{ border: '1px solid #aaa', background: '#c0bbb4', fontWeight: 'bold', fontSize: 12, textAlign: 'center', padding: '3px' }}>{olho}</td>
+                          <td style={{ border: '1px solid #d1d1d6', background: '#e9e9ee', fontWeight: 'bold', fontSize: 12, textAlign: 'center', padding: '3px' }}>{olho}</td>
                           {fields.map(f => (
-                            <td key={f} style={{ border: '1px solid #aaa', padding: 2 }}>
+                            <td key={f} style={{ border: '1px solid #d1d1d6', padding: 2 }}>
                               <input value={data[f as keyof OSData]} onChange={e => set(f as keyof OSData)(e.target.value)}
                                 style={{ ...INPUT, width: 48, textAlign: 'center', fontSize: 11 }} placeholder="mm" />
                             </td>
@@ -623,12 +646,12 @@ export default function VisionOS() {
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
                 <div>
                   <span style={{ fontSize: 13, fontWeight: 'bold' }}>LENTES:</span>
-                  <div style={{ border: '1px solid #999', background: '#c0bbb4', minHeight: 70, padding: 4, marginTop: 2 }} />
+                  <div style={{ border: '1px solid #d1d1d6', background: '#e9e9ee', minHeight: 70, padding: 4, marginTop: 2 }} />
                 </div>
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                   <label style={LABEL}>DESCRIÇÃO DAS LENTES</label>
                   <textarea value={data.lentes_desc} onChange={e => set('lentes_desc')(e.target.value)}
-                    style={{ ...INPUT, resize: 'none', flex: 1, minHeight: 70, fontFamily: 'Arial' }} />
+                    style={{ ...INPUT, resize: 'none', flex: 1, minHeight: 70, fontFamily: 'inherit' }} />
                 </div>
                 <F label="ARMAÇÃO" value={data.armacao_nome} onChange={set('armacao_nome')} />
                 <F label="OBSERVAÇÃO" value={data.armacao_obs} onChange={set('armacao_obs')} />
@@ -645,12 +668,12 @@ export default function VisionOS() {
         {tab === 'fechamento' && (
           <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             {/* Panel headers */}
-            <div style={{ display: 'flex', background: '#c8c4bc', borderBottom: '1px solid #999', flexShrink: 0 }}>
-              <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRight: '1px solid #999' }}>
+            <div style={{ display: 'flex', background: '#e9e9ee', borderBottom: '1px solid #d1d1d6', flexShrink: 0 }}>
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRight: '1px solid #d1d1d6' }}>
                 <span style={{ fontSize: 13, fontWeight: 'bold' }}>Itens Vistos:</span>
                 <div style={{ marginLeft: 'auto', display: 'flex', gap: 2 }}>
                   {['🔍', '✕', '→'].map((ic, i) => (
-                    <button key={i} style={{ background: '#556', border: '1px solid #334', padding: '4px 10px', color: '#fff', fontSize: 13, cursor: 'pointer' }}>{ic}</button>
+                    <button key={i} style={{ background: '#007aff', border: 'none', borderRadius: 8, padding: '5px 11px', color: '#fff', fontSize: 13, cursor: 'pointer' }}>{ic}</button>
                   ))}
                 </div>
               </div>
@@ -659,24 +682,24 @@ export default function VisionOS() {
                 <span style={{ fontSize: 11 }}>+ Acessórios:</span>
                 <div style={{ marginLeft: 'auto', display: 'flex', gap: 2 }}>
                   {[
-                    { ic: '👁', bg: '#1144cc' }, { ic: '🕶', bg: '#1144cc' },
-                    { ic: '▌▌▌', bg: '#1144cc' }, { ic: '✕', bg: '#556' },
+                    { ic: '👁', bg: '#007aff' }, { ic: '🕶', bg: '#007aff' },
+                    { ic: '▌▌▌', bg: '#007aff' }, { ic: '✕', bg: '#ff3b30' },
                   ].map(({ ic, bg }, i) => (
-                    <button key={i} style={{ background: bg, border: '1px solid #334', padding: '4px 8px', color: '#fff', fontSize: 12, cursor: 'pointer' }}>{ic}</button>
+                    <button key={i} style={{ background: bg, border: 'none', borderRadius: 8, padding: '5px 9px', color: '#fff', fontSize: 12, cursor: 'pointer' }}>{ic}</button>
                   ))}
                 </div>
               </div>
             </div>
 
             {/* Table headers */}
-            <div style={{ display: 'flex', background: '#c0bbb4', flexShrink: 0 }}>
+            <div style={{ display: 'flex', background: '#e9e9ee', flexShrink: 0 }}>
               {[0, 1].map(pi => (
-                <div key={pi} style={{ flex: 1, borderRight: pi === 0 ? '1px solid #999' : 'none' }}>
+                <div key={pi} style={{ flex: 1, borderRight: pi === 0 ? '1px solid #d1d1d6' : 'none' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
                     <thead>
                       <tr>
                         {['COD', 'AO', 'UN', 'PRODUTO', 'PREÇO'].map(h => (
-                          <th key={h} style={{ border: '1px solid #aaa', padding: '3px 6px', fontWeight: 'bold', color: '#333', textAlign: h === 'PRODUTO' ? 'left' : 'center' }}>{h}</th>
+                          <th key={h} style={{ border: '1px solid #d1d1d6', padding: '3px 6px', fontWeight: 'bold', color: '#333', textAlign: h === 'PRODUTO' ? 'left' : 'center' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -687,20 +710,20 @@ export default function VisionOS() {
 
             {/* Empty list area */}
             <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-              <div style={{ flex: 1, background: '#ccc8c0', borderRight: '1px solid #999' }} />
-              <div style={{ flex: 1, background: '#ccc8c0' }} />
+              <div style={{ flex: 1, background: '#f2f2f7', borderRight: '1px solid #d1d1d6' }} />
+              <div style={{ flex: 1, background: '#f2f2f7' }} />
             </div>
 
             {/* Bottom row */}
-            <div style={{ display: 'flex', borderTop: '1px solid #999', flexShrink: 0 }}>
+            <div style={{ display: 'flex', borderTop: '1px solid #d1d1d6', flexShrink: 0 }}>
               {/* Left: SUB TOTAL */}
-              <div style={{ flex: 1, padding: '6px 12px', borderRight: '1px solid #999', background: '#c8c4bc', display: 'flex', alignItems: 'flex-end' }}>
+              <div style={{ flex: 1, padding: '6px 12px', borderRight: '1px solid #d1d1d6', background: '#e9e9ee', display: 'flex', alignItems: 'flex-end' }}>
                 <span style={{ fontSize: 12 }}>SUB TOTAL:</span>
                 <span style={{ marginLeft: 8, fontSize: 12, color: '#555' }}>Indisponível</span>
               </div>
 
               {/* Right: Fechamento */}
-              <div style={{ flex: 1, background: '#c8c4bc', padding: '8px 12px', display: 'flex', gap: 16 }}>
+              <div style={{ flex: 1, background: '#e9e9ee', padding: '8px 12px', display: 'flex', gap: 16 }}>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 'bold', marginBottom: 6 }}>Fechamento:</div>
                   <div>
@@ -728,8 +751,8 @@ export default function VisionOS() {
             </div>
 
             {/* Action buttons */}
-            <div style={{ display: 'flex', background: '#b8b4ac', borderTop: '1px solid #888', flexShrink: 0 }}>
-              <div style={{ flex: 1, borderRight: '1px solid #888', padding: '6px 10px' }}>
+            <div style={{ display: 'flex', background: '#f2f2f7', borderTop: '1px solid #d1d1d6', flexShrink: 0 }}>
+              <div style={{ flex: 1, borderRight: '1px solid #d1d1d6', padding: '6px 10px' }}>
                 {saved && <span style={{ fontSize: 13, color: '#006600', fontWeight: 'bold' }}>✓ Salvo!</span>}
               </div>
               <div style={{ flex: 1, display: 'flex', gap: 4, padding: '6px 8px', justifyContent: 'flex-end' }}>
@@ -788,12 +811,12 @@ export default function VisionOS() {
                   <button onClick={carregarBusca} style={BTN}>Buscar</button>
                 </div>
 
-                <div style={{ flex: 1, overflow: 'auto', border: '1px solid #aaa' }}>
+                <div style={{ flex: 1, overflow: 'auto', border: '1px solid #d1d1d6' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, minWidth: 700 }}>
                     <thead style={{ position: 'sticky', top: 0 }}>
-                      <tr style={{ background: '#c0bbb4' }}>
+                      <tr style={{ background: '#e9e9ee' }}>
                         {['Núm.','v.','DAV','Data','Nome','Cpf','Status','Tipo','Desc.','Valor Total','Valor Pago'].map(h => (
-                          <th key={h} style={{ border: '1px solid #aaa', padding: '4px 6px', fontWeight: 'bold', textAlign: 'left', fontSize: 11, whiteSpace: 'nowrap' }}>{h}</th>
+                          <th key={h} style={{ border: '1px solid #d1d1d6', padding: '4px 6px', fontWeight: 'bold', textAlign: 'left', fontSize: 11, whiteSpace: 'nowrap' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -838,7 +861,7 @@ export default function VisionOS() {
       {/* ── Bottom bar ── */}
       <div style={{
         display: 'flex', alignItems: 'center',
-        background: '#c0bbb4', borderTop: '2px solid #888',
+        background: '#e9e9ee', borderTop: '2px solid #888',
         padding: '4px 12px', flexShrink: 0,
       }}>
         {[
@@ -851,7 +874,7 @@ export default function VisionOS() {
           <button key={label} onClick={onClick} style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center',
             gap: 2, padding: '3px 20px', background: 'none', border: 'none',
-            cursor: 'pointer', borderRight: '1px solid #999',
+            cursor: 'pointer', borderRight: '1px solid #d1d1d6',
           }}>
             <span style={{ fontSize: 18 }}>{icon}</span>
             <span style={{ fontSize: 10, color: '#333', fontWeight: 'bold', letterSpacing: '.04em' }}>{label}</span>

@@ -46,30 +46,29 @@ function DrumPicker({ label, values, selected, onChange, color = '#3b82f6' }: {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flex: 1 }}>
       <div style={{
-        fontSize: 9, color: '#374151', fontFamily: 'var(--mono)',
-        textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700,
+        fontSize: 10, color: '#8e8e93',
+        textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700,
       }}>{label}</div>
 
       <div style={{
         position: 'relative', height: ITEM_H * 5, overflow: 'hidden',
-        borderRadius: 10, background: '#07080e',
-        border: '1px solid #12141c', width: '100%',
+        borderRadius: 12, background: '#fff',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.06)', width: '100%',
       }}>
         <div style={{
           position: 'absolute', top: 0, left: 0, right: 0, height: ITEM_H * 2,
-          background: 'linear-gradient(to bottom, #07080e, transparent)',
+          background: 'linear-gradient(to bottom, #fff, rgba(255,255,255,0))',
           pointerEvents: 'none', zIndex: 2,
         }} />
         <div style={{
-          position: 'absolute', top: ITEM_H * 2, left: 0, right: 0, height: ITEM_H,
-          background: `${color}14`,
-          borderTop: `1px solid ${color}35`,
-          borderBottom: `1px solid ${color}35`,
+          position: 'absolute', top: ITEM_H * 2, left: 4, right: 4, height: ITEM_H,
+          background: 'rgba(118,118,128,0.12)',
+          borderRadius: 9,
           pointerEvents: 'none', zIndex: 1,
         }} />
         <div style={{
           position: 'absolute', bottom: 0, left: 0, right: 0, height: ITEM_H * 2,
-          background: 'linear-gradient(to top, #07080e, transparent)',
+          background: 'linear-gradient(to top, #fff, rgba(255,255,255,0))',
           pointerEvents: 'none', zIndex: 2,
         }} />
         <div
@@ -89,10 +88,10 @@ function DrumPicker({ label, values, selected, onChange, color = '#3b82f6' }: {
                 style={{
                   height: ITEM_H,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: isSel ? 16 : 13,
-                  fontWeight: isSel ? 700 : 400,
-                  color: isSel ? color : '#374151',
-                  fontFamily: 'var(--mono)', cursor: 'pointer',
+                  fontSize: isSel ? 17 : 14,
+                  fontWeight: isSel ? 600 : 400,
+                  color: isSel ? color : '#c7c7cc',
+                  fontVariantNumeric: 'tabular-nums', cursor: 'pointer',
                   transition: 'color 0.1s',
                 }}
               >{v}</div>
@@ -125,13 +124,13 @@ function RadarChart({ data, color }: { data: { subject: string; value: number }[
         return (
           <polygon key={ring}
             points={pts.map(p => `${p.x},${p.y}`).join(' ')}
-            fill="none" stroke="#1e2030" strokeWidth={ring === 1 ? 1.2 : 0.8}
+            fill="none" stroke="#d8d8de" strokeWidth={ring === 1 ? 1.2 : 0.8}
           />
         );
       })}
       {data.map((_, i) => {
         const outer = pt(R, i);
-        return <line key={i} x1={cx} y1={cy} x2={outer.x} y2={outer.y} stroke="#1e2030" strokeWidth="0.8" />;
+        return <line key={i} x1={cx} y1={cy} x2={outer.x} y2={outer.y} stroke="#d8d8de" strokeWidth="0.8" />;
       })}
       <polygon points={polyPts} fill={color} fillOpacity={0.2} stroke={color} strokeWidth={2} strokeLinejoin="round" />
       {dataPolygon.map((p, i) => (
@@ -142,7 +141,7 @@ function RadarChart({ data, color }: { data: { subject: string; value: number }[
         const anchor = lp.x < cx - 8 ? 'end' : lp.x > cx + 8 ? 'start' : 'middle';
         return (
           <text key={i} x={lp.x} y={lp.y + 4} textAnchor={anchor}
-            fill="#4b5563" fontSize="9.5" fontFamily="var(--mono)" letterSpacing="0.04em">
+            fill="#8e8e93" fontSize="9.5" fontWeight="600" letterSpacing="0.04em">
             {d.subject}
           </text>
         );
@@ -222,24 +221,28 @@ export default function MapaVisual() {
   return (
     <div style={{
       height: '100dvh', display: 'flex', flexDirection: 'column',
-      background: '#050508', overflow: 'hidden',
+      background: '#f2f2f7', overflow: 'hidden', color: '#1c1c1e',
     }}>
-      {/* Top bar */}
+      {/* Nav bar estilo iOS */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 20px', height: 48,
-        background: '#07080e', borderBottom: '1px solid #12141c', flexShrink: 0,
+        padding: '0 14px', height: 46,
+        background: 'rgba(249,249,251,0.85)',
+        backdropFilter: 'blur(24px) saturate(1.6)', WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
+        borderBottom: '0.5px solid rgba(60,60,67,0.22)', flexShrink: 0,
+        zIndex: 5,
       }}>
         <button onClick={() => navigate('/vision')} style={{
           background: 'none', border: 'none', cursor: 'pointer',
-          display: 'flex', alignItems: 'center', gap: 8, color: '#6b7280',
-          fontSize: 13, fontFamily: 'var(--sans)', padding: 0,
+          display: 'flex', alignItems: 'center', gap: 2, color: '#007aff',
+          fontSize: 15, fontWeight: 500, padding: '4px 6px',
+          WebkitTapHighlightColor: 'transparent',
         }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6" /></svg>
-          Voltar
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#007aff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+          Menu
         </button>
-        <span style={{ fontSize: 14, fontWeight: 700, color: '#f0f0f5' }}>Mapa Visual</span>
-        <div style={{ width: 60 }} />
+        <span style={{ fontSize: 16, fontWeight: 600, color: '#1c1c1e', letterSpacing: '-0.02em' }}>Mapa Visual</span>
+        <div style={{ width: 70 }} />
       </div>
 
       {/* Content */}
@@ -247,8 +250,8 @@ export default function MapaVisual() {
 
         {/* Brand dots column */}
         <div style={{
-          width: 44, background: '#07080e',
-          borderRight: '1px solid #12141c',
+          width: 44, background: '#fff',
+          borderRight: '0.5px solid rgba(60,60,67,0.18)',
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', paddingTop: 16, gap: 14, flexShrink: 0,
         }}>
@@ -257,7 +260,7 @@ export default function MapaVisual() {
             title="Todas"
             style={{
               width: 12, height: 12, borderRadius: '50%', border: 'none', cursor: 'pointer',
-              background: filterMarca === null ? '#f0f0f5' : '#1e2030',
+              background: filterMarca === null ? '#1c1c1e' : '#d1d1d6',
               transition: 'background 0.15s', flexShrink: 0,
             }}
           />
@@ -279,8 +282,8 @@ export default function MapaVisual() {
 
         {/* Left panel — lentes list */}
         <div style={{
-          width: 190, background: '#07080e',
-          borderRight: '1px solid #12141c',
+          width: 190, background: '#fff',
+          borderRight: '0.5px solid rgba(60,60,67,0.18)',
           display: 'flex', flexDirection: 'column',
           overflowY: 'auto', flexShrink: 0,
         }}>
@@ -288,16 +291,16 @@ export default function MapaVisual() {
           <div style={{
             margin: '12px 12px 8px',
             height: 80, borderRadius: 12,
-            background: '#0c0d12', border: '1px dashed #1e2030',
+            background: '#f2f2f7', border: '1.5px dashed #d1d1d6',
             display: 'flex', flexDirection: 'column',
             alignItems: 'center', justifyContent: 'center', gap: 4,
             flexShrink: 0,
           }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="1.5" strokeLinecap="round">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#aeaeb2" strokeWidth="1.5" strokeLinecap="round">
               <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
               <circle cx="12" cy="13" r="4" />
             </svg>
-            <span style={{ fontSize: 9, color: '#374151', fontFamily: 'var(--mono)' }}>IMAGEM CLIENTE</span>
+            <span style={{ fontSize: 9, color: '#aeaeb2', fontWeight: 600, letterSpacing: '0.05em' }}>IMAGEM CLIENTE</span>
           </div>
 
           {/* Lente selecionada info */}
@@ -305,16 +308,16 @@ export default function MapaVisual() {
             <div style={{
               margin: '0 12px 12px',
               padding: '10px 12px',
-              background: '#0c0d12', borderRadius: 10,
-              border: `1px solid ${cor}30`, flexShrink: 0,
+              background: '#f2f2f7', borderRadius: 12,
+              flexShrink: 0,
             }}>
               <div style={{ fontSize: 10, color: cor, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 }}>
                 {selected.marca}
               </div>
-              <div style={{ fontSize: 12, color: '#f0f0f5', fontWeight: 600, lineHeight: 1.3 }}>
+              <div style={{ fontSize: 12.5, color: '#1c1c1e', fontWeight: 600, lineHeight: 1.3, letterSpacing: '-0.01em' }}>
                 {selected.nome.replace(selected.marca, '').trim()}
               </div>
-              <div style={{ fontSize: 10, color: '#4b5563', marginTop: 4, fontFamily: 'var(--mono)' }}>
+              <div style={{ fontSize: 10.5, color: '#8e8e93', marginTop: 4 }}>
                 {selected.indice} · {selected.tipo}
               </div>
             </div>
@@ -332,23 +335,23 @@ export default function MapaVisual() {
                   style={{
                     width: '100%', textAlign: 'left',
                     padding: '9px 12px 9px 16px',
-                    background: isSel ? `${lCor}12` : 'transparent',
-                    borderLeft: `2px solid ${isSel ? lCor : 'transparent'}`,
+                    background: isSel ? 'rgba(0,122,255,0.08)' : 'transparent',
                     border: 'none', cursor: 'pointer',
-                    borderBottom: '1px solid #0c0d12',
+                    borderBottom: '0.5px solid rgba(60,60,67,0.12)',
                     transition: 'background 0.1s',
+                    WebkitTapHighlightColor: 'transparent',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                     <div style={{
-                      width: 6, height: 6, borderRadius: '50%',
+                      width: 7, height: 7, borderRadius: '50%',
                       background: lCor, flexShrink: 0,
                     }} />
-                    <div style={{ fontSize: 11, color: isSel ? '#f0f0f5' : '#6b7280', lineHeight: 1.3 }}>
+                    <div style={{ fontSize: 11.5, color: isSel ? '#1c1c1e' : '#6e6e73', fontWeight: isSel ? 600 : 400, lineHeight: 1.3, letterSpacing: '-0.01em' }}>
                       {l.nome}
                     </div>
                   </div>
-                  <div style={{ fontSize: 9.5, color: '#374151', fontFamily: 'var(--mono)', marginTop: 2, marginLeft: 13 }}>
+                  <div style={{ fontSize: 10, color: '#aeaeb2', marginTop: 2, marginLeft: 14 }}>
                     {l.tipo} {l.indice}
                   </div>
                 </button>
@@ -368,7 +371,7 @@ export default function MapaVisual() {
               <div style={{ fontSize: 11, color: cor, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                 {selected.marca}
               </div>
-              <div style={{ fontSize: 17, fontWeight: 700, color: '#f0f0f5', marginTop: 2, letterSpacing: '-0.3px' }}>
+              <div style={{ fontSize: 19, fontWeight: 700, color: '#1c1c1e', marginTop: 2, letterSpacing: '-0.4px' }}>
                 {selected.nome.replace(selected.marca, '').trim()}
               </div>
             </div>
@@ -386,33 +389,34 @@ export default function MapaVisual() {
 
         {/* Right — recommendations */}
         <div style={{
-          width: 210, background: '#07080e',
-          borderLeft: '1px solid #12141c',
+          width: 210, background: '#fff',
+          borderLeft: '0.5px solid rgba(60,60,67,0.18)',
           display: 'flex', flexDirection: 'column',
           overflowY: 'auto', flexShrink: 0,
           paddingTop: 8,
         }}>
           <div style={{
             padding: '8px 16px 10px',
-            fontSize: 9, color: '#374151',
-            fontFamily: 'var(--mono)', textTransform: 'uppercase',
-            letterSpacing: '0.1em', fontWeight: 700,
+            fontSize: 11, color: '#8e8e93',
+            textTransform: 'uppercase',
+            letterSpacing: '0.06em', fontWeight: 600,
           }}>Recomendações</div>
           {RECS.map((rec, i) => (
             <div key={i} style={{
               display: 'flex', gap: 10, alignItems: 'flex-start',
               padding: '11px 16px',
-              borderBottom: '1px solid #0c0d12',
+              borderBottom: '0.5px solid rgba(60,60,67,0.12)',
             }}>
               <div style={{
                 width: 26, height: 26, borderRadius: 8, flexShrink: 0,
-                background: `${cor}18`,
+                background: `${cor}16`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 10, fontWeight: 800, color: cor, fontFamily: 'var(--mono)',
+                fontSize: 11, fontWeight: 700, color: cor,
+                fontVariantNumeric: 'tabular-nums',
               }}>
                 {String(i + 1).padStart(2, '0')}
               </div>
-              <span style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.5 }}>
+              <span style={{ fontSize: 12.5, color: '#3a3a3c', lineHeight: 1.5, letterSpacing: '-0.01em' }}>
                 {rec}
               </span>
             </div>
@@ -420,17 +424,18 @@ export default function MapaVisual() {
         </div>
       </div>
 
-      {/* Bottom — drum pickers */}
+      {/* Bottom — drum pickers (roleta iOS) */}
       <div style={{
-        background: '#07080e',
-        borderTop: '1px solid #12141c',
+        background: 'rgba(249,249,251,0.85)',
+        backdropFilter: 'blur(24px) saturate(1.6)', WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
+        borderTop: '0.5px solid rgba(60,60,67,0.22)',
         padding: '10px 16px 10px',
         display: 'flex', gap: 8, alignItems: 'flex-end',
         flexShrink: 0,
       }}>
         <div style={{
-          fontSize: 9, color: '#374151', fontFamily: 'var(--mono)',
-          textTransform: 'uppercase', letterSpacing: '0.1em',
+          fontSize: 10, color: '#8e8e93', fontWeight: 700,
+          textTransform: 'uppercase', letterSpacing: '0.08em',
           writingMode: 'vertical-rl', transform: 'rotate(180deg)',
           alignSelf: 'center', marginRight: 4, flexShrink: 0,
         }}>RX</div>
@@ -439,21 +444,21 @@ export default function MapaVisual() {
         <DrumPicker label="CIL" values={CIL} selected={cil} onChange={setCil} color={cor} />
         <DrumPicker label="ADD" values={ADD} selected={add} onChange={setAdd} color={cor} />
 
-        <div style={{ width: 1, background: '#1e2030', alignSelf: 'stretch', flexShrink: 0, margin: '0 4px' }} />
+        <div style={{ width: 0.5, background: 'rgba(60,60,67,0.2)', alignSelf: 'stretch', flexShrink: 0, margin: '0 4px' }} />
 
-        <DrumPicker label="DNP" values={DNP} selected={dnp} onChange={setDnp} color="#4b5563" />
+        <DrumPicker label="DNP" values={DNP} selected={dnp} onChange={setDnp} color="#8e8e93" />
 
         {/* Resumo */}
         <div style={{
-          marginLeft: 'auto', background: '#0c0d12',
-          border: '1px solid #1e2030', borderRadius: 12,
+          marginLeft: 'auto', background: '#fff',
+          borderRadius: 14, boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
           padding: '10px 16px', flexShrink: 0, minWidth: 130,
         }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px 20px' }}>
             {[['ESF', esf], ['CIL', cil], ['ADD', add !== '0.00' ? add : '—'], ['DNP', dnp]].map(([k, v]) => (
-              <div key={k} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 9, color: '#374151', fontFamily: 'var(--mono)' }}>{k}</span>
-                <span style={{ fontSize: 11, fontWeight: 700, color: cor, fontFamily: 'var(--mono)' }}>{v}</span>
+              <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                <span style={{ fontSize: 10, color: '#8e8e93', fontWeight: 600 }}>{k}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: cor, fontVariantNumeric: 'tabular-nums' }}>{v}</span>
               </div>
             ))}
           </div>
@@ -466,9 +471,9 @@ export default function MapaVisual() {
 function Badge({ label }: { label: string }) {
   return (
     <span style={{
-      background: '#0c0d12', border: '1px solid #1e2030',
-      borderRadius: 6, padding: '2px 9px',
-      fontSize: 10, color: '#4b5563', fontFamily: 'var(--mono)',
+      background: 'rgba(118,118,128,0.12)',
+      borderRadius: 999, padding: '3px 11px',
+      fontSize: 10.5, color: '#6e6e73', fontWeight: 600, letterSpacing: '-0.01em',
     }}>{label}</span>
   );
 }
