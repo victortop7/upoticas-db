@@ -48,7 +48,7 @@ export default function LabDashboard() {
 
         {/* Logo */}
         <div style={{ background: hdrBg, border: `2px outset ${hdrBorder}`, padding: '16px 12px', textAlign: 'center' }}>
-          <img src="/logo-lab.svg" alt="Conexão Lab" style={{ width: '130px', marginBottom: '8px' }} />
+          <img src="/logo-lab.svg" alt="Connect LAB" style={{ width: '130px', marginBottom: '8px' }} />
           <div style={{ borderTop: '1px solid #1a4a1a', marginTop: '8px', paddingTop: '8px', color: '#a0d0a8', fontSize: '10px', lineHeight: '1.6' }}>
             {tenant?.nome}
           </div>
@@ -98,7 +98,7 @@ export default function LabDashboard() {
             style={{ width: '100%', padding: '4px 6px', marginBottom: '8px', background: dark ? '#333' : '#c8c4b0', border: `1px outset ${dark ? '#555' : '#a0a098'}`, fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer', color: dark ? '#ccffcc' : '#000', fontWeight: '700' }}>
             {dark ? '☀️ MODO CLARO' : '🌙 MODO NOTURNO'}
           </button>
-          <div style={{ fontWeight: '700', color: accentTxt, marginBottom: '4px' }}>Conexão Lab</div>
+          <div style={{ fontWeight: '700', color: accentTxt, marginBottom: '4px' }}>Connect LAB</div>
           <div>Versão 1.0</div>
           <div style={{ marginTop: '4px', color: dark ? '#666' : '#606060' }}>Soluções Ópticas</div>
         </div>

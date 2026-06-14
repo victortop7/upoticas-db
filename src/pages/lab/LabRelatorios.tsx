@@ -138,7 +138,7 @@ export default function LabRelatorios() {
       .resumo .valor { font-size: 15px; font-weight: 900; }
       @media print { body { padding: 8px; } }
     </style></head><body>
-    <h1>CONEXÃO LAB — RELATÓRIO DE FATURAMENTO</h1>
+    <h1>CONNECT LAB — RELATÓRIO DE FATURAMENTO</h1>
     <div class="sub">
       Ótica: <strong>${otica.codigo ? otica.codigo + ' — ' : ''}${otica.nome}</strong><br>
       Período: ${periodo} &nbsp;|&nbsp; Total de OS: ${ordens.length}

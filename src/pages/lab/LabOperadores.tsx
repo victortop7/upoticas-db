@@ -53,7 +53,7 @@ export default function LabOperadores() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
           <h1 style={{ margin: 0, fontSize: '22px', fontWeight: '700', color: '#000' }}>Operadores do Sistema</h1>
-          <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#555' }}>Usuários com acesso ao Conexão Lab</p>
+          <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#555' }}>Usuários com acesso ao Connect LAB</p>
         </div>
         <button
           onClick={() => { setShowForm(f => !f); setErro(''); setSucesso(''); }}

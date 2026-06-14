@@ -143,7 +143,7 @@ export default function LabOticaDetalhe() {
         <div style="font-size:16px;font-weight:900;text-transform:uppercase;color:#005500">${nomeOtica}</div>
         <div style="font-size:11px;color:#333;margin-top:2px">RELATÓRIO DETALHADO DE ORDENS DE SERVIÇO</div>
         <div style="font-size:10px;color:#666">Período: ${periodo} &nbsp;|&nbsp; ${lista.length} OS &nbsp;|&nbsp; Total: ${mb(totalGeral)}</div>
-        <div style="font-size:9px;color:#aaa">Emitido em ${new Date().toLocaleString('pt-BR')} — Conexão Lab</div>
+        <div style="font-size:9px;color:#aaa">Emitido em ${new Date().toLocaleString('pt-BR')} — Connect LAB</div>
       </div>
       <table>
         <thead class="hdr"><tr>

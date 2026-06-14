@@ -195,7 +195,7 @@ export default function LabLayout() {
       {/* ── HEADER ── */}
       <div style={{ background: hdrBg, color: hdrTxt, padding: '4px 16px', fontSize: '13px', fontWeight: '700', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `2px solid ${hdrBorder}`, letterSpacing: '1.5px', textTransform: 'uppercase', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ cursor: 'pointer' }} onClick={() => navigate('/lab/dashboard')}>Conexão Lab — {tenant?.nome || 'Laboratório'}</span>
+          <span style={{ cursor: 'pointer' }} onClick={() => navigate('/lab/dashboard')}>Connect LAB — {tenant?.nome || 'Laboratório'}</span>
         </div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <button onClick={() => setAltF1(true)} title="ALT+F1"
@@ -222,7 +222,7 @@ export default function LabLayout() {
 
         {/* ── SIDEBAR LOGO ── */}
         <div style={{ background: modBg, width: '42px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderRight: `2px solid ${modBorder}`, flexShrink: 0 }}>
-          <div style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', color: dark ? '#66cc77' : '#ccffcc', fontSize: '11px', fontWeight: 'bold', letterSpacing: '4px', textTransform: 'uppercase', userSelect: 'none' }}>CONEXÃO</div>
+          <div style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', color: dark ? '#66cc77' : '#ccffcc', fontSize: '11px', fontWeight: 'bold', letterSpacing: '4px', textTransform: 'uppercase', userSelect: 'none' }}>CONNECT</div>
           <div style={{ color: dark ? '#44cc55' : '#aaffbb', fontSize: '16px' }}>🔬</div>
           <div style={{ writingMode: 'vertical-rl', color: dark ? '#44cc55' : '#aaffbb', fontSize: '10px', fontWeight: 'bold', letterSpacing: '3px', textTransform: 'uppercase' }}>LAB</div>
         </div>
@@ -299,7 +299,7 @@ export default function LabLayout() {
       {/* ── STATUS BAR ── */}
       <div style={{ background: hdrBg, color: hdrTxt, padding: '3px 16px', fontSize: '11px', borderTop: `2px solid ${hdrBorder}`, display: 'flex', justifyContent: 'space-between', letterSpacing: '0.5px', textTransform: 'uppercase', flexShrink: 0 }}>
         <span>▶ SELECIONE A OPÇÃO DESEJADA</span>
-        <span style={{ color: dark ? '#44cc55' : '#88ccaa' }}>Conexão Lab v1.0</span>
+        <span style={{ color: dark ? '#44cc55' : '#88ccaa' }}>Connect LAB v1.0</span>
       </div>
 
       {/* ── OVERLAY BLOQUEIO/EXPIRADO ── */}

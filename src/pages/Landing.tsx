@@ -55,7 +55,7 @@ const FAQ = [
   { q: 'Posso cancelar quando quiser?', a: 'Sim, sem multa e sem burocracia. Se cancelar, seus dados ficam disponíveis por 30 dias para exportação.' },
   { q: 'Quantos usuários posso ter?', a: 'O Plano Gestão inclui 5 usuários. Cada usuário adicional custa R$20/mês. O Gestão Pro tem usuários ilimitados.' },
   { q: 'Como funciona o período grátis?', a: '14 dias completos, sem cartão de crédito. Acesso a todos os recursos do plano escolhido.' },
-  { q: 'O Conexão Lab tem aplicativo?', a: 'Sim! O Conexão Lab é distribuído como aplicativo para Windows. Após a demonstração, fornecemos o instalador.' },
+  { q: 'O Connect LAB tem aplicativo?', a: 'Sim! O Connect LAB é distribuído como aplicativo para Windows. Após a demonstração, fornecemos o instalador.' },
 ];
 
 const RED = '#008800';
@@ -196,7 +196,7 @@ export default function Landing() {
             >
               <img src="https://images.unsplash.com/photo-1758573467030-52481ea92007?w=600&h=180&fit=crop&q=80" alt="Laboratório óptico" style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }} />
               <div style={{ padding: '22px 20px' }}>
-                <div style={{ fontSize: '17px', fontWeight: '800', color: '#f1f5f9', marginBottom: '4px' }}>Conexão Lab</div>
+                <div style={{ fontSize: '17px', fontWeight: '800', color: '#f1f5f9', marginBottom: '4px' }}>Connect LAB</div>
                 <div style={{ fontSize: '12px', color: RED3, fontWeight: '600', marginBottom: '10px' }}>Para laboratórios ópticos</div>
                 <div style={{ fontSize: '13px', color: '#94a3b8', lineHeight: '1.55', marginBottom: '14px' }}>Ordens de produção, óticas clientes, estoque de lentes</div>
                 <div style={{ fontSize: '13px', fontWeight: '700', color: RED3 }}>Solicitar demonstração →</div>
@@ -232,7 +232,7 @@ export default function Landing() {
           <img src="https://images.unsplash.com/photo-1732064137039-1599dc5d0a17?w=1200&h=400&fit=crop&q=80" alt="Laboratório óptico" style={{ width: '100%', height: isMobile ? '260px' : '360px', objectFit: 'cover', display: 'block' }} />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(10,13,20,0.85) 0%, rgba(10,13,20,0.2) 60%, transparent 100%)', display: 'flex', alignItems: 'center', padding: isMobile ? '24px 20px' : '48px' }}>
             <div style={{ maxWidth: isMobile ? '100%' : '420px' }}>
-              <div style={{ fontSize: '12px', color: RED3, fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '8px' }}>Conexão Lab</div>
+              <div style={{ fontSize: '12px', color: RED3, fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '8px' }}>Connect LAB</div>
               <h3 style={{ fontSize: isMobile ? '18px' : '28px', fontWeight: '800', margin: '0 0 10px', letterSpacing: '-0.5px', lineHeight: '1.2' }}>Sistema completo para laboratórios ópticos</h3>
               {!isMobile && <p style={{ fontSize: '15px', color: '#94a3b8', margin: '0 0 24px', lineHeight: '1.6' }}>Gerencie ordens de produção, estoque de lentes, óticas clientes e muito mais.</p>}
               <button onClick={() => navigate('/interesse-lab')} style={{ padding: isMobile ? '10px 18px' : '12px 28px', fontSize: '13px', fontWeight: '700', background: RED, color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', marginTop: isMobile ? '10px' : '0' }}>

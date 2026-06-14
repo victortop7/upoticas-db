@@ -60,7 +60,7 @@ export default function InteresseLab() {
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>✅</div>
             <h2 style={{ margin: '0 0 12px', fontSize: '24px', fontWeight: '800' }}>Recebemos seu contato!</h2>
             <p style={{ margin: '0 0 28px', fontSize: '15px', color: '#94a3b8', lineHeight: '1.6' }}>
-              Nossa equipe vai entrar em contato em breve pelo WhatsApp para agendar uma demonstração do Conexão Lab.
+              Nossa equipe vai entrar em contato em breve pelo WhatsApp para agendar uma demonstração do Connect LAB.
             </p>
             <button onClick={() => navigate('/')} style={{ padding: '11px 28px', fontSize: '14px', fontWeight: '700', background: '#008800', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
               Voltar ao início
@@ -70,7 +70,7 @@ export default function InteresseLab() {
           /* Formulário */
           <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '40px' }}>
             <div style={{ marginBottom: '28px' }}>
-              <h1 style={{ margin: '0 0 8px', fontSize: '24px', fontWeight: '800', letterSpacing: '-0.5px' }}>Quero conhecer o Conexão Lab</h1>
+              <h1 style={{ margin: '0 0 8px', fontSize: '24px', fontWeight: '800', letterSpacing: '-0.5px' }}>Quero conhecer o Connect LAB</h1>
               <p style={{ margin: 0, fontSize: '14px', color: '#94a3b8', lineHeight: '1.6' }}>
                 Preencha os dados abaixo e nossa equipe entrará em contato para agendar uma demonstração.
               </p>
