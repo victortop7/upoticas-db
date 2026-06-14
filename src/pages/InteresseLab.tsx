@@ -49,7 +49,7 @@ export default function InteresseLab() {
         <div style={{ width: '36px', height: '36px', background: 'linear-gradient(135deg,#008800,#005500)', borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/></svg>
         </div>
-        <span style={{ fontSize: '18px', fontWeight: '800' }}>Up<span style={{ color: '#ef4444' }}>Laboratorio</span></span>
+        <span style={{ fontSize: '18px', fontWeight: '800' }}>Connect <span style={{ color: '#16a34a' }}>LAB</span></span>
       </button>
 
       <div style={{ width: '100%', maxWidth: '480px' }}>

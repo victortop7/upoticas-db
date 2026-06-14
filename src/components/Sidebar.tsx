@@ -78,7 +78,7 @@ export default function Sidebar() {
             </svg>
           </div>
           <span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text)' }}>
-            Up<span style={{ color: 'var(--primary)' }}>Óticas</span>
+            Connect <span style={{ color: 'var(--primary)' }}>Óticas</span>
           </span>
         </div>
         <div style={{

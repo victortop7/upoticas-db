@@ -78,7 +78,7 @@ export default function Cadastro() {
               </svg>
             </div>
             <span style={{ fontSize: '24px', fontWeight: '700', color: 'var(--text)', letterSpacing: '-0.5px' }}>
-              Up<span style={{ color: 'var(--primary)' }}>Óticas</span>
+              Connect <span style={{ color: 'var(--primary)' }}>Óticas</span>
             </span>
           </div>
           <p style={{ color: 'var(--text-dim)', fontSize: '14px', margin: 0 }}>
