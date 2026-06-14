@@ -337,7 +337,7 @@ export default function VisionHome() {
             }}>V</div>
             <div>
               <div style={{ fontSize: 20, fontWeight: 700, color: '#0f172a', letterSpacing: '-0.5px' }}>
-                Conect<span style={{ color: '#007aff' }}>Vision</span>
+                Connect <span style={{ color: '#007aff' }}>Vision</span>
               </div>
               <div style={{ fontSize: 10, color: '#64748b', letterSpacing: '0.14em', fontWeight: 600 }}>SISTEMA PARA ÓTICAS</div>
             </div>

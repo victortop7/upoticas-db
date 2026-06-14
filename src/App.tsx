@@ -129,7 +129,7 @@ export default function App() {
             <Route path="/lab/bancario" element={<Bancario />} />
           </Route>
 
-          {/* Conect Vision */}
+          {/* Connect Vision */}
           <Route element={<VisionLayout />}>
             <Route path="/vision" element={<VisionHome />} />
             <Route path="/vision/mapa-visual" element={<MapaVisual />} />

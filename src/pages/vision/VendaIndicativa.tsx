@@ -180,7 +180,7 @@ function Header({ titulo }: { titulo: string }) {
           boxShadow: '0 4px 12px rgba(0,122,255,0.3), inset 0 1px 0 rgba(255,255,255,0.4)',
         }}>V</div>
         <div style={{ fontSize: 16, fontWeight: 700, color: '#0f172a', letterSpacing: '-0.3px' }}>
-          Conect<span style={{ color: '#007aff' }}>Vision</span>
+          Connect <span style={{ color: '#007aff' }}>Vision</span>
         </div>
       </div>
       <div style={{ fontSize: 12, color: '#64748b', fontWeight: 600, paddingLeft: 2 }}>{titulo}</div>
