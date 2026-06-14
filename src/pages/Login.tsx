@@ -38,11 +38,11 @@ export default function Login() {
         <div style={{ display: 'flex', gap: '8px', marginBottom: '28px', background: 'var(--surface)', borderRadius: '12px', padding: '4px', border: '1px solid var(--border)' }}>
           <button onClick={() => { setAba('oticas'); setErro(''); }}
             style={{ flex: 1, padding: '9px', fontSize: '13px', fontWeight: '700', borderRadius: '8px', border: 'none', cursor: 'pointer', background: '#16a34a', color: 'white', transition: 'all 0.15s' }}>
-            🏪 Conexão Óticas
+            🏪 Connect Óticas
           </button>
           <button onClick={() => { setAba('lab'); setErro(''); }}
             style={{ flex: 1, padding: '9px', fontSize: '13px', fontWeight: '600', borderRadius: '8px', border: 'none', cursor: 'pointer', background: 'transparent', color: 'var(--text-dim)', transition: 'all 0.15s' }}>
-            🔬 Conexão Lab
+            🔬 Connect LAB
           </button>
         </div>
 
@@ -55,7 +55,7 @@ export default function Login() {
               </svg>
             </div>
             <span style={{ fontSize: '24px', fontWeight: '700', color: 'var(--text)', letterSpacing: '-0.5px' }}>
-              Conexão <span style={{ color: '#16a34a' }}>Óticas</span>
+              Connect <span style={{ color: '#16a34a' }}>Óticas</span>
             </span>
           </div>
           <p style={{ color: 'var(--text-dim)', fontSize: '14px', margin: 0 }}>Sistema de Gestão para Óticas</p>
@@ -109,17 +109,17 @@ export default function Login() {
         <div style={{ display: 'flex', gap: '4px', marginBottom: '20px', background: '#d4d0c8', border: '2px inset #b0aca4', padding: '4px' }}>
           <button onClick={() => { setAba('oticas'); setErro(''); }}
             style={{ flex: 1, padding: '8px', fontSize: '12px', fontWeight: '700', border: '2px outset #b0aca4', cursor: 'pointer', background: '#dedad2', color: '#444', fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            🏪 Conexão Óticas
+            🏪 Connect Óticas
           </button>
           <button onClick={() => { setAba('lab'); setErro(''); }}
             style={{ flex: 1, padding: '8px', fontSize: '12px', fontWeight: '700', border: '2px inset #b0aca4', cursor: 'pointer', background: 'linear-gradient(90deg,#005500,#008800)', color: '#ccffcc', fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            🔬 Conexão Lab
+            🔬 Connect LAB
           </button>
         </div>
 
         {/* Header retro */}
         <div style={{ background: 'linear-gradient(90deg,#005500,#008800)', color: '#ccffcc', padding: '10px 16px', fontWeight: '700', fontSize: '14px', letterSpacing: '2px', textTransform: 'uppercase', border: '2px outset #007700', marginBottom: '0', textAlign: 'center' }}>
-          🔬 Conexão Lab
+          🔬 Connect LAB
         </div>
         <div style={{ background: '#d4d0c8', border: '2px inset #b0aca4', padding: '28px 24px' }}>
           <div style={{ textAlign: 'center', marginBottom: '20px' }}>
@@ -151,7 +151,7 @@ export default function Login() {
         </div>
 
         <div style={{ textAlign: 'center', marginTop: '14px', fontSize: '11px', color: '#666', fontFamily: "'Courier New', monospace" }}>
-          Conexão Lab v1.0 — Sistema para Laboratórios Ópticos
+          Connect LAB v1.0 — Sistema para Laboratórios Ópticos
         </div>
       </div>
     </div>
