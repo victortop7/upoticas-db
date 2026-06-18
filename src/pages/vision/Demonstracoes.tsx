@@ -179,6 +179,112 @@ function getSemSvg(tratamento: string, ambiente: string): ReactNode | null {
   return null;
 }
 
+// ─── Sequência de lente (Campos / Adição) ──────────────────────────────────────
+function SequenciaLente({ tipo }: { tipo: 'campos' | 'adicao' }) {
+  const [idx, setIdx] = useState(0); // 0..5
+  const [auto, setAuto] = useState(false);
+  const base = tipo === 'campos' ? '/campos' : '/adicao';
+  const total = 6;
+
+  const titulo = tipo === 'campos' ? 'Campo de Visão' : 'Zonas de Adição';
+  const cor = tipo === 'campos' ? '#22c55e' : '#a855f7';
+  const desc = tipo === 'campos'
+    ? 'Quanto mais avançada a lente, maior a área de visão nítida e menor a distorção periférica.'
+    : 'A lente progressiva tem 3 zonas: longe (topo), intermediário (centro) e perto (embaixo).';
+
+  // animação automática
+  useEffect(() => {
+    if (!auto) return;
+    let dir = 1;
+    const t = setInterval(() => {
+      setIdx(prev => {
+        let next = prev + dir;
+        if (next >= total - 1) { next = total - 1; dir = -1; }
+        else if (next <= 0) { next = 0; dir = 1; }
+        return next;
+      });
+    }, 700);
+    return () => clearInterval(t);
+  }, [auto]);
+
+  const nivel = idx === 0 ? 'Básica' : idx < 3 ? `Nível ${idx + 1}` : idx < 5 ? 'Premium' : 'Premium+';
+
+  return (
+    <div style={{ flex: 1, position: 'relative', overflow: 'hidden', background: '#0a0a0c' }}>
+      {/* Imagens empilhadas (crossfade) */}
+      {Array.from({ length: total }).map((_, i) => (
+        <img
+          key={i}
+          src={`${base}/${String(i + 1).padStart(2, '0')}.jpg`}
+          draggable={false}
+          style={{
+            position: 'absolute', inset: 0, width: '100%', height: '100%',
+            objectFit: 'cover', objectPosition: 'center',
+            opacity: i === idx ? 1 : 0, transition: 'opacity .25s ease',
+            pointerEvents: 'none',
+          }}
+        />
+      ))}
+
+      {/* Título + descrição (topo) */}
+      <div style={{
+        position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)',
+        background: 'rgba(0,0,0,.72)', backdropFilter: 'blur(8px)',
+        borderRadius: 14, padding: '12px 22px', textAlign: 'center',
+        width: 'max-content', maxWidth: 440, pointerEvents: 'none',
+      }}>
+        <div style={{ fontSize: 11, color: cor, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 4 }}>{titulo}</div>
+        <div style={{ fontSize: 12.5, color: '#e5e7eb', lineHeight: 1.5 }}>{desc}</div>
+      </div>
+
+      {/* Painel inferior — slider + auto */}
+      <div style={{
+        position: 'absolute', bottom: 76, left: '50%', transform: 'translateX(-50%)',
+        width: 'min(560px, 88%)',
+        background: 'rgba(8,11,22,0.78)', backdropFilter: 'blur(20px)',
+        border: '1px solid rgba(120,160,255,0.18)', borderRadius: 18,
+        padding: '14px 18px 16px', boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <span style={{ fontSize: 12, color: '#fff', fontWeight: 700, fontFamily: 'var(--sans)' }}>{nivel}</span>
+          <button onClick={() => setAuto(a => !a)} style={{
+            display: 'flex', alignItems: 'center', gap: 7,
+            background: auto ? cor : 'rgba(255,255,255,0.08)',
+            border: 'none', borderRadius: 999, padding: '6px 14px', cursor: 'pointer',
+            WebkitTapHighlightColor: 'transparent',
+          }}>
+            {auto
+              ? <svg width="12" height="12" viewBox="0 0 24 24" fill="#fff"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+              : <svg width="12" height="12" viewBox="0 0 24 24" fill="#fff"><polygon points="6 4 20 12 6 20"/></svg>}
+            <span style={{ fontSize: 11, color: '#fff', fontWeight: 700, fontFamily: 'var(--mono)', letterSpacing: '.05em', textTransform: 'uppercase' }}>
+              {auto ? 'Pausar' : 'Animar'}
+            </span>
+          </button>
+        </div>
+
+        {/* Slider */}
+        <div style={{ position: 'relative', height: 8, background: 'rgba(255,255,255,0.12)', borderRadius: 5 }}>
+          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${(idx / (total - 1)) * 100}%`, borderRadius: 5, background: cor, transition: 'width .2s' }} />
+          <input type="range" min={0} max={total - 1} step={1} value={idx}
+            onChange={e => { setAuto(false); setIdx(Number(e.target.value)); }}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', margin: 0 }} />
+        </div>
+
+        {/* Pontinhos de etapa */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
+          {Array.from({ length: total }).map((_, i) => (
+            <button key={i} onClick={() => { setAuto(false); setIdx(i); }} style={{
+              width: 10, height: 10, borderRadius: '50%', border: 'none', cursor: 'pointer', padding: 0,
+              background: i === idx ? cor : 'rgba(255,255,255,0.22)',
+              transition: 'background .15s', WebkitTapHighlightColor: 'transparent',
+            }} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Superfície ───────────────────────────────────────────────────────────────
 function Superficie({ initialDemo }: { initialDemo?: string }) {
   const [tipo, setTipo] = useState<'convencional' | 'digital' | 'demonstracao'>(
@@ -761,7 +867,11 @@ export default function Demonstracoes() {
       style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: '#050508', overflow: 'hidden' }}
       onClick={() => setShowExtras(false)}
     >
-      {tab === 'superficie' && <Superficie initialDemo={demo} />}
+      {tab === 'superficie' && (
+        demo === 'campos' || demo === 'adicao'
+          ? <SequenciaLente tipo={demo as 'campos' | 'adicao'} />
+          : <Superficie initialDemo={demo} />
+      )}
       {tab === 'visao' && <Visao initialDemo={demo} />}
       {tab === 'simulacao' && <Simulacao />}
 
