@@ -181,7 +181,7 @@ function getSemSvg(tratamento: string, ambiente: string): ReactNode | null {
 }
 
 // ─── Sequência de lente (Campos / Adição) ──────────────────────────────────────
-function SequenciaLente({ tipo, onSimular }: { tipo: 'campos' | 'adicao'; onSimular?: () => void }) {
+function SequenciaLente({ tipo, onSimular }: { tipo: 'campos' | 'adicao'; onSimular?: (efeito: string) => void }) {
   const [idx, setIdx] = useState(0); // 0..5
   const [auto, setAuto] = useState(false);
   const base = tipo === 'campos' ? '/campos' : '/adicao';
@@ -285,17 +285,17 @@ function SequenciaLente({ tipo, onSimular }: { tipo: 'campos' | 'adicao'; onSimu
           );
         })}
 
-        {/* Última opção: Simulação (câmera) */}
+        {/* Última opção: Simulação na câmera (campo/adição) */}
         <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '6px 14px' }} />
-        <button onClick={() => onSimular?.()} style={{
+        <button onClick={() => onSimular?.(tipo)} style={{
           background: 'transparent', border: 'none', cursor: 'pointer',
           padding: '12px 18px 12px 14px', textAlign: 'left', width: '100%',
           display: 'flex', alignItems: 'center', gap: 10, WebkitTapHighlightColor: 'transparent',
         }}>
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={cor} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
             <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" />
           </svg>
-          <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--sans)', letterSpacing: '.07em', textTransform: 'uppercase', color: '#3b82f6' }}>Simulação</span>
+          <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--sans)', letterSpacing: '.07em', textTransform: 'uppercase', color: cor }}>Simulação</span>
         </button>
       </div>
     </div>
@@ -303,7 +303,7 @@ function SequenciaLente({ tipo, onSimular }: { tipo: 'campos' | 'adicao'; onSimu
 }
 
 // ─── Superfície ───────────────────────────────────────────────────────────────
-function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: () => void }) {
+function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (efeito: string) => void }) {
   const [tipo, setTipo] = useState<'convencional' | 'digital' | 'demonstracao'>(
     initialDemo === 'digital' ? 'digital' : 'convencional'
   );
@@ -431,8 +431,8 @@ function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimula
             WebkitTapHighlightColor: 'transparent',
           }}>{t.label}</button>
         ))}
-        {/* Simulação na câmera */}
-        <button onClick={() => onSimular?.()} style={{
+        {/* Simulação na câmera (lente digital) */}
+        <button onClick={() => onSimular?.('digital')} style={{
           marginTop: 4, padding: '10px 18px', borderRadius: 8, border: 'none', cursor: 'pointer',
           background: 'rgba(59,130,246,0.9)', color: '#fff',
           fontSize: 13, fontWeight: 700, fontFamily: 'var(--sans)',
@@ -449,7 +449,7 @@ function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimula
 }
 
 // ─── Visão COM/SEM ─────────────────────────────────────────────────────────────
-function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: () => void }) {
+function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (efeito: string) => void }) {
   const [tratamento, setTratamento] = useState(
     TRATAMENTOS.some(t => t.id === initialDemo) ? initialDemo! : 'ar'
   );
@@ -673,21 +673,21 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
             </button>
           ))}
 
-          {/* Última opção: Simulação (vai para a câmera) */}
+          {/* Última opção: Simulação na câmera (efeito do tratamento atual) */}
           <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '6px 14px' }} />
-          <button onClick={() => onSimular?.()} style={{
+          <button onClick={() => onSimular?.(tratamento)} style={{
             background: 'transparent', border: 'none', cursor: 'pointer',
             padding: '12px 18px 12px 14px', textAlign: 'left', width: '100%',
             display: 'flex', alignItems: 'center', gap: 10,
             WebkitTapHighlightColor: 'transparent',
           }}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={trObj.cor} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
               <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" />
             </svg>
             <span style={{
               fontSize: 14, fontWeight: 700, fontFamily: 'var(--sans)',
-              letterSpacing: '.07em', textTransform: 'uppercase', color: '#3b82f6',
-            }}>Simulação</span>
+              letterSpacing: '.07em', textTransform: 'uppercase', color: trObj.cor,
+            }}>Simular {trObj.label}</span>
           </button>
 
           {!useRealPhoto && (
@@ -720,18 +720,23 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
   );
 }
 
-// ─── Simulação — modo CÂMERA (realidade aumentada) ─────────────────────────────
-const SIM_EFEITOS = [
-  { id: 'ar',  label: 'Anti-Reflexo',  cor: '#3b82f6', filtro: 'brightness(1.06) contrast(1.05)' },
-  { id: 'az',  label: 'Luz Azul',      cor: '#8b5cf6', filtro: 'sepia(.30) saturate(.85) hue-rotate(-12deg) brightness(1.03)' },
-  { id: 'pol', label: 'Polarizado',    cor: '#f97316', filtro: 'contrast(1.25) saturate(1.32) brightness(.9)' },
-  { id: 'uv',  label: 'Proteção UV',   cor: '#ef4444', filtro: 'brightness(.6) contrast(1.12) saturate(.92)' },
-  { id: 'ft',  label: 'Fotossensível', cor: '#f59e0b', filtro: 'brightness(.45) sepia(.35) contrast(1.1)' },
-  { id: 'ed',  label: 'Est. Dourada',  cor: '#fbbf24', filtro: 'sepia(.5) saturate(1.4) brightness(1.02)' },
-];
+// ─── Simulação — modo CÂMERA contextual (1 efeito por vez) ─────────────────────
+const EFEITO_SIM: Record<string, { label: string; cor: string; filtro: string; campo?: boolean; desc: string }> = {
+  ar:  { label: 'Anti-Reflexo',   cor: '#3b82f6', filtro: 'brightness(1.06) contrast(1.05)', desc: 'Sem reflexos — visão limpa e nítida' },
+  az:  { label: 'Luz Azul',       cor: '#8b5cf6', filtro: 'sepia(.30) saturate(.85) hue-rotate(-12deg) brightness(1.03)', desc: 'Filtra a luz azul de telas e LEDs' },
+  ab:  { label: 'Anti-Abrasivo',  cor: '#22c55e', filtro: 'contrast(1.08) brightness(1.03)', desc: 'Superfície protegida contra riscos' },
+  ae:  { label: 'Anti-Estático',  cor: '#ec4899', filtro: 'brightness(1.04) contrast(1.03)', desc: 'Repele poeira e partículas' },
+  ed:  { label: 'Est. Dourada',   cor: '#fbbf24', filtro: 'sepia(.5) saturate(1.4) brightness(1.02)', desc: 'Tonalidade dourada premium' },
+  hf:  { label: 'Hidrofóbico',    cor: '#06b6d4', filtro: 'brightness(1.05) contrast(1.04)', desc: 'Repele água e gordura' },
+  lr:  { label: 'Lipo-Repelente', cor: '#14b8a6', filtro: 'brightness(1.04) contrast(1.05)', desc: 'Sem marcas de dedos e gordura' },
+  uv:  { label: 'Proteção UV',    cor: '#ef4444', filtro: 'brightness(.6) contrast(1.12) saturate(.92)', desc: 'Bloqueia os raios UV nocivos' },
+  et:  { label: 'Estético',       cor: '#e879f9', filtro: 'brightness(1.05) contrast(1.03)', desc: 'Lente invisível, sem reflexos' },
+  digital: { label: 'Lente Digital', cor: '#3b82f6', filtro: '', campo: true, desc: 'Nitidez em todo o campo de visão' },
+  campos:  { label: 'Campo de Visão', cor: '#22c55e', filtro: '', campo: true, desc: 'Visão nítida e ampla pela lente' },
+  adicao:  { label: 'Adição',         cor: '#a855f7', filtro: '', campo: true, desc: 'Zonas de perto, intermediário e longe' },
+};
 
-function Simulacao() {
-  const [efeito, setEfeito] = useState('ar');
+function Simulacao({ efeito, onVoltar }: { efeito: string; onVoltar?: () => void }) {
   const [com, setCom] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const v1 = useRef<HTMLVideoElement>(null); // câmera crua
@@ -753,22 +758,24 @@ function Simulacao() {
     return () => { stream?.getTracks().forEach(t => t.stop()); };
   }, []);
 
-  const ef = SIM_EFEITOS.find(e => e.id === efeito)!;
+  const ef = EFEITO_SIM[efeito] ?? EFEITO_SIM.ar;
   const LENTE = 'ellipse(40% 42% at 50% 46%)';
+  // campo: fundo embaçado + lente nítida; tratamento: filtro na lente
+  const bgFiltro = com && ef.campo ? 'blur(5px) brightness(.92)' : 'none';
+  const lenteFiltro = ef.campo ? 'none' : ef.filtro;
 
   return (
     <div style={{ flex: 1, position: 'relative', overflow: 'hidden', background: '#000' }}>
       {/* Câmera crua (fundo) */}
       <video ref={v1} autoPlay playsInline muted
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: bgFiltro, transition: 'filter .2s' }} />
 
-      {/* Lente com o efeito do tratamento */}
+      {/* Lente com o efeito */}
       {com && (
         <video ref={v2} autoPlay playsInline muted
           style={{
             position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
-            filter: ef.filtro, clipPath: LENTE, WebkitClipPath: LENTE,
-            transition: 'filter .2s',
+            filter: lenteFiltro, clipPath: LENTE, WebkitClipPath: LENTE, transition: 'filter .2s',
           }} />
       )}
 
@@ -789,14 +796,26 @@ function Simulacao() {
         }}>📷 {erro}</div>
       )}
 
+      {/* Voltar — topo esquerdo */}
+      <button onClick={() => onVoltar?.()} style={{
+        position: 'absolute', top: 16, left: 16, zIndex: 12,
+        display: 'flex', alignItems: 'center', gap: 4,
+        background: 'rgba(0,0,0,.6)', border: 'none', borderRadius: 999,
+        padding: '8px 14px 8px 10px', cursor: 'pointer', color: '#fff',
+        fontSize: 12, fontWeight: 700, WebkitTapHighlightColor: 'transparent',
+      }}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+        Voltar
+      </button>
+
       {/* Título topo */}
       <div style={{
         position: 'absolute', top: 18, left: '50%', transform: 'translateX(-50%)',
         background: 'rgba(0,0,0,.7)', backdropFilter: 'blur(8px)', borderRadius: 12,
-        padding: '8px 18px', textAlign: 'center', pointerEvents: 'none',
+        padding: '8px 18px', textAlign: 'center', pointerEvents: 'none', maxWidth: '60%',
       }}>
-        <div style={{ fontSize: 10, color: ef.cor, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>Simulação na câmera</div>
-        <div style={{ fontSize: 12.5, color: '#fff', fontWeight: 600 }}>{ef.label}</div>
+        <div style={{ fontSize: 10, color: ef.cor, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>Simulação · {ef.label}</div>
+        <div style={{ fontSize: 12, color: '#cbd5e1', marginTop: 2 }}>{ef.desc}</div>
       </div>
 
       {/* Toggle COM / SEM (canto inferior esquerdo) */}
@@ -810,33 +829,6 @@ function Simulacao() {
             transition: 'all .15s', WebkitTapHighlightColor: 'transparent',
           }}>{o.l}</button>
         ))}
-      </div>
-
-      {/* Painel de efeitos (direita) */}
-      <div style={{
-        position: 'absolute', top: 0, right: 0, bottom: 0,
-        display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: 48,
-        background: 'linear-gradient(to left, rgba(0,0,0,0.5) 55%, transparent)',
-        paddingRight: 4, zIndex: 10, minWidth: 150,
-      }}>
-        {SIM_EFEITOS.map(e => {
-          const ativo = e.id === efeito;
-          return (
-            <button key={e.id} onClick={() => setEfeito(e.id)} style={{
-              background: ativo ? 'rgba(255,255,255,0.12)' : 'transparent',
-              border: 'none', cursor: 'pointer', padding: '12px 18px 12px 14px',
-              textAlign: 'left', width: '100%', display: 'flex', alignItems: 'center', gap: 10,
-              transition: 'background .15s', WebkitTapHighlightColor: 'transparent',
-            }}>
-              <div style={{ width: 3, height: 18, borderRadius: 2, flexShrink: 0, background: ativo ? e.cor : 'transparent' }} />
-              <span style={{
-                fontSize: 13.5, fontWeight: ativo ? 700 : 400, fontFamily: 'var(--sans)',
-                letterSpacing: '.06em', textTransform: 'uppercase',
-                color: ativo ? '#fff' : 'rgba(255,255,255,0.45)',
-              }}>{e.label}</span>
-            </button>
-          );
-        })}
       </div>
     </div>
   );
@@ -852,7 +844,15 @@ export default function Demonstracoes() {
 
   const [tab, setTab] = useState<Tab>(initialTab);
   const [showExtras, setShowExtras] = useState(false);
+  const [simEfeito, setSimEfeito] = useState('ar');
+  const [prevTab, setPrevTab] = useState<Tab>('visao');
   const navigate = useNavigate();
+
+  function abrirSim(efeito: string) {
+    setPrevTab(tab);
+    setSimEfeito(efeito);
+    setTab('simulacao');
+  }
 
   const DEMO_ITEMS_NAV = [
     { id: 'digital',    label: 'Digital',     tab: 'superficie' },
@@ -869,11 +869,11 @@ export default function Demonstracoes() {
     >
       {tab === 'superficie' && (
         demo === 'campos' || demo === 'adicao'
-          ? <SequenciaLente tipo={demo as 'campos' | 'adicao'} onSimular={() => setTab('simulacao')} />
-          : <Superficie initialDemo={demo} onSimular={() => setTab('simulacao')} />
+          ? <SequenciaLente tipo={demo as 'campos' | 'adicao'} onSimular={abrirSim} />
+          : <Superficie initialDemo={demo} onSimular={abrirSim} />
       )}
-      {tab === 'visao' && <Visao initialDemo={demo} onSimular={() => setTab('simulacao')} />}
-      {tab === 'simulacao' && <Simulacao />}
+      {tab === 'visao' && <Visao initialDemo={demo} onSimular={abrirSim} />}
+      {tab === 'simulacao' && <Simulacao efeito={simEfeito} onVoltar={() => setTab(prevTab)} />}
 
       {/* Extras popup — lista de simulações */}
       {showExtras && (
