@@ -12,6 +12,7 @@ const TRATAMENTOS = [
   { id: 'hf',  label: 'Hidrofóbico',    cor: '#06b6d4' },
   { id: 'lr',  label: 'Lipo-Repelente', cor: '#14b8a6' },
   { id: 'uv',  label: 'Proteção UV',    cor: '#ef4444' },
+  { id: 'et',  label: 'Estético',       cor: '#e879f9' },
 ];
 
 const AMBIENTES = [
@@ -514,6 +515,10 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
     uv: {
       com: '/tratamento%20protecao%20uv/com-uv.jpg',
       sem: '/tratamento%20protecao%20uv/sem-uv.jpg',
+    },
+    et: {
+      com: '/tratamento%20estetico/com-estetica.jpg',
+      sem: '/tratamento%20estetico/sem-estetica.jpg',
     },
   };
   const realPhoto = REAL_PHOTOS[tratamento] ?? null;
