@@ -180,7 +180,7 @@ function getSemSvg(tratamento: string, ambiente: string): ReactNode | null {
 }
 
 // ─── Sequência de lente (Campos / Adição) ──────────────────────────────────────
-function SequenciaLente({ tipo }: { tipo: 'campos' | 'adicao' }) {
+function SequenciaLente({ tipo, onSimular }: { tipo: 'campos' | 'adicao'; onSimular?: () => void }) {
   const [idx, setIdx] = useState(0); // 0..5
   const [auto, setAuto] = useState(false);
   const base = tipo === 'campos' ? '/campos' : '/adicao';
@@ -283,13 +283,26 @@ function SequenciaLente({ tipo }: { tipo: 'campos' | 'adicao' }) {
             </button>
           );
         })}
+
+        {/* Última opção: Simulação (câmera) */}
+        <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '6px 14px' }} />
+        <button onClick={() => onSimular?.()} style={{
+          background: 'transparent', border: 'none', cursor: 'pointer',
+          padding: '12px 18px 12px 14px', textAlign: 'left', width: '100%',
+          display: 'flex', alignItems: 'center', gap: 10, WebkitTapHighlightColor: 'transparent',
+        }}>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" />
+          </svg>
+          <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--sans)', letterSpacing: '.07em', textTransform: 'uppercase', color: '#3b82f6' }}>Simulação</span>
+        </button>
       </div>
     </div>
   );
 }
 
 // ─── Superfície ───────────────────────────────────────────────────────────────
-function Superficie({ initialDemo }: { initialDemo?: string }) {
+function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: () => void }) {
   const [tipo, setTipo] = useState<'convencional' | 'digital' | 'demonstracao'>(
     initialDemo === 'digital' ? 'digital' : 'convencional'
   );
@@ -417,6 +430,18 @@ function Superficie({ initialDemo }: { initialDemo?: string }) {
             WebkitTapHighlightColor: 'transparent',
           }}>{t.label}</button>
         ))}
+        {/* Simulação na câmera */}
+        <button onClick={() => onSimular?.()} style={{
+          marginTop: 4, padding: '10px 18px', borderRadius: 8, border: 'none', cursor: 'pointer',
+          background: 'rgba(59,130,246,0.9)', color: '#fff',
+          fontSize: 13, fontWeight: 700, fontFamily: 'var(--sans)',
+          textTransform: 'uppercase', letterSpacing: '.07em',
+          display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center',
+          boxShadow: '0 2px 12px rgba(0,0,0,.25)', WebkitTapHighlightColor: 'transparent',
+        }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>
+          Simulação
+        </button>
       </div>
     </div>
   );
@@ -839,8 +864,8 @@ export default function Demonstracoes() {
     >
       {tab === 'superficie' && (
         demo === 'campos' || demo === 'adicao'
-          ? <SequenciaLente tipo={demo as 'campos' | 'adicao'} />
-          : <Superficie initialDemo={demo} />
+          ? <SequenciaLente tipo={demo as 'campos' | 'adicao'} onSimular={() => setTab('simulacao')} />
+          : <Superficie initialDemo={demo} onSimular={() => setTab('simulacao')} />
       )}
       {tab === 'visao' && <Visao initialDemo={demo} onSimular={() => setTab('simulacao')} />}
       {tab === 'simulacao' && <Simulacao />}
