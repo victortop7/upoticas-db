@@ -673,172 +673,124 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
   );
 }
 
-// ─── Fotossensível ─────────────────────────────────────────────────────────────
-function Fotossensivel() {
-  const [valor, setValor] = useState(0);
-  const pct = valor / 100;
-  const darkR = Math.round(pct * 40);
-  const darkG = Math.round(pct * 35);
-  const darkB = Math.round(pct * 20);
-  const darkA = pct * 0.85;
+// ─── Simulação — modo CÂMERA (realidade aumentada) ─────────────────────────────
+const SIM_EFEITOS = [
+  { id: 'ar',  label: 'Anti-Reflexo',  cor: '#3b82f6', filtro: 'brightness(1.06) contrast(1.05)' },
+  { id: 'az',  label: 'Luz Azul',      cor: '#8b5cf6', filtro: 'sepia(.30) saturate(.85) hue-rotate(-12deg) brightness(1.03)' },
+  { id: 'pol', label: 'Polarizado',    cor: '#f97316', filtro: 'contrast(1.25) saturate(1.32) brightness(.9)' },
+  { id: 'uv',  label: 'Proteção UV',   cor: '#ef4444', filtro: 'brightness(.6) contrast(1.12) saturate(.92)' },
+  { id: 'ft',  label: 'Fotossensível', cor: '#f59e0b', filtro: 'brightness(.45) sepia(.35) contrast(1.1)' },
+  { id: 'ed',  label: 'Est. Dourada',  cor: '#fbbf24', filtro: 'sepia(.5) saturate(1.4) brightness(1.02)' },
+];
 
-  const uvLevel = valor < 25 ? 'Ambiente interno' : valor < 55 ? 'Nublado — UV presente' : valor < 80 ? 'Sol direto' : 'Sol forte — UV intenso';
-  const uvIcon = valor < 25 ? '🏠' : valor < 55 ? '⛅' : valor < 80 ? '🌤️' : '☀️';
-  const lensLabel = valor < 10 ? 'INCOLOR' : valor < 40 ? `${Math.round(pct * 100)}% ATIVA` : `${Math.round(pct * 100)}% ESCURA`;
-
-  return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px 32px', gap: 24 }}>
-      <div style={{ display: 'flex', gap: 32, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
-        <div style={{
-          width: 280, height: 186, borderRadius: 18, overflow: 'hidden', position: 'relative',
-          background: SCENE_BG.sol, border: '1px solid #1e2030',
-          boxShadow: '0 8px 32px rgba(0,0,0,.4)',
-        }}>
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: `rgba(${darkR},${darkG},${darkB},${darkA})`,
-            transition: 'background .35s ease',
-          }} />
-          <div style={{ position: 'absolute', top: 12, right: 12, fontSize: 26 }}>{uvIcon}</div>
-          <div style={{
-            position: 'absolute', bottom: 12, left: '50%', transform: 'translateX(-50%)',
-            background: 'rgba(0,0,0,.65)', borderRadius: 8, padding: '4px 12px',
-            fontSize: 11, fontFamily: 'var(--mono)', fontWeight: 700,
-            color: pct < .1 ? '#9ca3af' : `rgba(${220 - Math.round(pct*80)},${180 - Math.round(pct*60)},${60 - Math.round(pct*40)},1)`,
-            whiteSpace: 'nowrap',
-          }}>{lensLabel}</div>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minWidth: 200 }}>
-          <div>
-            <div style={{ fontSize: 10, color: '#374151', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 5 }}>Intensidade UV</div>
-            <div style={{ height: 7, background: '#1e2030', borderRadius: 4, overflow: 'hidden' }}>
-              <div style={{ height: '100%', borderRadius: 4, width: `${valor}%`, background: `linear-gradient(to right, #1e3a5f, #3b82f6, #f59e0b, #ef4444)`, transition: 'width 0s' }} />
-            </div>
-          </div>
-          <div style={{ background: '#07080e', borderRadius: 12, padding: '12px 14px', border: '1px solid #1e2030' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{
-                width: 38, height: 38, borderRadius: '50%', border: '2px solid #2a2d3e', flexShrink: 0,
-                background: pct < .05 ? 'rgba(200,220,255,.15)' : `rgba(${darkR*2},${darkG*2},${darkB*2},${Math.min(darkA+.1, 1)})`,
-                transition: 'background .35s',
-              }} />
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#f0f0f5', fontFamily: 'var(--mono)' }}>{uvIcon} {uvLevel}</div>
-                <div style={{ fontSize: 11, color: '#6b7280', marginTop: 2 }}>
-                  {pct < .05 ? 'Lente transparente' : `Filtrando ${Math.round(pct * 100)}% da luz`}
-                </div>
-              </div>
-            </div>
-          </div>
-          <p style={{ margin: 0, fontSize: 11, color: '#6b7280', lineHeight: 1.6, background: '#07080e', borderRadius: 10, padding: '10px 14px', border: '1px solid #1e2030' }}>
-            Escurece automaticamente ao detectar raios UV. Volta ao estado claro em ambientes fechados.
-          </p>
-        </div>
-      </div>
-
-      <div style={{ width: '100%', maxWidth: 460 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-          <span style={{ fontSize: 20 }}>🏠</span>
-          <span style={{ fontSize: 11, color: '#374151', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.08em' }}>Intensidade da Luz Solar / UV</span>
-          <span style={{ fontSize: 20 }}>☀️</span>
-        </div>
-        <div style={{ position: 'relative', height: 10, background: '#1e2030', borderRadius: 5 }}>
-          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${valor}%`, borderRadius: 5, background: `linear-gradient(to right, #1e3a5f, #3b82f6 40%, #f59e0b 70%, #ef4444)` }} />
-          <input type="range" min={0} max={100} value={valor} onChange={e => setValor(Number(e.target.value))}
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', margin: 0 }} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── Polarizado ────────────────────────────────────────────────────────────────
-function Polarizado() {
-  const [glare, setGlare] = useState(70);
-  const pct = glare / 100;
-
-  const glareLabel = glare < 20 ? 'Pouco reflexo' : glare < 50 ? 'Reflexo moderado' : glare < 80 ? 'Reflexo intenso' : 'Reflexo máximo';
-  const glareIcon = glare < 20 ? '😌' : glare < 50 ? '😐' : glare < 80 ? '😣' : '🥴';
-
-  const semFilter = `brightness(${.65 + pct * .25}) contrast(${1.1 + pct * .25}) saturate(${.7 - pct * .2})`;
-  const comFilter = `brightness(${.96 + pct * .04}) contrast(1.08) saturate(${1.1 + pct * .1})`;
-
-  return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px 32px', gap: 24 }}>
-      <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
-        {/* SEM polarizado */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-          <div style={{
-            width: 220, height: 146, borderRadius: 14, overflow: 'hidden', position: 'relative',
-            background: SCENE_BG.sol, border: '1px solid #1e2030',
-            filter: semFilter, transition: 'filter .2s',
-          }}>
-            <GlareRings />
-          </div>
-          <span style={{ fontSize: 10, color: '#ef4444', fontFamily: 'var(--mono)', fontWeight: 700, letterSpacing: '.08em' }}>✗ SEM POLARIZADO</span>
-        </div>
-
-        {/* COM polarizado */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-          <div style={{
-            width: 220, height: 146, borderRadius: 14, overflow: 'hidden', position: 'relative',
-            background: SCENE_BG.sol, border: '1px solid #1e2030',
-            filter: comFilter, transition: 'filter .2s',
-          }} />
-          <span style={{ fontSize: 10, color: '#22c55e', fontFamily: 'var(--mono)', fontWeight: 700, letterSpacing: '.08em' }}>✓ COM POLARIZADO</span>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 190 }}>
-          <div style={{ background: '#07080e', borderRadius: 12, padding: '12px 14px', border: '1px solid #1e2030' }}>
-            <div style={{ fontSize: 10, color: '#374151', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 8 }}>Nível de reflexo</div>
-            <div style={{ fontSize: 24, marginBottom: 4 }}>{glareIcon}</div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#f0f0f5', fontFamily: 'var(--mono)' }}>{glareLabel}</div>
-            <div style={{ fontSize: 11, color: '#6b7280', marginTop: 3 }}>Polarizado elimina {Math.round(pct * 98)}% dos reflexos</div>
-          </div>
-          <p style={{ margin: 0, fontSize: 11, color: '#6b7280', lineHeight: 1.6, background: '#07080e', borderRadius: 10, padding: '10px 14px', border: '1px solid #1e2030' }}>
-            Filtro que bloqueia reflexos horizontais de superfícies como asfalto, água e vidro.
-          </p>
-        </div>
-      </div>
-
-      <div style={{ width: '100%', maxWidth: 460 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-          <span style={{ fontSize: 20 }}>😌</span>
-          <span style={{ fontSize: 11, color: '#374151', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.08em' }}>Intensidade dos Reflexos</span>
-          <span style={{ fontSize: 20 }}>🥴</span>
-        </div>
-        <div style={{ position: 'relative', height: 10, background: '#1e2030', borderRadius: 5 }}>
-          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${glare}%`, borderRadius: 5, background: `linear-gradient(to right, #1e3a5f, #f59e0b 60%, #ef4444)` }} />
-          <input type="range" min={0} max={100} value={glare} onChange={e => setGlare(Number(e.target.value))}
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', margin: 0 }} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── Simulação (Fotossensível + Polarizado) ───────────────────────────────────
 function Simulacao() {
-  const [tipo, setTipo] = useState<'fotossensivel' | 'polarizado'>('fotossensivel');
+  const [efeito, setEfeito] = useState('ar');
+  const [com, setCom] = useState(true);
+  const [erro, setErro] = useState<string | null>(null);
+  const v1 = useRef<HTMLVideoElement>(null); // câmera crua
+  const v2 = useRef<HTMLVideoElement>(null); // lente com efeito
+
+  useEffect(() => {
+    let stream: MediaStream | null = null;
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setErro('Câmera não disponível neste dispositivo.');
+      return;
+    }
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+      .then(s => {
+        stream = s;
+        if (v1.current) v1.current.srcObject = s;
+        if (v2.current) v2.current.srcObject = s;
+      })
+      .catch(() => setErro('Permita o acesso à câmera para usar a simulação.'));
+    return () => { stream?.getTracks().forEach(t => t.stop()); };
+  }, []);
+
+  const ef = SIM_EFEITOS.find(e => e.id === efeito)!;
+  const LENTE = 'ellipse(40% 42% at 50% 46%)';
+
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {/* Toggle topo */}
-      <div style={{ display: 'flex', gap: 0, background: '#07080e', borderRadius: 0, padding: '10px 16px', borderBottom: '1px solid #1e2030' }}>
-        {([
-          { id: 'fotossensivel', label: 'Fotossensível' },
-          { id: 'polarizado',    label: 'Polarizado' },
-        ] as const).map(t => (
-          <button key={t.id} onClick={() => setTipo(t.id)} style={{
-            padding: '7px 20px', borderRadius: 8, border: 'none', cursor: 'pointer',
-            background: tipo === t.id ? '#1e2030' : 'transparent',
-            color: tipo === t.id ? '#f0f0f5' : '#4b5563',
-            fontSize: 13, fontWeight: 600, fontFamily: 'var(--sans)',
-            textTransform: 'uppercase', letterSpacing: '.06em', transition: 'all .15s',
-          }}>{t.label}</button>
+    <div style={{ flex: 1, position: 'relative', overflow: 'hidden', background: '#000' }}>
+      {/* Câmera crua (fundo) */}
+      <video ref={v1} autoPlay playsInline muted
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+
+      {/* Lente com o efeito do tratamento */}
+      {com && (
+        <video ref={v2} autoPlay playsInline muted
+          style={{
+            position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
+            filter: ef.filtro, clipPath: LENTE, WebkitClipPath: LENTE,
+            transition: 'filter .2s',
+          }} />
+      )}
+
+      {/* Contorno da lente */}
+      <div style={{
+        position: 'absolute', top: '4%', left: '10%', right: '10%', bottom: '12%',
+        borderRadius: '50%', border: '2px solid rgba(255,255,255,.85)',
+        boxShadow: '0 0 40px rgba(0,0,0,.5), inset 0 0 30px rgba(255,255,255,.08)',
+        pointerEvents: 'none',
+      }} />
+
+      {/* Aviso de câmera */}
+      {erro && (
+        <div style={{
+          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+          background: 'rgba(0,0,0,.8)', borderRadius: 14, padding: '18px 24px', maxWidth: 320,
+          textAlign: 'center', color: '#e5e7eb', fontSize: 13, lineHeight: 1.5,
+        }}>📷 {erro}</div>
+      )}
+
+      {/* Título topo */}
+      <div style={{
+        position: 'absolute', top: 18, left: '50%', transform: 'translateX(-50%)',
+        background: 'rgba(0,0,0,.7)', backdropFilter: 'blur(8px)', borderRadius: 12,
+        padding: '8px 18px', textAlign: 'center', pointerEvents: 'none',
+      }}>
+        <div style={{ fontSize: 10, color: ef.cor, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>Simulação na câmera</div>
+        <div style={{ fontSize: 12.5, color: '#fff', fontWeight: 600 }}>{ef.label}</div>
+      </div>
+
+      {/* Toggle COM / SEM (canto inferior esquerdo) */}
+      <div style={{ position: 'absolute', bottom: 90, left: 16, display: 'flex', background: 'rgba(0,0,0,.6)', borderRadius: 999, padding: 3, zIndex: 11 }}>
+        {([{ v: true, l: 'Com' }, { v: false, l: 'Sem' }] as const).map(o => (
+          <button key={String(o.v)} onClick={() => setCom(o.v)} style={{
+            padding: '7px 18px', borderRadius: 999, border: 'none', cursor: 'pointer',
+            background: com === o.v ? ef.cor : 'transparent',
+            color: com === o.v ? '#fff' : 'rgba(255,255,255,.6)',
+            fontSize: 11, fontWeight: 700, fontFamily: 'var(--mono)', letterSpacing: '.06em', textTransform: 'uppercase',
+            transition: 'all .15s', WebkitTapHighlightColor: 'transparent',
+          }}>{o.l}</button>
         ))}
       </div>
-      {tipo === 'fotossensivel' ? <Fotossensivel /> : <Polarizado />}
+
+      {/* Painel de efeitos (direita) */}
+      <div style={{
+        position: 'absolute', top: 0, right: 0, bottom: 0,
+        display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: 48,
+        background: 'linear-gradient(to left, rgba(0,0,0,0.5) 55%, transparent)',
+        paddingRight: 4, zIndex: 10, minWidth: 150,
+      }}>
+        {SIM_EFEITOS.map(e => {
+          const ativo = e.id === efeito;
+          return (
+            <button key={e.id} onClick={() => setEfeito(e.id)} style={{
+              background: ativo ? 'rgba(255,255,255,0.12)' : 'transparent',
+              border: 'none', cursor: 'pointer', padding: '12px 18px 12px 14px',
+              textAlign: 'left', width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+              transition: 'background .15s', WebkitTapHighlightColor: 'transparent',
+            }}>
+              <div style={{ width: 3, height: 18, borderRadius: 2, flexShrink: 0, background: ativo ? e.cor : 'transparent' }} />
+              <span style={{
+                fontSize: 13.5, fontWeight: ativo ? 700 : 400, fontFamily: 'var(--sans)',
+                letterSpacing: '.06em', textTransform: 'uppercase',
+                color: ativo ? '#fff' : 'rgba(255,255,255,0.45)',
+              }}>{e.label}</span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -856,13 +808,11 @@ export default function Demonstracoes() {
   const navigate = useNavigate();
 
   const DEMO_ITEMS_NAV = [
-    { id: 'digital',    label: 'Digital',       tab: 'superficie' },
-    { id: 'campos',     label: 'Campos',        tab: 'superficie' },
-    { id: 'adicao',     label: 'Adição',        tab: 'superficie' },
-    { id: 'photo',      label: 'Fotossensível', tab: 'simulacao'  },
-    { id: 'polarizado', label: 'Polarizado',    tab: 'simulacao'  },
-    { id: 'ar',         label: 'AR',            tab: 'visao'      },
-    { id: 'espessura',  label: 'Espessura',     tab: 'superficie' },
+    { id: 'digital',    label: 'Digital',     tab: 'superficie' },
+    { id: 'campos',     label: 'Campos',      tab: 'superficie' },
+    { id: 'adicao',     label: 'Adição',      tab: 'superficie' },
+    { id: 'ar',         label: 'AR',          tab: 'visao'      },
+    { id: '',           label: 'Simulação',   tab: 'simulacao'  },
   ];
 
   return (
