@@ -423,7 +423,7 @@ function Superficie({ initialDemo }: { initialDemo?: string }) {
 }
 
 // ─── Visão COM/SEM ─────────────────────────────────────────────────────────────
-function Visao({ initialDemo }: { initialDemo?: string }) {
+function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: () => void }) {
   const [tratamento, setTratamento] = useState(
     TRATAMENTOS.some(t => t.id === initialDemo) ? initialDemo! : 'ar'
   );
@@ -643,6 +643,23 @@ function Visao({ initialDemo }: { initialDemo?: string }) {
             </button>
           ))}
 
+          {/* Última opção: Simulação (vai para a câmera) */}
+          <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '6px 14px' }} />
+          <button onClick={() => onSimular?.()} style={{
+            background: 'transparent', border: 'none', cursor: 'pointer',
+            padding: '12px 18px 12px 14px', textAlign: 'left', width: '100%',
+            display: 'flex', alignItems: 'center', gap: 10,
+            WebkitTapHighlightColor: 'transparent',
+          }}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" />
+            </svg>
+            <span style={{
+              fontSize: 14, fontWeight: 700, fontFamily: 'var(--sans)',
+              letterSpacing: '.07em', textTransform: 'uppercase', color: '#3b82f6',
+            }}>Simulação</span>
+          </button>
+
           {!useRealPhoto && (
             <>
               <div style={{ height: 1, background: 'rgba(255,255,255,0.08)', margin: '4px 14px' }} />
@@ -825,7 +842,7 @@ export default function Demonstracoes() {
           ? <SequenciaLente tipo={demo as 'campos' | 'adicao'} />
           : <Superficie initialDemo={demo} />
       )}
-      {tab === 'visao' && <Visao initialDemo={demo} />}
+      {tab === 'visao' && <Visao initialDemo={demo} onSimular={() => setTab('simulacao')} />}
       {tab === 'simulacao' && <Simulacao />}
 
       {/* Extras popup — lista de simulações */}
@@ -868,38 +885,6 @@ export default function Demonstracoes() {
           ))}
         </div>
       )}
-
-      {/* Segmented control estilo iOS — SUPERFÍCIE | VISÃO | SIMULAÇÃO */}
-      <div style={{
-        position: 'fixed', bottom: 16, left: '50%', transform: 'translateX(-50%)',
-        background: 'rgba(118,118,128,0.28)',
-        backdropFilter: 'blur(24px) saturate(1.6)', WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
-        borderRadius: 12,
-        display: 'flex', gap: 2,
-        zIndex: 50,
-        padding: 3,
-        boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-      }}>
-        {([
-          { id: 'superficie', label: 'Superfície' },
-          { id: 'visao',      label: 'Visão'      },
-          { id: 'simulacao',  label: 'Simulação'  },
-        ] as const).map(t => (
-          <button key={t.id} onClick={() => { setShowExtras(false); setTab(t.id); }} style={{
-            background: tab === t.id ? 'rgba(99,99,102,0.95)' : 'transparent',
-            border: 'none', cursor: 'pointer',
-            padding: '8px 22px',
-            borderRadius: 9,
-            color: tab === t.id ? '#fff' : 'rgba(235,235,245,0.62)',
-            boxShadow: tab === t.id ? '0 3px 10px rgba(0,0,0,0.35), inset 0 0.5px 0 rgba(255,255,255,0.2)' : 'none',
-            transition: 'color .18s, background .18s, box-shadow .18s',
-            WebkitTapHighlightColor: 'transparent',
-            minWidth: 96,
-          }}>
-            <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: '-0.01em' }}>{t.label}</span>
-          </button>
-        ))}
-      </div>
 
       {/* Bottom nav — canto inferior direito (tab bar iOS) */}
       <div style={{
