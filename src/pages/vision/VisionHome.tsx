@@ -140,7 +140,7 @@ const MODULES = [
   },
   {
     id: 'venda-indicativa',
-    label: 'Venda\nIndicativa',
+    label: 'Tabela\nDigital',
     path: '/vision/venda-indicativa',
     active: true,
     submenu: null,

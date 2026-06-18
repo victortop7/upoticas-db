@@ -320,7 +320,7 @@ export default function VendaIndicativa() {
       <div style={{ height: '100dvh', position: 'relative', overflow: 'hidden', background: '#f0f4f8' }}>
         <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${AMBIENTE})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(232,240,254,0.85) 0%, rgba(219,234,254,0.6) 100%)' }} />
-        <Header titulo="Venda Indicativa" />
+        <Header titulo="Tabela Digital" />
         <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 28 }}>
           <div style={{ fontSize: 22, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.4px' }}>Escolha o tipo de lente</div>
           <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -344,7 +344,7 @@ export default function VendaIndicativa() {
   return (
     <div style={{ height: '100dvh', position: 'relative', overflow: 'hidden', background: '#f0f4f8' }}>
       <div style={{ position: 'absolute', inset: 0, background: 'rgba(240,244,248,0.95)' }} />
-      <Header titulo={`Venda Indicativa · ${TIPOS_LENTE.find(t => t.id === tipo)?.label}`} />
+      <Header titulo={`Tabela Digital · ${TIPOS_LENTE.find(t => t.id === tipo)?.label}`} />
       <div style={{ position: 'absolute', top: 90, left: 0, right: 0, bottom: 48, overflowY: 'auto', padding: '8px 28px 28px' }}>
         <div style={{ textAlign: 'center', fontSize: 15, fontWeight: 700, color: '#334155', marginBottom: 18 }}>Escolha uma tabela</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 14, maxWidth: 1000, margin: '0 auto' }}>
