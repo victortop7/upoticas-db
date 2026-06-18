@@ -207,8 +207,6 @@ function SequenciaLente({ tipo }: { tipo: 'campos' | 'adicao' }) {
     return () => clearInterval(t);
   }, [auto]);
 
-  const nivel = idx === 0 ? 'Básica' : idx < 3 ? `Nível ${idx + 1}` : idx < 5 ? 'Premium' : 'Premium+';
-
   return (
     <div style={{ flex: 1, position: 'relative', overflow: 'hidden', background: '#0a0a0c' }}>
       {/* Imagens empilhadas (crossfade) */}
@@ -237,49 +235,54 @@ function SequenciaLente({ tipo }: { tipo: 'campos' | 'adicao' }) {
         <div style={{ fontSize: 12.5, color: '#e5e7eb', lineHeight: 1.5 }}>{desc}</div>
       </div>
 
-      {/* Painel inferior — slider + auto */}
-      <div style={{
-        position: 'absolute', bottom: 76, left: '50%', transform: 'translateX(-50%)',
-        width: 'min(560px, 88%)',
-        background: 'rgba(8,11,22,0.78)', backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(120,160,255,0.18)', borderRadius: 18,
-        padding: '14px 18px 16px', boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+      {/* Botão Animar — canto inferior esquerdo */}
+      <button onClick={() => setAuto(a => !a)} style={{
+        position: 'absolute', bottom: 90, left: 16, zIndex: 11,
+        display: 'flex', alignItems: 'center', gap: 8,
+        background: auto ? cor : 'rgba(0,0,0,.7)',
+        border: `1px solid ${auto ? cor : 'rgba(255,255,255,0.15)'}`,
+        borderRadius: 999, padding: '7px 14px 7px 11px', cursor: 'pointer',
+        WebkitTapHighlightColor: 'transparent',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-          <span style={{ fontSize: 12, color: '#fff', fontWeight: 700, fontFamily: 'var(--sans)' }}>{nivel}</span>
-          <button onClick={() => setAuto(a => !a)} style={{
-            display: 'flex', alignItems: 'center', gap: 7,
-            background: auto ? cor : 'rgba(255,255,255,0.08)',
-            border: 'none', borderRadius: 999, padding: '6px 14px', cursor: 'pointer',
-            WebkitTapHighlightColor: 'transparent',
-          }}>
-            {auto
-              ? <svg width="12" height="12" viewBox="0 0 24 24" fill="#fff"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
-              : <svg width="12" height="12" viewBox="0 0 24 24" fill="#fff"><polygon points="6 4 20 12 6 20"/></svg>}
-            <span style={{ fontSize: 11, color: '#fff', fontWeight: 700, fontFamily: 'var(--mono)', letterSpacing: '.05em', textTransform: 'uppercase' }}>
-              {auto ? 'Pausar' : 'Animar'}
-            </span>
-          </button>
-        </div>
+        {auto
+          ? <svg width="13" height="13" viewBox="0 0 24 24" fill="#fff"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+          : <svg width="13" height="13" viewBox="0 0 24 24" fill="#fff"><polygon points="6 4 20 12 6 20"/></svg>}
+        <span style={{ fontSize: 10.5, color: '#fff', fontFamily: 'var(--mono)', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase' }}>
+          {auto ? 'Pausar' : 'Animar'}
+        </span>
+      </button>
 
-        {/* Slider */}
-        <div style={{ position: 'relative', height: 8, background: 'rgba(255,255,255,0.12)', borderRadius: 5 }}>
-          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${(idx / (total - 1)) * 100}%`, borderRadius: 5, background: cor, transition: 'width .2s' }} />
-          <input type="range" min={0} max={total - 1} step={1} value={idx}
-            onChange={e => { setAuto(false); setIdx(Number(e.target.value)); }}
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', margin: 0 }} />
-        </div>
-
-        {/* Pontinhos de etapa */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
-          {Array.from({ length: total }).map((_, i) => (
+      {/* Painel de níveis — overlay vertical direito (igual aos tratamentos) */}
+      <div style={{
+        position: 'absolute', top: 0, right: 0, bottom: 0,
+        display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: 48,
+        background: 'linear-gradient(to left, rgba(0,0,0,0.45) 55%, transparent)',
+        paddingRight: 4, zIndex: 10, minWidth: 150,
+      }}>
+        {Array.from({ length: total }).map((_, i) => {
+          const ativo = i === idx;
+          const label = tipo === 'campos' ? `Campo ${i + 1}` : `Adição ${String(i + 1).padStart(2, '0')}`;
+          return (
             <button key={i} onClick={() => { setAuto(false); setIdx(i); }} style={{
-              width: 10, height: 10, borderRadius: '50%', border: 'none', cursor: 'pointer', padding: 0,
-              background: i === idx ? cor : 'rgba(255,255,255,0.22)',
+              background: ativo ? 'rgba(255,255,255,0.12)' : 'transparent',
+              border: 'none', cursor: 'pointer',
+              padding: '12px 18px 12px 14px',
+              textAlign: 'left', width: '100%',
+              display: 'flex', alignItems: 'center', gap: 10,
               transition: 'background .15s', WebkitTapHighlightColor: 'transparent',
-            }} />
-          ))}
-        </div>
+            }}>
+              <div style={{
+                width: 3, height: 18, borderRadius: 2, flexShrink: 0,
+                background: ativo ? cor : 'transparent', transition: 'background .15s',
+              }} />
+              <span style={{
+                fontSize: 14, fontWeight: ativo ? 700 : 400,
+                fontFamily: 'var(--sans)', letterSpacing: '.07em', textTransform: 'uppercase',
+                color: ativo ? '#ffffff' : 'rgba(255,255,255,0.45)', transition: 'color .15s',
+              }}>{label}</span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
