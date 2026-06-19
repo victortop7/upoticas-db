@@ -536,7 +536,6 @@ function MarketingView() {
 export default function Funil() {
   const { tenant, usuario } = useAuth();
 
-  if (usuario?.perfil === 'marketing') return <MarketingView />;
   const [estagios, setEstagios] = useState<Estagio[]>([]);
   const [cards, setCards] = useState<Card[]>([]);
   const [loading, setLoading] = useState(true);
@@ -563,6 +562,9 @@ export default function Funil() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  // Marketing vê a visão de vendas da semana (após os hooks — Regras dos Hooks)
+  if (usuario?.perfil === 'marketing') return <MarketingView />;
 
   async function mover(id: string, key: string) {
     const card = cards.find(c => c.id === id);
