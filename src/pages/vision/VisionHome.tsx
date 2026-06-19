@@ -292,7 +292,7 @@ export default function VisionHome() {
         flex: 1,
         position: 'relative',
         overflow: 'hidden',
-        backgroundImage: 'url(/portrait-young-business-woman-office.jpg)',
+        backgroundImage: 'url(/home-hero.jpg)',
         backgroundSize: 'cover',
         backgroundPosition: 'center center',
       }}>
