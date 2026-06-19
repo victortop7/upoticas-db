@@ -122,7 +122,7 @@ const TABELAS: Tabela[] = [
 ];
 
 const brl = (v: number) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const AMBIENTE = '/portrait-young-business-woman-office.jpg';
+const AMBIENTE = '/home-hero.jpg';
 
 // ─── Header ─────────────────────────────────────────────────────────────────
 function Header({ titulo }: { titulo: string }) {
