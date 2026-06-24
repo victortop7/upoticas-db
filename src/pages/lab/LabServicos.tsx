@@ -5,6 +5,7 @@ interface Servico {
   id: string; codigo: string; nome: string; unidade: string;
   valor_padrao: number; valor_lista2: number;
   valor_lista3: number; valor_lista4: number; valor_lista5: number;
+  brinde?: number;
   ativo: number;
 }
 
@@ -82,7 +83,7 @@ export default function LabServicos() {
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(false);
   const [editItem, setEditItem] = useState<Servico | null>(null);
-  const [form, setForm] = useState({ codigo: '', nome: '', unidade: '', valor_padrao: '', valor_lista2: '', valor_lista3: '', valor_lista4: '', valor_lista5: '' });
+  const [form, setForm] = useState({ codigo: '', nome: '', unidade: '', valor_padrao: '', valor_lista2: '', valor_lista3: '', valor_lista4: '', valor_lista5: '', brinde: false });
   const [saving, setSaving] = useState(false);
   const [seeding, setSeeding] = useState(false);
   const [busca, setBusca] = useState('');
@@ -128,7 +129,7 @@ export default function LabServicos() {
 
   function openNovo() {
     setEditItem(null);
-    setForm({ codigo:'', nome:'', unidade:'UN', valor_padrao:'', valor_lista2:'', valor_lista3:'', valor_lista4:'', valor_lista5:'' });
+    setForm({ codigo:'', nome:'', unidade:'UN', valor_padrao:'', valor_lista2:'', valor_lista3:'', valor_lista4:'', valor_lista5:'', brinde:false });
     setErro(''); setModal(true);
   }
   function openEdit(s: Servico) {
@@ -140,6 +141,7 @@ export default function LabServicos() {
       valor_lista3: s.valor_lista3>0 ? String(s.valor_lista3) : '',
       valor_lista4: s.valor_lista4>0 ? String(s.valor_lista4) : '',
       valor_lista5: s.valor_lista5>0 ? String(s.valor_lista5) : '',
+      brinde: !!s.brinde,
     });
     setErro(''); setModal(true);
   }
@@ -153,6 +155,7 @@ export default function LabServicos() {
       valor_lista3: fv(form.valor_lista3),
       valor_lista4: fv(form.valor_lista4),
       valor_lista5: fv(form.valor_lista5),
+      brinde: form.brinde ? 1 : 0,
     };
     try {
       if (editItem) await api.put(`/lab/servicos/${editItem.id}`, payload);
@@ -200,6 +203,7 @@ export default function LabServicos() {
       valor_lista3: s.valor_lista3,
       valor_lista4: s.valor_lista4,
       valor_lista5: s.valor_lista5,
+      brinde: s.brinde ? 1 : 0,
       [field]: isNaN(n) ? 0 : n,
     };
     try { await api.put(`/lab/servicos/${id}`, payload); load(); } catch {}
@@ -385,6 +389,11 @@ export default function LabServicos() {
                               }}
                               style={{ width:'120px', padding:'3px 6px', fontSize:'13px', fontFamily:"'Courier New', monospace", textAlign:'right', background:'#ffffcc', border:'2px inset #888', color:'#000', outline:'none' }}
                             />
+                          ) : s.brinde ? (
+                            <button onClick={() => openEdit(s)}
+                              style={{ width:'100%', textAlign:'right', padding:'4px 8px', fontFamily:"'Courier New', monospace", fontSize:'13px', fontWeight:'700', background:'#fff8e8', color:'#8a6a00', border:'1px solid #e0c060', cursor:'pointer', borderRadius:'2px' }}>
+                              🎁 BRINDE · R$ 0,00
+                            </button>
                           ) : (
                             <button onClick={() => setInlineEdit({ id: s.id, field, value: val > 0 ? String(val) : '' })}
                               style={{ width:'100%', textAlign:'right', padding:'4px 8px', fontFamily:"'Courier New', monospace", fontSize:'13px', fontWeight:'700', background: val > 0 ? '#efffef' : '#fff8f8', color: val > 0 ? '#005500' : '#cc0000', border:`1px solid ${val > 0 ? '#aaddaa' : '#ddaaaa'}`, cursor:'pointer', borderRadius:'2px' }}>
@@ -507,10 +516,17 @@ export default function LabServicos() {
                   {LISTA_FIELDS.slice(0, listasAtivas).map((field, i) => (
                     <div key={field}>
                       <label style={LBL}>{listaNomes[i]} R$</label>
-                      <input value={form[field as keyof typeof form]} onChange={e => setForm(f => ({ ...f, [field]: e.target.value }))} style={INP} placeholder="0,00" />
+                      <input value={String(form[field as keyof typeof form] ?? '')} disabled={form.brinde}
+                        onChange={e => setForm(f => ({ ...f, [field]: e.target.value }))}
+                        style={{ ...INP, opacity: form.brinde ? 0.5 : 1 }} placeholder={form.brinde ? '0,00 (brinde)' : '0,00'} />
                     </div>
                   ))}
                 </div>
+                {/* Brinde — serviço/produto dado como cortesia (R$ 0,00) */}
+                <label style={{ display:'flex', alignItems:'center', gap:'8px', padding:'8px 10px', background:'#fff8e8', border:'1px solid #e0c060', borderRadius:'4px', cursor:'pointer', fontSize:'12px', fontWeight:'700', color:'#8a6a00' }}>
+                  <input type="checkbox" checked={form.brinde} onChange={e => setForm(f => ({ ...f, brinde: e.target.checked }))} style={{ width:'16px', height:'16px', cursor:'pointer' }} />
+                  🎁 Dar como BRINDE (R$ 0,00) — cortesia, sem cobrar
+                </label>
                 <div style={{ display:'flex', gap:'8px', marginTop:'4px' }}>
                   <button type="button" onClick={() => setModal(false)} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:R.alt, color:R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>CANCELAR</button>
                   <button type="submit" disabled={saving} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:'#005500', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:saving?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>

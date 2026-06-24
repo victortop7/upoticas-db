@@ -5,6 +5,7 @@ async function ensureCols(env: Env) {
   for (const col of [
     'codigo TEXT', 'unidade TEXT',
     'valor_lista2 REAL', 'valor_lista3 REAL', 'valor_lista4 REAL', 'valor_lista5 REAL',
+    'brinde INTEGER DEFAULT 0',
   ]) {
     try { await env.DB.prepare(`ALTER TABLE lab_servicos_catalogo ADD COLUMN ${col}`).run(); } catch {}
   }
@@ -24,6 +25,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
                         COALESCE(valor_lista3,0) as valor_lista3,
                         COALESCE(valor_lista4,0) as valor_lista4,
                         COALESCE(valor_lista5,0) as valor_lista5,
+                        COALESCE(brinde,0) as brinde,
                         ativo
                  FROM lab_servicos_catalogo WHERE tenant_id = ?`;
     const params: unknown[] = [tenant_id];
@@ -93,13 +95,14 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     const id = crypto.randomUUID();
     await env.DB.prepare(
       `INSERT INTO lab_servicos_catalogo
-       (id, tenant_id, codigo, nome, unidade, valor_padrao, valor_lista2, valor_lista3, valor_lista4, valor_lista5, ativo)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`
+       (id, tenant_id, codigo, nome, unidade, valor_padrao, valor_lista2, valor_lista3, valor_lista4, valor_lista5, brinde, ativo)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`
     ).bind(
       id, tenant_id,
       body.codigo ?? null, body.nome, body.unidade ?? null,
       body.valor_padrao ?? 0, body.valor_lista2 ?? null,
-      body.valor_lista3 ?? null, body.valor_lista4 ?? null, body.valor_lista5 ?? null
+      body.valor_lista3 ?? null, body.valor_lista4 ?? null, body.valor_lista5 ?? null,
+      body.brinde ? 1 : 0
     ).run();
 
     return json({ id }, 201);
