@@ -77,7 +77,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       'classificacao TEXT', 'lista_preco INTEGER',
       'vendedor1_id TEXT', 'vendedor2_id TEXT',
       'num_vias INTEGER', 'cobranca_tipo TEXT', 'fechamento_ref TEXT',
-      'frete REAL', 'desconto_geral REAL',
+      'frete REAL', 'desconto_geral REAL', 'data_emissao TEXT',
     ];
     for (const col of newCols) {
       try { await env.DB.prepare(`ALTER TABLE lab_ordens ADD COLUMN ${col}`).run(); } catch {}
@@ -123,8 +123,8 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
           vendedor, medico, ref_otica, previsao_entrega, condicao_pgto, sinal, rota, texto_gravura, observacoes, total,
           tipo, cont_interno, caixa, etiq_garantia, usuario_receita, fluxo_lab,
           classificacao, lista_preco, vendedor1_id, vendedor2_id,
-          num_vias, cobranca_tipo, fechamento_ref, frete, desconto_geral
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          num_vias, cobranca_tipo, fechamento_ref, frete, desconto_geral, data_emissao
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).bind(
         id, tenant_id, numero, body.otica_id,
         body.operador ?? body.vendedor ?? null,
@@ -152,6 +152,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
         body.fechamento_ref ?? null,
         body.frete ?? null,
         body.desconto_geral ?? null,
+        body.data_emissao ?? null,
       ),
     ];
 
