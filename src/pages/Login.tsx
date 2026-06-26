@@ -31,70 +31,70 @@ export default function Login() {
 
   // ── TEMA ÓTICAS ──────────────────────────────────────
   if (!isLab) return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-      <div style={{ width: '100%', maxWidth: '420px' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '22px' }}>
+      <div style={{ width: '100%', maxWidth: '480px' }}>
 
         {/* Seletor de aba */}
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '28px', background: 'var(--surface)', borderRadius: '12px', padding: '4px', border: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '32px', background: 'var(--surface)', borderRadius: '18px', padding: '6px', border: '1px solid var(--border)', boxShadow: '0 16px 36px rgba(15, 23, 42, 0.06)' }}>
           <button onClick={() => { setAba('oticas'); setErro(''); }}
-            style={{ flex: 1, padding: '9px', fontSize: '13px', fontWeight: '700', borderRadius: '8px', border: 'none', cursor: 'pointer', background: '#16a34a', color: 'white', transition: 'all 0.15s' }}>
+            style={{ flex: 1, padding: '12px', fontSize: '13px', fontWeight: '700', borderRadius: '14px', border: 'none', cursor: 'pointer', background: '#16a34a', color: 'white', transition: 'all 0.18s' }}>
             🏪 Connect Óticas
           </button>
           <button onClick={() => { setAba('lab'); setErro(''); }}
-            style={{ flex: 1, padding: '9px', fontSize: '13px', fontWeight: '600', borderRadius: '8px', border: 'none', cursor: 'pointer', background: 'transparent', color: 'var(--text-dim)', transition: 'all 0.15s' }}>
+            style={{ flex: 1, padding: '12px', fontSize: '13px', fontWeight: '700', borderRadius: '14px', border: 'none', cursor: 'pointer', background: 'transparent', color: 'var(--text-dim)', transition: 'all 0.18s' }}>
             🔬 Connect LAB
           </button>
         </div>
 
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-            <div style={{ width: '40px', height: '40px', background: '#16a34a', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+            <div style={{ width: '44px', height: '44px', background: 'linear-gradient(135deg, #16a34a, #0f8a3a)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 18px 38px rgba(22, 163, 74, 0.18)' }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="3"/><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/>
               </svg>
             </div>
-            <span style={{ fontSize: '24px', fontWeight: '700', color: 'var(--text)', letterSpacing: '-0.5px' }}>
-              Connect <span style={{ color: '#16a34a' }}>Óticas</span>
+            <span style={{ fontSize: '26px', fontWeight: '800', color: 'var(--text)', letterSpacing: '-0.6px' }}>
+              Connect <span style={{ color: 'var(--accent)' }}>Óticas</span>
             </span>
           </div>
-          <p style={{ color: 'var(--text-dim)', fontSize: '14px', margin: 0 }}>Sistema de Gestão para Óticas</p>
+          <p style={{ color: 'var(--text-dim)', fontSize: '15px', margin: 0 }}>Sistema moderno para gestão de óticas</p>
         </div>
 
         {/* Card */}
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px', padding: '32px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-          <h2 style={{ margin: '0 0 4px', fontSize: '20px', fontWeight: '600', color: 'var(--text)' }}>Entrar na sua conta</h2>
-          <p style={{ margin: '0 0 24px', fontSize: '14px', color: 'var(--text-dim)' }}>Bem-vindo de volta!</p>
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '24px', padding: '36px', boxShadow: '0 24px 68px rgba(15,0,50,0.06)' }}>
+          <h2 style={{ margin: '0 0 8px', fontSize: '22px', fontWeight: '700', color: 'var(--text)' }}>Entrar na sua conta</h2>
+          <p style={{ margin: '0 0 26px', fontSize: '15px', color: 'var(--text-dim)' }}>Acesse o painel com o mesmo padrão visual do app.</p>
 
           {erro && (
-            <div style={{ background: 'var(--red-dim)', border: '1px solid var(--red)', borderRadius: '8px', padding: '10px 14px', marginBottom: '16px', fontSize: '14px', color: 'var(--red)' }}>
+            <div style={{ background: 'rgba(248, 113, 113, 0.14)', border: '1px solid rgba(220, 38, 38, 0.18)', borderRadius: '16px', padding: '14px 16px', marginBottom: '18px', fontSize: '14px', color: 'var(--red)' }}>
               {erro}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} autoComplete="on" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <form onSubmit={handleSubmit} autoComplete="on" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--text)', marginBottom: '6px' }}>E-mail</label>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: 'var(--text)', marginBottom: '8px' }}>E-mail</label>
               <input type="email" name="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="seu@email.com"
-                style={{ width: '100%', padding: '10px 12px', fontSize: '14px', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--surface-alt)', color: 'var(--text)', outline: 'none', boxSizing: 'border-box' }}
-                onFocus={e => e.target.style.borderColor = '#16a34a'} onBlur={e => e.target.style.borderColor = 'var(--border)'} />
+                style={{ width: '100%', padding: '14px 16px', fontSize: '15px', border: '1px solid var(--border)', borderRadius: '16px', background: 'var(--surface-alt)', color: 'var(--text)', outline: 'none', boxSizing: 'border-box' }}
+                onFocus={e => e.currentTarget.style.borderColor = '#007aff'} onBlur={e => e.currentTarget.style.borderColor = 'var(--border)'} />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--text)', marginBottom: '6px' }}>Senha</label>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: 'var(--text)', marginBottom: '8px' }}>Senha</label>
               <input type="password" name="password" autoComplete="current-password" value={senha} onChange={e => setSenha(e.target.value)} required placeholder="••••••••"
-                style={{ width: '100%', padding: '10px 12px', fontSize: '14px', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--surface-alt)', color: 'var(--text)', outline: 'none', boxSizing: 'border-box' }}
-                onFocus={e => e.target.style.borderColor = '#16a34a'} onBlur={e => e.target.style.borderColor = 'var(--border)'} />
+                style={{ width: '100%', padding: '14px 16px', fontSize: '15px', border: '1px solid var(--border)', borderRadius: '16px', background: 'var(--surface-alt)', color: 'var(--text)', outline: 'none', boxSizing: 'border-box' }}
+                onFocus={e => e.currentTarget.style.borderColor = '#007aff'} onBlur={e => e.currentTarget.style.borderColor = 'var(--border)'} />
             </div>
             <button type="submit" disabled={loading}
-              style={{ width: '100%', padding: '11px', fontSize: '14px', fontWeight: '600', background: loading ? '#aaa' : '#16a34a', color: 'white', border: 'none', borderRadius: '8px', cursor: loading ? 'not-allowed' : 'pointer', marginTop: '4px' }}>
+              style={{ width: '100%', padding: '14px', fontSize: '15px', fontWeight: '700', background: loading ? 'rgba(22, 163, 74, 0.5)' : 'linear-gradient(135deg, var(--primary), var(--primary-dark))', color: 'white', border: 'none', borderRadius: '16px', cursor: loading ? 'not-allowed' : 'pointer', transition: 'opacity 0.18s ease' }}>
               {loading ? 'Entrando...' : 'Entrar'}
             </button>
           </form>
         </div>
 
-        <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '14px', color: 'var(--text-dim)' }}>
+        <p style={{ textAlign: 'center', marginTop: '22px', fontSize: '14px', color: 'var(--text-dim)' }}>
           Ainda não tem conta?{' '}
-          <Link to="/cadastro" style={{ color: '#16a34a', fontWeight: '500', textDecoration: 'none' }}>Criar conta grátis</Link>
+          <Link to="/cadastro" style={{ color: 'var(--accent)', fontWeight: '700', textDecoration: 'none' }}>Criar conta grátis</Link>
         </p>
       </div>
     </div>

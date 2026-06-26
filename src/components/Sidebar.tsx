@@ -63,43 +63,48 @@ export default function Sidebar() {
       top: 0, left: 0,
       zIndex: 100,
       overflow: 'hidden',
+      boxShadow: '6px 0 28px rgba(15, 23, 42, 0.08)',
     }}>
       {/* Logo */}
-      <div style={{ padding: '20px 16px', borderBottom: '1px solid var(--border)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+      <div style={{ padding: '24px 18px', borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,0.86)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
           <div style={{
-            width: '32px', height: '32px', background: 'var(--primary)',
-            borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0
+            width: '38px', height: '38px', background: 'linear-gradient(135deg, var(--accent), #0051d0)',
+            borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0, boxShadow: '0 12px 24px rgba(0, 122, 255, 0.15)',
           }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="3"/>
               <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/>
             </svg>
           </div>
-          <span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text)' }}>
-            Connect <span style={{ color: 'var(--primary)' }}>Óticas</span>
-          </span>
+          <div>
+            <div style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text)' }}>
+              Connect <span style={{ color: 'var(--accent)' }}>Óticas</span>
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)', letterSpacing: '0.07em', fontWeight: 600 }}>
+              Sistema para Óticas
+            </div>
+          </div>
         </div>
         <div style={{
           background: 'var(--surface-alt)', border: '1px solid var(--border)',
-          borderRadius: '8px', padding: '8px 10px'
+          borderRadius: '16px', padding: '12px 14px', boxShadow: '0 10px 20px rgba(15, 23, 42, 0.05)',
         }}>
-          <p style={{ margin: 0, fontSize: '12px', fontWeight: '600', color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {tenant?.nome}
           </p>
-          <p style={{ margin: '2px 0 0', fontSize: '11px', color: 'var(--text-muted)' }}>
+          <p style={{ margin: '6px 0 0', fontSize: '12px', color: 'var(--text-dim)' }}>
             {usuario?.nome}
           </p>
         </div>
       </div>
 
       {/* Nav */}
-      <nav style={{ flex: 1, padding: '12px 8px', overflowY: 'auto', overflowX: 'hidden' }}>
+      <nav style={{ flex: 1, padding: '14px 10px', overflowY: 'auto', overflowX: 'hidden' }}>
         {usuario?.perfil === 'marketing' ? (
-          /* Menu restrito para marketing */
           <div>
-            <p style={{ fontSize: '10px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', padding: '0 8px', margin: '8px 0 4px' }}>
+            <p style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.12em', padding: '0 8px', margin: '8px 0 8px' }}>
               Menu
             </p>
             {[
@@ -110,36 +115,36 @@ export default function Sidebar() {
                 key={item.to}
                 to={item.to}
                 style={({ isActive }) => ({
-                  display: 'flex', alignItems: 'center', gap: '10px',
-                  padding: '8px 10px', borderRadius: '8px', marginBottom: '2px',
-                  fontSize: '13px', fontWeight: isActive ? '600' : '400',
-                  color: isActive ? 'var(--primary)' : 'var(--text-dim)',
-                  background: isActive ? 'var(--primary-dim)' : 'transparent',
-                  textDecoration: 'none', transition: 'all 0.15s',
+                  display: 'flex', alignItems: 'center', gap: '12px',
+                  padding: '12px 14px', borderRadius: '16px', marginBottom: '8px',
+                  fontSize: '13px', fontWeight: isActive ? '700' : '500',
+                  color: isActive ? 'var(--accent)' : 'var(--text-dim)',
+                  background: isActive ? 'var(--accent-dim)' : 'transparent',
+                  textDecoration: 'none', transition: 'all 0.18s',
                 })}
               >
-                <span style={{ fontSize: '15px' }}>{item.icon}</span>
-                {item.label}
+                <span style={{ fontSize: '16px' }}>{item.icon}</span>
+                <span>{item.label}</span>
               </NavLink>
             ))}
           </div>
         ) : (
-          /* Menu completo para admin/vendedor/caixa */
           <>
             <button
               onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }))}
               style={{
-                width: '100%', padding: '8px 10px', marginBottom: '8px',
+                width: '100%', padding: '12px 14px', marginBottom: '12px',
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 background: 'var(--surface-alt)', border: '1px solid var(--border)',
-                borderRadius: '8px', cursor: 'pointer', color: 'var(--text-muted)',
-                fontSize: '13px',
+                borderRadius: '16px', cursor: 'pointer', color: 'var(--text-dim)',
+                fontSize: '13px', fontWeight: 700,
+                boxShadow: '0 10px 24px rgba(15, 23, 42, 0.05)',
               }}
             >
-              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>🔍</span> Buscar...
+              <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span>🔍</span> Buscar
               </span>
-              <kbd style={{ fontSize: '10px', padding: '1px 5px', borderRadius: '3px', background: 'var(--surface)', border: '1px solid var(--border)', fontFamily: 'var(--mono)' }}>⌃K</kbd>
+              <kbd style={{ fontSize: '10px', padding: '4px 8px', borderRadius: '10px', background: 'var(--surface)', border: '1px solid var(--border)', fontFamily: 'var(--mono)' }}>⌃K</kbd>
             </button>
             {([
               { label: 'Menu', items: [...NAV_GERAL, ...(usuario?.perfil !== 'admin' ? [{ to: '/vendedores', label: 'Ranking', icon: '🏆' }] : [])] },
@@ -149,7 +154,7 @@ export default function Sidebar() {
               { label: 'Sistema', items: usuario?.perfil === 'admin' ? NAV_CONFIG : [] },
             ]).filter(g => g.items.length > 0).map(({ label, items }) => (
               <div key={label}>
-                <p style={{ fontSize: '10px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', padding: '0 8px', margin: '8px 0 4px' }}>
+                <p style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.12em', padding: '0 8px', margin: '14px 0 8px' }}>
                   {label}
                 </p>
                 {items.map(item => (
@@ -157,16 +162,16 @@ export default function Sidebar() {
                     key={item.to}
                     to={item.to}
                     style={({ isActive }) => ({
-                      display: 'flex', alignItems: 'center', gap: '10px',
-                      padding: '8px 10px', borderRadius: '8px', marginBottom: '2px',
-                      fontSize: '13px', fontWeight: isActive ? '600' : '400',
-                      color: isActive ? 'var(--primary)' : 'var(--text-dim)',
-                      background: isActive ? 'var(--primary-dim)' : 'transparent',
-                      textDecoration: 'none', transition: 'all 0.15s',
+                      display: 'flex', alignItems: 'center', gap: '12px',
+                      padding: '12px 14px', borderRadius: '16px', marginBottom: '8px',
+                      fontSize: '13px', fontWeight: isActive ? '700' : '500',
+                      color: isActive ? 'var(--accent)' : 'var(--text-dim)',
+                      background: isActive ? 'var(--accent-dim)' : 'transparent',
+                      textDecoration: 'none', transition: 'all 0.18s',
                     })}
                   >
-                    <span style={{ fontSize: '15px' }}>{item.icon}</span>
-                    {item.label}
+                    <span style={{ fontSize: '16px' }}>{item.icon}</span>
+                    <span>{item.label}</span>
                   </NavLink>
                 ))}
               </div>
@@ -176,18 +181,17 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div style={{ padding: '12px 8px', borderTop: '1px solid var(--border)' }}>
+      <div style={{ padding: '14px 12px', borderTop: '1px solid var(--border)', background: 'rgba(255,255,255,0.85)' }}>
         <button
           onClick={toggle}
           style={{
-            width: '100%', padding: '9px 10px', fontSize: '14px',
-            color: 'var(--text-dim)', background: 'transparent',
-            border: 'none', borderRadius: '8px', cursor: 'pointer',
+            width: '100%', padding: '12px 14px', fontSize: '14px',
+            color: 'var(--text-dim)', background: 'var(--surface-alt)',
+            border: '1px solid var(--border)', borderRadius: '14px', cursor: 'pointer',
             textAlign: 'left', display: 'flex', alignItems: 'center', gap: '10px',
-            transition: 'background 0.15s', marginBottom: '2px',
+            transition: 'background 0.18s', marginBottom: '9px',
+            boxShadow: '0 10px 24px rgba(15, 23, 42, 0.05)',
           }}
-          onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-alt)')}
-          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
         >
           <span>{dark ? '☀️' : '🌙'}</span>
           {dark ? 'Modo claro' : 'Modo escuro'}
@@ -195,14 +199,12 @@ export default function Sidebar() {
         <button
           onClick={handleLogout}
           style={{
-            width: '100%', padding: '9px 10px', fontSize: '14px',
-            color: 'var(--text-dim)', background: 'transparent',
-            border: 'none', borderRadius: '8px', cursor: 'pointer',
+            width: '100%', padding: '12px 14px', fontSize: '14px',
+            color: 'var(--text-dim)', background: 'var(--surface-alt)',
+            border: '1px solid var(--border)', borderRadius: '14px', cursor: 'pointer',
             textAlign: 'left', display: 'flex', alignItems: 'center', gap: '10px',
-            transition: 'background 0.15s'
+            transition: 'background 0.18s', boxShadow: '0 10px 24px rgba(15, 23, 42, 0.05)',
           }}
-          onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-alt)')}
-          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
         >
           <span>↩</span> Sair
         </button>

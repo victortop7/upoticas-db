@@ -125,7 +125,8 @@ export default function LabServicos() {
     }).catch(() => {});
   }, []);
 
-  function fv(v: string) { const n = parseFloat(v.replace(',','.')); return isNaN(n) || n === 0 ? null : n; }
+  // vazio → null (sem preço) ; "0" → 0 (preço zerado intencional) ; número → valor
+  function fv(v: string) { if (v.trim() === '') return null; const n = parseFloat(v.replace(',','.')); return isNaN(n) ? null : n; }
 
   function openNovo() {
     setEditItem(null);
@@ -136,7 +137,7 @@ export default function LabServicos() {
     setEditItem(s);
     setForm({
       codigo: s.codigo||'', nome: s.nome, unidade: s.unidade||'',
-      valor_padrao: s.valor_padrao>0 ? String(s.valor_padrao) : '',
+      valor_padrao: s.valor_padrao>0 ? String(s.valor_padrao) : (s.brinde ? '0' : ''),
       valor_lista2: s.valor_lista2>0 ? String(s.valor_lista2) : '',
       valor_lista3: s.valor_lista3>0 ? String(s.valor_lista3) : '',
       valor_lista4: s.valor_lista4>0 ? String(s.valor_lista4) : '',
@@ -148,14 +149,15 @@ export default function LabServicos() {
 
   async function handleSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault(); setSaving(true); setErro('');
+    const vp = fv(form.valor_padrao); // null = sem preço ; 0 = preço zerado intencional
     const payload = {
       codigo: form.codigo||null, nome: form.nome, unidade: form.unidade||null,
-      valor_padrao: fv(form.valor_padrao) ?? 0,
+      valor_padrao: vp ?? 0,
       valor_lista2: fv(form.valor_lista2),
       valor_lista3: fv(form.valor_lista3),
       valor_lista4: fv(form.valor_lista4),
       valor_lista5: fv(form.valor_lista5),
-      brinde: form.brinde ? 1 : 0,
+      brinde: vp === 0 ? 1 : 0, // marcador interno de "R$ 0,00 intencional"
     };
     try {
       if (editItem) await api.put(`/lab/servicos/${editItem.id}`, payload);
@@ -196,6 +198,7 @@ export default function LabServicos() {
     const s = servicos.find(x => x.id === id);
     if (!s) return;
     const n = parseFloat(value.replace(',', '.'));
+    const novoVal = isNaN(n) ? 0 : n;
     const payload = {
       codigo: s.codigo || null, nome: s.nome, unidade: s.unidade || null,
       valor_padrao: s.valor_padrao,
@@ -203,8 +206,9 @@ export default function LabServicos() {
       valor_lista3: s.valor_lista3,
       valor_lista4: s.valor_lista4,
       valor_lista5: s.valor_lista5,
-      brinde: s.brinde ? 1 : 0,
-      [field]: isNaN(n) ? 0 : n,
+      // marcador de R$ 0,00 intencional segue o preço principal
+      brinde: field === 'valor_padrao' ? (novoVal === 0 && value.trim() !== '' ? 1 : 0) : (s.brinde ? 1 : 0),
+      [field]: novoVal,
     };
     try { await api.put(`/lab/servicos/${id}`, payload); load(); } catch {}
   }
@@ -389,10 +393,10 @@ export default function LabServicos() {
                               }}
                               style={{ width:'120px', padding:'3px 6px', fontSize:'13px', fontFamily:"'Courier New', monospace", textAlign:'right', background:'#ffffcc', border:'2px inset #888', color:'#000', outline:'none' }}
                             />
-                          ) : s.brinde ? (
-                            <button onClick={() => openEdit(s)}
-                              style={{ width:'100%', textAlign:'right', padding:'4px 8px', fontFamily:"'Courier New', monospace", fontSize:'13px', fontWeight:'700', background:'#fff8e8', color:'#8a6a00', border:'1px solid #e0c060', cursor:'pointer', borderRadius:'2px' }}>
-                              🎁 BRINDE · R$ 0,00
+                          ) : (s.brinde && val === 0) ? (
+                            <button onClick={() => setInlineEdit({ id: s.id, field, value: '0' })}
+                              style={{ width:'100%', textAlign:'right', padding:'4px 8px', fontFamily:"'Courier New', monospace", fontSize:'13px', fontWeight:'700', background:'#efffef', color:'#005500', border:'1px solid #aaddaa', cursor:'pointer', borderRadius:'2px' }}>
+                              R$ 0,00
                             </button>
                           ) : (
                             <button onClick={() => setInlineEdit({ id: s.id, field, value: val > 0 ? String(val) : '' })}
@@ -516,17 +520,12 @@ export default function LabServicos() {
                   {LISTA_FIELDS.slice(0, listasAtivas).map((field, i) => (
                     <div key={field}>
                       <label style={LBL}>{listaNomes[i]} R$</label>
-                      <input value={String(form[field as keyof typeof form] ?? '')} disabled={form.brinde}
+                      <input value={String(form[field as keyof typeof form] ?? '')}
                         onChange={e => setForm(f => ({ ...f, [field]: e.target.value }))}
-                        style={{ ...INP, opacity: form.brinde ? 0.5 : 1 }} placeholder={form.brinde ? '0,00 (brinde)' : '0,00'} />
+                        style={INP} placeholder="0,00" />
                     </div>
                   ))}
                 </div>
-                {/* Brinde — serviço/produto dado como cortesia (R$ 0,00) */}
-                <label style={{ display:'flex', alignItems:'center', gap:'8px', padding:'8px 10px', background:'#fff8e8', border:'1px solid #e0c060', borderRadius:'4px', cursor:'pointer', fontSize:'12px', fontWeight:'700', color:'#8a6a00' }}>
-                  <input type="checkbox" checked={form.brinde} onChange={e => setForm(f => ({ ...f, brinde: e.target.checked }))} style={{ width:'16px', height:'16px', cursor:'pointer' }} />
-                  🎁 Dar como BRINDE (R$ 0,00) — cortesia, sem cobrar
-                </label>
                 <div style={{ display:'flex', gap:'8px', marginTop:'4px' }}>
                   <button type="button" onClick={() => setModal(false)} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:R.alt, color:R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>CANCELAR</button>
                   <button type="submit" disabled={saving} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:'#005500', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:saving?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
