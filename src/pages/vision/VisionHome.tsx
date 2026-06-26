@@ -406,51 +406,49 @@ export default function VisionHome() {
                 ◆ Demonstrações de Lentes ◆
               </div>
               <div style={{
-                display: 'flex', gap: 12,
-                justifyContent: 'center', alignItems: 'center',
-                paddingInline: 24,
+                display: 'flex', gap: '14px 10px',
+                flexWrap: 'wrap',
+                justifyContent: 'center', alignItems: 'flex-start',
+                paddingInline: 16, maxWidth: 760, margin: '0 auto',
               }}>
                 {DEMO_ITEMS.map((item, i) => (
                   <button
                     key={item.id}
                     onClick={() => handleDemoItem(item)}
                     style={{
-                      background: 'linear-gradient(160deg, rgba(255,255,255,0.10), rgba(255,255,255,0.03))',
-                      border: '1px solid rgba(140,170,255,0.2)',
-                      borderRadius: 18,
-                      padding: '20px 16px',
-                      cursor: 'pointer',
+                      background: 'none', border: 'none', cursor: 'pointer',
                       display: 'flex', flexDirection: 'column',
-                      alignItems: 'center', gap: 12,
-                      minWidth: 90, flex: '0 0 auto',
-                      transition: 'background 0.15s, transform 0.12s, border-color 0.15s, box-shadow 0.15s',
+                      alignItems: 'center', gap: 8,
+                      width: 76, flex: '0 0 auto', padding: 0,
+                      transition: 'transform 0.14s cubic-bezier(0.3,1.4,0.5,1)',
                       WebkitTapHighlightColor: 'transparent',
-                      animation: `riseIn .4s cubic-bezier(0.22,1,0.36,1) ${i * 0.05}s both`,
+                      animation: `riseIn .4s cubic-bezier(0.22,1,0.36,1) ${i * 0.04}s both`,
                     }}
-                    onPointerDown={e => {
-                      const el = e.currentTarget as HTMLButtonElement;
-                      el.style.background = 'linear-gradient(160deg, rgba(96,140,255,0.28), rgba(96,140,255,0.10))';
-                      el.style.transform = 'scale(0.93)';
-                      el.style.boxShadow = '0 0 26px rgba(96,140,255,0.35)';
-                    }}
-                    onPointerUp={e => {
-                      const el = e.currentTarget as HTMLButtonElement;
-                      el.style.background = 'linear-gradient(160deg, rgba(255,255,255,0.10), rgba(255,255,255,0.03))';
-                      el.style.transform = 'scale(1)';
-                      el.style.boxShadow = 'none';
-                    }}
-                    onPointerLeave={e => {
-                      const el = e.currentTarget as HTMLButtonElement;
-                      el.style.background = 'linear-gradient(160deg, rgba(255,255,255,0.10), rgba(255,255,255,0.03))';
-                      el.style.transform = 'scale(1)';
-                      el.style.boxShadow = 'none';
-                    }}
+                    onPointerDown={e => (e.currentTarget.style.transform = 'scale(0.88)')}
+                    onPointerUp={e => (e.currentTarget.style.transform = 'scale(1)')}
+                    onPointerLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
                   >
-                    {item.icon}
+                    {/* Squircle de vidro estilo iOS */}
+                    <div style={{
+                      width: 62, height: 62, borderRadius: 17,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: 'linear-gradient(160deg, rgba(255,255,255,0.18), rgba(255,255,255,0.06))',
+                      border: '0.5px solid rgba(255,255,255,0.25)',
+                      backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
+                      boxShadow: '0 6px 18px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.25)',
+                      position: 'relative', overflow: 'hidden',
+                    }}>
+                      {item.icon}
+                      <div style={{
+                        position: 'absolute', top: 0, left: 0, right: 0, height: '46%',
+                        background: 'linear-gradient(to bottom, rgba(255,255,255,0.18), transparent)',
+                        pointerEvents: 'none',
+                      }} />
+                    </div>
                     <span style={{
-                      fontSize: 10.5, color: 'rgba(235,242,255,0.92)',
-                      fontWeight: 600, letterSpacing: '0.06em',
-                      textTransform: 'uppercase',
+                      fontSize: 11, color: 'rgba(245,248,255,0.95)',
+                      fontWeight: 500, letterSpacing: '-0.01em',
+                      textAlign: 'center', lineHeight: 1.1,
                     }}>{item.label}</span>
                   </button>
                 ))}
