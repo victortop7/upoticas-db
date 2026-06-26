@@ -80,19 +80,16 @@ export default function Layout() {
   const licenca = avaliarLicenca(tenant);
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)' }}>
+    <div style={{ display: 'flex', minHeight: '100vh' }}>
       <Sidebar />
       <main style={{
         marginLeft: 'var(--sidebar-w)',
         flex: 1,
         background: 'var(--bg)',
         minHeight: '100vh',
-        padding: '30px 28px 36px 28px',
       }}>
         {licenca.tipo === 'aviso' && <AvisoBanner dias={licenca.dias} motivo={licenca.motivo} />}
-        <div style={{ maxWidth: 1440, margin: '0 auto' }}>
-          <Outlet />
-        </div>
+        <Outlet />
       </main>
       <BuscaGlobal />
       {licenca.tipo === 'bloqueado' && <BloqueioOverlay motivo={licenca.motivo} />}

@@ -278,10 +278,9 @@ export default function VisionHome() {
         height: '100dvh',
         display: 'flex',
         flexDirection: 'column',
-        background: 'linear-gradient(180deg, #060a16 0%, #05070f 48%, #091428 100%)',
+        background: '#f0f4f8',
         overflow: 'hidden',
         position: 'relative',
-        color: '#f8fafc',
       }}
       onClick={e => {
         if ((e.target as HTMLElement).closest('[data-submenu]')) return;
@@ -293,26 +292,28 @@ export default function VisionHome() {
         flex: 1,
         position: 'relative',
         overflow: 'hidden',
-        background: 'radial-gradient(circle at 20% 20%, rgba(59,130,246,0.18), transparent 12%), radial-gradient(circle at 90% 10%, rgba(96,165,250,0.14), transparent 14%), radial-gradient(circle at 50% 95%, rgba(34,197,94,0.12), transparent 28%), linear-gradient(180deg, rgba(8, 13, 25, 0.96), rgba(6, 9, 17, 0.94))',
+        backgroundImage: 'url(/home-hero.jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center center',
       }}>
         {/* Overlay com gradiente refinado */}
         <div style={{
           position: 'absolute', inset: 0,
-          background: 'linear-gradient(120deg, rgba(10,16,31,0.88) 0%, rgba(10,16,31,0.56) 45%, rgba(6,9,17,0.18) 100%)',
+          background: 'linear-gradient(120deg, rgba(238,244,255,0.88) 0%, rgba(224,236,254,0.55) 45%, rgba(219,234,254,0.18) 100%)',
           pointerEvents: 'none',
         }} />
         {/* Brilho azul difuso no canto */}
         <div style={{
           position: 'absolute', top: '-20%', left: '-10%',
           width: '55%', height: '70%',
-          background: 'radial-gradient(ellipse, rgba(59,130,246,0.20) 0%, transparent 65%)',
+          background: 'radial-gradient(ellipse, rgba(59,130,246,0.14) 0%, transparent 65%)',
           pointerEvents: 'none',
           animation: 'breathe 7s ease-in-out infinite',
         }} />
         {/* Linha de luz que varre o hero */}
         <div style={{
           position: 'absolute', top: 0, bottom: 0, width: 180,
-          background: 'linear-gradient(100deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%)',
+          background: 'linear-gradient(100deg, transparent 0%, rgba(255,255,255,0.35) 50%, transparent 100%)',
           transform: 'skewX(-12deg)',
           animation: 'sweep 9s ease-in-out infinite',
           pointerEvents: 'none',
@@ -320,7 +321,7 @@ export default function VisionHome() {
         {/* Fade inferior em direção à faixa de módulos */}
         <div style={{
           position: 'absolute', left: 0, right: 0, bottom: 0, height: 90,
-          background: 'linear-gradient(to top, rgba(6,9,17,0.98), transparent)',
+          background: 'linear-gradient(to top, rgba(240,244,248,0.9), transparent)',
           pointerEvents: 'none',
         }} />
 
@@ -343,56 +344,28 @@ export default function VisionHome() {
           </div>
 
           <div style={{
-            background: 'rgba(10, 16, 31, 0.88)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            borderRadius: 18,
-            padding: '18px 24px',
-            border: '1px solid rgba(255,255,255,0.08)',
-            boxShadow: '0 18px 50px rgba(2, 9, 25, 0.30), inset 0 1px 0 rgba(255,255,255,0.08)',
-            minWidth: 250,
+            background: 'rgba(255,255,255,0.72)',
+            backdropFilter: 'blur(18px)',
+            WebkitBackdropFilter: 'blur(18px)',
+            borderRadius: 16,
+            padding: '15px 22px',
+            border: '1px solid rgba(255,255,255,0.9)',
+            boxShadow: '0 8px 32px rgba(15,23,42,0.10), inset 0 1px 0 rgba(255,255,255,0.9)',
+            minWidth: 230,
           }}>
-            <div style={{ fontSize: 10.5, color: '#94a3b8', marginBottom: 4, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 700 }}>Ótica conectada</div>
-            <div style={{ fontSize: 18, fontWeight: 800, color: '#f8fafc', letterSpacing: '-0.2px' }}>{tenant?.nome ?? 'Sua Ótica'}</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
-              <span style={{ position: 'relative', display: 'inline-flex', width: 8, height: 8 }}>
+            <div style={{ fontSize: 10.5, color: '#94a3b8', marginBottom: 4, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 600 }}>Ótica conectada</div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: '#0f172a', letterSpacing: '-0.2px' }}>{tenant?.nome ?? 'Sua Ótica'}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
+              <span style={{ position: 'relative', display: 'inline-flex', width: 7, height: 7 }}>
                 <span style={{
                   position: 'absolute', inset: 0, borderRadius: '50%',
                   background: '#22c55e', animation: 'ping 2s cubic-bezier(0,0,0.2,1) infinite',
                 }} />
-                <span style={{ position: 'relative', width: 8, height: 8, borderRadius: '50%', background: '#22c55e' }} />
+                <span style={{ position: 'relative', width: 7, height: 7, borderRadius: '50%', background: '#22c55e' }} />
               </span>
-              <span style={{ fontSize: 11, color: '#7ee787', fontWeight: 700, letterSpacing: '0.03em' }}>Sistema ativo</span>
+              <span style={{ fontSize: 11, color: '#16a34a', fontWeight: 700, letterSpacing: '0.03em' }}>Sistema ativo</span>
             </div>
           </div>
-        </div>
-
-        <div style={{
-          position: 'absolute', top: '38%', left: '50%', transform: 'translateX(-50%)',
-          width: 'min(94%, 960px)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '18px',
-          padding: '0 18px',
-          zIndex: 1,
-        }}>
-          {[
-            { label: 'Módulos ativos', value: '7', detail: 'Acesso rápido a todas as features' },
-            { label: 'Próximas demos', value: '3', detail: 'Toque em Demonstrações para ver opções' },
-            { label: 'Atendimentos abertos', value: '12', detail: 'Conecte sua equipe e otimize fluxos' },
-          ].map(item => (
-            <div key={item.label} style={{
-              background: 'rgba(6, 12, 22, 0.88)', border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: 22, padding: '18px 20px', boxShadow: '0 16px 46px rgba(2, 9, 25, 0.28)',
-            }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 6 }}>
-                {item.label}
-              </div>
-              <div style={{ fontSize: 28, fontWeight: 800, color: '#ffffff', marginBottom: 8 }}>
-                {item.value}
-              </div>
-              <div style={{ fontSize: 13, color: '#9fb2cf', lineHeight: 1.6 }}>
-                {item.detail}
-              </div>
-            </div>
-          ))}
         </div>
 
         {/* Overlay escuro + faixa de submenu — cobre o hero inteiro */}
@@ -501,13 +474,12 @@ export default function VisionHome() {
 
       {/* Dock estilo iOS — ícones de app */}
       <div style={{
-        background: 'rgba(6, 11, 23, 0.88)',
-        backdropFilter: 'blur(24px) saturate(1.2)',
-        WebkitBackdropFilter: 'blur(24px) saturate(1.2)',
-        borderTop: '1px solid rgba(96, 165, 250, 0.16)',
-        padding: '18px 20px 18px',
+        background: 'rgba(248,250,253,0.78)',
+        backdropFilter: 'blur(28px) saturate(1.6)',
+        WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
+        borderTop: '0.5px solid rgba(60,60,67,0.18)',
+        padding: '18px 20px 16px',
         flexShrink: 0,
-        boxShadow: '0 -12px 40px rgba(0, 0, 0, 0.18)',
       }}>
         <div style={{
           display: 'flex', gap: 22,
@@ -549,17 +521,17 @@ export default function VisionHome() {
               >
                 {/* Ícone squircle estilo app iOS */}
                 <div style={{
-                  width: 62, height: 62, borderRadius: 18,
+                  width: 62, height: 62, borderRadius: 15,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: mod.grad,
+                  background: 'linear-gradient(180deg, #3ba6ff 0%, #007aff 100%)',
                   color: '#fff',
                   boxShadow: isOpen
-                    ? '0 10px 28px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.24)'
-                    : '0 6px 18px rgba(15,23,42,0.22), inset 0 1px 0 rgba(255,255,255,0.18)',
-                  outline: isOpen ? '2.5px solid rgba(96, 165, 250, 0.8)' : 'none',
-                  outlineOffset: 4,
+                    ? '0 8px 22px rgba(10,108,255,0.45), inset 0 1px 0 rgba(255,255,255,0.35)'
+                    : '0 4px 14px rgba(15,23,42,0.18), inset 0 1px 0 rgba(255,255,255,0.35)',
+                  outline: isOpen ? '2.5px solid rgba(0,122,255,0.85)' : 'none',
+                  outlineOffset: 3,
                   position: 'relative',
-                  transition: 'box-shadow 0.18s, transform 0.18s',
+                  transition: 'box-shadow 0.18s',
                 }}>
                   {mod.icon}
                   {/* brilho superior do ícone (vidro) */}

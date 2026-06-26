@@ -25,10 +25,8 @@ export default function VisionLayout() {
   return (
     <div style={{
       height: '100dvh',
-      minHeight: '100dvh',
       background: '#050508',
-      backgroundImage: 'radial-gradient(circle at top left, rgba(59,130,246,0.16), transparent 16%), radial-gradient(circle at 25% 18%, rgba(16,185,129,0.12), transparent 12%), radial-gradient(circle at bottom right, rgba(79,70,229,0.14), transparent 20%), linear-gradient(180deg, #05070d 0%, #08101d 45%, #070b17 100%)',
-      color: '#f8fafc',
+      color: '#f0f0f5',
       fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', Roboto, sans-serif",
       display: 'flex',
       flexDirection: 'column',
