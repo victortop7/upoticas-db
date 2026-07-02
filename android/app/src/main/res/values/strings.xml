@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Conexão Óticas</string>
-    <string name="title_activity_main">Conexão Óticas</string>
+    <string name="app_name">Connect Vision</string>
+    <string name="title_activity_main">Connect Vision</string>
     <string name="package_name">com.upoticas.app</string>
     <string name="custom_url_scheme">com.upoticas.app</string>
 </resources>
