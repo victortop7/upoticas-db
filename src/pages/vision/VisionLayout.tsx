@@ -1,8 +1,32 @@
-import { Outlet, Navigate } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
+import { Outlet, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
+const INATIVIDADE_MS = 30 * 60 * 1000; // 30 minutos
+
 export default function VisionLayout() {
-  const { usuario, loading } = useAuth();
+  const { usuario, loading, logout } = useAuth();
+  const navigate = useNavigate();
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Auto-logout após 30 min de inatividade
+  useEffect(() => {
+    if (!usuario) return;
+    const reset = () => {
+      if (timer.current) clearTimeout(timer.current);
+      timer.current = setTimeout(async () => {
+        await logout();
+        navigate('/vision/login', { replace: true });
+      }, INATIVIDADE_MS);
+    };
+    const eventos = ['mousedown', 'mousemove', 'keydown', 'touchstart', 'touchmove', 'scroll', 'click'];
+    eventos.forEach(e => window.addEventListener(e, reset, { passive: true }));
+    reset();
+    return () => {
+      if (timer.current) clearTimeout(timer.current);
+      eventos.forEach(e => window.removeEventListener(e, reset));
+    };
+  }, [usuario, logout, navigate]);
 
   if (loading) {
     return (
@@ -20,7 +44,7 @@ export default function VisionLayout() {
     );
   }
 
-  if (!usuario) return <Navigate to="/login" replace />;
+  if (!usuario) return <Navigate to="/vision/login" replace />;
 
   return (
     <div style={{

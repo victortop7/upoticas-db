@@ -61,6 +61,7 @@ import Demonstracoes from './pages/vision/Demonstracoes';
 import VisionOS from './pages/vision/VisionOS';
 import VisionAtendimentos from './pages/vision/VisionAtendimentos';
 import VendaIndicativa from './pages/vision/VendaIndicativa';
+import VisionLogin from './pages/vision/VisionLogin';
 
 export default function App() {
   return (
@@ -130,6 +131,7 @@ export default function App() {
           </Route>
 
           {/* Connect Vision */}
+          <Route path="/vision/login" element={<VisionLogin />} />
           <Route element={<VisionLayout />}>
             <Route path="/vision" element={<VisionHome />} />
             <Route path="/vision/mapa-visual" element={<MapaVisual />} />

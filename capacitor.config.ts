@@ -7,7 +7,7 @@ const config: CapacitorConfig = {
   server: {
     // Carrega o site ao vivo — qualquer deploy no Cloudflare atualiza o app na hora,
     // sem precisar gerar novo .aab nem reenviar pra Play Store.
-    url: 'https://conexaoticas.com.br/vision',
+    url: 'https://conexaoticas.com.br/vision/login',
     androidScheme: 'https',
     cleartext: false,
   },
