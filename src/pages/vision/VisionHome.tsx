@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 
 // ─── Submenus ─────────────────────────────────────────────────────────────
 // Ordem de exibição no submenu (AR na frente)
-const DEMO_ORDER = ['ar', 'campos', 'adicao', 'digital', 'photo', 'polarizado', 'espessura'];
+const DEMO_ORDER = ['ar', 'campos', 'adicao', 'digital', 'photo', 'pol', 'espessura'];
 
 const DEMO_ITEMS = [
   {
@@ -73,7 +73,7 @@ const DEMO_ITEMS = [
     ),
   },
   {
-    id: 'polarizado',
+    id: 'pol',
     label: 'Polarizado',
     tab: 'visao',
     icon: (
