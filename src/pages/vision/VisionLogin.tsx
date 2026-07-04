@@ -54,18 +54,11 @@ export default function VisionLogin() {
       <div style={{ width: '100%', maxWidth: 380 }}>
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 26 }}>
-          <div style={{
-            width: 72, height: 72, borderRadius: 20, margin: '0 auto 14px',
-            background: 'linear-gradient(180deg, #3ba6ff, #007aff)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 10px 30px rgba(0,122,255,0.35), inset 0 1px 0 rgba(255,255,255,0.4)',
-          }}>
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="2" y="4" width="20" height="14" rx="2" />
-              <circle cx="9" cy="11" r="2.2" /><circle cx="15" cy="11" r="2.2" />
-              <path d="M11.2 11h1.6M2 8h2M20 8h2" />
-            </svg>
-          </div>
+          <img src="/vision-icon.png" alt="Connect Vision" style={{
+            width: 72, height: 72, borderRadius: 18, margin: '0 auto 14px',
+            objectFit: 'cover', display: 'block',
+            boxShadow: '0 10px 30px rgba(0,122,255,0.25)',
+          }} />
           <div style={{ fontSize: 24, fontWeight: 700, color: '#0f172a', letterSpacing: '-0.5px' }}>
             Connect <span style={{ color: '#007aff' }}>Vision</span>
           </div>
