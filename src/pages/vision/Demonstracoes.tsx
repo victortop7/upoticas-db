@@ -855,10 +855,10 @@ export default function Demonstracoes() {
   }
 
   const DEMO_ITEMS_NAV = [
-    { id: 'digital',    label: 'Digital',     tab: 'superficie' },
+    { id: 'ar',         label: 'AR',          tab: 'visao'      },
     { id: 'campos',     label: 'Campos',      tab: 'superficie' },
     { id: 'adicao',     label: 'Adição',      tab: 'superficie' },
-    { id: 'ar',         label: 'AR',          tab: 'visao'      },
+    { id: 'digital',    label: 'Digital',     tab: 'superficie' },
     { id: '',           label: 'Simulação',   tab: 'simulacao'  },
   ];
 
