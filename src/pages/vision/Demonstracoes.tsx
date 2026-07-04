@@ -13,6 +13,7 @@ const TRATAMENTOS = [
   { id: 'lr',  label: 'Lipo-Repelente', cor: '#14b8a6' },
   { id: 'uv',  label: 'Proteção UV',    cor: '#ef4444' },
   { id: 'et',  label: 'Estético',       cor: '#e879f9' },
+  { id: 'pol', label: 'Polarizado',     cor: '#f97316' },
 ];
 
 const AMBIENTES = [
@@ -454,6 +455,7 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
     TRATAMENTOS.some(t => t.id === initialDemo) ? initialDemo! : 'ar'
   );
   const [ambiente, setAmbiente] = useState('noite');
+  const [cenaPol, setCenaPol] = useState<'agua' | 'estrada'>('agua'); // cena do Polarizado
   const [divX, setDivX] = useState(50);
   const [autoDemo, setAutoDemo] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -521,7 +523,12 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
       sem: '/tratamento%20estetico/sem-estetica.jpg',
     },
   };
-  const realPhoto = REAL_PHOTOS[tratamento] ?? null;
+  // Polarizado tem 2 cenas (água / estrada), cada uma com com/sem
+  const POL_PHOTOS: Record<'agua' | 'estrada', { com: string; sem: string }> = {
+    agua:    { com: '/tratamento%20polarizado/agua-com.jpg',    sem: '/tratamento%20polarizado/agua-sem.jpg' },
+    estrada: { com: '/tratamento%20polarizado/estrada-com.jpg', sem: '/tratamento%20polarizado/estrada-sem.jpg' },
+  };
+  const realPhoto = tratamento === 'pol' ? POL_PHOTOS[cenaPol] : (REAL_PHOTOS[tratamento] ?? null);
   const useRealPhoto = !!realPhoto;
 
   function move(clientX: number) {
@@ -592,6 +599,25 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1e2030" strokeWidth="2.5" strokeLinecap="round" style={{ marginLeft: -8 }}><polyline points="9 18 15 12 9 6" /></svg>
           </div>
         </div>
+
+        {/* Toggle de cena do Polarizado (Água / Estrada) */}
+        {tratamento === 'pol' && (
+          <div
+            onMouseDown={e => e.stopPropagation()}
+            onTouchStart={e => e.stopPropagation()}
+            style={{ position: 'absolute', top: 16, left: 16, display: 'flex', gap: 3, background: 'rgba(0,0,0,.6)', borderRadius: 999, padding: 3, zIndex: 11 }}
+          >
+            {([{ v: 'agua', l: '💧 Água' }, { v: 'estrada', l: '🛣️ Estrada' }] as const).map(o => (
+              <button key={o.v} onClick={() => setCenaPol(o.v)} style={{
+                padding: '8px 16px', borderRadius: 999, border: 'none', cursor: 'pointer',
+                background: cenaPol === o.v ? trObj.cor : 'transparent',
+                color: cenaPol === o.v ? '#fff' : 'rgba(255,255,255,.65)',
+                fontSize: 12, fontWeight: 700, fontFamily: 'var(--sans)', letterSpacing: '.03em',
+                transition: 'all .15s', WebkitTapHighlightColor: 'transparent',
+              }}>{o.l}</button>
+            ))}
+          </div>
+        )}
 
         {/* Botão demonstração automática */}
         <button
