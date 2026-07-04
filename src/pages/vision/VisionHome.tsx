@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
 // ─── Submenus ─────────────────────────────────────────────────────────────
+// Ordem de exibição no submenu (AR na frente)
+const DEMO_ORDER = ['ar', 'campos', 'adicao', 'digital', 'photo', 'polarizado', 'espessura'];
+
 const DEMO_ITEMS = [
   {
     id: 'digital',
@@ -411,7 +414,7 @@ export default function VisionHome() {
                 justifyContent: 'center', alignItems: 'flex-start',
                 paddingInline: 16, maxWidth: 760, margin: '0 auto',
               }}>
-                {DEMO_ITEMS.map((item, i) => (
+                {[...DEMO_ITEMS].sort((a, b) => DEMO_ORDER.indexOf(a.id) - DEMO_ORDER.indexOf(b.id)).map((item, i) => (
                   <button
                     key={item.id}
                     onClick={() => handleDemoItem(item)}
