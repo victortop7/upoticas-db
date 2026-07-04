@@ -13,7 +13,6 @@ const TRATAMENTOS = [
   { id: 'lr',  label: 'Lipo-Repelente', cor: '#14b8a6' },
   { id: 'uv',  label: 'Proteção UV',    cor: '#ef4444' },
   { id: 'et',  label: 'Estético',       cor: '#e879f9' },
-  { id: 'pol', label: 'Polarizado',     cor: '#f97316' },
 ];
 
 const AMBIENTES = [
@@ -455,7 +454,6 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
     TRATAMENTOS.some(t => t.id === initialDemo) ? initialDemo! : 'ar'
   );
   const [ambiente, setAmbiente] = useState('noite');
-  const [cenaPol, setCenaPol] = useState<'agua' | 'estrada'>('agua'); // cena do Polarizado
   const [divX, setDivX] = useState(50);
   const [autoDemo, setAutoDemo] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -523,12 +521,7 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
       sem: '/tratamento%20estetico/sem-estetica.jpg',
     },
   };
-  // Polarizado tem 2 cenas (água / estrada), cada uma com com/sem
-  const POL_PHOTOS: Record<'agua' | 'estrada', { com: string; sem: string }> = {
-    agua:    { com: '/tratamento%20polarizado/agua-com.jpg',    sem: '/tratamento%20polarizado/agua-sem.jpg' },
-    estrada: { com: '/tratamento%20polarizado/estrada-com.jpg', sem: '/tratamento%20polarizado/estrada-sem.jpg' },
-  };
-  const realPhoto = tratamento === 'pol' ? POL_PHOTOS[cenaPol] : (REAL_PHOTOS[tratamento] ?? null);
+  const realPhoto = REAL_PHOTOS[tratamento] ?? null;
   const useRealPhoto = !!realPhoto;
 
   function move(clientX: number) {
@@ -599,25 +592,6 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1e2030" strokeWidth="2.5" strokeLinecap="round" style={{ marginLeft: -8 }}><polyline points="9 18 15 12 9 6" /></svg>
           </div>
         </div>
-
-        {/* Toggle de cena do Polarizado (Água / Estrada) */}
-        {tratamento === 'pol' && (
-          <div
-            onMouseDown={e => e.stopPropagation()}
-            onTouchStart={e => e.stopPropagation()}
-            style={{ position: 'absolute', top: 16, left: 16, display: 'flex', gap: 3, background: 'rgba(0,0,0,.6)', borderRadius: 999, padding: 3, zIndex: 11 }}
-          >
-            {([{ v: 'agua', l: '💧 Água' }, { v: 'estrada', l: '🛣️ Estrada' }] as const).map(o => (
-              <button key={o.v} onClick={() => setCenaPol(o.v)} style={{
-                padding: '8px 16px', borderRadius: 999, border: 'none', cursor: 'pointer',
-                background: cenaPol === o.v ? trObj.cor : 'transparent',
-                color: cenaPol === o.v ? '#fff' : 'rgba(255,255,255,.65)',
-                fontSize: 12, fontWeight: 700, fontFamily: 'var(--sans)', letterSpacing: '.03em',
-                transition: 'all .15s', WebkitTapHighlightColor: 'transparent',
-              }}>{o.l}</button>
-            ))}
-          </div>
-        )}
 
         {/* Botão demonstração automática */}
         <button
@@ -746,6 +720,194 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
   );
 }
 
+// ─── Polarizado — módulo próprio (2 cenas: Peixe / Estrada) ────────────────────
+const POL_COR = '#f97316';
+const POL_CENAS: Record<'peixe' | 'estrada', { label: string; emoji: string; com: string; sem: string; desc: string }> = {
+  peixe: {
+    label: 'Peixe', emoji: '🐟',
+    com: '/tratamento%20polarizado/agua-com.jpg',
+    sem: '/tratamento%20polarizado/agua-sem.jpg',
+    desc: 'Sem o polarizado o reflexo da água esconde os peixes. Com ele você enxerga sob a superfície.',
+  },
+  estrada: {
+    label: 'Estrada', emoji: '🛣️',
+    com: '/tratamento%20polarizado/estrada-com.jpg',
+    sem: '/tratamento%20polarizado/estrada-sem.jpg',
+    desc: 'Elimina o ofuscamento do asfalto e dos faróis, deixando a estrada nítida e segura.',
+  },
+};
+
+function Polarizado({ onSimular }: { onSimular?: (efeito: string) => void }) {
+  const [cena, setCena] = useState<'peixe' | 'estrada'>('peixe');
+  const [divX, setDivX] = useState(50);
+  const [autoDemo, setAutoDemo] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
+
+  useEffect(() => {
+    if (!autoDemo) return;
+    let frame: number;
+    let dir = -1;
+    const animate = () => {
+      setDivX(prev => {
+        let next = prev + dir * 0.7;
+        if (next <= 12) { next = 12; dir = 1; }
+        if (next >= 88) { next = 88; dir = -1; }
+        return next;
+      });
+      frame = requestAnimationFrame(animate);
+    };
+    frame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frame);
+  }, [autoDemo]);
+
+  useEffect(() => { if (!autoDemo) setDivX(50); }, [cena, autoDemo]);
+
+  const c = POL_CENAS[cena];
+
+  function move(clientX: number) {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    if (autoDemo) setAutoDemo(false);
+    setDivX(Math.min(90, Math.max(10, ((clientX - rect.left) / rect.width) * 100)));
+  }
+
+  return (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div
+        ref={containerRef}
+        onMouseDown={() => { dragging.current = true; }}
+        onMouseMove={e => { if (dragging.current) move(e.clientX); }}
+        onMouseUp={() => { dragging.current = false; }}
+        onMouseLeave={() => { dragging.current = false; }}
+        onTouchStart={() => { dragging.current = true; }}
+        onTouchMove={e => move(e.touches[0].clientX)}
+        onTouchEnd={() => { dragging.current = false; }}
+        style={{ flex: 1, position: 'relative', cursor: 'col-resize', userSelect: 'none', overflow: 'hidden', background: '#0a0a0c' }}
+      >
+        {/* SEM base */}
+        <img src={c.sem} draggable={false}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', pointerEvents: 'none' }} />
+        {/* COM overlay — lado esquerdo */}
+        <img src={c.com} draggable={false}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', clipPath: `inset(0 ${100 - divX}% 0 0)`, pointerEvents: 'none' }} />
+
+        {/* Divisor */}
+        <div style={{
+          position: 'absolute', top: 0, bottom: 0,
+          left: `${divX}%`, transform: 'translateX(-50%)',
+          width: 2, background: 'rgba(255,255,255,.9)',
+          boxShadow: '0 0 12px rgba(255,255,255,.5)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          pointerEvents: 'none',
+        }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: '50%',
+            background: '#fff', boxShadow: '0 2px 16px rgba(0,0,0,.5)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1e2030" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6" /></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1e2030" strokeWidth="2.5" strokeLinecap="round" style={{ marginLeft: -8 }}><polyline points="9 18 15 12 9 6" /></svg>
+          </div>
+        </div>
+
+        {/* Botão demonstração automática */}
+        <button
+          onMouseDown={e => e.stopPropagation()}
+          onTouchStart={e => e.stopPropagation()}
+          onClick={() => setAutoDemo(p => !p)}
+          style={{
+            position: 'absolute', bottom: 100, left: 16, zIndex: 11,
+            display: 'flex', alignItems: 'center', gap: 8,
+            background: autoDemo ? POL_COR : 'rgba(0,0,0,.7)',
+            border: `1px solid ${autoDemo ? POL_COR : 'rgba(255,255,255,0.15)'}`,
+            borderRadius: 999, padding: '7px 14px 7px 11px', cursor: 'pointer',
+            transition: 'all .15s', WebkitTapHighlightColor: 'transparent',
+          }}
+        >
+          {autoDemo ? (
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="#fff"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+          ) : (
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="#fff"><polygon points="6 4 20 12 6 20"/></svg>
+          )}
+          <span style={{ fontSize: 10.5, color: '#fff', fontFamily: 'var(--mono)', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase' }}>
+            {autoDemo ? 'Pausar' : 'Demonstrar'}
+          </span>
+        </button>
+
+        {/* Labels */}
+        <div style={{ position: 'absolute', bottom: 64, left: 16, fontSize: 11, color: '#e2e8f0', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
+          ✓ COM POLARIZADO
+        </div>
+        <div style={{ position: 'absolute', bottom: 64, right: 16, fontSize: 11, color: '#9ca3af', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
+          ✗ SEM
+        </div>
+
+        {/* Descrição */}
+        <div style={{
+          position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)',
+          background: 'rgba(0,0,0,.78)', borderRadius: 12, padding: '10px 20px',
+          width: 'max-content', maxWidth: 400, textAlign: 'center', pointerEvents: 'none',
+        }}>
+          <div style={{ fontSize: 10, color: POL_COR, fontWeight: 700, fontFamily: 'var(--mono)', marginBottom: 4, letterSpacing: '.06em', textTransform: 'uppercase' }}>
+            Polarizado · {c.label}
+          </div>
+          <div style={{ fontSize: 12, color: '#9ca3af', lineHeight: 1.5 }}>
+            {c.desc}
+          </div>
+        </div>
+
+        {/* Painel de cenas — overlay vertical direito */}
+        <div
+          onMouseDown={e => e.stopPropagation()}
+          onTouchStart={e => e.stopPropagation()}
+          style={{
+            position: 'absolute', top: 0, right: 0, bottom: 0,
+            display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: 48,
+            background: 'linear-gradient(to left, rgba(0,0,0,0.45) 55%, transparent)',
+            paddingRight: 4, zIndex: 10, minWidth: 160,
+          }}
+        >
+          {(['peixe', 'estrada'] as const).map(id => {
+            const ativo = cena === id;
+            const o = POL_CENAS[id];
+            return (
+              <button key={id} onClick={() => setCena(id)} style={{
+                background: ativo ? 'rgba(255,255,255,0.12)' : 'transparent',
+                border: 'none', cursor: 'pointer',
+                padding: '12px 18px 12px 14px', textAlign: 'left', width: '100%',
+                display: 'flex', alignItems: 'center', gap: 10,
+                transition: 'background .15s', WebkitTapHighlightColor: 'transparent',
+              }}>
+                <div style={{ width: 3, height: 18, borderRadius: 2, flexShrink: 0, background: ativo ? POL_COR : 'transparent', transition: 'background .15s' }} />
+                <span style={{ fontSize: 15 }}>{o.emoji}</span>
+                <span style={{
+                  fontSize: 14, fontWeight: ativo ? 700 : 400,
+                  fontFamily: 'var(--sans)', letterSpacing: '.07em', textTransform: 'uppercase',
+                  color: ativo ? '#ffffff' : 'rgba(255,255,255,0.45)', transition: 'color .15s',
+                }}>{o.label}</span>
+              </button>
+            );
+          })}
+
+          {/* Simulação na câmera */}
+          <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '6px 14px' }} />
+          <button onClick={() => onSimular?.('pol')} style={{
+            background: 'transparent', border: 'none', cursor: 'pointer',
+            padding: '12px 18px 12px 14px', textAlign: 'left', width: '100%',
+            display: 'flex', alignItems: 'center', gap: 10, WebkitTapHighlightColor: 'transparent',
+          }}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={POL_COR} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" />
+            </svg>
+            <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--sans)', letterSpacing: '.07em', textTransform: 'uppercase', color: POL_COR }}>Simular</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Simulação — modo CÂMERA contextual (1 efeito por vez) ─────────────────────
 const EFEITO_SIM: Record<string, { label: string; cor: string; filtro: string; campo?: boolean; desc: string }> = {
   ar:  { label: 'Anti-Reflexo',   cor: '#3b82f6', filtro: 'brightness(1.06) contrast(1.05)', desc: 'Sem reflexos — visão limpa e nítida' },
@@ -757,6 +919,7 @@ const EFEITO_SIM: Record<string, { label: string; cor: string; filtro: string; c
   lr:  { label: 'Lipo-Repelente', cor: '#14b8a6', filtro: 'brightness(1.04) contrast(1.05)', desc: 'Sem marcas de dedos e gordura' },
   uv:  { label: 'Proteção UV',    cor: '#ef4444', filtro: 'brightness(.6) contrast(1.12) saturate(.92)', desc: 'Bloqueia os raios UV nocivos' },
   et:  { label: 'Estético',       cor: '#e879f9', filtro: 'brightness(1.05) contrast(1.03)', desc: 'Lente invisível, sem reflexos' },
+  pol: { label: 'Polarizado',     cor: '#f97316', filtro: 'contrast(1.15) saturate(1.22) brightness(.94)', desc: 'Sem reflexos e ofuscamento' },
   digital: { label: 'Lente Digital', cor: '#3b82f6', filtro: '', campo: true, desc: 'Nitidez em todo o campo de visão' },
   campos:  { label: 'Campo de Visão', cor: '#22c55e', filtro: '', campo: true, desc: 'Visão nítida e ampla pela lente' },
   adicao:  { label: 'Adição',         cor: '#a855f7', filtro: '', campo: true, desc: 'Zonas de perto, intermediário e longe' },
@@ -901,7 +1064,9 @@ export default function Demonstracoes() {
           ? <SequenciaLente tipo={demo as 'campos' | 'adicao'} onSimular={abrirSim} />
           : <Superficie initialDemo={demo} onSimular={abrirSim} />
       )}
-      {tab === 'visao' && <Visao initialDemo={demo} onSimular={abrirSim} />}
+      {tab === 'visao' && (demo === 'pol'
+        ? <Polarizado onSimular={abrirSim} />
+        : <Visao initialDemo={demo} onSimular={abrirSim} />)}
       {tab === 'simulacao' && <Simulacao efeito={simEfeito} onVoltar={() => setTab(prevTab)} />}
 
       {/* Extras popup — lista de simulações */}
