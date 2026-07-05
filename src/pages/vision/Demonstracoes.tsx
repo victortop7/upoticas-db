@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, type ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
-type Tab = 'superficie' | 'visao' | 'fotossensivel' | 'simulacao';
+type Tab = 'superficie' | 'visao' | 'fotossensivel' | 'espessura' | 'simulacao';
 
 const TRATAMENTOS = [
   { id: 'ar',  label: 'Anti-Reflexo',   cor: '#3b82f6' },
@@ -1054,6 +1054,80 @@ function Fotossensivel({ onSimular }: { onSimular?: (efeito: string) => void }) 
   );
 }
 
+// ─── Espessura — módulo próprio (Positivo / Negativo) ─────────────────────────
+const ESP_COR = '#14b8a6';
+const ESP_TIPOS: Record<'positivo' | 'negativo', { label: string; emoji: string; img: string; desc: string }> = {
+  positivo: {
+    label: 'Positivo', emoji: '➕',
+    img: '/espessura/positivo.jpg',
+    desc: 'Grau positivo (hipermetropia / presbiopia): lente mais espessa no centro. Índices mais altos reduzem essa espessura.',
+  },
+  negativo: {
+    label: 'Negativo', emoji: '➖',
+    img: '/espessura/negativo.jpg',
+    desc: 'Grau negativo (miopia): lente mais espessa nas bordas. Índices mais altos deixam as bordas mais finas e leves.',
+  },
+};
+
+function Espessura() {
+  const [tipo, setTipo] = useState<'positivo' | 'negativo'>('negativo');
+  const t = ESP_TIPOS[tipo];
+
+  return (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div style={{ flex: 1, position: 'relative', overflow: 'hidden', background: '#0a0a0c' }}>
+        {/* Imagem do diagrama */}
+        <img key={tipo} src={t.img} draggable={false}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center', pointerEvents: 'none', animation: 'fadeIn .25s ease' }} />
+
+        {/* Descrição (topo) */}
+        <div style={{
+          position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)',
+          background: 'rgba(0,0,0,.78)', borderRadius: 12, padding: '10px 20px',
+          width: 'max-content', maxWidth: 440, textAlign: 'center', pointerEvents: 'none',
+        }}>
+          <div style={{ fontSize: 10, color: ESP_COR, fontWeight: 700, fontFamily: 'var(--mono)', marginBottom: 4, letterSpacing: '.06em', textTransform: 'uppercase' }}>
+            Espessura · Grau {t.label}
+          </div>
+          <div style={{ fontSize: 12, color: '#9ca3af', lineHeight: 1.5 }}>
+            {t.desc}
+          </div>
+        </div>
+
+        {/* Painel de tipos — overlay vertical direito */}
+        <div style={{
+          position: 'absolute', top: 0, right: 0, bottom: 0,
+          display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: 48,
+          background: 'linear-gradient(to left, rgba(0,0,0,0.45) 55%, transparent)',
+          paddingRight: 4, zIndex: 10, minWidth: 160,
+        }}>
+          {(['negativo', 'positivo'] as const).map(id => {
+            const ativo = tipo === id;
+            const o = ESP_TIPOS[id];
+            return (
+              <button key={id} onClick={() => setTipo(id)} style={{
+                background: ativo ? 'rgba(255,255,255,0.12)' : 'transparent',
+                border: 'none', cursor: 'pointer',
+                padding: '12px 18px 12px 14px', textAlign: 'left', width: '100%',
+                display: 'flex', alignItems: 'center', gap: 10,
+                transition: 'background .15s', WebkitTapHighlightColor: 'transparent',
+              }}>
+                <div style={{ width: 3, height: 18, borderRadius: 2, flexShrink: 0, background: ativo ? ESP_COR : 'transparent', transition: 'background .15s' }} />
+                <span style={{ fontSize: 15 }}>{o.emoji}</span>
+                <span style={{
+                  fontSize: 14, fontWeight: ativo ? 700 : 400,
+                  fontFamily: 'var(--sans)', letterSpacing: '.07em', textTransform: 'uppercase',
+                  color: ativo ? '#ffffff' : 'rgba(255,255,255,0.45)', transition: 'color .15s',
+                }}>{o.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Simulação — modo CÂMERA contextual (1 efeito por vez) ─────────────────────
 const EFEITO_SIM: Record<string, { label: string; cor: string; filtro: string; campo?: boolean; desc: string }> = {
   ar:  { label: 'Anti-Reflexo',   cor: '#3b82f6', filtro: 'brightness(1.06) contrast(1.05)', desc: 'Sem reflexos — visão limpa e nítida' },
@@ -1175,7 +1249,7 @@ export default function Demonstracoes() {
   const [params] = useSearchParams();
   const rawTab = params.get('tab') ?? 'superficie';
   const demo = params.get('demo') ?? '';
-  const validTabs: Tab[] = ['superficie', 'visao', 'fotossensivel', 'simulacao'];
+  const validTabs: Tab[] = ['superficie', 'visao', 'fotossensivel', 'espessura', 'simulacao'];
   const initialTab: Tab = validTabs.includes(rawTab as Tab) ? (rawTab as Tab) : 'superficie';
 
   const [tab, setTab] = useState<Tab>(initialTab);
@@ -1197,7 +1271,7 @@ export default function Demonstracoes() {
     { id: 'digital',    label: 'Digital',       tab: 'superficie' },
     { id: 'photo',      label: 'Photo',         tab: 'fotossensivel' },
     { id: 'pol',        label: 'Polarizado',    tab: 'visao'      },
-    { id: 'espessura',  label: 'Espessura',     tab: 'superficie' },
+    { id: 'espessura',  label: 'Espessura',     tab: 'espessura'   },
     { id: '',           label: 'Simulação',     tab: 'simulacao'  },
   ];
 
@@ -1215,6 +1289,7 @@ export default function Demonstracoes() {
         ? <Polarizado onSimular={abrirSim} />
         : <Visao initialDemo={demo} onSimular={abrirSim} />)}
       {tab === 'fotossensivel' && <Fotossensivel onSimular={abrirSim} />}
+      {tab === 'espessura' && <Espessura />}
       {tab === 'simulacao' && <Simulacao efeito={simEfeito} onVoltar={() => setTab(prevTab)} />}
 
       {/* Extras popup — lista de simulações */}

@@ -88,7 +88,7 @@ const DEMO_ITEMS = [
   {
     id: 'espessura',
     label: 'Espessura',
-    tab: 'superficie',
+    tab: 'espessura',
     icon: (
       <svg width="38" height="38" viewBox="0 0 24 24" fill="none">
         <path d="M6 7c0 0 2.5 2.5 6 2.5S18 7 18 7" stroke="white" strokeWidth="1.4" strokeLinecap="round" />
