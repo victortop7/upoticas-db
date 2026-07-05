@@ -114,7 +114,7 @@ function BotaoPrimario({ children, onClick, disabled }: { children: React.ReactN
 }
 
 // ─── Página principal ─────────────────────────────────────────────────────────
-type Step = 'dados' | 'instrucao' | 'acDir' | 'acEsq' | 'astig' | 'cores' | 'resultado';
+type Step = 'dados' | 'instrucao' | 'acDir' | 'acEsq' | 'astig' | 'cores' | 'analisando' | 'resultado';
 const ORDEM: Step[] = ['dados', 'instrucao', 'acDir', 'acEsq', 'astig', 'cores', 'resultado'];
 const CORES_NUMS = [7, 5, 2];
 
@@ -135,7 +135,14 @@ export default function TesteVisao() {
   const [placaIdx, setPlacaIdx] = useState(0);
 
   const idxAtual = ORDEM.indexOf(step);
-  const progresso = (idxAtual / (ORDEM.length - 1)) * 100;
+  const progresso = step === 'analisando' ? 96 : (idxAtual / (ORDEM.length - 1)) * 100;
+
+  // Tela "Testando sua visão…" → avança para o resultado
+  useEffect(() => {
+    if (step !== 'analisando') return;
+    const t = setTimeout(() => setStep('resultado'), 2600);
+    return () => clearTimeout(t);
+  }, [step]);
 
   function proximo() { const i = ORDEM.indexOf(step); if (i < ORDEM.length - 1) setStep(ORDEM[i + 1]); }
   function voltar() { const i = ORDEM.indexOf(step); if (i > 0) setStep(ORDEM[i - 1]); }
@@ -148,7 +155,7 @@ export default function TesteVisao() {
   function responderCor(v: number | null) {
     const nova = [...respCores]; nova[placaIdx] = v; setRespCores(nova);
     if (placaIdx < CORES_NUMS.length - 1) setPlacaIdx(placaIdx + 1);
-    else setStep('resultado');
+    else setStep('analisando');
   }
 
   return (
@@ -287,6 +294,34 @@ export default function TesteVisao() {
               cursor: 'pointer', marginTop: 2, WebkitTapHighlightColor: 'transparent',
             }}>Não vejo nenhum número</button>
           </>
+        )}
+
+        {/* ── ANALISANDO ── */}
+        {step === 'analisando' && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 26, animation: 'fadeIn .3s ease' }}>
+            <div style={{ position: 'relative', width: 96, height: 96 }}>
+              <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '4px solid rgba(59,91,219,0.15)' }} />
+              <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '4px solid transparent', borderTopColor: AZUL_BTN, animation: 'spinTv 0.9s linear infinite' }} />
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke={AZUL} strokeWidth="1.6">
+                  <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" /><circle cx="12" cy="12" r="3" fill={AZUL} stroke="none" />
+                </svg>
+              </div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 24, fontWeight: 800, color: AZUL }}>Testando sua visão…</div>
+              <div style={{ fontSize: 15, color: '#64748b', marginTop: 6 }}>Analisando os resultados{nome ? `, ${nome}` : ''}.</div>
+            </div>
+            <div style={{ display: 'flex', gap: 7 }}>
+              {[0, 1, 2].map(i => (
+                <span key={i} style={{ width: 9, height: 9, borderRadius: '50%', background: AZUL_BTN, animation: `pulseDot 1.2s ${i * 0.2}s ease-in-out infinite` }} />
+              ))}
+            </div>
+            <style>{`
+              @keyframes spinTv { to { transform: rotate(360deg); } }
+              @keyframes pulseDot { 0%,100% { opacity: .25; transform: scale(.8); } 50% { opacity: 1; transform: scale(1); } }
+            `}</style>
+          </div>
         )}
 
         {/* ── RESULTADO ── */}

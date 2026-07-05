@@ -139,21 +139,6 @@ const MODULES = [
     ),
   },
   {
-    id: 'lentes',
-    label: 'Lentes',
-    path: '/vision/mapa-visual',
-    active: true,
-    submenu: null,
-    grad: 'linear-gradient(180deg, #55d0f5 0%, #1f9ed8 100%)',
-    icon: (
-      <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
-        <path d="M12 3C7 3 3 7 3 12s4 9 9 9 9-4 9-9-4-9-9-9z" stroke="currentColor" strokeWidth="1.4" />
-        <path d="M12 6c-3.3 0-6 2.7-6 6s2.7 6 6 6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-        <path d="M15 9c1.1.8 2 2.1 2 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-      </svg>
-    ),
-  },
-  {
     id: 'teste-visao',
     label: 'Teste de\nVisão',
     path: '/vision/teste-visao',
