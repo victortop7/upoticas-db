@@ -260,6 +260,7 @@ export default function VisionOS() {
   const [busca, setBusca] = useState('');
   const [buscaTipo, setBuscaTipo] = useState<BuscaTipo>('numero');
   const [buscaLista, setBuscaLista] = useState<BuscaLista>('os');
+  const [calcOpen, setCalcOpen] = useState(false);
 
   function set(field: keyof OSData) { return (v: string) => setData(p => ({ ...p, [field]: v })); }
 
@@ -910,10 +911,9 @@ export default function VisionOS() {
       }}>
         {[
           { icon: '≡', label: 'Menu', onClick: () => navigate('/vision') },
-          { icon: '⊕', label: 'Extras', onClick: () => {} },
           { icon: '📋', label: 'OS', onClick: () => setTab('cliente') },
           { icon: '$', label: 'Valor', onClick: () => setTab('fechamento') },
-          { icon: '⌨', label: 'Calculadora', onClick: () => {} },
+          { icon: '⌨', label: 'Calculadora', onClick: () => setCalcOpen(true) },
         ].map(({ icon, label, onClick }) => (
           <button key={label} onClick={onClick} style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -926,6 +926,98 @@ export default function VisionOS() {
         ))}
         <div style={{ flex: 1 }} />
         <span style={{ fontSize: 11, color: '#666', fontStyle: 'italic' }}>1.0.15</span>
+      </div>
+
+      {calcOpen && <CalcVision onClose={() => setCalcOpen(false)} />}
+    </div>
+  );
+}
+
+// ─── Calculadora ──────────────────────────────────────────────────────────────
+function CalcVision({ onClose }: { onClose: () => void }) {
+  const [disp, setDisp] = useState('0');
+  const [acc, setAcc] = useState<number | null>(null);
+  const [op, setOp] = useState<string | null>(null);
+  const [fresh, setFresh] = useState(true);
+
+  const fmt = (n: number) => {
+    if (!isFinite(n)) return 'Erro';
+    const r = parseFloat(n.toPrecision(12));
+    return String(r);
+  };
+  const calc = (a: number, b: number, o: string) =>
+    o === '+' ? a + b : o === '−' ? a - b : o === '×' ? a * b : o === '÷' ? a / b : b;
+
+  function digito(d: string) {
+    if (disp === 'Erro') { setDisp(d === ',' ? '0.' : d); setFresh(false); return; }
+    if (fresh) { setDisp(d === ',' ? '0.' : d); setFresh(false); return; }
+    if (d === ',') { if (!disp.includes('.')) setDisp(disp + '.'); return; }
+    setDisp(disp.replace(/^0$/, '') .length < 14 ? (disp === '0' ? d : disp + d) : disp);
+  }
+  function operador(o: string) {
+    const cur = parseFloat(disp);
+    if (op !== null && !fresh && acc !== null) {
+      const r = calc(acc, cur, op); setAcc(r); setDisp(fmt(r));
+    } else setAcc(cur);
+    setOp(o); setFresh(true);
+  }
+  function igual() {
+    if (op !== null && acc !== null) {
+      const r = calc(acc, parseFloat(disp), op);
+      setDisp(fmt(r)); setAcc(null); setOp(null); setFresh(true);
+    }
+  }
+  const limparTudo = () => { setDisp('0'); setAcc(null); setOp(null); setFresh(true); };
+  const limparEntrada = () => { setDisp('0'); setFresh(true); };
+  const porcento = () => { setDisp(fmt(parseFloat(disp) / 100)); setFresh(true); };
+
+  const teclas: { l: string; act: () => void; span?: number; tipo?: 'op' | 'fn' | 'eq' }[] = [
+    { l: 'CE', act: limparEntrada, span: 2, tipo: 'fn' }, { l: 'C', act: limparTudo, tipo: 'fn' }, { l: '÷', act: () => operador('÷'), tipo: 'op' },
+    { l: '7', act: () => digito('7') }, { l: '8', act: () => digito('8') }, { l: '9', act: () => digito('9') }, { l: '×', act: () => operador('×'), tipo: 'op' },
+    { l: '4', act: () => digito('4') }, { l: '5', act: () => digito('5') }, { l: '6', act: () => digito('6') }, { l: '−', act: () => operador('−'), tipo: 'op' },
+    { l: '1', act: () => digito('1') }, { l: '2', act: () => digito('2') }, { l: '3', act: () => digito('3') }, { l: '+', act: () => operador('+'), tipo: 'op' },
+    { l: '%', act: porcento, tipo: 'fn' }, { l: '0', act: () => digito('0') }, { l: ',', act: () => digito(',') }, { l: '=', act: igual, tipo: 'eq' },
+  ];
+
+  return (
+    <div onClick={onClose} style={{
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 300,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        width: 340, maxWidth: '92vw', background: '#0b0b0d', borderRadius: 16, overflow: 'hidden',
+        boxShadow: '0 24px 70px rgba(0,0,0,0.6)', border: '1px solid #26262c',
+      }}>
+        {/* Cabeçalho */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: '#141418' }}>
+          <span style={{ fontSize: 12, color: '#8a8a95', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>Calculadora</span>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#c7c7d1', fontSize: 22, cursor: 'pointer', lineHeight: 1 }}>×</button>
+        </div>
+        {/* Visor */}
+        <div style={{
+          padding: '20px 20px', textAlign: 'right', color: '#fff',
+          fontSize: 46, fontWeight: 300, fontFamily: 'var(--mono)', minHeight: 40,
+          overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
+        }}>
+          {disp.replace('.', ',')}
+        </div>
+        {/* Teclado */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1, background: '#26262c' }}>
+          {teclas.map((t, i) => (
+            <button key={i} onClick={t.act} style={{
+              gridColumn: t.span ? `span ${t.span}` : undefined,
+              padding: '22px 0', border: 'none', cursor: 'pointer',
+              fontSize: t.tipo === 'fn' ? 20 : 24, fontWeight: 600, fontFamily: 'var(--mono)',
+              background: t.tipo === 'eq' ? '#2563eb' : t.tipo === 'op' ? '#1c1c22' : '#0b0b0d',
+              color: t.tipo === 'op' ? '#5b9dff' : '#fff',
+              WebkitTapHighlightColor: 'transparent', transition: 'filter .1s',
+            }}
+              onPointerDown={e => (e.currentTarget.style.filter = 'brightness(1.6)')}
+              onPointerUp={e => (e.currentTarget.style.filter = 'none')}
+              onPointerLeave={e => (e.currentTarget.style.filter = 'none')}
+            >{t.l}</button>
+          ))}
+        </div>
       </div>
     </div>
   );
