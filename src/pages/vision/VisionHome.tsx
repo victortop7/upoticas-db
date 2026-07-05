@@ -396,23 +396,23 @@ export default function VisionHome() {
                 WebkitBackdropFilter: 'blur(28px)',
                 borderTop: '1px solid rgba(120,160,255,0.22)',
                 borderBottom: '1px solid rgba(120,160,255,0.22)',
-                padding: '26px 0 30px',
+                padding: '40px 0 46px',
                 zIndex: 10,
                 animation: 'slideIn 0.25s cubic-bezier(0.22,1,0.36,1)',
               }}
             >
               <div style={{
-                fontSize: 9, color: 'rgba(165,190,255,0.55)', fontFamily: 'var(--mono)',
-                textTransform: 'uppercase', letterSpacing: '0.22em', marginBottom: 22,
+                fontSize: 10.5, color: 'rgba(165,190,255,0.6)', fontFamily: 'var(--mono)',
+                textTransform: 'uppercase', letterSpacing: '0.22em', marginBottom: 28,
                 textAlign: 'center', fontWeight: 700,
               }}>
                 ◆ Demonstrações de Lentes ◆
               </div>
               <div style={{
-                display: 'flex', gap: '14px 10px',
+                display: 'flex', gap: '22px 18px',
                 flexWrap: 'wrap',
                 justifyContent: 'center', alignItems: 'flex-start',
-                paddingInline: 16, maxWidth: 760, margin: '0 auto',
+                paddingInline: 16, maxWidth: 960, margin: '0 auto',
               }}>
                 {[...DEMO_ITEMS].sort((a, b) => DEMO_ORDER.indexOf(a.id) - DEMO_ORDER.indexOf(b.id)).map((item, i) => (
                   <button
@@ -421,8 +421,8 @@ export default function VisionHome() {
                     style={{
                       background: 'none', border: 'none', cursor: 'pointer',
                       display: 'flex', flexDirection: 'column',
-                      alignItems: 'center', gap: 8,
-                      width: 76, flex: '0 0 auto', padding: 0,
+                      alignItems: 'center', gap: 10,
+                      width: 100, flex: '0 0 auto', padding: 0,
                       transition: 'transform 0.14s cubic-bezier(0.3,1.4,0.5,1)',
                       WebkitTapHighlightColor: 'transparent',
                       animation: `riseIn .4s cubic-bezier(0.22,1,0.36,1) ${i * 0.04}s both`,
@@ -433,7 +433,7 @@ export default function VisionHome() {
                   >
                     {/* Squircle de vidro estilo iOS */}
                     <div style={{
-                      width: 62, height: 62, borderRadius: 17,
+                      width: 84, height: 84, borderRadius: 23,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       background: 'linear-gradient(160deg, rgba(255,255,255,0.18), rgba(255,255,255,0.06))',
                       border: '0.5px solid rgba(255,255,255,0.25)',
@@ -454,7 +454,7 @@ export default function VisionHome() {
                       }} />
                     </div>
                     <span style={{
-                      fontSize: 11, color: 'rgba(245,248,255,0.95)',
+                      fontSize: 13, color: 'rgba(245,248,255,0.95)',
                       fontWeight: 500, letterSpacing: '-0.01em',
                       textAlign: 'center', lineHeight: 1.1,
                     }}>{item.label}</span>
