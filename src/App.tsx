@@ -61,6 +61,7 @@ import Demonstracoes from './pages/vision/Demonstracoes';
 import VisionOS from './pages/vision/VisionOS';
 import VisionAtendimentos from './pages/vision/VisionAtendimentos';
 import VendaIndicativa from './pages/vision/VendaIndicativa';
+import TesteVisao from './pages/vision/TesteVisao';
 import VisionLogin from './pages/vision/VisionLogin';
 
 export default function App() {
@@ -137,6 +138,7 @@ export default function App() {
             <Route path="/vision/mapa-visual" element={<MapaVisual />} />
             <Route path="/vision/venda-indicativa" element={<VendaIndicativa />} />
             <Route path="/vision/demonstracoes" element={<Demonstracoes />} />
+            <Route path="/vision/teste-visao" element={<TesteVisao />} />
             <Route path="/vision/os" element={<VisionOS />} />
             <Route path="/vision/atendimentos" element={<VisionAtendimentos />} />
           </Route>

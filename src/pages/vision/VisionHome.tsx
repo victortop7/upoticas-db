@@ -175,7 +175,7 @@ const MODULES = [
   {
     id: 'teste-visao',
     label: 'Teste de\nVisão',
-    path: '/vision/atendimentos',
+    path: '/vision/teste-visao',
     active: true,
     submenu: null,
     grad: 'linear-gradient(180deg, #ffb340 0%, #f08c00 100%)',
