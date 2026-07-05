@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, type ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
-type Tab = 'superficie' | 'visao' | 'simulacao';
+type Tab = 'superficie' | 'visao' | 'fotossensivel' | 'simulacao';
 
 const TRATAMENTOS = [
   { id: 'ar',  label: 'Anti-Reflexo',   cor: '#3b82f6' },
@@ -908,6 +908,152 @@ function Polarizado({ onSimular }: { onSimular?: (efeito: string) => void }) {
   );
 }
 
+// ─── Fotossensível — módulo próprio (comparador COM/SEM) ──────────────────────
+const FOTO_COR = '#8b5cf6';
+const FOTO_PHOTO = { com: '/tratamento-fotossensivel/com.png', sem: '/tratamento-fotossensivel/sem.png' };
+
+function Fotossensivel({ onSimular }: { onSimular?: (efeito: string) => void }) {
+  const [divX, setDivX] = useState(50);
+  const [autoDemo, setAutoDemo] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
+
+  useEffect(() => {
+    if (!autoDemo) return;
+    let frame: number;
+    let dir = -1;
+    const animate = () => {
+      setDivX(prev => {
+        let next = prev + dir * 0.7;
+        if (next <= 12) { next = 12; dir = 1; }
+        if (next >= 88) { next = 88; dir = -1; }
+        return next;
+      });
+      frame = requestAnimationFrame(animate);
+    };
+    frame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frame);
+  }, [autoDemo]);
+
+  function move(clientX: number) {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    if (autoDemo) setAutoDemo(false);
+    setDivX(Math.min(90, Math.max(10, ((clientX - rect.left) / rect.width) * 100)));
+  }
+
+  return (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div
+        ref={containerRef}
+        onMouseDown={() => { dragging.current = true; }}
+        onMouseMove={e => { if (dragging.current) move(e.clientX); }}
+        onMouseUp={() => { dragging.current = false; }}
+        onMouseLeave={() => { dragging.current = false; }}
+        onTouchStart={() => { dragging.current = true; }}
+        onTouchMove={e => move(e.touches[0].clientX)}
+        onTouchEnd={() => { dragging.current = false; }}
+        style={{ flex: 1, position: 'relative', cursor: 'col-resize', userSelect: 'none', overflow: 'hidden', background: '#0a0a0c' }}
+      >
+        {/* SEM base */}
+        <img src={FOTO_PHOTO.sem} draggable={false}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', pointerEvents: 'none' }} />
+        {/* COM overlay — lado esquerdo */}
+        <img src={FOTO_PHOTO.com} draggable={false}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', clipPath: `inset(0 ${100 - divX}% 0 0)`, pointerEvents: 'none' }} />
+
+        {/* Divisor */}
+        <div style={{
+          position: 'absolute', top: 0, bottom: 0,
+          left: `${divX}%`, transform: 'translateX(-50%)',
+          width: 2, background: 'rgba(255,255,255,.9)',
+          boxShadow: '0 0 12px rgba(255,255,255,.5)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          pointerEvents: 'none',
+        }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: '50%',
+            background: '#fff', boxShadow: '0 2px 16px rgba(0,0,0,.5)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1e2030" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6" /></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1e2030" strokeWidth="2.5" strokeLinecap="round" style={{ marginLeft: -8 }}><polyline points="9 18 15 12 9 6" /></svg>
+          </div>
+        </div>
+
+        {/* Botão demonstração automática */}
+        <button
+          onMouseDown={e => e.stopPropagation()}
+          onTouchStart={e => e.stopPropagation()}
+          onClick={() => setAutoDemo(p => !p)}
+          style={{
+            position: 'absolute', bottom: 100, left: 16, zIndex: 11,
+            display: 'flex', alignItems: 'center', gap: 8,
+            background: autoDemo ? FOTO_COR : 'rgba(0,0,0,.7)',
+            border: `1px solid ${autoDemo ? FOTO_COR : 'rgba(255,255,255,0.15)'}`,
+            borderRadius: 999, padding: '7px 14px 7px 11px', cursor: 'pointer',
+            transition: 'all .15s', WebkitTapHighlightColor: 'transparent',
+          }}
+        >
+          {autoDemo ? (
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="#fff"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+          ) : (
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="#fff"><polygon points="6 4 20 12 6 20"/></svg>
+          )}
+          <span style={{ fontSize: 10.5, color: '#fff', fontFamily: 'var(--mono)', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase' }}>
+            {autoDemo ? 'Pausar' : 'Demonstrar'}
+          </span>
+        </button>
+
+        {/* Labels */}
+        <div style={{ position: 'absolute', bottom: 64, left: 16, fontSize: 11, color: '#e2e8f0', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
+          ✓ COM FOTOSSENSÍVEL
+        </div>
+        <div style={{ position: 'absolute', bottom: 64, right: 16, fontSize: 11, color: '#9ca3af', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
+          ✗ SEM
+        </div>
+
+        {/* Descrição */}
+        <div style={{
+          position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)',
+          background: 'rgba(0,0,0,.78)', borderRadius: 12, padding: '10px 20px',
+          width: 'max-content', maxWidth: 420, textAlign: 'center', pointerEvents: 'none',
+        }}>
+          <div style={{ fontSize: 10, color: FOTO_COR, fontWeight: 700, fontFamily: 'var(--mono)', marginBottom: 4, letterSpacing: '.06em', textTransform: 'uppercase' }}>
+            Fotossensível
+          </div>
+          <div style={{ fontSize: 12, color: '#9ca3af', lineHeight: 1.5 }}>
+            Escurece no sol e clareia em ambientes internos — conforto e proteção UV sem trocar de óculos.
+          </div>
+        </div>
+
+        {/* Painel lateral direito — Simular */}
+        <div
+          onMouseDown={e => e.stopPropagation()}
+          onTouchStart={e => e.stopPropagation()}
+          style={{
+            position: 'absolute', top: 0, right: 0, bottom: 0,
+            display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: 48,
+            background: 'linear-gradient(to left, rgba(0,0,0,0.45) 55%, transparent)',
+            paddingRight: 4, zIndex: 10, minWidth: 150,
+          }}
+        >
+          <button onClick={() => onSimular?.('photo')} style={{
+            background: 'transparent', border: 'none', cursor: 'pointer',
+            padding: '12px 18px 12px 14px', textAlign: 'left', width: '100%',
+            display: 'flex', alignItems: 'center', gap: 10, WebkitTapHighlightColor: 'transparent',
+          }}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={FOTO_COR} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" />
+            </svg>
+            <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--sans)', letterSpacing: '.07em', textTransform: 'uppercase', color: FOTO_COR }}>Simular</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Simulação — modo CÂMERA contextual (1 efeito por vez) ─────────────────────
 const EFEITO_SIM: Record<string, { label: string; cor: string; filtro: string; campo?: boolean; desc: string }> = {
   ar:  { label: 'Anti-Reflexo',   cor: '#3b82f6', filtro: 'brightness(1.06) contrast(1.05)', desc: 'Sem reflexos — visão limpa e nítida' },
@@ -920,6 +1066,7 @@ const EFEITO_SIM: Record<string, { label: string; cor: string; filtro: string; c
   uv:  { label: 'Proteção UV',    cor: '#ef4444', filtro: 'brightness(.6) contrast(1.12) saturate(.92)', desc: 'Bloqueia os raios UV nocivos' },
   et:  { label: 'Estético',       cor: '#e879f9', filtro: 'brightness(1.05) contrast(1.03)', desc: 'Lente invisível, sem reflexos' },
   pol: { label: 'Polarizado',     cor: '#f97316', filtro: 'contrast(1.15) saturate(1.22) brightness(.94)', desc: 'Sem reflexos e ofuscamento' },
+  photo: { label: 'Fotossensível', cor: '#8b5cf6', filtro: 'brightness(.62) contrast(1.08) sepia(.15)', desc: 'Lente escurece no sol automaticamente' },
   digital: { label: 'Lente Digital', cor: '#3b82f6', filtro: '', campo: true, desc: 'Nitidez em todo o campo de visão' },
   campos:  { label: 'Campo de Visão', cor: '#22c55e', filtro: '', campo: true, desc: 'Visão nítida e ampla pela lente' },
   adicao:  { label: 'Adição',         cor: '#a855f7', filtro: '', campo: true, desc: 'Zonas de perto, intermediário e longe' },
@@ -1028,7 +1175,7 @@ export default function Demonstracoes() {
   const [params] = useSearchParams();
   const rawTab = params.get('tab') ?? 'superficie';
   const demo = params.get('demo') ?? '';
-  const validTabs: Tab[] = ['superficie', 'visao', 'simulacao'];
+  const validTabs: Tab[] = ['superficie', 'visao', 'fotossensivel', 'simulacao'];
   const initialTab: Tab = validTabs.includes(rawTab as Tab) ? (rawTab as Tab) : 'superficie';
 
   const [tab, setTab] = useState<Tab>(initialTab);
@@ -1048,7 +1195,7 @@ export default function Demonstracoes() {
     { id: 'campos',     label: 'Campos',        tab: 'superficie' },
     { id: 'adicao',     label: 'Adição',        tab: 'superficie' },
     { id: 'digital',    label: 'Digital',       tab: 'superficie' },
-    { id: 'photo',      label: 'Photo',         tab: 'superficie' },
+    { id: 'photo',      label: 'Photo',         tab: 'fotossensivel' },
     { id: 'pol',        label: 'Polarizado',    tab: 'visao'      },
     { id: 'espessura',  label: 'Espessura',     tab: 'superficie' },
     { id: '',           label: 'Simulação',     tab: 'simulacao'  },
@@ -1067,6 +1214,7 @@ export default function Demonstracoes() {
       {tab === 'visao' && (demo === 'pol'
         ? <Polarizado onSimular={abrirSim} />
         : <Visao initialDemo={demo} onSimular={abrirSim} />)}
+      {tab === 'fotossensivel' && <Fotossensivel onSimular={abrirSim} />}
       {tab === 'simulacao' && <Simulacao efeito={simEfeito} onVoltar={() => setTab(prevTab)} />}
 
       {/* Extras popup — lista de simulações */}
