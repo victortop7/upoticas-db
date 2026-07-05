@@ -910,7 +910,7 @@ function Polarizado({ onSimular }: { onSimular?: (efeito: string) => void }) {
 
 // ─── Fotossensível — módulo próprio (comparador COM/SEM) ──────────────────────
 const FOTO_COR = '#8b5cf6';
-const FOTO_PHOTO = { com: '/tratamento-fotossensivel/com.png', sem: '/tratamento-fotossensivel/sem.png' };
+const FOTO_PHOTO = { com: '/tratamento-fotossensivel/com.jpg', sem: '/tratamento-fotossensivel/sem.jpg' };
 
 function Fotossensivel({ onSimular }: { onSimular?: (efeito: string) => void }) {
   const [divX, setDivX] = useState(50);
