@@ -3,6 +3,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 
 type Tab = 'superficie' | 'visao' | 'fotossensivel' | 'espessura' | 'simulacao';
 
+// Simulação por câmera desativada até ter as lentes com tratamento em fundo transparente.
+// Virar para true quando as imagens das lentes estiverem prontas.
+const SIMULACAO_ATIVA: boolean = false;
+
 const TRATAMENTOS = [
   { id: 'ar',  label: 'Anti-Reflexo',   cor: '#3b82f6' },
   { id: 'az',  label: 'Luz Azul',       cor: '#8b5cf6' },
@@ -286,6 +290,7 @@ function SequenciaLente({ tipo, onSimular }: { tipo: 'campos' | 'adicao'; onSimu
         })}
 
         {/* Última opção: Simulação na câmera (campo/adição) */}
+        {SIMULACAO_ATIVA && (<>
         <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '6px 14px' }} />
         <button onClick={() => onSimular?.(tipo)} style={{
           background: 'transparent', border: 'none', cursor: 'pointer',
@@ -297,6 +302,7 @@ function SequenciaLente({ tipo, onSimular }: { tipo: 'campos' | 'adicao'; onSimu
           </svg>
           <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--sans)', letterSpacing: '.07em', textTransform: 'uppercase', color: cor }}>Simulação</span>
         </button>
+        </>)}
       </div>
     </div>
   );
@@ -432,6 +438,7 @@ function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimula
           }}>{t.label}</button>
         ))}
         {/* Simulação na câmera (lente digital) */}
+        {SIMULACAO_ATIVA && (
         <button onClick={() => onSimular?.('digital')} style={{
           marginTop: 4, padding: '10px 18px', borderRadius: 8, border: 'none', cursor: 'pointer',
           background: 'rgba(59,130,246,0.9)', color: '#fff',
@@ -443,6 +450,7 @@ function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimula
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>
           Simulação
         </button>
+        )}
       </div>
     </div>
   );
@@ -674,6 +682,7 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
           ))}
 
           {/* Última opção: Simulação na câmera (efeito do tratamento atual) */}
+          {SIMULACAO_ATIVA && (<>
           <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '6px 14px' }} />
           <button onClick={() => onSimular?.(tratamento)} style={{
             background: 'transparent', border: 'none', cursor: 'pointer',
@@ -689,6 +698,7 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
               letterSpacing: '.07em', textTransform: 'uppercase', color: trObj.cor,
             }}>Simular {trObj.label}</span>
           </button>
+          </>)}
 
           {!useRealPhoto && (
             <>
@@ -891,6 +901,7 @@ function Polarizado({ onSimular }: { onSimular?: (efeito: string) => void }) {
           })}
 
           {/* Simulação na câmera */}
+          {SIMULACAO_ATIVA && (<>
           <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '6px 14px' }} />
           <button onClick={() => onSimular?.('pol')} style={{
             background: 'transparent', border: 'none', cursor: 'pointer',
@@ -902,6 +913,7 @@ function Polarizado({ onSimular }: { onSimular?: (efeito: string) => void }) {
             </svg>
             <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--sans)', letterSpacing: '.07em', textTransform: 'uppercase', color: POL_COR }}>Simular</span>
           </button>
+          </>)}
         </div>
       </div>
     </div>
@@ -1028,6 +1040,7 @@ function Fotossensivel({ onSimular }: { onSimular?: (efeito: string) => void }) 
         </div>
 
         {/* Painel lateral direito — Simular */}
+        {SIMULACAO_ATIVA && (
         <div
           onMouseDown={e => e.stopPropagation()}
           onTouchStart={e => e.stopPropagation()}
@@ -1049,6 +1062,7 @@ function Fotossensivel({ onSimular }: { onSimular?: (efeito: string) => void }) 
             <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--sans)', letterSpacing: '.07em', textTransform: 'uppercase', color: FOTO_COR }}>Simular</span>
           </button>
         </div>
+        )}
       </div>
     </div>
   );
@@ -1381,7 +1395,6 @@ export default function Demonstracoes() {
     { id: 'photo',      label: 'Photo',         tab: 'fotossensivel' },
     { id: 'pol',        label: 'Polarizado',    tab: 'visao'      },
     { id: 'espessura',  label: 'Espessura',     tab: 'espessura'   },
-    { id: '',           label: 'Simulação',     tab: 'simulacao'  },
   ];
 
   return (
