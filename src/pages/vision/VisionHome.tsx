@@ -104,25 +104,6 @@ const DEMO_ITEMS = [
 // ─── Módulos (estilo iOS — cada app com seu gradiente) ─────────────────────
 const MODULES = [
   {
-    id: 'mapa-visual',
-    label: 'Tabela\nDinâmica',
-    path: '/vision/mapa-visual',
-    active: true,
-    submenu: null,
-    grad: 'linear-gradient(180deg, #3ba6ff 0%, #0a6cff 100%)',
-    icon: (
-      <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.4" />
-        <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.4" />
-        <circle cx="12" cy="12" r="2" fill="currentColor" />
-        <line x1="12" y1="3" x2="12" y2="7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-        <line x1="12" y1="17" x2="12" y2="21" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-        <line x1="3" y1="12" x2="7" y2="12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-        <line x1="17" y1="12" x2="21" y2="12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-      </svg>
-    ),
-  },
-  {
     id: 'demonstracoes',
     label: 'Demonstrações',
     path: '/vision/demonstracoes',

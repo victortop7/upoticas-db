@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+// WhatsApp da UP7 para marcar a reunião de configuração das lentes
+const UP7_WHATSAPP = '5585991507887';
+
 // ─── Tipos de dados ─────────────────────────────────────────────────────────
 type TipoLenteId = 'multifocais' | 'visao-simples' | 'ocupacionais' | 'bifocais';
 
@@ -304,6 +307,59 @@ export default function VendaIndicativa() {
   const [tabela, setTabela] = useState<Tabela | null>(null);
 
   const tabelasFiltradas = tipo ? TABELAS.filter(t => t.tipos.includes(tipo)) : [];
+
+  // ── EM BREVE: tela de reunião (remover este bloco quando as lentes estiverem cadastradas) ──
+  const EM_BREVE: boolean = true;
+  if (EM_BREVE) {
+    const msg = encodeURIComponent('Olá! Quero marcar uma reunião para incluir as lentes e valores na Tabela Digital do Connect Vision.');
+    return (
+      <div style={{
+        position: 'absolute', inset: 0, overflow: 'auto',
+        background: 'radial-gradient(ellipse 90% 70% at 50% 0%, #0e2a1a 0%, #08080c 60%)',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        padding: '32px 24px', textAlign: 'center',
+      }}>
+        <button onClick={() => navigate('/vision')} style={{
+          position: 'absolute', top: 18, left: 18, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.14)',
+          borderRadius: 9, padding: '8px 14px', color: '#e5e7eb', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', gap: 6,
+        }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e5e7eb" strokeWidth="2.4" strokeLinecap="round"><polyline points="15 18 9 12 15 6" /></svg>
+          Menu
+        </button>
+
+        <div style={{
+          width: 76, height: 76, borderRadius: 22, margin: '0 auto 20px',
+          background: 'linear-gradient(180deg, #41d96b 0%, #1faf4a 100%)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 12px 34px rgba(31,175,74,0.4)',
+        }}>
+          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /><path d="M9 15l2 2 4-4" />
+          </svg>
+        </div>
+
+        <div style={{ display: 'inline-block', fontSize: 10, color: '#34d399', fontWeight: 700, fontFamily: 'var(--mono)', letterSpacing: '.16em', textTransform: 'uppercase', background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 999, padding: '4px 12px', marginBottom: 14 }}>
+          Em breve
+        </div>
+        <h1 style={{ fontSize: 26, fontWeight: 800, color: '#f1f5f9', margin: '0 0 12px' }}>Tabela Digital</h1>
+        <p style={{ fontSize: 15, color: '#9aa4b8', lineHeight: 1.6, maxWidth: 420, margin: '0 auto 26px' }}>
+          Estamos preparando a sua Tabela Digital personalizada. Marque uma reunião para incluirmos as lentes, marcas e valores da sua ótica.
+        </p>
+
+        <a href={`https://wa.me/${UP7_WHATSAPP}?text=${msg}`} target="_blank" rel="noopener noreferrer" style={{
+          display: 'inline-flex', alignItems: 'center', gap: 10, textDecoration: 'none',
+          background: '#25D366', color: '#fff', borderRadius: 14, padding: '15px 32px',
+          fontSize: 16, fontWeight: 700, boxShadow: '0 10px 28px rgba(37,211,102,0.4)',
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M17.5 14.4c-.3-.15-1.8-.9-2.1-1-.3-.1-.5-.15-.7.15s-.8 1-.95 1.2-.35.22-.65.07a8.5 8.5 0 0 1-2.5-1.55 9.3 9.3 0 0 1-1.7-2.15c-.18-.3 0-.47.13-.62.13-.13.3-.35.44-.52.15-.18.2-.3.3-.5.1-.2 0-.37-.03-.52-.07-.15-.66-1.6-.9-2.2-.24-.57-.48-.5-.66-.5h-.57c-.2 0-.52.07-.8.37-.27.3-1.05 1.03-1.05 2.5s1.08 2.9 1.23 3.1c.15.2 2.12 3.24 5.13 4.54.72.3 1.27.5 1.7.64.72.23 1.37.2 1.88.12.57-.08 1.76-.72 2-1.4.26-.7.26-1.28.18-1.4-.07-.13-.27-.2-.57-.35z" /><path d="M12 2a10 10 0 0 0-8.6 15.05L2 22l5.1-1.34A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.1.8.83-3-.2-.3A8.2 8.2 0 1 1 12 20.2z" /></svg>
+          Marcar reunião
+        </a>
+
+        <p style={{ fontSize: 12, color: '#5b6273', marginTop: 22 }}>Conexão Óticas · Connect Vision</p>
+      </div>
+    );
+  }
 
   // ── Vista detalhada ──
   if (tabela) {
