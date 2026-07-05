@@ -441,7 +441,12 @@ export default function VisionHome() {
                       boxShadow: '0 6px 18px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.25)',
                       position: 'relative', overflow: 'hidden',
                     }}>
-                      {item.icon}
+                      <img
+                        src={`/icones-demo/${item.id}.png`}
+                        alt={item.label}
+                        draggable={false}
+                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
                       <div style={{
                         position: 'absolute', top: 0, left: 0, right: 0, height: '46%',
                         background: 'linear-gradient(to bottom, rgba(255,255,255,0.18), transparent)',
