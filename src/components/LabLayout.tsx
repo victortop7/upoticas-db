@@ -115,6 +115,7 @@ export default function LabLayout() {
   const [altF1, setAltF1] = useState(false);
   const [activeModule, setActiveModule] = useState<ModuleKey | null>(() => detectModule(location.pathname));
   const isDashboard = location.pathname === '/lab/dashboard';
+  const isAdminPage = location.pathname === '/lab/admin'; // admin nunca é bloqueado por licença
   const licStatus = calcLicenseStatus(tenant);
 
   useEffect(() => {
@@ -302,8 +303,8 @@ export default function LabLayout() {
         <span style={{ color: dark ? '#44cc55' : '#88ccaa' }}>Connect LAB v1.0</span>
       </div>
 
-      {/* ── OVERLAY BLOQUEIO/EXPIRADO ── */}
-      {(licStatus.blocked || licStatus.expired) && (
+      {/* ── OVERLAY BLOQUEIO/EXPIRADO (admin é isento) ── */}
+      {(licStatus.blocked || licStatus.expired) && !isAdminPage && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.88)', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: "'Courier New', monospace" }}>
           <div style={{ background: 'linear-gradient(180deg,#001a00,#002a00)', border: '3px outset #005500', borderRadius: '4px', padding: '40px 60px', maxWidth: '500px', textAlign: 'center' }}>
             <div style={{ fontSize: '48px', marginBottom: '12px' }}>🔒</div>
