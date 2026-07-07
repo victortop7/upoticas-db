@@ -1,5 +1,31 @@
-import { useState, useRef, useEffect, type ReactNode } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect, type ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+
+// Encolhe o conteúdo para caber na altura/largura disponível (sem rolar)
+function AutoFit({ children, dep }: { children: ReactNode; dep?: unknown }) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  useLayoutEffect(() => {
+    const calc = () => {
+      const wrap = wrapRef.current, inner = innerRef.current;
+      if (!wrap || !inner) return;
+      const s = Math.min(1, (wrap.clientHeight - 4) / inner.scrollHeight, (wrap.clientWidth - 4) / inner.scrollWidth);
+      setScale(s > 0 ? s : 1);
+    };
+    calc();
+    const t = setTimeout(calc, 60);
+    window.addEventListener('resize', calc);
+    return () => { clearTimeout(t); window.removeEventListener('resize', calc); };
+  }, [dep]);
+  return (
+    <div ref={wrapRef} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', width: '100%' }}>
+      <div ref={innerRef} style={{ transform: `scale(${scale})`, transformOrigin: 'center' }}>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 type Tab = 'superficie' | 'visao' | 'fotossensivel' | 'espessura' | 'simulacao';
 
@@ -1123,8 +1149,9 @@ function Espessura() {
   });
 
   return (
-    <div style={{ flex: 1, position: 'relative', overflow: 'auto', background: 'radial-gradient(ellipse 90% 70% at 50% 0%, #0e1630 0%, #08080c 60%)' }}>
-      <div style={{ maxWidth: 640, margin: '0 auto', padding: '26px 20px 40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18 }}>
+    <div style={{ flex: 1, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', background: 'radial-gradient(ellipse 90% 70% at 50% 0%, #0e1630 0%, #08080c 60%)' }}>
+      <AutoFit dep={`${sinal}-${grau}-${indice}`}>
+      <div style={{ maxWidth: 640, margin: '0 auto', padding: '12px 18px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
 
         {/* Cabeçalho */}
         <div style={{ textAlign: 'center' }}>
@@ -1229,6 +1256,7 @@ function Espessura() {
           Valores aproximados · lente esférica CR-39 · Ø65mm. Variam conforme fabricante, armação e medidas.
         </div>
       </div>
+      </AutoFit>
 
       {/* Overlay tabela completa (imagem) */}
       {tabela && (
