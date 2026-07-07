@@ -261,9 +261,7 @@ export default function VisionHome() {
         flex: 1,
         position: 'relative',
         overflow: 'hidden',
-        backgroundImage: 'url(/home-hero.jpg)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center center',
+        background: 'linear-gradient(120deg, #eef4ff 0%, #dce9fd 48%, #cbddf6 100%)',
       }}>
         {/* Overlay com gradiente refinado */}
         <div style={{

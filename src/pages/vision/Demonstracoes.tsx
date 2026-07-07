@@ -373,14 +373,14 @@ function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimula
       style={{ flex: 1, position: 'relative', overflow: 'hidden', cursor: tipo === 'demonstracao' ? 'col-resize' : 'default', userSelect: 'none', minWidth: 0 }}
     >
       {tipo !== 'demonstracao' ? (
-        /* Foto full-screen */
+        /* Foto full-screen — contain para não cortar textos da imagem */
         <img
           key={tipo}
           src={FOTOS[tipo]}
           draggable={false}
           style={{
             position: 'absolute', inset: 0, width: '100%', height: '100%',
-            objectFit: 'cover', objectPosition: 'center',
+            objectFit: 'contain', objectPosition: 'center', background: '#05060a',
             transition: 'opacity .25s',
           }}
         />
