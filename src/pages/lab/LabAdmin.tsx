@@ -107,6 +107,7 @@ interface Tenant {
   trial_expira: string | null;
   licenca_expira: string | null;
   dispositivos_limite?: number;
+  dispositivo_modo?: string;
   created_at: string;
   status: string;
 }
@@ -180,7 +181,7 @@ export default function LabAdmin() {
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState('');
   const [editId, setEditId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ plano: '', licenca_expira: '', bloqueado: false, ativo: true, dispositivos_limite: 1 });
+  const [editForm, setEditForm] = useState({ plano: '', licenca_expira: '', bloqueado: false, ativo: true, dispositivos_limite: 1, dispositivo_modo: 'bloquear' });
   const [saving, setSaving] = useState(false);
   const [busca, setBusca] = useState('');
   const [criarLead, setCriarLead] = useState<Lead | null>(null);
@@ -270,6 +271,7 @@ export default function LabAdmin() {
           bloqueado: editForm.bloqueado,
           ativo: editForm.ativo,
           dispositivos_limite: editForm.dispositivos_limite,
+          dispositivo_modo: editForm.dispositivo_modo,
         }),
       });
       setEditId(null);
@@ -330,6 +332,7 @@ export default function LabAdmin() {
       bloqueado: Boolean(t.bloqueado),
       ativo: Boolean(t.ativo),
       dispositivos_limite: Number(t.dispositivos_limite ?? 1) || 1,
+      dispositivo_modo: t.dispositivo_modo === 'rotacionar' ? 'rotacionar' : 'bloquear',
     });
   }
 
@@ -821,6 +824,17 @@ export default function LabAdmin() {
                     = R$ {97 + (editForm.dispositivos_limite - 1) * 30}/mês
                     <span style={{ color: '#64748b', fontWeight: '400' }}> (R$97 + R$30 x {editForm.dispositivos_limite - 1})</span>
                   </span>
+                </div>
+                <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid #c5d5f0' }}>
+                  <div style={{ fontSize: '10px', fontWeight: '700', color: '#1e40af', textTransform: 'uppercase', marginBottom: '5px' }}>Ao passar do limite de tablets:</div>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', marginBottom: '3px', cursor: 'pointer' }}>
+                    <input type="radio" name="dispmodo" checked={editForm.dispositivo_modo === 'bloquear'} onChange={() => setEditForm(f => ({ ...f, dispositivo_modo: 'bloquear' }))} />
+                    <b>Bloquear</b> — barra o tablet novo e pede pra pagar +R$30
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', cursor: 'pointer' }}>
+                    <input type="radio" name="dispmodo" checked={editForm.dispositivo_modo === 'rotacionar'} onChange={() => setEditForm(f => ({ ...f, dispositivo_modo: 'rotacionar' }))} />
+                    <b>Rotacionar</b> — desloga o tablet mais antigo automaticamente
+                  </label>
                 </div>
                 <button onClick={resetarDispositivos}
                   style={{ marginTop: '8px', padding: '4px 12px', fontSize: '11px', fontWeight: '700', background: '#fff0f0', color: '#aa0000', border: '1px outset #cc8888', cursor: 'pointer', fontFamily: 'inherit' }}>

@@ -26,21 +26,32 @@ export default function VisionLayout() {
   const [avisoFechado, setAvisoFechado] = useState(false);
   const [carenciaOk, setCarenciaOk] = useState(false); // usuário optou por continuar durante a carência
   const [dispBloqueado, setDispBloqueado] = useState<{ limite: number } | null>(null);
+  const [kicked, setKicked] = useState(false); // deslogado por entrar em outro tablet (modo rotacionar)
 
-  // Check-in do dispositivo: valida o tablet contra o limite da conta
+  // Check-in do dispositivo: reivindica a vaga ao abrir e verifica a cada 30s
   useEffect(() => {
     if (!usuario) return;
     let cancel = false;
-    (async () => {
+    type Chk = { ok: boolean; limite_atingido?: boolean; limite?: number; kicked?: boolean };
+
+    const claim = async () => {
       try {
-        const r = await api.post<{ ok: boolean; limite_atingido?: boolean; limite?: number }>(
-          '/vision/checkin', { device_id: getDeviceId() }
-        );
-        if (!cancel && r.limite_atingido) setDispBloqueado({ limite: r.limite ?? 1 });
-        else if (!cancel) setDispBloqueado(null);
-      } catch { /* silencioso — não trava o app por erro de rede */ }
-    })();
-    return () => { cancel = true; };
+        const r = await api.post<Chk>('/vision/checkin', { device_id: getDeviceId(), claim: true });
+        if (cancel) return;
+        if (r.limite_atingido) setDispBloqueado({ limite: r.limite ?? 1 });
+        else setDispBloqueado(null);
+      } catch { /* silencioso */ }
+    };
+    const verify = async () => {
+      try {
+        const r = await api.post<Chk>('/vision/checkin', { device_id: getDeviceId(), claim: false });
+        if (!cancel && r.kicked) setKicked(true);
+      } catch { /* silencioso */ }
+    };
+
+    claim();
+    const t = setInterval(verify, 30_000);
+    return () => { cancel = true; clearInterval(t); };
   }, [usuario]);
 
   // Auto-logout após 30 min de inatividade
@@ -100,6 +111,32 @@ export default function VisionLayout() {
       display: 'flex', flexDirection: 'column', overflow: 'hidden', userSelect: 'none',
     }}>
       <Outlet />
+
+      {/* Deslogado por entrar em outro tablet (modo rotacionar) */}
+      {kicked && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 290,
+          background: 'rgba(5,5,10,0.94)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
+        }}>
+          <div style={{
+            width: 400, maxWidth: '92vw', background: '#101018', border: '1px solid #23232e',
+            borderRadius: 22, padding: '34px 30px', textAlign: 'center', boxShadow: '0 24px 70px rgba(0,0,0,0.6)',
+          }}>
+            <div style={{ width: 68, height: 68, borderRadius: '50%', background: 'rgba(245,158,11,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px' }}>
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+            </div>
+            <div style={{ fontSize: 21, fontWeight: 800, color: '#f1f5f9' }}>Sessão encerrada</div>
+            <div style={{ fontSize: 14.5, color: '#9aa4b8', marginTop: 8, lineHeight: 1.6 }}>
+              Sua conta foi aberta em <b style={{ color: '#f59e0b' }}>outro tablet</b>. Como o plano permite um número limitado de tablets, este acesso foi desconectado.
+            </div>
+            <button onClick={async () => { await logout(); navigate('/vision/login', { replace: true }); }} style={{
+              marginTop: 22, background: '#3b82f6', color: '#fff', border: 'none', borderRadius: 14,
+              padding: '14px 40px', fontSize: 15, fontWeight: 700, cursor: 'pointer',
+            }}>Voltar ao login</button>
+          </div>
+        </div>
+      )}
 
       {/* Bloqueio por limite de tablets (dispositivos) */}
       {dispBloqueado && (
