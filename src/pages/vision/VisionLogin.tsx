@@ -36,6 +36,15 @@ export default function VisionLogin() {
 
   useEffect(() => { document.title = 'Connect Vision — Entrar'; }, []);
 
+  // Tela compacta (celular): login menor e à esquerda. Tablet fica igual.
+  const isCompact = () => typeof window !== 'undefined' && (window.innerHeight < 500 || window.innerWidth < 640);
+  const [compact, setCompact] = useState(isCompact);
+  useEffect(() => {
+    const onR = () => setCompact(isCompact());
+    window.addEventListener('resize', onR);
+    return () => window.removeEventListener('resize', onR);
+  }, []);
+
   async function ativarTeste(e?: React.FormEvent) {
     e?.preventDefault();
     setTErro(''); setTLoading(true);
@@ -74,8 +83,9 @@ export default function VisionLogin() {
 
   return (
     <div style={{
-      minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: 20, position: 'relative', overflow: 'hidden',
+      minHeight: '100dvh', display: 'flex', alignItems: 'center',
+      justifyContent: compact ? 'flex-start' : 'center',
+      padding: compact ? '12px 5%' : 20, position: 'relative', overflow: 'hidden',
       background: '#060a16',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     }}>
@@ -106,22 +116,23 @@ export default function VisionLogin() {
         background: 'linear-gradient(100deg, transparent, rgba(120,180,255,0.10), transparent)',
         transform: 'skewX(-14deg)', animation: 'sweepLogin 9s ease-in-out infinite', pointerEvents: 'none' }} />
 
-      <div style={{ width: '100%', maxWidth: 380, position: 'relative', zIndex: 1 }}>
+      <div style={{ width: '100%', maxWidth: compact ? 300 : 380, position: 'relative', zIndex: 1 }}>
         {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: 26 }}>
+        <div style={{ textAlign: compact ? 'left' : 'center', marginBottom: compact ? 12 : 26 }}>
           <img src="/vision-icon.png" alt="Connect Vision" style={{
-            width: 76, height: 76, borderRadius: 19, margin: '0 auto 14px',
+            width: compact ? 46 : 76, height: compact ? 46 : 76, borderRadius: compact ? 12 : 19,
+            margin: compact ? '0 0 8px' : '0 auto 14px',
             objectFit: 'cover', display: 'block',
             boxShadow: '0 12px 40px rgba(0,122,255,0.5), 0 0 0 1px rgba(120,170,255,0.2)',
           }} />
-          <div style={{ fontSize: 25, fontWeight: 700, color: '#f0f6ff', letterSpacing: '-0.5px' }}>
+          <div style={{ fontSize: compact ? 19 : 25, fontWeight: 700, color: '#f0f6ff', letterSpacing: '-0.5px' }}>
             Connect <span style={{ color: '#3ba6ff' }}>Vision</span>
           </div>
-          <div style={{ fontSize: 13, color: 'rgba(180,205,255,0.6)', marginTop: 3, letterSpacing: '0.02em' }}>Simulador para óticas</div>
+          <div style={{ fontSize: compact ? 11 : 13, color: 'rgba(180,205,255,0.6)', marginTop: 3, letterSpacing: '0.02em' }}>Simulador para óticas</div>
         </div>
 
         {/* Card */}
-        <div style={{ background: 'rgba(255,255,255,0.97)', borderRadius: 20, padding: 24, boxShadow: '0 20px 60px rgba(0,20,60,0.5), 0 0 0 1px rgba(120,170,255,0.18), 0 0 40px rgba(0,122,255,0.15)', backdropFilter: 'blur(10px)' }}>
+        <div style={{ background: 'rgba(255,255,255,0.97)', borderRadius: compact ? 14 : 20, padding: compact ? 16 : 24, boxShadow: '0 20px 60px rgba(0,20,60,0.5), 0 0 0 1px rgba(120,170,255,0.18), 0 0 40px rgba(0,122,255,0.15)', backdropFilter: 'blur(10px)' }}>
           {erro && (
             <div style={{ background: 'rgba(255,59,48,0.1)', border: '1px solid rgba(255,59,48,0.3)', borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontSize: 13.5, color: '#d70015', fontWeight: 500 }}>
               {erro}
