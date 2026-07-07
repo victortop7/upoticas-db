@@ -249,7 +249,7 @@ function SequenciaLente({ tipo, onSimular }: { tipo: 'campos' | 'adicao'; onSimu
           draggable={false}
           style={{
             position: 'absolute', inset: 0, width: '100%', height: '100%',
-            objectFit: 'cover', objectPosition: 'center',
+            objectFit: 'contain', objectPosition: 'center',
             opacity: i === idx ? 1 : 0, transition: 'opacity .25s ease',
             pointerEvents: 'none',
           }}
@@ -385,13 +385,13 @@ function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimula
           <img
             src={DEMO_FOTOS.sem}
             draggable={false}
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', pointerEvents: 'none' }}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center', pointerEvents: 'none' }}
           />
           {/* DIGITAL — overlay esquerda */}
           <img
             src={DEMO_FOTOS.com}
             draggable={false}
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', clipPath: `inset(0 ${100 - divX}% 0 0)`, pointerEvents: 'none' }}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center', clipPath: `inset(0 ${100 - divX}% 0 0)`, pointerEvents: 'none' }}
           />
 
           {/* Divisor */}
@@ -572,14 +572,14 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
         onTouchStart={() => { dragging.current = true; }}
         onTouchMove={e => move(e.touches[0].clientX)}
         onTouchEnd={() => { dragging.current = false; }}
-        style={{ flex: 1, position: 'relative', cursor: 'col-resize', userSelect: 'none', overflow: 'hidden', minWidth: 0 }}
+        style={{ flex: 1, position: 'relative', cursor: 'col-resize', userSelect: 'none', overflow: 'hidden', minWidth: 0, background: '#05060a' }}
       >
         {/* SEM base */}
         {useRealPhoto ? (
           <img
             src={realPhoto!.sem}
             draggable={false}
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', pointerEvents: 'none' }}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center', pointerEvents: 'none' }}
           />
         ) : (
           <div style={{ position: 'absolute', inset: 0, background: SCENE_BG[ambiente], filter: effect.semFilter }} />
@@ -590,7 +590,7 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
           <img
             src={realPhoto!.com}
             draggable={false}
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', clipPath: `inset(0 ${100 - divX}% 0 0)`, pointerEvents: 'none' }}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center', clipPath: `inset(0 ${100 - divX}% 0 0)`, pointerEvents: 'none' }}
           />
         ) : (
           <div style={{ position: 'absolute', inset: 0, background: SCENE_BG[ambiente], filter: effect.comFilter, clipPath: `inset(0 ${100 - divX}% 0 0)` }} />
@@ -812,10 +812,10 @@ function Polarizado({ onSimular }: { onSimular?: (efeito: string) => void }) {
       >
         {/* SEM base */}
         <img src={c.sem} draggable={false}
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', pointerEvents: 'none' }} />
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center', pointerEvents: 'none' }} />
         {/* COM overlay — lado esquerdo */}
         <img src={c.com} draggable={false}
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', clipPath: `inset(0 ${100 - divX}% 0 0)`, pointerEvents: 'none' }} />
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center', clipPath: `inset(0 ${100 - divX}% 0 0)`, pointerEvents: 'none' }} />
 
         {/* Divisor */}
         <div style={{
@@ -977,10 +977,10 @@ function Fotossensivel({ onSimular }: { onSimular?: (efeito: string) => void }) 
       >
         {/* SEM base */}
         <img src={FOTO_PHOTO.sem} draggable={false}
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', pointerEvents: 'none' }} />
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center', pointerEvents: 'none' }} />
         {/* COM overlay — lado esquerdo */}
         <img src={FOTO_PHOTO.com} draggable={false}
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', clipPath: `inset(0 ${100 - divX}% 0 0)`, pointerEvents: 'none' }} />
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center', clipPath: `inset(0 ${100 - divX}% 0 0)`, pointerEvents: 'none' }} />
 
         {/* Divisor */}
         <div style={{
