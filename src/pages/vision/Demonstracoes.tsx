@@ -781,7 +781,7 @@ function Polarizado({ onSimular }: { onSimular?: (efeito: string) => void }) {
   }
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'row', overflow: 'hidden' }}>
       <div
         ref={containerRef}
         onMouseDown={() => { dragging.current = true; }}
@@ -791,7 +791,7 @@ function Polarizado({ onSimular }: { onSimular?: (efeito: string) => void }) {
         onTouchStart={() => { dragging.current = true; }}
         onTouchMove={e => move(e.touches[0].clientX)}
         onTouchEnd={() => { dragging.current = false; }}
-        style={{ flex: 1, position: 'relative', cursor: 'col-resize', userSelect: 'none', overflow: 'hidden', background: '#0a0a0c' }}
+        style={{ flex: 1, position: 'relative', cursor: 'col-resize', userSelect: 'none', overflow: 'hidden', background: '#0a0a0c', minWidth: 0 }}
       >
         {/* SEM base */}
         <img src={c.sem} draggable={false}
@@ -864,18 +864,16 @@ function Polarizado({ onSimular }: { onSimular?: (efeito: string) => void }) {
             {c.desc}
           </div>
         </div>
+      </div>
 
-        {/* Painel de cenas — overlay vertical direito */}
-        <div
-          onMouseDown={e => e.stopPropagation()}
-          onTouchStart={e => e.stopPropagation()}
-          style={{
-            position: 'absolute', top: 0, right: 0, bottom: 0,
-            display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: 48,
-            background: 'linear-gradient(to left, rgba(0,0,0,0.45) 55%, transparent)',
-            paddingRight: 4, zIndex: 10, minWidth: 160,
-          }}
-        >
+      {/* Painel de cenas — ao lado (não sobrepõe a imagem) */}
+      <div
+        style={{
+          display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: 14,
+          background: '#0d0d12', borderLeft: '1px solid #1f1f28',
+          width: 150, flexShrink: 0, overflowY: 'auto', zIndex: 10,
+        }}
+      >
           {(['peixe', 'estrada'] as const).map(id => {
             const ativo = cena === id;
             const o = POL_CENAS[id];
@@ -912,7 +910,6 @@ function Polarizado({ onSimular }: { onSimular?: (efeito: string) => void }) {
             <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--sans)', letterSpacing: '.07em', textTransform: 'uppercase', color: POL_COR }}>Simular</span>
           </button>
           </>)}
-        </div>
       </div>
     </div>
   );
