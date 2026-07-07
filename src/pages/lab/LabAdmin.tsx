@@ -106,6 +106,7 @@ interface Tenant {
   bloqueado: number;
   trial_expira: string | null;
   licenca_expira: string | null;
+  dispositivos_limite?: number;
   created_at: string;
   status: string;
 }
@@ -179,7 +180,7 @@ export default function LabAdmin() {
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState('');
   const [editId, setEditId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ plano: '', licenca_expira: '', bloqueado: false, ativo: true });
+  const [editForm, setEditForm] = useState({ plano: '', licenca_expira: '', bloqueado: false, ativo: true, dispositivos_limite: 1 });
   const [saving, setSaving] = useState(false);
   const [busca, setBusca] = useState('');
   const [criarLead, setCriarLead] = useState<Lead | null>(null);
@@ -268,6 +269,7 @@ export default function LabAdmin() {
           licenca_expira: editForm.licenca_expira || null,
           bloqueado: editForm.bloqueado,
           ativo: editForm.ativo,
+          dispositivos_limite: editForm.dispositivos_limite,
         }),
       });
       setEditId(null);
@@ -309,6 +311,17 @@ export default function LabAdmin() {
     });
   }
 
+  async function resetarDispositivos() {
+    if (!editId) return;
+    if (!confirm('Desconectar TODOS os tablets desta conta? Eles precisarão entrar de novo (útil pra trocar de tablet).')) return;
+    try {
+      await adminRequest(`/admin/dispositivos?tenant_id=${editId}&all=1`, secret, { method: 'DELETE' });
+      alert('Tablets desconectados. As vagas foram liberadas.');
+    } catch (e: unknown) {
+      setErro(e instanceof Error ? e.message : 'Erro ao desconectar');
+    }
+  }
+
   function openEdit(t: Tenant) {
     setEditId(t.id);
     setEditForm({
@@ -316,6 +329,7 @@ export default function LabAdmin() {
       licenca_expira: t.licenca_expira ? t.licenca_expira.slice(0, 10) : '',
       bloqueado: Boolean(t.bloqueado),
       ativo: Boolean(t.ativo),
+      dispositivos_limite: Number(t.dispositivos_limite ?? 1) || 1,
     });
   }
 
@@ -790,6 +804,28 @@ export default function LabAdmin() {
                   <div style={{ fontSize: '10px', fontWeight: '700', color: '#444', textTransform: 'uppercase', marginBottom: '4px' }}>Licença expira em</div>
                   <input type="date" value={editForm.licenca_expira} onChange={e => setEditForm(f => ({ ...f, licenca_expira: e.target.value }))} style={{ ...INP, width: '100%' }} />
                 </div>
+              </div>
+
+              {/* Tablets (dispositivos) */}
+              <div style={{ marginBottom: '12px', background: '#eef4ff', border: '1px solid #b8ccf0', padding: '8px 10px' }}>
+                <div style={{ fontSize: '10px', fontWeight: '700', color: '#1e40af', textTransform: 'uppercase', marginBottom: '6px' }}>Tablets liberados (dispositivos)</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <button onClick={() => setEditForm(f => ({ ...f, dispositivos_limite: Math.max(1, f.dispositivos_limite - 1) }))}
+                    style={{ width: '28px', height: '28px', fontSize: '16px', fontWeight: '700', background: R.alt, border: `1px outset ${R.bdr}`, cursor: 'pointer' }}>−</button>
+                  <input type="number" min={1} value={editForm.dispositivos_limite}
+                    onChange={e => setEditForm(f => ({ ...f, dispositivos_limite: Math.max(1, Number(e.target.value) || 1) }))}
+                    style={{ ...INP, width: '56px', textAlign: 'center', fontWeight: '700' }} />
+                  <button onClick={() => setEditForm(f => ({ ...f, dispositivos_limite: f.dispositivos_limite + 1 }))}
+                    style={{ width: '28px', height: '28px', fontSize: '16px', fontWeight: '700', background: R.alt, border: `1px outset ${R.bdr}`, cursor: 'pointer' }}>+</button>
+                  <span style={{ fontSize: '12px', color: '#1e40af', fontWeight: '700', marginLeft: '4px' }}>
+                    = R$ {97 + (editForm.dispositivos_limite - 1) * 30}/mês
+                    <span style={{ color: '#64748b', fontWeight: '400' }}> (R$97 + R$30 x {editForm.dispositivos_limite - 1})</span>
+                  </span>
+                </div>
+                <button onClick={resetarDispositivos}
+                  style={{ marginTop: '8px', padding: '4px 12px', fontSize: '11px', fontWeight: '700', background: '#fff0f0', color: '#aa0000', border: '1px outset #cc8888', cursor: 'pointer', fontFamily: 'inherit' }}>
+                  ↺ Desconectar tablets (trocar dispositivo)
+                </button>
               </div>
 
               {/* Quick extend buttons */}

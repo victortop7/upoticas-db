@@ -9,6 +9,7 @@ function isAdmin(request: Request, env: Env): boolean {
 async function ensureColumns(env: Env) {
   try { await env.DB.prepare('ALTER TABLE tenants ADD COLUMN bloqueado INTEGER DEFAULT 0').run(); } catch {}
   try { await env.DB.prepare('ALTER TABLE tenants ADD COLUMN licenca_expira TEXT').run(); } catch {}
+  try { await env.DB.prepare('ALTER TABLE tenants ADD COLUMN dispositivos_limite INTEGER DEFAULT 1').run(); } catch {}
 }
 
 // GET /api/admin/licencas — lista todos os tenants
@@ -19,6 +20,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
   const result = await env.DB.prepare(
     `SELECT id, nome, email, tipo, plano, ativo,
             COALESCE(bloqueado, 0) as bloqueado,
+            COALESCE(dispositivos_limite, 1) as dispositivos_limite,
             trial_expira, licenca_expira, created_at
      FROM tenants ORDER BY created_at DESC`
   ).all();
@@ -67,6 +69,7 @@ export const onRequestPatch = async ({ request, env }: { request: Request; env: 
     licenca_expira?: string | null;
     bloqueado?: boolean;
     ativo?: boolean;
+    dispositivos_limite?: number;
   };
 
   if (!body.id) return json({ error: 'id obrigatório' }, 400);
@@ -78,6 +81,7 @@ export const onRequestPatch = async ({ request, env }: { request: Request; env: 
   if (body.licenca_expira !== undefined) { updates.push('licenca_expira = ?'); vals.push(body.licenca_expira); }
   if (body.bloqueado !== undefined)     { updates.push('bloqueado = ?');      vals.push(body.bloqueado ? 1 : 0); }
   if (body.ativo !== undefined)         { updates.push('ativo = ?');          vals.push(body.ativo ? 1 : 0); }
+  if (body.dispositivos_limite !== undefined) { updates.push('dispositivos_limite = ?'); vals.push(Math.max(1, Number(body.dispositivos_limite) || 1)); }
 
   if (!updates.length) return json({ error: 'Nada para atualizar' }, 400);
 

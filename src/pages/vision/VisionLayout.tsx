@@ -2,9 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { Outlet, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import PixModal from '../../components/PixModal';
+import { api } from '../../lib/api';
+import { getDeviceId } from '../../lib/device';
 
 const INATIVIDADE_MS = 30 * 60 * 1000; // 30 minutos
 const AVISO_DIAS = 3; // aviso sutil a partir de 3 dias antes de vencer
+const ESPECIALISTA_WA = '5585991507887';
 
 // Dias até a data YYYY-MM-DD (fim do dia, fuso SP). null se sem data.
 function diasAte(dateStr?: string): number | null {
@@ -22,6 +25,23 @@ export default function VisionLayout() {
   const [pixPago, setPixPago] = useState(false);
   const [avisoFechado, setAvisoFechado] = useState(false);
   const [carenciaOk, setCarenciaOk] = useState(false); // usuário optou por continuar durante a carência
+  const [dispBloqueado, setDispBloqueado] = useState<{ limite: number } | null>(null);
+
+  // Check-in do dispositivo: valida o tablet contra o limite da conta
+  useEffect(() => {
+    if (!usuario) return;
+    let cancel = false;
+    (async () => {
+      try {
+        const r = await api.post<{ ok: boolean; limite_atingido?: boolean; limite?: number }>(
+          '/vision/checkin', { device_id: getDeviceId() }
+        );
+        if (!cancel && r.limite_atingido) setDispBloqueado({ limite: r.limite ?? 1 });
+        else if (!cancel) setDispBloqueado(null);
+      } catch { /* silencioso — não trava o app por erro de rede */ }
+    })();
+    return () => { cancel = true; };
+  }, [usuario]);
 
   // Auto-logout após 30 min de inatividade
   useEffect(() => {
@@ -80,6 +100,40 @@ export default function VisionLayout() {
       display: 'flex', flexDirection: 'column', overflow: 'hidden', userSelect: 'none',
     }}>
       <Outlet />
+
+      {/* Bloqueio por limite de tablets (dispositivos) */}
+      {dispBloqueado && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 280,
+          background: 'rgba(5,5,10,0.92)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
+        }}>
+          <div style={{
+            width: 420, maxWidth: '92vw', background: '#101018', border: '1px solid #23232e',
+            borderRadius: 22, padding: '34px 30px', textAlign: 'center', boxShadow: '0 24px 70px rgba(0,0,0,0.6)',
+          }}>
+            <div style={{ width: 68, height: 68, borderRadius: '50%', background: 'rgba(59,130,246,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px' }}>
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" /><line x1="10" y1="18" x2="14" y2="18" /></svg>
+            </div>
+            <div style={{ fontSize: 21, fontWeight: 800, color: '#f1f5f9' }}>Limite de tablets atingido</div>
+            <div style={{ fontSize: 14.5, color: '#9aa4b8', marginTop: 8, lineHeight: 1.6 }}>
+              Seu plano permite <b style={{ color: '#3b82f6' }}>{dispBloqueado.limite} {dispBloqueado.limite === 1 ? 'tablet' : 'tablets'}</b>. Para usar o Connect Vision neste dispositivo, adicione mais um tablet (+R$30/mês) falando com nosso especialista.
+            </div>
+            <a href={`https://wa.me/${ESPECIALISTA_WA}?text=${encodeURIComponent('Olá! Quero adicionar mais um tablet (+R$30/mês) no meu Connect Vision.')}`}
+              target="_blank" rel="noopener noreferrer" style={{
+                display: 'inline-flex', alignItems: 'center', gap: 10, textDecoration: 'none', marginTop: 22,
+                background: '#25D366', color: '#fff', borderRadius: 14, padding: '14px 30px', fontSize: 15, fontWeight: 700,
+                boxShadow: '0 10px 28px rgba(37,211,102,0.35)',
+              }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M12 2a10 10 0 0 0-8.6 15.05L2 22l5.1-1.34A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.1.8.83-3-.2-.3A8.2 8.2 0 1 1 12 20.2z" /></svg>
+              Adicionar tablet — falar com especialista
+            </a>
+            <button onClick={async () => { await logout(); navigate('/vision/login', { replace: true }); }} style={{
+              display: 'block', margin: '14px auto 0', background: 'none', border: 'none', color: '#6b7280', fontSize: 13, cursor: 'pointer',
+            }}>Sair</button>
+          </div>
+        </div>
+      )}
 
       {/* Aviso sutil — perto de vencer */}
       {perto && !avisoFechado && (

@@ -23,8 +23,9 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     try { await env.DB.prepare('ALTER TABLE tenants ADD COLUMN asaas_customer_id TEXT').run(); } catch { /* já existe */ }
 
     const body = await request.json().catch(() => ({})) as { documento?: string };
+    try { await env.DB.prepare('ALTER TABLE tenants ADD COLUMN dispositivos_limite INTEGER DEFAULT 1').run(); } catch { /* já existe */ }
     const tenant = await env.DB.prepare(
-      'SELECT id, nome, email, cnpj, asaas_customer_id FROM tenants WHERE id = ?'
+      'SELECT id, nome, email, cnpj, asaas_customer_id, COALESCE(dispositivos_limite, 1) as dispositivos_limite FROM tenants WHERE id = ?'
     ).bind(auth.tenant_id).first<Record<string, unknown>>();
     if (!tenant) return json({ error: 'Estabelecimento não encontrado' }, 404);
 
@@ -49,14 +50,21 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
         .bind(customerId, doc, tenant.id).run();
     }
 
-    // 2) Cria a cobrança Pix
-    const valor = Number(env.ASAAS_VALOR_VISION || 97);
+    // 2) Cria a cobrança Pix — valor = base + R$30 por tablet extra
+    const valorBase = Number(env.ASAAS_VALOR_VISION || 97);
+    const valorExtra = Number(env.ASAAS_VALOR_DISPOSITIVO || 30);
+    const limite = Number(tenant.dispositivos_limite ?? 1) || 1;
+    const extras = Math.max(0, limite - 1);
+    const valor = valorBase + extras * valorExtra;
     const due = hojeSP();
+    const desc = extras > 0
+      ? `Connect Vision — Mensalidade (${limite} tablets)`
+      : 'Connect Vision — Mensalidade';
     const pRes = await fetch(`${base}/payments`, {
       method: 'POST', headers: H,
       body: JSON.stringify({
         customer: customerId, billingType: 'PIX', value: valor, dueDate: due,
-        description: 'Connect Vision — Mensalidade',
+        description: desc,
       }),
     });
     const pData = await pRes.json() as any;
