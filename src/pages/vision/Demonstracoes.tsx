@@ -29,6 +29,19 @@ function AutoFit({ children, dep }: { children: ReactNode; dep?: unknown }) {
 
 type Tab = 'superficie' | 'visao' | 'fotossensivel' | 'espessura' | 'simulacao';
 
+// Telas grandes (tablet grande, desktop) usam 'cover' (imagem cheia, como era antes).
+// Telas menores (10", celular) usam 'contain' pra não cortar a lente nas laterais.
+function useFit(): 'cover' | 'contain' {
+  const calc = (): 'cover' | 'contain' => (typeof window !== 'undefined' && window.innerWidth >= 1150 ? 'cover' : 'contain');
+  const [fit, setFit] = useState<'cover' | 'contain'>(calc);
+  useEffect(() => {
+    const onR = () => setFit(calc());
+    window.addEventListener('resize', onR);
+    return () => window.removeEventListener('resize', onR);
+  }, []);
+  return fit;
+}
+
 // Simulação por câmera desativada até ter as lentes com tratamento em fundo transparente.
 // Virar para true quando as imagens das lentes estiverem prontas.
 const SIMULACAO_ATIVA: boolean = false;
@@ -213,6 +226,7 @@ function getSemSvg(tratamento: string, ambiente: string): ReactNode | null {
 // ─── Sequência de lente (Campos / Adição) ──────────────────────────────────────
 function SequenciaLente({ tipo, onSimular }: { tipo: 'campos' | 'adicao'; onSimular?: (efeito: string) => void }) {
   const [idx, setIdx] = useState(0); // 0..5
+  const fit = useFit();
   const [auto, setAuto] = useState(false);
   const base = tipo === 'campos' ? '/campos' : '/adicao';
   const total = 6;
@@ -249,7 +263,7 @@ function SequenciaLente({ tipo, onSimular }: { tipo: 'campos' | 'adicao'; onSimu
           draggable={false}
           style={{
             position: 'absolute', inset: 0, width: '100%', height: '100%',
-            objectFit: 'contain', objectPosition: 'center',
+            objectFit: fit, objectPosition: 'center',
             opacity: i === idx ? 1 : 0, transition: 'opacity .25s ease',
             pointerEvents: 'none',
           }}
@@ -331,6 +345,7 @@ function SequenciaLente({ tipo, onSimular }: { tipo: 'campos' | 'adicao'; onSimu
 
 // ─── Superfície ───────────────────────────────────────────────────────────────
 function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (efeito: string) => void }) {
+  const fit = useFit();
   const [tipo, setTipo] = useState<'convencional' | 'digital' | 'demonstracao'>(
     initialDemo === 'digital' ? 'digital' : 'convencional'
   );
@@ -374,7 +389,7 @@ function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimula
           draggable={false}
           style={{
             position: 'absolute', inset: 0, width: '100%', height: '100%',
-            objectFit: 'contain', objectPosition: 'center', background: '#05060a',
+            objectFit: fit, objectPosition: 'center', background: '#05060a',
             transition: 'opacity .25s',
           }}
         />
@@ -385,13 +400,13 @@ function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimula
           <img
             src={DEMO_FOTOS.sem}
             draggable={false}
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center', pointerEvents: 'none' }}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: fit, objectPosition: 'center', pointerEvents: 'none' }}
           />
           {/* DIGITAL — overlay esquerda */}
           <img
             src={DEMO_FOTOS.com}
             draggable={false}
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center', clipPath: `inset(0 ${100 - divX}% 0 0)`, pointerEvents: 'none' }}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: fit, objectPosition: 'center', clipPath: `inset(0 ${100 - divX}% 0 0)`, pointerEvents: 'none' }}
           />
 
           {/* Divisor */}
@@ -479,6 +494,7 @@ function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimula
 
 // ─── Visão COM/SEM ─────────────────────────────────────────────────────────────
 function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (efeito: string) => void }) {
+  const fit = useFit();
   const [tratamento, setTratamento] = useState(
     TRATAMENTOS.some(t => t.id === initialDemo) ? initialDemo! : 'ar'
   );
@@ -579,7 +595,7 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
           <img
             src={realPhoto!.sem}
             draggable={false}
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center', pointerEvents: 'none' }}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: fit, objectPosition: 'center', pointerEvents: 'none' }}
           />
         ) : (
           <div style={{ position: 'absolute', inset: 0, background: SCENE_BG[ambiente], filter: effect.semFilter }} />
@@ -590,7 +606,7 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
           <img
             src={realPhoto!.com}
             draggable={false}
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center', clipPath: `inset(0 ${100 - divX}% 0 0)`, pointerEvents: 'none' }}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: fit, objectPosition: 'center', clipPath: `inset(0 ${100 - divX}% 0 0)`, pointerEvents: 'none' }}
           />
         ) : (
           <div style={{ position: 'absolute', inset: 0, background: SCENE_BG[ambiente], filter: effect.comFilter, clipPath: `inset(0 ${100 - divX}% 0 0)` }} />
@@ -763,6 +779,7 @@ const POL_CENAS: Record<'peixe' | 'estrada', { label: string; emoji: string; com
 };
 
 function Polarizado({ onSimular }: { onSimular?: (efeito: string) => void }) {
+  const fit = useFit();
   const [cena, setCena] = useState<'peixe' | 'estrada'>('peixe');
   const [divX, setDivX] = useState(50);
   const [autoDemo, setAutoDemo] = useState(false);
@@ -812,10 +829,10 @@ function Polarizado({ onSimular }: { onSimular?: (efeito: string) => void }) {
       >
         {/* SEM base */}
         <img src={c.sem} draggable={false}
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center', pointerEvents: 'none' }} />
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: fit, objectPosition: 'center', pointerEvents: 'none' }} />
         {/* COM overlay — lado esquerdo */}
         <img src={c.com} draggable={false}
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center', clipPath: `inset(0 ${100 - divX}% 0 0)`, pointerEvents: 'none' }} />
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: fit, objectPosition: 'center', clipPath: `inset(0 ${100 - divX}% 0 0)`, pointerEvents: 'none' }} />
 
         {/* Divisor */}
         <div style={{
@@ -933,6 +950,7 @@ const FOTO_COR = '#8b5cf6';
 const FOTO_PHOTO = { com: '/tratamento-fotossensivel/com.jpg', sem: '/tratamento-fotossensivel/sem.jpg' };
 
 function Fotossensivel({ onSimular }: { onSimular?: (efeito: string) => void }) {
+  const fit = useFit();
   const [divX, setDivX] = useState(50);
   const [autoDemo, setAutoDemo] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -977,10 +995,10 @@ function Fotossensivel({ onSimular }: { onSimular?: (efeito: string) => void }) 
       >
         {/* SEM base */}
         <img src={FOTO_PHOTO.sem} draggable={false}
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center', pointerEvents: 'none' }} />
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: fit, objectPosition: 'center', pointerEvents: 'none' }} />
         {/* COM overlay — lado esquerdo */}
         <img src={FOTO_PHOTO.com} draggable={false}
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center', clipPath: `inset(0 ${100 - divX}% 0 0)`, pointerEvents: 'none' }} />
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: fit, objectPosition: 'center', clipPath: `inset(0 ${100 - divX}% 0 0)`, pointerEvents: 'none' }} />
 
         {/* Divisor */}
         <div style={{
