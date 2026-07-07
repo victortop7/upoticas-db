@@ -256,17 +256,6 @@ function SequenciaLente({ tipo, onSimular }: { tipo: 'campos' | 'adicao'; onSimu
         />
       ))}
 
-      {/* Título + descrição (topo) */}
-      <div style={{
-        position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)',
-        background: 'rgba(0,0,0,.72)', backdropFilter: 'blur(8px)',
-        borderRadius: 14, padding: '12px 22px', textAlign: 'center',
-        width: 'max-content', maxWidth: 440, pointerEvents: 'none',
-      }}>
-        <div style={{ fontSize: 11, color: cor, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 4 }}>{titulo}</div>
-        <div style={{ fontSize: 12.5, color: '#e5e7eb', lineHeight: 1.5 }}>{desc}</div>
-      </div>
-
       {/* Botão Animar — canto inferior esquerdo */}
       <button onClick={() => setAuto(a => !a)} style={{
         position: 'absolute', bottom: 90, left: 16, zIndex: 11,
@@ -289,8 +278,13 @@ function SequenciaLente({ tipo, onSimular }: { tipo: 'campos' | 'adicao'; onSimu
       <div style={{
         display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: 12,
         background: '#0d0d12', borderLeft: '1px solid #1f1f28',
-        width: 142, flexShrink: 0, overflowY: 'auto', zIndex: 10,
+        width: 158, flexShrink: 0, overflowY: 'auto', zIndex: 10,
       }}>
+        {/* Título + descrição no topo do painel */}
+        <div style={{ padding: '4px 14px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)', marginBottom: 6 }}>
+          <div style={{ fontSize: 10.5, color: cor, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 4 }}>{titulo}</div>
+          <div style={{ fontSize: 11, color: '#9ca3af', lineHeight: 1.45 }}>{desc}</div>
+        </div>
         {Array.from({ length: total }).map((_, i) => {
           const ativo = i === idx;
           const label = tipo === 'campos' ? `Campo ${i + 1}` : `Adição ${String(i + 1).padStart(2, '0')}`;
@@ -660,29 +654,25 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
           ✗ SEM
         </div>
 
-        {/* Descrição */}
-        <div style={{
-          position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)',
-          background: 'rgba(0,0,0,.78)', borderRadius: 12, padding: '10px 20px',
-          width: 'max-content', maxWidth: 400, textAlign: 'center', pointerEvents: 'none',
-        }}>
-          <div style={{ fontSize: 10, color: trObj.cor, fontWeight: 700, fontFamily: 'var(--mono)', marginBottom: 4, letterSpacing: '.06em', textTransform: 'uppercase' }}>
-            {trObj.label}
-          </div>
-          <div style={{ fontSize: 12, color: '#9ca3af', lineHeight: 1.5 }}>
-            {effect.description}
-          </div>
-        </div>
       </div>
 
       {/* Painel de tratamentos — ao lado (não sobrepõe a imagem) */}
       <div
         style={{
-          display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: 10,
+          display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: 12,
           background: '#0d0d12', borderLeft: '1px solid #1f1f28',
           width: 172, flexShrink: 0, overflowY: 'auto', zIndex: 10,
         }}
       >
+          {/* Descrição do tratamento atual (no topo do painel) */}
+          <div style={{ padding: '4px 14px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)', marginBottom: 6 }}>
+            <div style={{ fontSize: 10, color: trObj.cor, fontWeight: 700, fontFamily: 'var(--mono)', marginBottom: 4, letterSpacing: '.06em', textTransform: 'uppercase' }}>
+              {trObj.label}
+            </div>
+            <div style={{ fontSize: 11, color: '#9ca3af', lineHeight: 1.45 }}>
+              {effect.description}
+            </div>
+          </div>
           {TRATAMENTOS.map(t => (
             <button key={t.id} onClick={() => setTratamento(t.id)} style={{
               background: tratamento === t.id ? 'rgba(255,255,255,0.12)' : 'transparent',
@@ -878,29 +868,25 @@ function Polarizado({ onSimular }: { onSimular?: (efeito: string) => void }) {
           ✗ SEM
         </div>
 
-        {/* Descrição */}
-        <div style={{
-          position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)',
-          background: 'rgba(0,0,0,.78)', borderRadius: 12, padding: '10px 20px',
-          width: 'max-content', maxWidth: 400, textAlign: 'center', pointerEvents: 'none',
-        }}>
-          <div style={{ fontSize: 10, color: POL_COR, fontWeight: 700, fontFamily: 'var(--mono)', marginBottom: 4, letterSpacing: '.06em', textTransform: 'uppercase' }}>
-            Polarizado · {c.label}
-          </div>
-          <div style={{ fontSize: 12, color: '#9ca3af', lineHeight: 1.5 }}>
-            {c.desc}
-          </div>
-        </div>
       </div>
 
       {/* Painel de cenas — ao lado (não sobrepõe a imagem) */}
       <div
         style={{
-          display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: 14,
+          display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: 12,
           background: '#0d0d12', borderLeft: '1px solid #1f1f28',
-          width: 150, flexShrink: 0, overflowY: 'auto', zIndex: 10,
+          width: 158, flexShrink: 0, overflowY: 'auto', zIndex: 10,
         }}
       >
+          {/* Descrição da cena atual */}
+          <div style={{ padding: '4px 14px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)', marginBottom: 6 }}>
+            <div style={{ fontSize: 10, color: POL_COR, fontWeight: 700, fontFamily: 'var(--mono)', marginBottom: 4, letterSpacing: '.06em', textTransform: 'uppercase' }}>
+              Polarizado · {c.label}
+            </div>
+            <div style={{ fontSize: 11, color: '#9ca3af', lineHeight: 1.45 }}>
+              {c.desc}
+            </div>
+          </div>
           {(['peixe', 'estrada'] as const).map(id => {
             const ativo = cena === id;
             const o = POL_CENAS[id];
