@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import PixModal from '../../components/PixModal';
 import { api } from '../../lib/api';
 import { getDeviceId } from '../../lib/device';
+import ForcarPaisagem from '../../components/ForcarPaisagem';
 
 const INATIVIDADE_MS = 30 * 60 * 1000; // 30 minutos
 const AVISO_DIAS = 3; // aviso sutil a partir de 3 dias antes de vencer
@@ -111,6 +112,8 @@ export default function VisionLayout() {
       display: 'flex', flexDirection: 'column', overflow: 'hidden', userSelect: 'none',
     }}>
       <Outlet />
+
+      <ForcarPaisagem />
 
       {/* Deslogado por entrar em outro tablet (modo rotacionar) */}
       {kicked && (

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { login } from '../../lib/auth';
 import { useAuth } from '../../hooks/useAuth';
 import { api } from '../../lib/api';
+import ForcarPaisagem from '../../components/ForcarPaisagem';
 
 // Credenciais salvas no tablet (login de 1 toque). Chave local.
 const CRED_KEY = 'cv_creds';
@@ -75,7 +76,8 @@ export default function VisionLogin() {
   }
 
   const inp: React.CSSProperties = {
-    width: '100%', padding: '13px 15px', fontSize: 15, borderRadius: 12,
+    width: '100%', padding: compact ? '8px 12px' : '13px 15px', fontSize: compact ? 13.5 : 15,
+    borderRadius: compact ? 9 : 12,
     border: '1px solid #d1d1d6', background: '#fff', color: '#1c1c1e',
     outline: 'none', boxSizing: 'border-box',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -89,6 +91,7 @@ export default function VisionLogin() {
       background: '#060a16',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     }}>
+      <ForcarPaisagem />
       {/* Fundo futurista */}
       <div style={{ position: 'absolute', inset: 0, background: '#060a16', zIndex: 0 }} />
       {/* Glows radiais */}
@@ -128,7 +131,7 @@ export default function VisionLogin() {
           <div style={{ fontSize: compact ? 19 : 25, fontWeight: 700, color: '#f0f6ff', letterSpacing: '-0.5px' }}>
             Connect <span style={{ color: '#3ba6ff' }}>Vision</span>
           </div>
-          <div style={{ fontSize: compact ? 11 : 13, color: 'rgba(180,205,255,0.6)', marginTop: 3, letterSpacing: '0.02em' }}>Simulador para óticas</div>
+          <div style={{ display: compact ? 'none' : 'block', fontSize: 13, color: 'rgba(180,205,255,0.6)', marginTop: 3, letterSpacing: '0.02em' }}>Simulador para óticas</div>
         </div>
 
         {/* Card */}
@@ -157,23 +160,23 @@ export default function VisionLogin() {
               }}>Entrar com outra conta</button>
             </div>
           ) : (
-            <form onSubmit={entrar} autoComplete="on" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <form onSubmit={entrar} autoComplete="on" style={{ display: 'flex', flexDirection: 'column', gap: compact ? 8 : 14 }}>
               <div>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#3a3a3c', marginBottom: 6 }}>E-mail</label>
+                <label style={{ display: 'block', fontSize: compact ? 11.5 : 13, fontWeight: 500, color: '#3a3a3c', marginBottom: compact ? 3 : 6 }}>E-mail</label>
                 <input type="email" name="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="seu@email.com"
                   style={inp} onFocus={e => e.target.style.borderColor = '#007aff'} onBlur={e => e.target.style.borderColor = '#d1d1d6'} />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#3a3a3c', marginBottom: 6 }}>Senha</label>
+                <label style={{ display: 'block', fontSize: compact ? 11.5 : 13, fontWeight: 500, color: '#3a3a3c', marginBottom: compact ? 3 : 6 }}>Senha</label>
                 <input type="password" name="password" autoComplete="current-password" value={senha} onChange={e => setSenha(e.target.value)} required placeholder="••••••••"
                   style={inp} onFocus={e => e.target.style.borderColor = '#007aff'} onBlur={e => e.target.style.borderColor = '#d1d1d6'} />
               </div>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: '#3a3a3c', cursor: 'pointer' }}>
-                <input type="checkbox" checked={lembrar} onChange={e => setLembrar(e.target.checked)} style={{ width: 18, height: 18, accentColor: '#007aff', cursor: 'pointer' }} />
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: compact ? 12 : 14, color: '#3a3a3c', cursor: 'pointer' }}>
+                <input type="checkbox" checked={lembrar} onChange={e => setLembrar(e.target.checked)} style={{ width: compact ? 15 : 18, height: compact ? 15 : 18, accentColor: '#007aff', cursor: 'pointer' }} />
                 Salvar login neste dispositivo
               </label>
               <button type="submit" disabled={loading} style={{
-                width: '100%', padding: '14px', fontSize: 16, fontWeight: 600, borderRadius: 12, border: 'none',
+                width: '100%', padding: compact ? '10px' : '14px', fontSize: compact ? 14 : 16, fontWeight: 600, borderRadius: compact ? 9 : 12, border: 'none',
                 background: loading ? '#9dc7ff' : '#007aff', color: '#fff', cursor: loading ? 'default' : 'pointer', marginTop: 2,
                 WebkitTapHighlightColor: 'transparent',
               }}>{loading ? 'Entrando…' : 'Entrar'}</button>
@@ -182,12 +185,12 @@ export default function VisionLogin() {
         </div>
 
         <button onClick={() => { setModoTeste(true); setTErro(''); }} style={{
-          display: 'block', margin: '16px auto 0', background: 'rgba(120,180,255,0.12)',
-          border: '1px solid rgba(120,180,255,0.3)', borderRadius: 999, padding: '9px 18px',
-          color: '#bcd6ff', fontSize: 13, fontWeight: 600, cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
+          display: 'block', margin: compact ? '9px auto 0' : '16px auto 0', background: 'rgba(120,180,255,0.12)',
+          border: '1px solid rgba(120,180,255,0.3)', borderRadius: 999, padding: compact ? '7px 14px' : '9px 18px',
+          color: '#bcd6ff', fontSize: compact ? 12 : 13, fontWeight: 600, cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
         }}>🎁 Tenho um código de teste grátis</button>
 
-        <div style={{ textAlign: 'center', marginTop: 18, fontSize: 12, color: 'rgba(160,190,255,0.5)' }}>
+        <div style={{ display: compact ? 'none' : 'block', textAlign: 'center', marginTop: 18, fontSize: 12, color: 'rgba(160,190,255,0.5)' }}>
           Conexão Óticas · Connect Vision
         </div>
       </div>
