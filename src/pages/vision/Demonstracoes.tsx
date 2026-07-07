@@ -540,7 +540,7 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
   }
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'row', overflow: 'hidden' }}>
       {/* Comparador */}
       <div
         ref={containerRef}
@@ -551,7 +551,7 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
         onTouchStart={() => { dragging.current = true; }}
         onTouchMove={e => move(e.touches[0].clientX)}
         onTouchEnd={() => { dragging.current = false; }}
-        style={{ flex: 1, position: 'relative', cursor: 'col-resize', userSelect: 'none', overflow: 'hidden' }}
+        style={{ flex: 1, position: 'relative', cursor: 'col-resize', userSelect: 'none', overflow: 'hidden', minWidth: 0 }}
       >
         {/* SEM base */}
         {useRealPhoto ? (
@@ -646,36 +646,35 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
             {effect.description}
           </div>
         </div>
-        {/* Painel de tratamentos — overlay vertical direito */}
-        <div
-          onMouseDown={e => e.stopPropagation()}
-          onTouchStart={e => e.stopPropagation()}
-          style={{
-            position: 'absolute', top: 0, right: 0, bottom: 0,
-            display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: 48,
-            background: 'linear-gradient(to left, rgba(0,0,0,0.45) 55%, transparent)',
-            paddingRight: 4, zIndex: 10, minWidth: 160,
-          }}
-        >
+      </div>
+
+      {/* Painel de tratamentos — ao lado (não sobrepõe a imagem) */}
+      <div
+        style={{
+          display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: 10,
+          background: '#0d0d12', borderLeft: '1px solid #1f1f28',
+          width: 148, flexShrink: 0, overflowY: 'auto', zIndex: 10,
+        }}
+      >
           {TRATAMENTOS.map(t => (
             <button key={t.id} onClick={() => setTratamento(t.id)} style={{
               background: tratamento === t.id ? 'rgba(255,255,255,0.12)' : 'transparent',
               border: 'none', cursor: 'pointer',
-              padding: '12px 18px 12px 14px',
+              padding: '8px 12px',
               textAlign: 'left', width: '100%',
-              display: 'flex', alignItems: 'center', gap: 10,
+              display: 'flex', alignItems: 'center', gap: 8,
               transition: 'background .15s',
               WebkitTapHighlightColor: 'transparent',
             }}>
               <div style={{
-                width: 3, height: 18, borderRadius: 2, flexShrink: 0,
+                width: 3, height: 15, borderRadius: 2, flexShrink: 0,
                 background: tratamento === t.id ? t.cor : 'transparent',
                 transition: 'background .15s',
               }} />
               <span style={{
-                fontSize: 14, fontWeight: tratamento === t.id ? 700 : 400,
-                fontFamily: 'var(--sans)', letterSpacing: '.07em', textTransform: 'uppercase',
-                color: tratamento === t.id ? '#ffffff' : 'rgba(255,255,255,0.45)',
+                fontSize: 11.5, fontWeight: tratamento === t.id ? 700 : 400,
+                fontFamily: 'var(--sans)', letterSpacing: '.05em', textTransform: 'uppercase',
+                color: tratamento === t.id ? '#ffffff' : 'rgba(255,255,255,0.5)',
                 transition: 'color .15s',
               }}>{t.label}</span>
             </button>
@@ -724,7 +723,6 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
               ))}
             </>
           )}
-        </div>
       </div>
     </div>
   );
