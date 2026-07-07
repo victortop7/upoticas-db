@@ -9,4 +9,5 @@ export interface Env {
   ASAAS_API_KEY?: string;
   ASAAS_BASE_URL?: string;        // default: https://api.asaas.com/v3 (produção)
   ASAAS_VALOR_VISION?: string;    // default: 97
+  ASAAS_WEBHOOK_TOKEN?: string;   // token de autenticação do webhook (defina o mesmo no Asaas)
 }
