@@ -104,7 +104,7 @@ export default function PixModal({ onClose, onPago, dismissible = true, titulo, 
               </div>
               <input value={documento} onChange={e => setDocumento(e.target.value.replace(/\D/g, '').slice(0, 14))}
                 inputMode="numeric" placeholder="CPF ou CNPJ (só números)"
-                style={{ width: '100%', padding: '13px 15px', fontSize: 15, borderRadius: 12, border: '1px solid #cbd5e1', outline: 'none', boxSizing: 'border-box' }} />
+                style={{ width: '100%', padding: '13px 15px', fontSize: 15, borderRadius: 12, border: '1px solid #cbd5e1', outline: 'none', boxSizing: 'border-box', color: '#1c1c1e', background: '#fff', fontFamily: 'inherit' }} />
               <button onClick={() => gerar(documento)} disabled={documento.length < 11} style={{
                 width: '100%', marginTop: 14, background: documento.length < 11 ? '#a7d8b6' : '#1faf4a', color: '#fff',
                 border: 'none', borderRadius: 12, padding: '14px', fontSize: 15, fontWeight: 700, cursor: documento.length < 11 ? 'default' : 'pointer',
