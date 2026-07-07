@@ -1,5 +1,33 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+
+// Encolhe o conteúdo para caber na altura/largura disponível (sem rolar) — celular e tablet
+function AutoFit({ children, dep }: { children: React.ReactNode; dep: unknown }) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+
+  useLayoutEffect(() => {
+    const calc = () => {
+      const wrap = wrapRef.current, inner = innerRef.current;
+      if (!wrap || !inner) return;
+      const s = Math.min(1, (wrap.clientHeight - 4) / inner.scrollHeight, (wrap.clientWidth - 4) / inner.scrollWidth);
+      setScale(s > 0 ? s : 1);
+    };
+    calc();
+    const t = setTimeout(calc, 60); // recalcula após render (imagens/canvas)
+    window.addEventListener('resize', calc);
+    return () => { clearTimeout(t); window.removeEventListener('resize', calc); };
+  }, [dep]);
+
+  return (
+    <div ref={wrapRef} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', width: '100%' }}>
+      <div ref={innerRef} style={{ transform: `scale(${scale})`, transformOrigin: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '8px 18px' }}>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 // ─── Paleta / estilo ────────────────────────────────────────────────────────
 const AZUL = '#1e3a8a';          // título
@@ -160,7 +188,7 @@ export default function TesteVisao() {
 
   return (
     <div style={{
-      position: 'absolute', inset: 0, overflow: 'auto',
+      position: 'absolute', inset: 0, overflow: 'hidden',
       background: 'linear-gradient(120deg, #eef3fb 0%, #dbe6f7 45%, #cdd9ee 100%)',
       color: '#1f2937',
       fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif",
@@ -188,8 +216,8 @@ export default function TesteVisao() {
         }}>MENU</button>
       </div>
 
-      {/* Conteúdo */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '10px 20px 40px', gap: 18 }}>
+      {/* Conteúdo — auto-ajusta para caber sem rolar */}
+      <AutoFit dep={`${step}-${placaIdx}`}>
 
         {/* ── DADOS INICIAIS ── */}
         {step === 'dados' && (
@@ -331,7 +359,7 @@ export default function TesteVisao() {
             respCores={respCores} onReiniciar={reiniciar} onMenu={() => navigate('/vision')}
           />
         )}
-      </div>
+      </AutoFit>
     </div>
   );
 }
