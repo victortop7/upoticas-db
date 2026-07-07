@@ -446,7 +446,7 @@ function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimula
 
       {/* Toggle — coluna lateral (não sobrepõe a imagem) */}
       <div
-        style={{ display: 'flex', flexDirection: 'column', gap: 8, justifyContent: 'center', background: '#0d0d12', borderLeft: '1px solid #1f1f28', width: 156, flexShrink: 0, padding: '12px', zIndex: 10 }}
+        style={{ display: 'flex', flexDirection: 'column', gap: 8, justifyContent: 'center', background: '#0d0d12', borderLeft: '1px solid #1f1f28', width: 180, flexShrink: 0, padding: '12px 10px', zIndex: 10 }}
       >
         {([
           { id: 'convencional',  label: 'Convencional'  },
@@ -454,11 +454,11 @@ function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimula
           { id: 'demonstracao',  label: 'Demonstração'  },
         ] as const).map(t => (
           <button key={t.id} onClick={() => setTipo(t.id)} style={{
-            padding: '10px 22px', borderRadius: 8, border: 'none', cursor: 'pointer',
+            padding: '10px 8px', borderRadius: 8, border: 'none', cursor: 'pointer', width: '100%',
             background: tipo === t.id ? 'rgba(255,255,255,0.92)' : 'rgba(0,0,0,0.45)',
             color: tipo === t.id ? '#111827' : 'rgba(255,255,255,0.65)',
-            fontSize: 13, fontWeight: 700, fontFamily: 'var(--sans)',
-            textTransform: 'uppercase', letterSpacing: '.07em',
+            fontSize: 12, fontWeight: 700, fontFamily: 'var(--sans)',
+            textTransform: 'uppercase', letterSpacing: '.03em', whiteSpace: 'nowrap',
             boxShadow: tipo === t.id ? '0 2px 12px rgba(0,0,0,.25)' : 'none',
             transition: 'all .15s',
             WebkitTapHighlightColor: 'transparent',
@@ -680,7 +680,7 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
         style={{
           display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: 10,
           background: '#0d0d12', borderLeft: '1px solid #1f1f28',
-          width: 148, flexShrink: 0, overflowY: 'auto', zIndex: 10,
+          width: 172, flexShrink: 0, overflowY: 'auto', zIndex: 10,
         }}
       >
           {TRATAMENTOS.map(t => (
@@ -700,7 +700,7 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
               }} />
               <span style={{
                 fontSize: 11.5, fontWeight: tratamento === t.id ? 700 : 400,
-                fontFamily: 'var(--sans)', letterSpacing: '.05em', textTransform: 'uppercase',
+                fontFamily: 'var(--sans)', letterSpacing: '.03em', textTransform: 'uppercase', whiteSpace: 'nowrap',
                 color: tratamento === t.id ? '#ffffff' : 'rgba(255,255,255,0.5)',
                 transition: 'color .15s',
               }}>{t.label}</span>
