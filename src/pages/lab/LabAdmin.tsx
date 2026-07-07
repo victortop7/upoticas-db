@@ -123,6 +123,17 @@ interface Lead {
   created_at: string;
 }
 
+interface Codigo {
+  id: string;
+  codigo: string;
+  dias: number;
+  usado: number;
+  usado_por: string | null;
+  usado_em: string | null;
+  nome_contato: string | null;
+  criado_em: string;
+}
+
 const R = {
   bg: '#c8c4b0', panel: '#d4d0c8', alt: '#dedad2', bdr: '#b0aca4',
   hdr: 'linear-gradient(90deg,#005500,#008800)', hdrTxt: '#ccffcc', hdrBdr: '#007700',
@@ -158,7 +169,11 @@ export default function LabAdmin() {
   const [pinOk, setPinOk] = useState(() => sessionStorage.getItem('admin_pin_ok') === '1');
   const [secret, setSecret] = useState(() => sessionStorage.getItem('admin_secret') || '');
   const [authed, setAuthed] = useState(false);
-  const [aba, setAba] = useState<'licencas' | 'leads'>('licencas');
+  const [aba, setAba] = useState<'licencas' | 'leads' | 'codigos'>('licencas');
+  const [codigos, setCodigos] = useState<Codigo[]>([]);
+  const [novoNome, setNovoNome] = useState('');
+  const [gerando, setGerando] = useState(false);
+  const [copiado, setCopiado] = useState<string | null>(null);
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(false);
@@ -220,12 +235,14 @@ export default function LabAdmin() {
   const load = useCallback(async (s: string) => {
     setLoading(true); setErro('');
     try {
-      const [tenantsData, leadsData] = await Promise.all([
+      const [tenantsData, leadsData, codigosData] = await Promise.all([
         adminRequest<Tenant[]>('/admin/licencas', s),
         adminRequest<Lead[]>('/admin/leads', s),
+        adminRequest<Codigo[]>('/admin/codigos', s).catch(() => [] as Codigo[]),
       ]);
       setTenants(tenantsData);
       setLeads(leadsData);
+      setCodigos(codigosData);
       setAuthed(true);
       sessionStorage.setItem('admin_secret', s);
     } catch {
@@ -259,6 +276,37 @@ export default function LabAdmin() {
       setErro(e instanceof Error ? e.message : 'Erro ao salvar');
     }
     setSaving(false);
+  }
+
+  async function gerarCodigo() {
+    setGerando(true); setErro('');
+    try {
+      await adminRequest('/admin/codigos', secret, {
+        method: 'POST',
+        body: JSON.stringify({ nome_contato: novoNome || undefined }),
+      });
+      setNovoNome('');
+      load(secret);
+    } catch (e: unknown) {
+      setErro(e instanceof Error ? e.message : 'Erro ao gerar código');
+    }
+    setGerando(false);
+  }
+
+  async function excluirCodigo(id: string) {
+    if (!confirm('Excluir este código?')) return;
+    try {
+      await adminRequest(`/admin/codigos?id=${id}`, secret, { method: 'DELETE' });
+      load(secret);
+    } catch (e: unknown) {
+      setErro(e instanceof Error ? e.message : 'Erro ao excluir');
+    }
+  }
+
+  function copiarCodigo(codigo: string) {
+    navigator.clipboard?.writeText(codigo).then(() => {
+      setCopiado(codigo); setTimeout(() => setCopiado(null), 1800);
+    });
   }
 
   function openEdit(t: Tenant) {
@@ -386,10 +434,12 @@ export default function LabAdmin() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', gap: '8px', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', gap: '4px' }}>
-          {(['licencas', 'leads'] as const).map(a => (
+          {(['licencas', 'leads', 'codigos'] as const).map(a => (
             <button key={a} onClick={() => setAba(a)}
               style={{ padding: '5px 14px', fontSize: '12px', fontWeight: '700', letterSpacing: '0.5px', cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase', border: `2px outset ${R.hdrBdr}`, background: aba === a ? R.hdr : R.alt, color: aba === a ? R.hdrTxt : '#000' }}>
-              {a === 'licencas' ? `LICENÇAS (${tenants.length})` : `LEADS${novosLeads > 0 ? ` ★${novosLeads} NOVOS` : ` (${leads.length})`}`}
+              {a === 'licencas' ? `LICENÇAS (${tenants.length})`
+                : a === 'leads' ? `LEADS${novosLeads > 0 ? ` ★${novosLeads} NOVOS` : ` (${leads.length})`}`
+                : `TESTE GRÁTIS (${codigos.filter(c => !c.usado).length})`}
             </button>
           ))}
         </div>
@@ -529,6 +579,59 @@ export default function LabAdmin() {
               })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* ── ABA TESTE GRÁTIS (códigos) ── */}
+      {aba === 'codigos' && (
+        <div>
+          <div style={{ background: R.panel, border: `1px solid ${R.bdr}`, padding: '10px', marginBottom: '10px', display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '11px', fontWeight: '700', color: '#333' }}>Gerar código de 15 dias grátis:</span>
+            <input value={novoNome} onChange={e => setNovoNome(e.target.value)} placeholder="Pra quem? (opcional)" style={{ ...INP, width: '200px' }} />
+            <button onClick={gerarCodigo} disabled={gerando} style={{ padding: '6px 16px', fontSize: '11px', fontWeight: '700', background: R.hdr, color: R.hdrTxt, border: `2px outset ${R.hdrBdr}`, cursor: gerando ? 'default' : 'pointer', fontFamily: 'inherit' }}>
+              {gerando ? 'GERANDO…' : '+ GERAR CÓDIGO'}
+            </button>
+          </div>
+
+          <div style={{ background: '#fff', border: `1px solid ${R.bdr}`, overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
+              <thead>
+                <tr style={{ background: R.alt }}>
+                  {['CÓDIGO', 'STATUS', 'PRA QUEM', 'USADO POR', 'CRIADO EM', 'AÇÕES'].map(h => (
+                    <th key={h} style={{ padding: '6px 10px', textAlign: 'left', fontWeight: '700', color: '#333', borderBottom: `1px solid ${R.bdr}`, whiteSpace: 'nowrap' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {codigos.length === 0 && (
+                  <tr><td colSpan={6} style={{ padding: '16px', textAlign: 'center', color: '#888' }}>Nenhum código gerado ainda.</td></tr>
+                )}
+                {codigos.map(c => (
+                  <tr key={c.id} style={{ borderBottom: '1px solid #eee', opacity: c.usado ? 0.6 : 1 }}>
+                    <td style={{ padding: '6px 10px', fontFamily: 'monospace', fontWeight: '700', fontSize: '13px', letterSpacing: '0.5px' }}>{c.codigo}</td>
+                    <td style={{ padding: '6px 10px' }}>
+                      {c.usado
+                        ? <span style={{ color: '#999', fontWeight: '700' }}>⚫ USADO</span>
+                        : <span style={{ color: '#008800', fontWeight: '700' }}>🟢 DISPONÍVEL</span>}
+                    </td>
+                    <td style={{ padding: '6px 10px' }}>{c.nome_contato || '—'}</td>
+                    <td style={{ padding: '6px 10px' }}>{c.usado_por ? `${c.usado_por}${c.usado_em ? ` (${c.usado_em.slice(0, 10)})` : ''}` : '—'}</td>
+                    <td style={{ padding: '6px 10px', color: '#666' }}>{c.criado_em ? c.criado_em.slice(0, 10) : '—'}</td>
+                    <td style={{ padding: '6px 10px', whiteSpace: 'nowrap' }}>
+                      {!c.usado && (
+                        <button onClick={() => copiarCodigo(c.codigo)} style={{ padding: '3px 10px', fontSize: '10px', fontWeight: '700', background: copiado === c.codigo ? '#008800' : R.alt, color: copiado === c.codigo ? '#fff' : '#000', border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit', marginRight: '4px' }}>
+                          {copiado === c.codigo ? '✓ COPIADO' : 'COPIAR'}
+                        </button>
+                      )}
+                      <button onClick={() => excluirCodigo(c.id)} style={{ padding: '3px 10px', fontSize: '10px', fontWeight: '700', background: '#ffdddd', color: '#aa0000', border: '1px outset #cc8888', cursor: 'pointer', fontFamily: 'inherit' }}>
+                        EXCLUIR
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

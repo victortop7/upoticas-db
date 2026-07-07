@@ -2,9 +2,12 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login } from '../../lib/auth';
 import { useAuth } from '../../hooks/useAuth';
+import { api } from '../../lib/api';
 
 // Credenciais salvas no tablet (login de 1 toque). Chave local.
 const CRED_KEY = 'cv_creds';
+// WhatsApp do especialista (Victor) para solicitar código de teste grátis
+const ESPECIALISTA_WA = '5585991507887';
 
 function loadCreds(): { email: string; senha: string } | null {
   try { const r = localStorage.getItem(CRED_KEY); return r ? JSON.parse(r) : null; } catch { return null; }
@@ -21,7 +24,31 @@ export default function VisionLogin() {
   const [loading, setLoading] = useState(false);
   const [expandir, setExpandir] = useState(!salvo); // se já tem login salvo, mostra o botão rápido primeiro
 
+  // Teste grátis por código
+  const [modoTeste, setModoTeste] = useState(false);
+  const [tCodigo, setTCodigo] = useState('');
+  const [tOtica, setTOtica] = useState('');
+  const [tNome, setTNome] = useState('');
+  const [tEmail, setTEmail] = useState('');
+  const [tSenha, setTSenha] = useState('');
+  const [tErro, setTErro] = useState('');
+  const [tLoading, setTLoading] = useState(false);
+
   useEffect(() => { document.title = 'Connect Vision — Entrar'; }, []);
+
+  async function ativarTeste(e?: React.FormEvent) {
+    e?.preventDefault();
+    setTErro(''); setTLoading(true);
+    try {
+      const data = await api.post('/promo/resgatar', {
+        codigo: tCodigo, nome_otica: tOtica, nome: tNome, email: tEmail, senha: tSenha,
+      });
+      setAuth(data as never);
+      navigate('/vision', { replace: true });
+    } catch (err: unknown) {
+      setTErro(err instanceof Error ? err.message : 'Não foi possível ativar o código');
+    } finally { setTLoading(false); }
+  }
 
   async function entrar(e?: React.FormEvent) {
     e?.preventDefault();
@@ -143,10 +170,67 @@ export default function VisionLogin() {
           )}
         </div>
 
+        <button onClick={() => { setModoTeste(true); setTErro(''); }} style={{
+          display: 'block', margin: '16px auto 0', background: 'rgba(120,180,255,0.12)',
+          border: '1px solid rgba(120,180,255,0.3)', borderRadius: 999, padding: '9px 18px',
+          color: '#bcd6ff', fontSize: 13, fontWeight: 600, cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
+        }}>🎁 Tenho um código de teste grátis</button>
+
         <div style={{ textAlign: 'center', marginTop: 18, fontSize: 12, color: 'rgba(160,190,255,0.5)' }}>
           Conexão Óticas · Connect Vision
         </div>
       </div>
+
+      {/* Modal — Teste grátis por código */}
+      {modoTeste && (
+        <div onClick={() => setModoTeste(false)} style={{
+          position: 'fixed', inset: 0, background: 'rgba(4,9,22,0.8)', zIndex: 50,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+          backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
+        }}>
+          <form onClick={e => e.stopPropagation()} onSubmit={ativarTeste} style={{
+            width: 380, maxWidth: '94vw', background: '#fff', borderRadius: 20, padding: 24,
+            boxShadow: '0 24px 70px rgba(0,0,0,0.5)', maxHeight: '92vh', overflowY: 'auto',
+          }}>
+            <div style={{ textAlign: 'center', marginBottom: 16 }}>
+              <div style={{ fontSize: 30 }}>🎁</div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: '#1c1c1e' }}>15 dias grátis</div>
+              <div style={{ fontSize: 13, color: '#8e8e93', marginTop: 2 }}>Digite o código que você recebeu do especialista.</div>
+            </div>
+
+            {tErro && (
+              <div style={{ background: 'rgba(255,59,48,0.1)', border: '1px solid rgba(255,59,48,0.3)', borderRadius: 10, padding: '10px 14px', marginBottom: 14, fontSize: 13, color: '#d70015', fontWeight: 500 }}>{tErro}</div>
+            )}
+
+            <input value={tCodigo} onChange={e => setTCodigo(e.target.value.toUpperCase())} placeholder="Código (ex: VISION-XXXX)" required
+              style={{ ...inp, textAlign: 'center', fontWeight: 700, letterSpacing: '1px', marginBottom: 12 }} />
+
+            <div style={{ fontSize: 11, color: '#8e8e93', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.05em', margin: '4px 0 8px' }}>Seus dados</div>
+            <input value={tOtica} onChange={e => setTOtica(e.target.value)} placeholder="Nome da ótica" style={{ ...inp, marginBottom: 10 }} />
+            <input value={tNome} onChange={e => setTNome(e.target.value)} placeholder="Seu nome" style={{ ...inp, marginBottom: 10 }} />
+            <input type="email" value={tEmail} onChange={e => setTEmail(e.target.value)} placeholder="E-mail" required autoComplete="email" style={{ ...inp, marginBottom: 10 }} />
+            <input type="password" value={tSenha} onChange={e => setTSenha(e.target.value)} placeholder="Crie uma senha (mín. 6)" required autoComplete="new-password" style={{ ...inp, marginBottom: 16 }} />
+
+            <button type="submit" disabled={tLoading} style={{
+              width: '100%', padding: 14, fontSize: 16, fontWeight: 700, borderRadius: 12, border: 'none',
+              background: tLoading ? '#9dc7ff' : '#1faf4a', color: '#fff', cursor: tLoading ? 'default' : 'pointer',
+            }}>{tLoading ? 'Ativando…' : 'Ativar 15 dias grátis'}</button>
+
+            <a href={`https://wa.me/${ESPECIALISTA_WA}?text=${encodeURIComponent('Olá! Quero testar o Connect Vision grátis por 15 dias. Pode me passar um código?')}`}
+              target="_blank" rel="noopener noreferrer" style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, textDecoration: 'none',
+                marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid #25D366', color: '#128a3a', fontSize: 14, fontWeight: 700,
+              }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#25D366"><path d="M12 2a10 10 0 0 0-8.6 15.05L2 22l5.1-1.34A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.1.8.83-3-.2-.3A8.2 8.2 0 1 1 12 20.2z" /></svg>
+              Não tenho código — falar com especialista
+            </a>
+
+            <button type="button" onClick={() => setModoTeste(false)} style={{
+              display: 'block', margin: '12px auto 0', background: 'none', border: 'none', color: '#8e8e93', fontSize: 13, cursor: 'pointer',
+            }}>Voltar ao login</button>
+          </form>
+        </div>
+      )}
 
       <style>{`
         @keyframes orb1 {
