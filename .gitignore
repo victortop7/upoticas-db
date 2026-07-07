@@ -17,6 +17,12 @@ dist-ssr
 .env
 .env.*
 
+# Android signing (NUNCA commitar a chave nem as senhas)
+android/keystore.properties
+android/*.keystore
+*.keystore
+*.jks
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
