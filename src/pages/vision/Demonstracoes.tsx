@@ -213,7 +213,8 @@ function SequenciaLente({ tipo, onSimular }: { tipo: 'campos' | 'adicao'; onSimu
   }, [auto]);
 
   return (
-    <div style={{ flex: 1, position: 'relative', overflow: 'hidden', background: '#0a0a0c' }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'row', overflow: 'hidden' }}>
+      <div style={{ flex: 1, position: 'relative', overflow: 'hidden', background: '#0a0a0c', minWidth: 0 }}>
       {/* Imagens empilhadas (crossfade) */}
       {Array.from({ length: total }).map((_, i) => (
         <img
@@ -256,13 +257,13 @@ function SequenciaLente({ tipo, onSimular }: { tipo: 'campos' | 'adicao'; onSimu
           {auto ? 'Pausar' : 'Animar'}
         </span>
       </button>
+      </div>
 
-      {/* Painel de níveis — overlay vertical direito (igual aos tratamentos) */}
+      {/* Painel de níveis — ao lado (não sobrepõe a imagem) */}
       <div style={{
-        position: 'absolute', top: 0, right: 0, bottom: 0,
-        display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: 48,
-        background: 'linear-gradient(to left, rgba(0,0,0,0.45) 55%, transparent)',
-        paddingRight: 4, zIndex: 10, minWidth: 150,
+        display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: 12,
+        background: '#0d0d12', borderLeft: '1px solid #1f1f28',
+        width: 142, flexShrink: 0, overflowY: 'auto', zIndex: 10,
       }}>
         {Array.from({ length: total }).map((_, i) => {
           const ativo = i === idx;
@@ -271,19 +272,19 @@ function SequenciaLente({ tipo, onSimular }: { tipo: 'campos' | 'adicao'; onSimu
             <button key={i} onClick={() => { setAuto(false); setIdx(i); }} style={{
               background: ativo ? 'rgba(255,255,255,0.12)' : 'transparent',
               border: 'none', cursor: 'pointer',
-              padding: '12px 18px 12px 14px',
+              padding: '9px 12px',
               textAlign: 'left', width: '100%',
-              display: 'flex', alignItems: 'center', gap: 10,
+              display: 'flex', alignItems: 'center', gap: 8,
               transition: 'background .15s', WebkitTapHighlightColor: 'transparent',
             }}>
               <div style={{
-                width: 3, height: 18, borderRadius: 2, flexShrink: 0,
+                width: 3, height: 15, borderRadius: 2, flexShrink: 0,
                 background: ativo ? cor : 'transparent', transition: 'background .15s',
               }} />
               <span style={{
-                fontSize: 14, fontWeight: ativo ? 700 : 400,
-                fontFamily: 'var(--sans)', letterSpacing: '.07em', textTransform: 'uppercase',
-                color: ativo ? '#ffffff' : 'rgba(255,255,255,0.45)', transition: 'color .15s',
+                fontSize: 12, fontWeight: ativo ? 700 : 400,
+                fontFamily: 'var(--sans)', letterSpacing: '.05em', textTransform: 'uppercase',
+                color: ativo ? '#ffffff' : 'rgba(255,255,255,0.5)', transition: 'color .15s',
               }}>{label}</span>
             </button>
           );
@@ -333,6 +334,7 @@ function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimula
   }
 
   return (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'row', overflow: 'hidden' }}>
     <div
       ref={containerRef}
       onMouseDown={() => { if (tipo === 'demonstracao') dragging.current = true; }}
@@ -342,7 +344,7 @@ function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimula
       onTouchStart={() => { if (tipo === 'demonstracao') dragging.current = true; }}
       onTouchMove={e => { if (dragging.current) move(e.touches[0].clientX); }}
       onTouchEnd={() => { dragging.current = false; }}
-      style={{ flex: 1, position: 'relative', overflow: 'hidden', cursor: tipo === 'demonstracao' ? 'col-resize' : 'default', userSelect: 'none' }}
+      style={{ flex: 1, position: 'relative', overflow: 'hidden', cursor: tipo === 'demonstracao' ? 'col-resize' : 'default', userSelect: 'none', minWidth: 0 }}
     >
       {tipo !== 'demonstracao' ? (
         /* Foto full-screen */
@@ -414,12 +416,11 @@ function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimula
           </div>
         </>
       )}
+      </div>
 
-      {/* Toggle — topo direito */}
+      {/* Toggle — coluna lateral (não sobrepõe a imagem) */}
       <div
-        onMouseDown={e => e.stopPropagation()}
-        onTouchStart={e => e.stopPropagation()}
-        style={{ position: 'absolute', top: 20, right: 20, display: 'flex', flexDirection: 'column', gap: 8, zIndex: 10 }}
+        style={{ display: 'flex', flexDirection: 'column', gap: 8, justifyContent: 'center', background: '#0d0d12', borderLeft: '1px solid #1f1f28', width: 156, flexShrink: 0, padding: '12px', zIndex: 10 }}
       >
         {([
           { id: 'convencional',  label: 'Convencional'  },
