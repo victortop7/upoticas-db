@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type ReactNode } from 'react';
 import { api } from '../lib/api';
 
 interface PixResp {
@@ -11,7 +11,10 @@ interface PixResp {
   error?: string;
 }
 
-export default function PixModal({ onClose, onPago }: { onClose: () => void; onPago?: () => void }) {
+export default function PixModal({ onClose, onPago, dismissible = true, titulo, subtitulo, footer }: {
+  onClose: () => void; onPago?: () => void;
+  dismissible?: boolean; titulo?: string; subtitulo?: string; footer?: ReactNode;
+}) {
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState('');
   const [precisaDoc, setPrecisaDoc] = useState(false);
@@ -57,8 +60,8 @@ export default function PixModal({ onClose, onPago }: { onClose: () => void; onP
   const valorFmt = pix?.value != null ? pix.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'R$ 97,00';
 
   return (
-    <div onClick={onClose} style={{
-      position: 'fixed', inset: 0, background: 'rgba(4,9,22,0.78)', zIndex: 400,
+    <div onClick={dismissible ? onClose : undefined} style={{
+      position: 'fixed', inset: 0, background: 'rgba(4,9,22,0.82)', zIndex: 400,
       display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
       backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
     }}>
@@ -70,10 +73,13 @@ export default function PixModal({ onClose, onPago }: { onClose: () => void; onP
         {/* Cabeçalho */}
         <div style={{ background: 'linear-gradient(135deg, #1faf4a, #128a3a)', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ color: '#fff' }}>
-            <div style={{ fontSize: 12, opacity: 0.85, fontWeight: 600 }}>Connect Vision · Mensalidade</div>
+            <div style={{ fontSize: 12, opacity: 0.85, fontWeight: 600 }}>{titulo || 'Connect Vision · Mensalidade'}</div>
             <div style={{ fontSize: 22, fontWeight: 800 }}>{valorFmt}</div>
+            {subtitulo && <div style={{ fontSize: 12, opacity: 0.9, marginTop: 2 }}>{subtitulo}</div>}
           </div>
-          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', width: 32, height: 32, borderRadius: '50%', fontSize: 20, cursor: 'pointer', lineHeight: 1 }}>×</button>
+          {dismissible && (
+            <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', width: 32, height: 32, borderRadius: '50%', fontSize: 20, cursor: 'pointer', lineHeight: 1 }}>×</button>
+          )}
         </div>
 
         <div style={{ padding: 24 }}>
@@ -130,6 +136,8 @@ export default function PixModal({ onClose, onPago }: { onClose: () => void; onP
               </div>
             </div>
           ) : null}
+
+          {footer && !pago && <div style={{ marginTop: 18 }}>{footer}</div>}
         </div>
       </div>
       <style>{`

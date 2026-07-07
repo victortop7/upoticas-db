@@ -21,6 +21,7 @@ export default function VisionLayout() {
   const [showPix, setShowPix] = useState(false);
   const [pixPago, setPixPago] = useState(false);
   const [avisoFechado, setAvisoFechado] = useState(false);
+  const [carenciaOk, setCarenciaOk] = useState(false); // usuário optou por continuar durante a carência
 
   // Auto-logout após 30 min de inatividade
   useEffect(() => {
@@ -52,15 +53,25 @@ export default function VisionLayout() {
 
   if (!usuario) return <Navigate to="/vision/login" replace />;
 
-  // Status da licença
+  // Status da licença.
+  // dias >= 0: dentro da validade (0 = vence hoje). dias === -1: 1º dia vencido = CARÊNCIA. dias <= -2: bloqueia.
   const venc = tenant?.plano === 'trial' ? tenant?.trial_expira : tenant?.licenca_expira;
   const dias = diasAte(venc);
-  const bloqueado = Boolean(tenant?.bloqueado) || (dias != null && dias < 0);
-  const perto = !bloqueado && dias != null && dias >= 0 && dias <= AVISO_DIAS;
+  const adminBlock = Boolean(tenant?.bloqueado);
+  const perto = !adminBlock && dias != null && dias >= 0 && dias <= AVISO_DIAS;          // aviso sutil (3 dias)
+  const carencia = !adminBlock && dias === -1;                                            // 1 dia de carência
+  const bloqueado = adminBlock || (dias != null && dias <= -2);                           // bloqueio total
 
   function fecharPix() { setShowPix(false); if (pixPago) window.location.reload(); }
+  function fecharBloqueio() { if (pixPago) window.location.reload(); }
 
   const textoDias = dias === 0 ? 'hoje' : dias === 1 ? 'amanhã' : `em ${dias} dias`;
+
+  const rodapeSair = (
+    <button onClick={async () => { await logout(); navigate('/vision/login', { replace: true }); }} style={{
+      display: 'block', margin: '0 auto', background: 'none', border: 'none', color: '#94a3b8', fontSize: 13, cursor: 'pointer',
+    }}>Sair</button>
+  );
 
   return (
     <div style={{
@@ -92,36 +103,37 @@ export default function VisionLayout() {
         </div>
       )}
 
-      {/* Overlay de bloqueio — vencida */}
-      {bloqueado && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 260,
-          background: 'rgba(5,5,10,0.9)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
-        }}>
-          <div style={{
-            width: 400, maxWidth: '92vw', background: '#101018', border: '1px solid #23232e',
-            borderRadius: 22, padding: '34px 30px', textAlign: 'center', boxShadow: '0 24px 70px rgba(0,0,0,0.6)',
-          }}>
-            <div style={{ width: 68, height: 68, borderRadius: '50%', background: 'rgba(245,158,11,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px' }}>
-              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
-            </div>
-            <div style={{ fontSize: 21, fontWeight: 800, color: '#f1f5f9' }}>Assinatura vencida</div>
-            <div style={{ fontSize: 14.5, color: '#9aa4b8', marginTop: 8, lineHeight: 1.6 }}>
-              Para continuar usando o Connect Vision, renove sua assinatura mensal via Pix. Seus dados estão salvos.
-            </div>
-            <button onClick={() => setShowPix(true)} style={{
-              marginTop: 22, background: '#1faf4a', color: '#fff', border: 'none', borderRadius: 14,
-              padding: '15px 40px', fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: '0 10px 28px rgba(31,175,74,0.4)',
-            }}>Pagar com Pix · R$ 97,00</button>
-            <button onClick={async () => { await logout(); navigate('/vision/login', { replace: true }); }} style={{
-              display: 'block', margin: '14px auto 0', background: 'none', border: 'none', color: '#6b7280', fontSize: 13, cursor: 'pointer',
-            }}>Sair</button>
-          </div>
-        </div>
+      {/* Carência (1 dia após vencer) — QR na tela, mas dá pra continuar hoje */}
+      {carencia && !carenciaOk && (
+        <PixModal
+          dismissible
+          titulo="Acesso expirado"
+          subtitulo="Último dia de carência — renove hoje"
+          onClose={() => { if (pixPago) window.location.reload(); else setCarenciaOk(true); }}
+          onPago={() => setPixPago(true)}
+          footer={
+            <button onClick={() => setCarenciaOk(true)} style={{
+              width: '100%', background: 'transparent', border: '1px solid #cbd5e1', color: '#475569',
+              borderRadius: 12, padding: '12px', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+            }}>Continuar hoje (1 dia de carência)</button>
+          }
+        />
       )}
 
-      {showPix && <PixModal onClose={fecharPix} onPago={() => setPixPago(true)} />}
+      {/* Bloqueio total — QR + chave Pix direto na tela, sem escapatória */}
+      {bloqueado && (
+        <PixModal
+          dismissible={false}
+          titulo="Assinatura vencida"
+          subtitulo="Renove via Pix para continuar. Seus dados estão salvos."
+          onClose={fecharBloqueio}
+          onPago={() => setPixPago(true)}
+          footer={rodapeSair}
+        />
+      )}
+
+      {/* Modal Pix acionado pelo aviso sutil */}
+      {showPix && !carencia && !bloqueado && <PixModal onClose={fecharPix} onPago={() => setPixPago(true)} />}
 
       <style>{`@keyframes avisoIn { from { opacity: 0; transform: translate(-50%, -8px); } to { opacity: 1; transform: translate(-50%, 0); } }`}</style>
     </div>
