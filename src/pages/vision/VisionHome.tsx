@@ -223,8 +223,13 @@ const MODULES = [
 
 export default function VisionHome() {
   const navigate = useNavigate();
-  const { tenant } = useAuth();
+  const { logout } = useAuth();
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
+
+  async function sair() {
+    await logout();
+    navigate('/vision/login', { replace: true });
+  }
 
   function handleModule(mod: typeof MODULES[0]) {
     if (!mod.active) return;
@@ -292,16 +297,13 @@ export default function VisionHome() {
           pointerEvents: 'none',
         }} />
 
-        {/* Logo + card ótica */}
-        <div style={{ position: 'absolute', top: 28, left: 32, pointerEvents: 'none', animation: 'riseIn .6s cubic-bezier(0.22,1,0.36,1) both' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: 18 }}>
-            <div style={{
-              width: 40, height: 40, borderRadius: 11,
-              background: 'linear-gradient(180deg, #3ba6ff 0%, #007aff 100%)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 17, fontWeight: 800, color: '#fff',
-              boxShadow: '0 6px 18px rgba(0,122,255,0.35), inset 0 1px 0 rgba(255,255,255,0.4)',
-            }}>V</div>
+        {/* Logo + Sair */}
+        <div style={{ position: 'absolute', top: 28, left: 32, animation: 'riseIn .6s cubic-bezier(0.22,1,0.36,1) both' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+            <img src="/vision-icon.png" alt="Connect Vision" style={{
+              width: 42, height: 42, borderRadius: 12, objectFit: 'cover', display: 'block',
+              boxShadow: '0 6px 18px rgba(0,122,255,0.35), 0 0 0 1px rgba(120,170,255,0.15)',
+            }} />
             <div>
               <div style={{ fontSize: 20, fontWeight: 700, color: '#0f172a', letterSpacing: '-0.5px' }}>
                 Connect <span style={{ color: '#007aff' }}>Vision</span>
@@ -310,29 +312,16 @@ export default function VisionHome() {
             </div>
           </div>
 
-          <div style={{
-            background: 'rgba(255,255,255,0.72)',
-            backdropFilter: 'blur(18px)',
-            WebkitBackdropFilter: 'blur(18px)',
-            borderRadius: 16,
-            padding: '15px 22px',
-            border: '1px solid rgba(255,255,255,0.9)',
-            boxShadow: '0 8px 32px rgba(15,23,42,0.10), inset 0 1px 0 rgba(255,255,255,0.9)',
-            minWidth: 230,
+          <button onClick={sair} style={{
+            marginTop: 13, display: 'inline-flex', alignItems: 'center', gap: 6,
+            background: 'rgba(255,255,255,0.6)', border: '1px solid rgba(15,23,42,0.08)',
+            borderRadius: 999, padding: '5px 13px', cursor: 'pointer',
+            color: '#64748b', fontSize: 11.5, fontWeight: 600, WebkitTapHighlightColor: 'transparent',
+            backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
           }}>
-            <div style={{ fontSize: 10.5, color: '#94a3b8', marginBottom: 4, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 600 }}>Ótica conectada</div>
-            <div style={{ fontSize: 17, fontWeight: 700, color: '#0f172a', letterSpacing: '-0.2px' }}>{tenant?.nome ?? 'Sua Ótica'}</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
-              <span style={{ position: 'relative', display: 'inline-flex', width: 7, height: 7 }}>
-                <span style={{
-                  position: 'absolute', inset: 0, borderRadius: '50%',
-                  background: '#22c55e', animation: 'ping 2s cubic-bezier(0,0,0.2,1) infinite',
-                }} />
-                <span style={{ position: 'relative', width: 7, height: 7, borderRadius: '50%', background: '#22c55e' }} />
-              </span>
-              <span style={{ fontSize: 11, color: '#16a34a', fontWeight: 700, letterSpacing: '0.03em' }}>Sistema ativo</span>
-            </div>
-          </div>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+            Sair
+          </button>
         </div>
 
         {/* Overlay escuro + faixa de submenu — cobre o hero inteiro */}
