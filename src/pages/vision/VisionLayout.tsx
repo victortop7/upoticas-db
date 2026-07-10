@@ -188,7 +188,7 @@ export default function VisionLayout() {
         }}>
           <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#f59e0b', flexShrink: 0, opacity: 0.9 }} />
           <span style={{ fontSize: 11, color: '#9aa1b0', fontWeight: 500, whiteSpace: 'nowrap' }}>
-            vence {textoDias} · <span style={{ color: '#c9a24a' }}>renovar</span>
+            vence {textoDias} · <span style={{ color: '#c9a24a' }}>toque para renovar</span>
           </span>
           <span onClick={e => { e.stopPropagation(); setAvisoFechado(true); }} style={{ color: '#565c6b', fontSize: 14, lineHeight: 1, padding: '0 1px' }}>×</span>
         </button>
