@@ -11,11 +11,12 @@ const AVISO_DIAS = 3; // aviso sutil a partir de 3 dias antes de vencer
 const ESPECIALISTA_WA = '5585991507887';
 
 // Dias até a data YYYY-MM-DD (fim do dia, fuso SP). null se sem data.
+// floor => no dia do vencimento dias=0 (válido); dia seguinte -1 (carência); depois <= -2 (bloqueia).
 function diasAte(dateStr?: string): number | null {
   if (!dateStr) return null;
   const d = new Date(`${dateStr}T23:59:59-03:00`);
   if (isNaN(d.getTime())) return null;
-  return Math.ceil((d.getTime() - Date.now()) / 86_400_000);
+  return Math.floor((d.getTime() - Date.now()) / 86_400_000);
 }
 
 export default function VisionLayout() {
@@ -197,10 +198,10 @@ export default function VisionLayout() {
         </div>
       )}
 
-      {/* Carência (1 dia após vencer) — QR na tela, mas dá pra continuar hoje */}
+      {/* Carência (1 dia após vencer) — QR na tela, sem X; só continua pelo botão explícito */}
       {carencia && !carenciaOk && (
         <PixModal
-          dismissible
+          dismissible={false}
           titulo="Acesso expirado"
           subtitulo="Último dia de carência — renove hoje"
           onClose={() => { if (pixPago) window.location.reload(); else setCarenciaOk(true); }}
