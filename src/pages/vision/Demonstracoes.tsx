@@ -354,8 +354,8 @@ function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimula
   const dragging = useRef(false);
 
   const FOTOS = {
-    convencional: '/lentes%20convencionais%20e%20digitais/convencional.png',
-    digital:      '/lentes%20convencionais%20e%20digitais/digital.png',
+    convencional: '/lentes%20convencionais%20e%20digitais/convencional.jpg',
+    digital:      '/lentes%20convencionais%20e%20digitais/digital.jpg',
   };
   const DEMO_FOTOS = {
     com: '/lentes/digital-balao.jpg',          // digital — nítida
@@ -530,16 +530,16 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
   const semSvg = getSemSvg(tratamento, ambiente);
   const REAL_PHOTOS: Record<string, { com: string; sem: string }> = {
     ar: {
-      com: '/tratamento%20de%20antirreflexo/com%20anti-reflexo.png',
-      sem: '/tratamento%20de%20antirreflexo/sem%20anti-reflexo.png',
+      com: '/tratamento%20de%20antirreflexo/com%20anti-reflexo.jpg',
+      sem: '/tratamento%20de%20antirreflexo/sem%20anti-reflexo.jpg',
     },
     az: {
-      com: '/tratamento%20luz%20azul/COM%20LUZ-AZUL-2.png',
-      sem: '/tratamento%20luz%20azul/SEM%20LUZ-AZUL.png',
+      com: '/tratamento%20luz%20azul/COM%20LUZ-AZUL-2.jpg',
+      sem: '/tratamento%20luz%20azul/SEM%20LUZ-AZUL.jpg',
     },
     ab: {
-      com: '/tratamento%20anti-abrasivo/COM%20ANTI-ABRASIVO.png',
-      sem: '/tratamento%20anti-abrasivo/SEM%20ANTI-ABRASIVO-2%2C.png',
+      com: '/tratamento%20anti-abrasivo/COM%20ANTI-ABRASIVO.jpg',
+      sem: '/tratamento%20anti-abrasivo/SEM%20ANTI-ABRASIVO-2%2C.jpg',
     },
     ae: {
       com: '/tratamento%20anti-estatico/COM%20ANTI-ESTATICO.jpg',
