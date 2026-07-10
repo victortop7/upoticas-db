@@ -4,6 +4,7 @@ import { login } from '../../lib/auth';
 import { useAuth } from '../../hooks/useAuth';
 import { api } from '../../lib/api';
 import ForcarPaisagem from '../../components/ForcarPaisagem';
+import SplashVision from '../../components/SplashVision';
 
 // Credenciais salvas no tablet (login de 1 toque). Chave local.
 const CRED_KEY = 'cv_creds';
@@ -91,6 +92,7 @@ export default function VisionLogin() {
       background: '#060a16',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     }}>
+      <SplashVision />
       <ForcarPaisagem />
       {/* Fundo futurista */}
       <div style={{ position: 'absolute', inset: 0, background: '#060a16', zIndex: 0 }} />

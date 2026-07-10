@@ -176,26 +176,22 @@ export default function VisionLayout() {
         </div>
       )}
 
-      {/* Aviso sutil — perto de vencer */}
+      {/* Aviso discreto — perto de vencer (canto superior direito, tom baixo) */}
       {perto && !avisoFechado && (
-        <div style={{
-          position: 'fixed', top: 14, left: '50%', transform: 'translateX(-50%)', zIndex: 250,
-          display: 'flex', alignItems: 'center', gap: 12,
-          background: 'rgba(20,16,10,0.92)', border: '1px solid rgba(245,158,11,0.4)',
-          borderRadius: 999, padding: '8px 10px 8px 16px', boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
-          backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', maxWidth: '92vw',
-          animation: 'avisoIn .3s ease',
+        <button onClick={() => setShowPix(true)} title={`Assinatura vence ${textoDias} — toque para renovar`} style={{
+          position: 'fixed', top: 10, right: 12, zIndex: 250,
+          display: 'flex', alignItems: 'center', gap: 7,
+          background: 'rgba(14,16,22,0.55)', border: '1px solid rgba(245,158,11,0.22)',
+          borderRadius: 999, padding: '5px 11px', cursor: 'pointer',
+          backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+          animation: 'avisoIn .3s ease', WebkitTapHighlightColor: 'transparent',
         }}>
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#f59e0b', flexShrink: 0, boxShadow: '0 0 8px #f59e0b' }} />
-          <span style={{ fontSize: 13, color: '#f1f5f9', fontWeight: 500 }}>
-            Sua assinatura vence <b style={{ color: '#f59e0b' }}>{textoDias}</b>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#f59e0b', flexShrink: 0, opacity: 0.9 }} />
+          <span style={{ fontSize: 11, color: '#9aa1b0', fontWeight: 500, whiteSpace: 'nowrap' }}>
+            vence {textoDias} · <span style={{ color: '#c9a24a' }}>renovar</span>
           </span>
-          <button onClick={() => setShowPix(true)} style={{
-            background: '#1faf4a', color: '#fff', border: 'none', borderRadius: 999,
-            padding: '7px 16px', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
-          }}>Pagar com Pix</button>
-          <button onClick={() => setAvisoFechado(true)} style={{ background: 'none', border: 'none', color: '#6b7280', fontSize: 18, cursor: 'pointer', lineHeight: 1, padding: '0 4px' }}>×</button>
-        </div>
+          <span onClick={e => { e.stopPropagation(); setAvisoFechado(true); }} style={{ color: '#565c6b', fontSize: 14, lineHeight: 1, padding: '0 1px' }}>×</span>
+        </button>
       )}
 
       {/* Carência (1 dia após vencer) — QR na tela, sem X; só continua pelo botão explícito */}
