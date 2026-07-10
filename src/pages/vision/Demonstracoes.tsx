@@ -1,31 +1,7 @@
-import { useState, useRef, useEffect, useLayoutEffect, type ReactNode } from 'react';
+import { useState, useRef, useEffect, lazy, Suspense, type ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-
-// Encolhe o conteúdo para caber na altura/largura disponível (sem rolar)
-function AutoFit({ children, dep }: { children: ReactNode; dep?: unknown }) {
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const innerRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
-  useLayoutEffect(() => {
-    const calc = () => {
-      const wrap = wrapRef.current, inner = innerRef.current;
-      if (!wrap || !inner) return;
-      const s = Math.min(1, (wrap.clientHeight - 4) / inner.scrollHeight, (wrap.clientWidth - 4) / inner.scrollWidth);
-      setScale(s > 0 ? s : 1);
-    };
-    calc();
-    const t = setTimeout(calc, 60);
-    window.addEventListener('resize', calc);
-    return () => { clearTimeout(t); window.removeEventListener('resize', calc); };
-  }, [dep]);
-  return (
-    <div ref={wrapRef} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', width: '100%' }}>
-      <div ref={innerRef} style={{ transform: `scale(${scale})`, transformOrigin: 'center' }}>
-        {children}
-      </div>
-    </div>
-  );
-}
+// Carrega o 3D (Three.js) só quando a aba Espessura abre — mantém o app leve.
+const LenteEspessura3D = lazy(() => import('../../components/LenteEspessura3D'));
 
 type Tab = 'superficie' | 'visao' | 'fotossensivel' | 'espessura' | 'simulacao';
 
@@ -1055,37 +1031,27 @@ function Fotossensivel({ onSimular }: { onSimular?: (efeito: string) => void }) 
 
 // ─── Espessura — simulador interativo (grau × índice, dados reais) ────────────
 // Espessura em mm (borda p/ negativo, centro p/ positivo). Lente esférica CR-39, Ø65mm.
-const ESP_DATA: Record<'negativo' | 'positivo', Record<number, Record<string, number>>> = {
+// Modelo linear calibrado à tabela real: espessura(mm) = a + b·|grau|. CR-39 Ø65mm.
+const ESP_MODEL: Record<'negativo' | 'positivo', Record<string, { a: number; b: number }>> = {
   negativo: {
-    2:  { '1.56': 2.1, '1.60': 1.8, '1.67': 1.4, '1.74': 1.0 },
-    4:  { '1.56': 3.3, '1.60': 2.7, '1.67': 2.0, '1.74': 1.3 },
-    6:  { '1.56': 4.5, '1.60': 3.6, '1.67': 2.6, '1.74': 1.7 },
-    8:  { '1.56': 5.8, '1.60': 4.5, '1.67': 3.2, '1.74': 2.1 },
-    10: { '1.56': 7.0, '1.60': 5.4, '1.67': 3.9, '1.74': 2.6 },
+    '1.56': { a: 0.875, b: 0.6125 }, '1.60': { a: 0.9, b: 0.45 },
+    '1.67': { a: 0.775, b: 0.3125 }, '1.74': { a: 0.6, b: 0.2 },
   },
   positivo: {
-    2:  { '1.56': 3.3,  '1.60': 2.9,  '1.67': 2.3, '1.74': 1.8 },
-    4:  { '1.56': 5.6,  '1.60': 4.8,  '1.67': 3.6, '1.74': 2.7 },
-    6:  { '1.56': 7.9,  '1.60': 6.6,  '1.67': 4.9, '1.74': 3.6 },
-    8:  { '1.56': 10.3, '1.60': 8.5,  '1.67': 6.2, '1.74': 4.4 },
-    10: { '1.56': 12.7, '1.60': 10.6, '1.67': 7.6, '1.74': 5.2 },
+    '1.56': { a: 0.95, b: 1.175 }, '1.60': { a: 0.975, b: 0.9625 },
+    '1.67': { a: 0.975, b: 0.6625 }, '1.74': { a: 0.95, b: 0.425 },
   },
 };
-const ESP_GRAUS = [2, 4, 6, 8, 10];
 const ESP_INDICES = [
   { v: '1.56', nome: 'Padrão' },
   { v: '1.60', nome: 'Fino' },
   { v: '1.67', nome: 'Muito Fino' },
   { v: '1.74', nome: 'Ultra Fino' },
 ];
-
-// Perfil da lente (corte lateral) — escala mm→px exagerada p/ visualização
-function espLensPath(edgeMm: number, centerMm: number) {
-  const s = 9, xL = 40, xR = 360, cx = 200, midY = 95;
-  const eT = edgeMm * s, cT = centerMm * s;
-  const yET = midY - eT / 2, yCT = midY - cT / 2, yEB = midY + eT / 2, yCB = midY + cT / 2;
-  const p1t = 2 * yCT - yET, p1b = 2 * yCB - yEB;
-  return `M${xL},${yET} Q${cx},${p1t} ${xR},${yET} L${xR},${yEB} Q${cx},${p1b} ${xL},${yEB} Z`;
+// Espessura principal (borda p/ negativo, centro p/ positivo) para um grau contínuo.
+function espVal(sinal: 'negativo' | 'positivo', grau: number, indice: string): number {
+  const m = ESP_MODEL[sinal][indice];
+  return Math.max(0.6, m.a + m.b * Math.abs(grau));
 }
 
 function Espessura() {
@@ -1095,13 +1061,18 @@ function Espessura() {
   const [tabela, setTabela] = useState(false);
 
   const cor = sinal === 'negativo' ? '#38bdf8' : '#34d399';
-  const val = ESP_DATA[sinal][grau][indice];
-  const val156 = ESP_DATA[sinal][grau]['1.56'];
+  const tint = sinal === 'negativo' ? '#d6ecff' : '#d6f7e4';
+  const val = espVal(sinal, grau, indice);
+  const val156 = espVal(sinal, grau, '1.56');
   const reducao = Math.round((1 - val / val156) * 100);
-  const path = sinal === 'negativo' ? espLensPath(val, 1.2) : espLensPath(1.0, val);
-  const pathGhost = sinal === 'negativo' ? espLensPath(val156, 1.2) : espLensPath(1.0, val156);
+
+  // Espessuras de centro e borda para a lente 3D + cotas
+  const centerMm = sinal === 'negativo' ? Math.max(0.4, Math.min(1.2, val - 0.6)) : val;
+  const edgeMm = sinal === 'negativo' ? val : Math.max(0.4, Math.min(1.0, val - 0.6));
+
   const fmt = (n: number) => n.toFixed(1).replace('.', ',');
-  const grauLabel = (g: number) => `${sinal === 'negativo' ? '−' : '+'}${g.toFixed(2).replace('.', ',')}`;
+  const grauStr = `${sinal === 'negativo' ? '−' : '+'}${grau.toFixed(2).replace('.', ',')}`;
+  const setG = (g: number) => setGrau(Math.max(0, Math.min(12, Math.round(g * 4) / 4)));
 
   const btn = (ativo: boolean): React.CSSProperties => ({
     fontFamily: 'var(--mono)', fontWeight: 700, cursor: 'pointer',
@@ -1110,17 +1081,22 @@ function Espessura() {
     background: ativo ? cor : 'rgba(255,255,255,0.04)',
     color: ativo ? '#0a0a0c' : 'rgba(255,255,255,0.7)',
   });
+  const eyebrow: React.CSSProperties = { fontSize: 10, color: '#6b7385', fontFamily: 'var(--mono)', letterSpacing: '.12em', textTransform: 'uppercase' };
+  const fine: React.CSSProperties = {
+    width: 38, height: 38, flexShrink: 0, borderRadius: 10, cursor: 'pointer',
+    border: '1px solid rgba(255,255,255,0.16)', background: 'rgba(255,255,255,0.05)',
+    color: '#e8ecf5', fontSize: 20, fontWeight: 700, fontFamily: 'var(--mono)', WebkitTapHighlightColor: 'transparent',
+  };
 
   return (
-    <div style={{ flex: 1, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', background: 'radial-gradient(ellipse 90% 70% at 50% 0%, #0e1630 0%, #08080c 60%)' }}>
-      <AutoFit dep={`${sinal}-${grau}-${indice}`}>
-      <div style={{ maxWidth: 640, margin: '0 auto', padding: '12px 18px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+    <div style={{ flex: 1, position: 'relative', overflow: 'hidden', display: 'flex', background: 'radial-gradient(ellipse 90% 80% at 65% 30%, #0e1630 0%, #08080c 62%)' }}>
 
-        {/* Cabeçalho */}
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 10, color: cor, fontWeight: 700, fontFamily: 'var(--mono)', letterSpacing: '.14em', textTransform: 'uppercase' }}>Índice de Refração</div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: '#f1f5f9', marginTop: 2 }}>Simulador de Espessura</div>
-          <div style={{ fontSize: 12.5, color: '#8a93a6', marginTop: 4, lineHeight: 1.5 }}>Quanto maior o índice, mais fina e leve a lente para o mesmo grau.</div>
+      {/* ── Painel de controles (esquerda) ── */}
+      <div style={{ width: 296, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 13, padding: '16px 16px 16px 20px', overflowY: 'auto', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
+        <div>
+          <div style={{ ...eyebrow, color: cor }}>Índice de Refração</div>
+          <div style={{ fontSize: 20, fontWeight: 800, color: '#f1f5f9', marginTop: 1 }}>Simulador de Espessura</div>
+          <div style={{ fontSize: 11.5, color: '#8a93a6', marginTop: 3, lineHeight: 1.45 }}>Quanto maior o índice, mais fina e leve a lente.</div>
         </div>
 
         {/* Toggle sinal */}
@@ -1130,68 +1106,36 @@ function Espessura() {
             const c = s === 'negativo' ? '#38bdf8' : '#34d399';
             return (
               <button key={s} onClick={() => setSinal(s)} style={{
-                padding: '9px 20px', borderRadius: 9, border: 'none', cursor: 'pointer',
+                flex: 1, padding: '9px 6px', borderRadius: 9, border: 'none', cursor: 'pointer',
                 background: at ? c : 'transparent', color: at ? '#0a0a0c' : 'rgba(255,255,255,0.6)',
-                fontWeight: 700, fontSize: 13, fontFamily: 'var(--sans)', WebkitTapHighlightColor: 'transparent', transition: 'all .15s',
-              }}>{s === 'negativo' ? 'Miopia (−)' : 'Hipermetropia (+)'}</button>
+                fontWeight: 700, fontSize: 12.5, fontFamily: 'var(--sans)', WebkitTapHighlightColor: 'transparent', transition: 'all .15s',
+              }}>{s === 'negativo' ? 'Miopia (−)' : 'Hiperm. (+)'}</button>
             );
           })}
         </div>
 
-        {/* Visualização da lente */}
-        <div style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 18, padding: '18px 14px 8px' }}>
-          <svg viewBox="0 0 400 190" style={{ width: '100%', height: 'auto', display: 'block' }}>
-            <defs>
-              <linearGradient id="espGlass" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9" />
-                <stop offset="45%" stopColor={cor} stopOpacity="0.35" />
-                <stop offset="100%" stopColor="#ffffff" stopOpacity="0.55" />
-              </linearGradient>
-            </defs>
-            {/* Ghost 1.56 p/ referência */}
-            {indice !== '1.56' && (
-              <path d={pathGhost} fill="none" stroke="rgba(255,255,255,0.22)" strokeWidth="1.5" strokeDasharray="5 4" />
-            )}
-            {/* Lente atual */}
-            <path d={path} fill="url(#espGlass)" stroke={cor} strokeWidth="1.8" style={{ transition: 'all .2s' }} />
-            {/* Linha central de referência */}
-            <line x1="200" y1="20" x2="200" y2="170" stroke="rgba(255,255,255,0.12)" strokeWidth="1" strokeDasharray="3 4" />
-            {/* Cota da espessura */}
-            <text x="200" y="185" textAnchor="middle" fill={cor} fontSize="11" fontFamily="var(--mono)" fontWeight="700">
-              {sinal === 'negativo' ? 'espessura na borda' : 'espessura no centro'}
-            </text>
-          </svg>
-
-          {/* Leitura */}
-          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 10, marginTop: 4 }}>
-            <span style={{ fontSize: 44, fontWeight: 800, color: '#f8fafc', fontFamily: 'var(--mono)', lineHeight: 1 }}>{fmt(val)}</span>
-            <span style={{ fontSize: 18, color: '#8a93a6', fontFamily: 'var(--mono)' }}>mm</span>
+        {/* Grau (passo 0,25) */}
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 7 }}>
+            <span style={eyebrow}>Grau</span>
+            <span style={{ fontSize: 22, fontWeight: 800, color: cor, fontFamily: 'var(--mono)' }}>{grauStr}</span>
           </div>
-          <div style={{ textAlign: 'center', marginTop: 8, minHeight: 26 }}>
-            {indice === '1.56'
-              ? <span style={{ fontSize: 12.5, color: '#8a93a6', fontFamily: 'var(--mono)' }}>Índice padrão (referência)</span>
-              : <span style={{ fontSize: 13, color: cor, fontWeight: 700, fontFamily: 'var(--mono)', background: 'rgba(255,255,255,0.06)', padding: '5px 12px', borderRadius: 999 }}>
-                  ▼ {reducao}% mais fina que a 1.56
-                </span>}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button onClick={() => setG(grau - 0.25)} style={fine}>−</button>
+            <input type="range" min={0} max={12} step={0.25} value={grau}
+              onChange={e => setG(+e.target.value)}
+              style={{ flex: 1, accentColor: cor, height: 6, cursor: 'pointer' }} />
+            <button onClick={() => setG(grau + 0.25)} style={fine}>+</button>
           </div>
+          <div style={{ fontSize: 10, color: '#5b6273', fontFamily: 'var(--mono)', marginTop: 4, textAlign: 'center' }}>passo de 0,25 · 0 a 12 graus</div>
         </div>
 
-        {/* Seleção de grau */}
-        <div style={{ width: '100%' }}>
-          <div style={{ fontSize: 10.5, color: '#6b7385', fontFamily: 'var(--mono)', letterSpacing: '.12em', textTransform: 'uppercase', marginBottom: 8 }}>Grau</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 7 }}>
-            {ESP_GRAUS.map(g => (
-              <button key={g} onClick={() => setGrau(g)} style={{ ...btn(grau === g), padding: '11px 0', fontSize: 14 }}>{grauLabel(g)}</button>
-            ))}
-          </div>
-        </div>
-
-        {/* Seleção de índice */}
-        <div style={{ width: '100%' }}>
-          <div style={{ fontSize: 10.5, color: '#6b7385', fontFamily: 'var(--mono)', letterSpacing: '.12em', textTransform: 'uppercase', marginBottom: 8 }}>Índice de refração</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 7 }}>
+        {/* Índice de refração */}
+        <div>
+          <div style={{ ...eyebrow, marginBottom: 8 }}>Índice de refração</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 7 }}>
             {ESP_INDICES.map(ix => (
-              <button key={ix.v} onClick={() => setIndice(ix.v)} style={{ ...btn(indice === ix.v), padding: '10px 0', display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <button key={ix.v} onClick={() => setIndice(ix.v)} style={{ ...btn(indice === ix.v), padding: '9px 0', display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <span style={{ fontSize: 16 }}>{ix.v}</span>
                 <span style={{ fontSize: 9.5, fontWeight: 600, opacity: 0.85 }}>{ix.nome}</span>
               </button>
@@ -1200,26 +1144,66 @@ function Espessura() {
         </div>
 
         {/* Benefícios */}
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginTop: 2 }}>
-          {[['🪶', 'Mais leve'], ['✨', 'Mais fina'], ['👁️', 'Mais conforto']].map(([e, l]) => (
-            <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 999, padding: '7px 14px' }}>
-              <span style={{ fontSize: 14 }}>{e}</span>
-              <span style={{ fontSize: 12, color: '#c7cede', fontWeight: 600 }}>{l}</span>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {[['🪶', 'Mais leve'], ['✨', 'Mais fina'], ['👁️', 'Conforto']].map(([e, l]) => (
+            <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 999, padding: '6px 11px' }}>
+              <span style={{ fontSize: 13 }}>{e}</span>
+              <span style={{ fontSize: 11.5, color: '#c7cede', fontWeight: 600 }}>{l}</span>
             </div>
           ))}
         </div>
 
-        {/* Tabela completa */}
         <button onClick={() => setTabela(true)} style={{
           background: 'transparent', border: `1px solid ${cor}`, color: cor, borderRadius: 10,
-          padding: '10px 22px', fontSize: 13, fontWeight: 700, cursor: 'pointer', marginTop: 2, WebkitTapHighlightColor: 'transparent',
+          padding: '10px 16px', fontSize: 13, fontWeight: 700, cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
         }}>Ver tabela completa</button>
+      </div>
 
-        <div style={{ fontSize: 10.5, color: '#5b6273', textAlign: 'center', maxWidth: 460, lineHeight: 1.5 }}>
-          Valores aproximados · lente esférica CR-39 · Ø65mm. Variam conforme fabricante, armação e medidas.
+      {/* ── Lente 3D (direita) ── */}
+      <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
+        <Suspense fallback={
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7385', fontFamily: 'var(--mono)', fontSize: 12 }}>
+            <span style={{ animation: 'pulse 1.4s ease-in-out infinite' }}>carregando lente 3D…</span>
+          </div>
+        }>
+          <LenteEspessura3D centerMm={centerMm} edgeMm={edgeMm} cor={tint} />
+        </Suspense>
+
+        {/* Leitura principal (topo) */}
+        <div style={{ position: 'absolute', top: 16, left: 0, right: 0, textAlign: 'center', pointerEvents: 'none' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 8 }}>
+            <span style={{ fontSize: 46, fontWeight: 800, color: '#f8fafc', fontFamily: 'var(--mono)', lineHeight: 1, textShadow: '0 2px 20px rgba(0,0,0,.6)' }}>{fmt(val)}</span>
+            <span style={{ fontSize: 18, color: '#aeb6c8', fontFamily: 'var(--mono)' }}>mm</span>
+          </div>
+          <div style={{ fontSize: 11.5, color: cor, fontFamily: 'var(--mono)', fontWeight: 700, letterSpacing: '.06em', marginTop: 3, textTransform: 'uppercase' }}>
+            {sinal === 'negativo' ? 'espessura na borda' : 'espessura no centro'}
+          </div>
+          <div style={{ minHeight: 24, marginTop: 6 }}>
+            {indice !== '1.56' && (
+              <span style={{ fontSize: 12.5, color: cor, fontWeight: 700, fontFamily: 'var(--mono)', background: 'rgba(10,12,20,0.6)', padding: '5px 12px', borderRadius: 999, border: `1px solid ${cor}` }}>
+                ▼ {reducao}% mais fina que a 1.56
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Cotas (rodapé) */}
+        <div style={{ position: 'absolute', bottom: 14, left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: 22, pointerEvents: 'none', flexWrap: 'wrap' }}>
+          {[['Centro', centerMm], ['Borda', edgeMm], ['Diâmetro', '65']].map(([l, v]) => (
+            <div key={l as string} style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: '#dfe4ee', fontFamily: 'var(--mono)' }}>
+                {typeof v === 'number' ? fmt(v) : v}<span style={{ fontSize: 10, color: '#8a93a6' }}> mm</span>
+              </div>
+              <div style={{ fontSize: 9.5, color: '#6b7385', fontFamily: 'var(--mono)', letterSpacing: '.08em', textTransform: 'uppercase' }}>{l}{l === 'Diâmetro' ? ' Ø' : ''}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Dica girar */}
+        <div style={{ position: 'absolute', top: 12, right: 14, fontSize: 10.5, color: '#6b7385', fontFamily: 'var(--mono)', display: 'flex', alignItems: 'center', gap: 5, pointerEvents: 'none' }}>
+          <span style={{ fontSize: 13 }}>↻</span> arraste para girar
         </div>
       </div>
-      </AutoFit>
 
       {/* Overlay tabela completa (imagem) */}
       {tabela && (
