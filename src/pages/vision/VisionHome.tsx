@@ -204,7 +204,7 @@ const MODULES = [
   },
   {
     id: 'medidas',
-    label: 'Medidas\niVision',
+    label: 'Medida\nVirtual',
     path: '/vision',
     active: false,
     comingSoon: true,
