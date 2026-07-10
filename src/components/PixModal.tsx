@@ -62,27 +62,28 @@ export default function PixModal({ onClose, onPago, dismissible = true, titulo, 
   return (
     <div onClick={dismissible ? onClose : undefined} style={{
       position: 'fixed', inset: 0, background: 'rgba(4,9,22,0.82)', zIndex: 400,
-      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 10,
       backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
     }}>
       <div onClick={e => e.stopPropagation()} style={{
-        width: 380, maxWidth: '94vw', background: '#fff', borderRadius: 20, overflow: 'hidden',
+        width: 350, maxWidth: '94vw', maxHeight: '94dvh', display: 'flex', flexDirection: 'column',
+        background: '#fff', borderRadius: 18, overflow: 'hidden',
         boxShadow: '0 24px 70px rgba(0,0,0,0.5)',
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
       }}>
         {/* Cabeçalho */}
-        <div style={{ background: 'linear-gradient(135deg, #1faf4a, #128a3a)', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ color: '#fff' }}>
-            <div style={{ fontSize: 12, opacity: 0.85, fontWeight: 600 }}>{titulo || 'Connect Vision · Mensalidade'}</div>
-            <div style={{ fontSize: 22, fontWeight: 800 }}>{valorFmt}</div>
-            {subtitulo && <div style={{ fontSize: 12, opacity: 0.9, marginTop: 2 }}>{subtitulo}</div>}
+        <div style={{ flexShrink: 0, background: 'linear-gradient(135deg, #1faf4a, #128a3a)', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+          <div style={{ color: '#fff', minWidth: 0 }}>
+            <div style={{ fontSize: 11.5, opacity: 0.85, fontWeight: 600 }}>{titulo || 'Connect Vision · Mensalidade'}</div>
+            <div style={{ fontSize: 20, fontWeight: 800 }}>{valorFmt}</div>
+            {subtitulo && <div style={{ fontSize: 11.5, opacity: 0.9, marginTop: 2, lineHeight: 1.35 }}>{subtitulo}</div>}
           </div>
           {dismissible && (
-            <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', width: 32, height: 32, borderRadius: '50%', fontSize: 20, cursor: 'pointer', lineHeight: 1 }}>×</button>
+            <button onClick={onClose} style={{ flexShrink: 0, background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', width: 30, height: 30, borderRadius: '50%', fontSize: 19, cursor: 'pointer', lineHeight: 1 }}>×</button>
           )}
         </div>
 
-        <div style={{ padding: 24 }}>
+        <div style={{ padding: 16, overflowY: 'auto' }}>
           {pago ? (
             <div style={{ textAlign: 'center', padding: '20px 0' }}>
               <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
@@ -118,9 +119,9 @@ export default function PixModal({ onClose, onPago, dismissible = true, titulo, 
           ) : pix ? (
             <div style={{ textAlign: 'center' }}>
               {pix.qrImage && (
-                <img src={pix.qrImage} alt="QR Code Pix" style={{ width: 220, height: 220, margin: '0 auto', display: 'block', borderRadius: 12, border: '1px solid #e2e8f0' }} />
+                <img src={pix.qrImage} alt="QR Code Pix" style={{ width: 'min(200px, 42vh)', height: 'min(200px, 42vh)', margin: '0 auto', display: 'block', borderRadius: 12, border: '1px solid #e2e8f0' }} />
               )}
-              <div style={{ fontSize: 13, color: '#64748b', margin: '14px 0 10px' }}>Escaneie o QR Code ou use o Pix copia e cola:</div>
+              <div style={{ fontSize: 12.5, color: '#64748b', margin: '12px 0 8px' }}>Escaneie o QR Code ou use o Pix copia e cola:</div>
               <div style={{ display: 'flex', gap: 8, alignItems: 'stretch' }}>
                 <div style={{ flex: 1, background: '#f1f5f9', borderRadius: 10, padding: '10px 12px', fontSize: 11.5, color: '#475569', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'left', display: 'flex', alignItems: 'center' }}>
                   {pix.copiaCola}
