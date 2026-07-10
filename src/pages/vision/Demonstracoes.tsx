@@ -1169,7 +1169,7 @@ function Espessura() {
             <span style={{ animation: 'pulse 1.4s ease-in-out infinite' }}>carregando lente 3D…</span>
           </div>
         }>
-          <LenteEspessura3D centerMm={centerMm} edgeMm={edgeMm} cor={tint} zoom={zoom} />
+          <LenteEspessura3D centerMm={centerMm} edgeMm={edgeMm} cor={tint} edgeCor={cor} zoom={zoom} />
         </Suspense>
 
         {/* Leitura principal (topo) */}
