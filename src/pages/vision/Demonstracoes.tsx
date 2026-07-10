@@ -1059,6 +1059,8 @@ function Espessura() {
   const [grau, setGrau] = useState(6);
   const [indice, setIndice] = useState('1.56');
   const [tabela, setTabela] = useState(false);
+  const [zoom, setZoom] = useState(1);
+  const setZ = (z: number) => setZoom(Math.max(0.6, Math.min(2, Math.round(z * 20) / 20)));
 
   const cor = sinal === 'negativo' ? '#38bdf8' : '#34d399';
   const tint = sinal === 'negativo' ? '#d6ecff' : '#d6f7e4';
@@ -1083,20 +1085,19 @@ function Espessura() {
   });
   const eyebrow: React.CSSProperties = { fontSize: 10, color: '#6b7385', fontFamily: 'var(--mono)', letterSpacing: '.12em', textTransform: 'uppercase' };
   const fine: React.CSSProperties = {
-    width: 38, height: 38, flexShrink: 0, borderRadius: 10, cursor: 'pointer',
+    width: 34, height: 34, flexShrink: 0, borderRadius: 9, cursor: 'pointer',
     border: '1px solid rgba(255,255,255,0.16)', background: 'rgba(255,255,255,0.05)',
-    color: '#e8ecf5', fontSize: 20, fontWeight: 700, fontFamily: 'var(--mono)', WebkitTapHighlightColor: 'transparent',
+    color: '#e8ecf5', fontSize: 18, fontWeight: 700, fontFamily: 'var(--mono)', WebkitTapHighlightColor: 'transparent',
   };
 
   return (
     <div style={{ flex: 1, position: 'relative', overflow: 'hidden', display: 'flex', background: 'radial-gradient(ellipse 90% 80% at 65% 30%, #0e1630 0%, #08080c 62%)' }}>
 
       {/* ── Painel de controles (esquerda) ── */}
-      <div style={{ width: 296, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 13, padding: '16px 16px 16px 20px', overflowY: 'auto', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ width: 288, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 9, padding: '11px 14px 11px 18px', overflowY: 'auto', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
         <div>
-          <div style={{ ...eyebrow, color: cor }}>Índice de Refração</div>
-          <div style={{ fontSize: 20, fontWeight: 800, color: '#f1f5f9', marginTop: 1 }}>Simulador de Espessura</div>
-          <div style={{ fontSize: 11.5, color: '#8a93a6', marginTop: 3, lineHeight: 1.45 }}>Quanto maior o índice, mais fina e leve a lente.</div>
+          <div style={{ ...eyebrow, color: cor, fontSize: 9.5 }}>Índice de Refração</div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: '#f1f5f9', marginTop: 1 }}>Simulador de Espessura</div>
         </div>
 
         {/* Toggle sinal */}
@@ -1132,30 +1133,32 @@ function Espessura() {
 
         {/* Índice de refração */}
         <div>
-          <div style={{ ...eyebrow, marginBottom: 8 }}>Índice de refração</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 7 }}>
+          <div style={{ ...eyebrow, marginBottom: 6 }}>Índice de refração</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
             {ESP_INDICES.map(ix => (
-              <button key={ix.v} onClick={() => setIndice(ix.v)} style={{ ...btn(indice === ix.v), padding: '9px 0', display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <span style={{ fontSize: 16 }}>{ix.v}</span>
-                <span style={{ fontSize: 9.5, fontWeight: 600, opacity: 0.85 }}>{ix.nome}</span>
+              <button key={ix.v} onClick={() => setIndice(ix.v)} style={{ ...btn(indice === ix.v), padding: '6px 0', display: 'flex', flexDirection: 'column', gap: 0 }}>
+                <span style={{ fontSize: 15 }}>{ix.v}</span>
+                <span style={{ fontSize: 9, fontWeight: 600, opacity: 0.85 }}>{ix.nome}</span>
               </button>
             ))}
           </div>
         </div>
 
-        {/* Benefícios */}
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {[['🪶', 'Mais leve'], ['✨', 'Mais fina'], ['👁️', 'Conforto']].map(([e, l]) => (
-            <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 999, padding: '6px 11px' }}>
-              <span style={{ fontSize: 13 }}>{e}</span>
-              <span style={{ fontSize: 11.5, color: '#c7cede', fontWeight: 600 }}>{l}</span>
-            </div>
-          ))}
+        {/* Zoom da lente */}
+        <div>
+          <div style={{ ...eyebrow, marginBottom: 6 }}>Zoom da lente</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button onClick={() => setZ(zoom - 0.15)} style={fine}>−</button>
+            <input type="range" min={0.6} max={2} step={0.05} value={zoom}
+              onChange={e => setZ(+e.target.value)}
+              style={{ flex: 1, accentColor: cor, height: 6, cursor: 'pointer' }} />
+            <button onClick={() => setZ(zoom + 0.15)} style={fine}>+</button>
+          </div>
         </div>
 
         <button onClick={() => setTabela(true)} style={{
           background: 'transparent', border: `1px solid ${cor}`, color: cor, borderRadius: 10,
-          padding: '10px 16px', fontSize: 13, fontWeight: 700, cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
+          padding: '9px 16px', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
         }}>Ver tabela completa</button>
       </div>
 
@@ -1166,7 +1169,7 @@ function Espessura() {
             <span style={{ animation: 'pulse 1.4s ease-in-out infinite' }}>carregando lente 3D…</span>
           </div>
         }>
-          <LenteEspessura3D centerMm={centerMm} edgeMm={edgeMm} cor={tint} />
+          <LenteEspessura3D centerMm={centerMm} edgeMm={edgeMm} cor={tint} zoom={zoom} />
         </Suspense>
 
         {/* Leitura principal (topo) */}
@@ -1187,14 +1190,14 @@ function Espessura() {
           </div>
         </div>
 
-        {/* Cotas (rodapé) */}
-        <div style={{ position: 'absolute', bottom: 14, left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: 22, pointerEvents: 'none', flexWrap: 'wrap' }}>
-          {[['Centro', centerMm], ['Borda', edgeMm], ['Diâmetro', '65']].map(([l, v]) => (
+        {/* Cotas — canto inferior esquerdo (longe do dock Menu/Extras/OS) */}
+        <div style={{ position: 'absolute', bottom: 14, left: 18, display: 'flex', gap: 18, pointerEvents: 'none', background: 'rgba(8,10,18,0.55)', padding: '8px 14px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)' }}>
+          {[['Centro', centerMm], ['Borda', edgeMm], ['Ø', '65']].map(([l, v]) => (
             <div key={l as string} style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 15, fontWeight: 700, color: '#dfe4ee', fontFamily: 'var(--mono)' }}>
                 {typeof v === 'number' ? fmt(v) : v}<span style={{ fontSize: 10, color: '#8a93a6' }}> mm</span>
               </div>
-              <div style={{ fontSize: 9.5, color: '#6b7385', fontFamily: 'var(--mono)', letterSpacing: '.08em', textTransform: 'uppercase' }}>{l}{l === 'Diâmetro' ? ' Ø' : ''}</div>
+              <div style={{ fontSize: 9, color: '#6b7385', fontFamily: 'var(--mono)', letterSpacing: '.06em', textTransform: 'uppercase' }}>{l}</div>
             </div>
           ))}
         </div>

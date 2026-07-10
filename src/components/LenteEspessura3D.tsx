@@ -3,10 +3,13 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 
+const BASE_SCALE = 0.5; // tamanho base da lente na tela (zoom multiplica)
+
 // Lente 3D girável (arraste para rodar). Espessura muda por grau/índice.
-export default function LenteEspessura3D({ centerMm, edgeMm, cor }: { centerMm: number; edgeMm: number; cor: string }) {
+export default function LenteEspessura3D({ centerMm, edgeMm, cor, zoom = 1 }: { centerMm: number; edgeMm: number; cor: string; zoom?: number }) {
   const mountRef = useRef<HTMLDivElement>(null);
   const meshRef = useRef<THREE.Mesh | null>(null);
+  const groupRef = useRef<THREE.Group | null>(null);
   const matRef = useRef<THREE.MeshPhysicalMaterial | null>(null);
 
   // ── Setup (uma vez) ──
@@ -49,7 +52,9 @@ export default function LenteEspessura3D({ centerMm, edgeMm, cor }: { centerMm: 
     const mesh = new THREE.Mesh(buildLensGeometry(centerMm, edgeMm), mat);
     mesh.rotation.x = Math.PI / 2; // eixo óptico para frente
     const group = new THREE.Group(); group.add(mesh); scene.add(group);
+    group.scale.setScalar(BASE_SCALE * zoom);
     meshRef.current = mesh;
+    groupRef.current = group;
 
     // Controles: arrasta pra girar + gira sozinho
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -97,30 +102,36 @@ export default function LenteEspessura3D({ centerMm, edgeMm, cor }: { centerMm: 
     if (matRef.current) matRef.current.color = new THREE.Color(cor);
   }, [cor]);
 
+  // ── Zoom (escala a lente) ──
+  useEffect(() => {
+    if (groupRef.current) groupRef.current.scale.setScalar(BASE_SCALE * zoom);
+  }, [zoom]);
+
   return <div ref={mountRef} style={{ width: '100%', height: '100%', cursor: 'grab' }} />;
 }
 
-// Gera a geometria da lente (perfil revolvido). Espessura exagerada p/ visualização.
+// Gera a geometria da lente (perfil revolvido, com curvatura base tipo bloco).
 function buildLensGeometry(centerMm: number, edgeMm: number): THREE.LatheGeometry {
   const R = 1;               // raio (diâmetro = 2)
-  const scale = 0.05;        // mm -> unidades (exagera p/ ver a lente)
+  const scale = 0.06;        // mm -> unidades (exagera p/ ver a espessura)
+  const BC = 0.34;           // curvatura base (formato de bloco/lente curva)
   const Tc = Math.max(0.02, centerMm * scale);
   const Te = Math.max(0.02, edgeMm * scale);
-  const seg = 48;
+  const seg = 56;
   const pts: THREE.Vector2[] = [];
-  // superfície de trás (r: 0 -> R)
+  const esp = (r: number) => Tc + (Te - Tc) * (r / R) * (r / R);   // espessura no raio r
+  const mid = (r: number) => -BC * (r / R) * (r / R);              // superfície média curva (bowl)
+  // superfície de trás (côncava) — r: 0 -> R
   for (let i = 0; i <= seg; i++) {
     const r = (i / seg) * R;
-    const t = Tc + (Te - Tc) * (r / R) * (r / R);
-    pts.push(new THREE.Vector2(r, -t / 2));
+    pts.push(new THREE.Vector2(r, mid(r) - esp(r) / 2));
   }
-  // superfície da frente (r: R -> 0)
+  // superfície da frente (convexa) — r: R -> 0
   for (let i = seg; i >= 0; i--) {
     const r = (i / seg) * R;
-    const t = Tc + (Te - Tc) * (r / R) * (r / R);
-    pts.push(new THREE.Vector2(r, t / 2));
+    pts.push(new THREE.Vector2(r, mid(r) + esp(r) / 2));
   }
-  const geo = new THREE.LatheGeometry(pts, 120);
+  const geo = new THREE.LatheGeometry(pts, 128);
   geo.computeVertexNormals();
   return geo;
 }
