@@ -403,19 +403,6 @@ function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimula
             ✗ CONVENCIONAL
           </div>
 
-          {/* Descrição */}
-          <div style={{
-            position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)',
-            background: 'rgba(0,0,0,.78)', borderRadius: 12, padding: '10px 20px',
-            width: 'max-content', maxWidth: 420, textAlign: 'center', pointerEvents: 'none',
-          }}>
-            <div style={{ fontSize: 10, color: '#3b82f6', fontWeight: 700, fontFamily: 'var(--mono)', marginBottom: 4, letterSpacing: '.06em', textTransform: 'uppercase' }}>
-              Digital × Convencional
-            </div>
-            <div style={{ fontSize: 12, color: '#9ca3af', lineHeight: 1.5 }}>
-              Lente digital: nitidez em todo o campo visual — sem distorção periférica
-            </div>
-          </div>
         </>
       )}
       </div>

@@ -985,18 +985,19 @@ function CalcVision({ onClose }: { onClose: () => void }) {
       display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
     }}>
       <div onClick={e => e.stopPropagation()} style={{
-        width: 340, maxWidth: '92vw', background: '#0b0b0d', borderRadius: 16, overflow: 'hidden',
+        width: 288, maxWidth: '90vw', maxHeight: '94dvh', background: '#0b0b0d', borderRadius: 14, overflow: 'hidden',
         boxShadow: '0 24px 70px rgba(0,0,0,0.6)', border: '1px solid #26262c',
+        display: 'flex', flexDirection: 'column',
       }}>
         {/* Cabeçalho */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: '#141418' }}>
-          <span style={{ fontSize: 12, color: '#8a8a95', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>Calculadora</span>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#c7c7d1', fontSize: 22, cursor: 'pointer', lineHeight: 1 }}>×</button>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 12px', background: '#141418', flexShrink: 0 }}>
+          <span style={{ fontSize: 11, color: '#8a8a95', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>Calculadora</span>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#c7c7d1', fontSize: 20, cursor: 'pointer', lineHeight: 1 }}>×</button>
         </div>
         {/* Visor */}
         <div style={{
-          padding: '20px 20px', textAlign: 'right', color: '#fff',
-          fontSize: 46, fontWeight: 300, fontFamily: 'var(--mono)', minHeight: 40,
+          padding: '12px 16px', textAlign: 'right', color: '#fff',
+          fontSize: 34, fontWeight: 300, fontFamily: 'var(--mono)', minHeight: 28, flexShrink: 0,
           overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
         }}>
           {disp.replace('.', ',')}
@@ -1006,8 +1007,8 @@ function CalcVision({ onClose }: { onClose: () => void }) {
           {teclas.map((t, i) => (
             <button key={i} onClick={t.act} style={{
               gridColumn: t.span ? `span ${t.span}` : undefined,
-              padding: '22px 0', border: 'none', cursor: 'pointer',
-              fontSize: t.tipo === 'fn' ? 20 : 24, fontWeight: 600, fontFamily: 'var(--mono)',
+              padding: '13px 0', border: 'none', cursor: 'pointer',
+              fontSize: t.tipo === 'fn' ? 16 : 19, fontWeight: 600, fontFamily: 'var(--mono)',
               background: t.tipo === 'eq' ? '#2563eb' : t.tipo === 'op' ? '#1c1c22' : '#0b0b0d',
               color: t.tipo === 'op' ? '#5b9dff' : '#fff',
               WebkitTapHighlightColor: 'transparent', transition: 'filter .1s',
