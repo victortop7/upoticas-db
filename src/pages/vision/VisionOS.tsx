@@ -269,8 +269,6 @@ export default function VisionOS() {
   const [calcOpen, setCalcOpen] = useState(false);
   // Vendedores puxados do cadastro da Conexão Óticas (mesmo banco/tenant)
   const [vendedores, setVendedores] = useState<{ id: string; nome: string }[]>([]);
-  const [cliMsg, setCliMsg] = useState('');
-  const [cliSalvando, setCliSalvando] = useState(false);
   // Pesquisa de clientes já cadastrados na Conexão Óticas
   const [buscaCliOpen, setBuscaCliOpen] = useState(false);
   const [buscaCliTermo, setBuscaCliTermo] = useState('');
@@ -314,34 +312,6 @@ export default function VisionOS() {
       setTimeout(() => setSaved(false), 2500);
     } catch { alert('Erro ao salvar OS.'); }
     finally { setSaving(false); }
-  }
-
-  // Cadastra o cliente direto na Conexão Óticas (tabela clientes, mesmo banco)
-  async function criarCliente() {
-    if (!data.cliente_nome.trim()) { alert('Preencha o nome do cliente antes de cadastrar.'); return; }
-    setCliSalvando(true);
-    try {
-      const obs = [data.cliente_obs, data.cliente_rg && `RG: ${data.cliente_rg}`, data.cliente_sexo && `Sexo: ${data.cliente_sexo}`].filter(Boolean).join(' · ');
-      const endereco = [data.cliente_endereco, data.cliente_numero].filter(Boolean).join(', ');
-      await api.post('/clientes', {
-        nome: data.cliente_nome.trim(),
-        cpf: data.cliente_cpf || null,
-        telefone: data.cliente_tel || null,
-        celular: data.cliente_tel2 || null,
-        email: data.cliente_email || null,
-        data_nascimento: data.cliente_nascimento || null,
-        endereco: endereco || null,
-        bairro: data.cliente_bairro || null,
-        cidade: data.cliente_cidade || null,
-        uf: data.cliente_uf || null,
-        cep: data.cliente_cep || null,
-        observacao: obs || null,
-      });
-      setCliMsg('✓ Cliente cadastrado na Conexão Óticas');
-      setTimeout(() => setCliMsg(''), 3500);
-    } catch (e: unknown) {
-      alert(e instanceof Error ? e.message : 'Erro ao cadastrar cliente.');
-    } finally { setCliSalvando(false); }
   }
 
   // Busca clientes já cadastrados na Conexão Óticas (mesmo banco)
@@ -473,10 +443,6 @@ export default function VisionOS() {
               <button onClick={() => { setBuscaCliOpen(true); setBuscaCliTermo(''); pesquisarClientes(); }} style={{ background: '#fff', border: '1px solid #d1d1d6', borderRadius: 9, color: '#007aff', padding: '4px 16px', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' }}>
                 PESQUISA
               </button>
-              <button onClick={criarCliente} disabled={cliSalvando} style={{ background: '#1faf4a', border: 'none', borderRadius: 9, color: '#fff', padding: '4px 16px', fontSize: 12, fontWeight: 'bold', cursor: cliSalvando ? 'default' : 'pointer', opacity: cliSalvando ? 0.7 : 1, whiteSpace: 'nowrap' }}>
-                {cliSalvando ? 'Salvando…' : '+ CADASTRAR'}
-              </button>
-              {cliMsg && <span style={{ fontSize: 12, color: '#1faf4a', fontWeight: 'bold', whiteSpace: 'nowrap' }}>{cliMsg}</span>}
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
                 <span style={{ fontSize: 13, fontWeight: 'bold', whiteSpace: 'nowrap' }}>Vendedor:</span>
                 <select value={data.cliente_vendedor} onChange={e => set('cliente_vendedor')(e.target.value)} style={{ ...INPUT, flex: 1, cursor: 'pointer' }}>
@@ -549,6 +515,13 @@ export default function VisionOS() {
               <label style={LABEL}>OBSERVAÇÃO</label>
               <textarea value={data.cliente_obs} onChange={e => set('cliente_obs')(e.target.value)}
                 style={{ ...INPUT, resize: 'none', flex: 1, minHeight: 52, fontFamily: 'inherit' }} />
+            </div>
+
+            {/* Avança para a Receita */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 4 }}>
+              <button onClick={() => setTab('receita')} style={{ background: '#007aff', color: '#fff', border: 'none', borderRadius: 9, padding: '9px 28px', fontSize: 14, fontWeight: 'bold', cursor: 'pointer' }}>
+                Próximo →
+              </button>
             </div>
           </div>
         )}
@@ -689,6 +662,12 @@ export default function VisionOS() {
                     style={{ ...INPUT, resize: 'none', flex: 1, minHeight: 80, fontFamily: 'inherit' }} />
                 </div>
               </div>
+            </div>
+
+            {/* Preencheu a receita → já pode salvar (cria cliente + O.S. na Conexão Óticas) */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+              <button onClick={() => setTab('cliente')} style={{ background: '#fff', border: '1px solid #d1d1d6', borderRadius: 9, color: '#3a3a3c', padding: '9px 22px', fontSize: 13, fontWeight: 'bold', cursor: 'pointer' }}>← Voltar</button>
+              <button onClick={() => salvar('orcamento')} disabled={saving} style={{ background: '#1faf4a', border: 'none', borderRadius: 9, color: '#fff', padding: '9px 34px', fontSize: 14, fontWeight: 'bold', cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.7 : 1 }}>{saving ? 'Salvando…' : 'Salvar'}</button>
             </div>
           </div>
         )}
