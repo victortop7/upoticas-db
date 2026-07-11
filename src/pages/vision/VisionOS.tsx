@@ -4,6 +4,12 @@ import { api } from '../../lib/api';
 
 type Tab = 'cliente' | 'receita' | 'laboratorio' | 'fechamento' | 'busca';
 type BuscaTipo = 'numero' | 'data' | 'nome' | 'cpf';
+// Cliente vindo do cadastro da Conexão Óticas (tabela clientes)
+type ClienteRow = {
+  id: string; nome: string; cpf?: string; telefone?: string; celular?: string;
+  email?: string; data_nascimento?: string; endereco?: string; bairro?: string;
+  cidade?: string; uf?: string; cep?: string; observacao?: string;
+};
 type BuscaLista = 'os' | 'excluidas' | 'clientes';
 
 interface OSData {
@@ -265,6 +271,11 @@ export default function VisionOS() {
   const [vendedores, setVendedores] = useState<{ id: string; nome: string }[]>([]);
   const [cliMsg, setCliMsg] = useState('');
   const [cliSalvando, setCliSalvando] = useState(false);
+  // Pesquisa de clientes já cadastrados na Conexão Óticas
+  const [buscaCliOpen, setBuscaCliOpen] = useState(false);
+  const [buscaCliTermo, setBuscaCliTermo] = useState('');
+  const [buscaCliRes, setBuscaCliRes] = useState<ClienteRow[]>([]);
+  const [buscaCliLoad, setBuscaCliLoad] = useState(false);
 
   useEffect(() => {
     api.get<{ usuarios: { id: string; nome: string; ativo: number }[] }>('/usuarios')
@@ -331,6 +342,30 @@ export default function VisionOS() {
     } catch (e: unknown) {
       alert(e instanceof Error ? e.message : 'Erro ao cadastrar cliente.');
     } finally { setCliSalvando(false); }
+  }
+
+  // Busca clientes já cadastrados na Conexão Óticas (mesmo banco)
+  async function pesquisarClientes() {
+    setBuscaCliLoad(true);
+    try {
+      const r = await api.get<{ clientes: ClienteRow[] }>(`/clientes?busca=${encodeURIComponent(buscaCliTermo)}`);
+      setBuscaCliRes(r.clientes || []);
+    } catch { setBuscaCliRes([]); }
+    finally { setBuscaCliLoad(false); }
+  }
+
+  // Preenche a O.S. com os dados do cliente escolhido
+  function selecionarCliente(c: ClienteRow) {
+    setData(p => ({
+      ...p,
+      cliente_nome: c.nome || '', cliente_cpf: c.cpf || '',
+      cliente_tel: c.telefone || '', cliente_tel2: c.celular || '',
+      cliente_email: c.email || '', cliente_nascimento: c.data_nascimento || '',
+      cliente_endereco: c.endereco || '', cliente_bairro: c.bairro || '',
+      cliente_cidade: c.cidade || '', cliente_uf: c.uf || '',
+      cliente_cep: c.cep || '', cliente_obs: c.observacao || '',
+    }));
+    setBuscaCliOpen(false); setBuscaCliRes([]); setBuscaCliTermo('');
   }
 
   async function carregarBusca() {
@@ -435,7 +470,7 @@ export default function VisionOS() {
                 <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#007aff', border: '3px solid #fff', boxShadow: '0 0 0 2px #1144cc', flexShrink: 0 }} />
                 <span style={{ fontSize: 13, fontStyle: 'italic' }}>É o Paciente</span>
               </div>
-              <button style={{ background: '#fff', border: '1px solid #d1d1d6', borderRadius: 9, color: '#007aff', padding: '4px 16px', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' }}>
+              <button onClick={() => { setBuscaCliOpen(true); setBuscaCliTermo(''); pesquisarClientes(); }} style={{ background: '#fff', border: '1px solid #d1d1d6', borderRadius: 9, color: '#007aff', padding: '4px 16px', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' }}>
                 PESQUISA
               </button>
               <button onClick={criarCliente} disabled={cliSalvando} style={{ background: '#1faf4a', border: 'none', borderRadius: 9, color: '#fff', padding: '4px 16px', fontSize: 12, fontWeight: 'bold', cursor: cliSalvando ? 'default' : 'pointer', opacity: cliSalvando ? 0.7 : 1, whiteSpace: 'nowrap' }}>
@@ -977,6 +1012,45 @@ export default function VisionOS() {
       </div>
 
       {calcOpen && <CalcVision onClose={() => setCalcOpen(false)} />}
+
+      {/* Pesquisa de clientes cadastrados na Conexão Óticas */}
+      {buscaCliOpen && (
+        <div onClick={() => setBuscaCliOpen(false)} style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 300,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            width: 540, maxWidth: '94vw', maxHeight: '88dvh', background: '#fff', borderRadius: 14,
+            display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 24px 70px rgba(0,0,0,0.4)',
+          }}>
+            <div style={{ padding: '14px 16px', borderBottom: '1px solid #e5e5ea', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input autoFocus value={buscaCliTermo} onChange={e => setBuscaCliTermo(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') pesquisarClientes(); }}
+                placeholder="Buscar cliente por nome ou CPF…"
+                style={{ flex: 1, padding: '9px 12px', fontSize: 14, borderRadius: 9, border: '1px solid #d1d1d6', outline: 'none', color: '#1c1c1e', background: '#fff', fontFamily: 'inherit' }} />
+              <button onClick={pesquisarClientes} style={{ background: '#007aff', color: '#fff', border: 'none', borderRadius: 9, padding: '9px 18px', fontSize: 13, fontWeight: 'bold', cursor: 'pointer' }}>Buscar</button>
+              <button onClick={() => setBuscaCliOpen(false)} style={{ background: 'none', border: 'none', color: '#8e8e93', fontSize: 24, cursor: 'pointer', lineHeight: 1 }}>×</button>
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              {buscaCliLoad ? (
+                <div style={{ padding: 24, textAlign: 'center', color: '#8e8e93', fontSize: 13 }}>Buscando…</div>
+              ) : buscaCliRes.length === 0 ? (
+                <div style={{ padding: 24, textAlign: 'center', color: '#8e8e93', fontSize: 13 }}>Nenhum cliente encontrado na Conexão Óticas.</div>
+              ) : buscaCliRes.map(c => (
+                <button key={c.id} onClick={() => selecionarCliente(c)} style={{
+                  display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none',
+                  borderBottom: '1px solid #f0f0f2', padding: '11px 16px', cursor: 'pointer',
+                }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: '#1c1c1e' }}>{c.nome}</div>
+                  <div style={{ fontSize: 12, color: '#8e8e93', marginTop: 2 }}>
+                    {[c.cpf && `CPF ${c.cpf}`, c.telefone || c.celular, c.cidade].filter(Boolean).join(' · ') || 'sem outros dados'}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
