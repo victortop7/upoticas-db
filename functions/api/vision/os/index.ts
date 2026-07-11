@@ -89,5 +89,71 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     body.status ?? 'aberto', now, now
   ).run();
 
-  return json({ ok: true, id, numero });
+  // ── Espelha automaticamente na Conexão Óticas (ordens_servico) ──
+  // Falha aqui NÃO quebra o save do Vision (try/catch isolado).
+  let osOticasId: string | null = null;
+  try {
+    try { await env.DB.prepare('ALTER TABLE vision_os ADD COLUMN os_id TEXT').run(); } catch { /* já existe */ }
+
+    const num = (v: unknown): number | null => {
+      if (v == null || v === '') return null;
+      const n = parseFloat(String(v).replace(',', '.'));
+      return isNaN(n) ? null : n;
+    };
+    const cpf = (body.cliente_cpf as string) || '';
+    const nome = (body.cliente_nome as string) || 'Cliente';
+
+    // 1) Acha o cliente (por CPF, senão por nome) ou cria
+    const cli = cpf
+      ? await env.DB.prepare('SELECT id FROM clientes WHERE tenant_id = ? AND cpf = ? LIMIT 1').bind(auth.tenant_id, cpf).first<{ id: string }>()
+      : await env.DB.prepare('SELECT id FROM clientes WHERE tenant_id = ? AND nome = ? LIMIT 1').bind(auth.tenant_id, nome).first<{ id: string }>();
+    let clienteId = cli?.id;
+    if (!clienteId) {
+      clienteId = crypto.randomUUID();
+      const tel = (body.cliente_tel as string) || null;
+      await env.DB.prepare(
+        'INSERT INTO clientes (id, tenant_id, nome, cpf, telefone, celular, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?)'
+      ).bind(clienteId, auth.tenant_id, nome, cpf || null, tel, tel, now, now).run();
+    }
+
+    // 2) Número sequencial da O.S. na Conexão Óticas
+    const lastOs = await env.DB.prepare('SELECT COALESCE(MAX(numero),0) as max FROM ordens_servico WHERE tenant_id = ?').bind(auth.tenant_id).first<{ max: number }>();
+    const osNum = (lastOs?.max ?? 0) + 1;
+    osOticasId = crypto.randomUUID();
+    const situacao = (body.tipo ?? 'orcamento') === 'orcamento' ? 'orcamento' : 'aberta';
+    const valorTotal = num(body.valor_total) ?? 0;
+
+    await env.DB.prepare(`
+      INSERT INTO ordens_servico (
+        id, tenant_id, numero, cliente_id, tipo, situacao,
+        longe_od_esf, longe_od_cil, longe_od_eixo,
+        longe_oe_esf, longe_oe_cil, longe_oe_eixo,
+        perto_od_esf, perto_od_cil, perto_od_eixo,
+        perto_oe_esf, perto_oe_cil, perto_oe_eixo,
+        dp, altura, adicao,
+        armacao_desc, lente_desc,
+        valor_total, valor_entrada, valor_restante,
+        data_entrega, medico, observacao, funcionario_id,
+        created_at, updated_at
+      ) VALUES (?,?,?,?,?,?, ?,?,?, ?,?,?, ?,?,?, ?,?,?, ?,?,?, ?,?, ?,?,?, ?,?,?,?, ?,?)
+    `).bind(
+      osOticasId, auth.tenant_id, osNum, clienteId, 'oculos_grau', situacao,
+      num(body.od_esf), num(body.od_cil), num(body.od_eixo),
+      num(body.oe_esf), num(body.oe_cil), num(body.oe_eixo),
+      null, null, null,
+      null, null, null,
+      num(body.arm_dnp), num(body.arm_alt_pupilar ?? body.od_alt), num(body.od_adicao ?? body.oe_adicao),
+      null, (body.lente_desc as string) || null,
+      valorTotal, 0, valorTotal,
+      null, (body.medico_nome as string) || null, `Connect Vision · O.S. #${numero}`, auth.usuario_id,
+      now, now
+    ).run();
+
+    // 3) Marca a O.S. do Vision como já espelhada
+    await env.DB.prepare('UPDATE vision_os SET os_id = ? WHERE id = ?').bind(osOticasId, id).run();
+  } catch {
+    osOticasId = null; // não interrompe o save do Vision
+  }
+
+  return json({ ok: true, id, numero, os_oticas_id: osOticasId });
 };
