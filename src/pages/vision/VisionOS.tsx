@@ -261,6 +261,14 @@ export default function VisionOS() {
   const [buscaTipo, setBuscaTipo] = useState<BuscaTipo>('numero');
   const [buscaLista, setBuscaLista] = useState<BuscaLista>('os');
   const [calcOpen, setCalcOpen] = useState(false);
+  // Vendedores puxados do cadastro da Conexão Óticas (mesmo banco/tenant)
+  const [vendedores, setVendedores] = useState<{ id: string; nome: string }[]>([]);
+
+  useEffect(() => {
+    api.get<{ usuarios: { id: string; nome: string; ativo: number }[] }>('/usuarios')
+      .then(r => setVendedores((r.usuarios || []).filter(u => u.ativo).map(u => ({ id: u.id, nome: u.nome }))))
+      .catch(() => { /* silencioso — mantém campo vazio se falhar */ });
+  }, []);
 
   function set(field: keyof OSData) { return (v: string) => setData(p => ({ ...p, [field]: v })); }
 
@@ -402,7 +410,13 @@ export default function VisionOS() {
               </button>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
                 <span style={{ fontSize: 13, fontWeight: 'bold', whiteSpace: 'nowrap' }}>Vendedor:</span>
-                <input value={data.cliente_vendedor} onChange={e => set('cliente_vendedor')(e.target.value)} style={{ ...INPUT, flex: 1 }} />
+                <select value={data.cliente_vendedor} onChange={e => set('cliente_vendedor')(e.target.value)} style={{ ...INPUT, flex: 1, cursor: 'pointer' }}>
+                  <option value="">Selecione…</option>
+                  {vendedores.map(v => <option key={v.id} value={v.nome}>{v.nome}</option>)}
+                  {data.cliente_vendedor && !vendedores.some(v => v.nome === data.cliente_vendedor) && (
+                    <option value={data.cliente_vendedor}>{data.cliente_vendedor}</option>
+                  )}
+                </select>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <label style={LABEL}>Data Nascimento:</label>
