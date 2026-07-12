@@ -84,7 +84,7 @@ export default function LenteEspessura3D({
     // Pivô: inclina p/ revelar a curvatura interna e oscila (vista 3/4, nunca de perfil)
     const pivot = new THREE.Group();
     pivot.add(group);
-    pivot.rotation.x = -0.34;
+    pivot.rotation.x = -0.2;
     scene.add(pivot);
     pivotRef.current = pivot;
 
@@ -101,7 +101,7 @@ export default function LenteEspessura3D({
     const t0 = performance.now();
     let raf = 0;
     const animate = () => {
-      if (!dragging) pivot.rotation.y = Math.sin((performance.now() - t0) * 0.0006) * 0.6;
+      if (!dragging) pivot.rotation.y = Math.sin((performance.now() - t0) * 0.00045) * 1.2;
       controls.update(); renderer.render(scene, camera); raf = requestAnimationFrame(animate);
     };
     animate();
