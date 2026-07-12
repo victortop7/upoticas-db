@@ -40,7 +40,7 @@ export default function LenteEspessura3D({
     // Ambiente p/ reflexos: estúdio + faixas de luz brilhantes (efeito espelho na lente)
     const pmrem = new THREE.PMREMGenerator(renderer);
     const envBase = new RoomEnvironment();
-    const barMat = new THREE.MeshBasicMaterial(); barMat.color.setRGB(3.2, 3.4, 3.8);
+    const barMat = new THREE.MeshBasicMaterial(); barMat.color.setRGB(5, 5.3, 6);
     const addBar = (w: number, h: number, px: number, py: number, pz: number, rx: number, ry: number) => {
       const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), barMat);
       m.position.set(px, py, pz); m.rotation.set(rx, ry, 0); envBase.add(m);
@@ -58,9 +58,9 @@ export default function LenteEspessura3D({
 
     // Vidro reflexivo/espelhado (reflexos fortes p/ a lente "brilhar" e aparecer)
     const glass = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color(cor), metalness: 0, roughness: 0.04,
+      color: new THREE.Color(cor), metalness: 0, roughness: 0.02,
       clearcoat: 1, clearcoatRoughness: 0.02, reflectivity: 1,
-      transparent: true, opacity: 0.5, envMapIntensity: 2.0, side: THREE.DoubleSide,
+      transparent: true, opacity: 0.33, envMapIntensity: 2.6, side: THREE.DoubleSide,
     });
     glassRef.current = glass;
 
