@@ -1159,18 +1159,20 @@ function Espessura() {
           <LenteEspessura3D centerMm={centerMm} edgeMm={edgeMm} cor={tint} edgeCor={cor} zoom={zoom} />
         </Suspense>
 
-        {/* Leitura principal (topo) */}
+        {/* Leitura principal (topo) — pill escura p/ contraste sobre a grade azul do lightbox */}
         <div style={{ position: 'absolute', top: 16, left: 0, right: 0, textAlign: 'center', pointerEvents: 'none' }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 8 }}>
-            <span style={{ fontSize: 46, fontWeight: 800, color: '#f8fafc', fontFamily: 'var(--mono)', lineHeight: 1, textShadow: '0 2px 20px rgba(0,0,0,.6)' }}>{fmt(val)}</span>
-            <span style={{ fontSize: 18, color: '#aeb6c8', fontFamily: 'var(--mono)' }}>mm</span>
-          </div>
-          <div style={{ fontSize: 11.5, color: cor, fontFamily: 'var(--mono)', fontWeight: 700, letterSpacing: '.06em', marginTop: 3, textTransform: 'uppercase' }}>
-            {sinal === 'negativo' ? 'espessura na borda' : 'espessura no centro'}
+          <div style={{ display: 'inline-block', background: 'rgba(6,10,20,0.78)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 16, padding: '8px 20px 9px', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', boxShadow: '0 4px 24px rgba(0,0,0,.35)' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 8 }}>
+              <span style={{ fontSize: 46, fontWeight: 800, color: '#f8fafc', fontFamily: 'var(--mono)', lineHeight: 1, textShadow: '0 2px 20px rgba(0,0,0,.6)' }}>{fmt(val)}</span>
+              <span style={{ fontSize: 18, color: '#c3cbdd', fontFamily: 'var(--mono)' }}>mm</span>
+            </div>
+            <div style={{ fontSize: 11.5, color: cor, fontFamily: 'var(--mono)', fontWeight: 700, letterSpacing: '.06em', marginTop: 3, textTransform: 'uppercase', textShadow: '0 1px 6px rgba(0,0,0,.5)' }}>
+              {sinal === 'negativo' ? 'espessura na borda' : 'espessura no centro'}
+            </div>
           </div>
           <div style={{ minHeight: 24, marginTop: 6 }}>
             {indice !== '1.56' && (
-              <span style={{ fontSize: 12.5, color: cor, fontWeight: 700, fontFamily: 'var(--mono)', background: 'rgba(10,12,20,0.6)', padding: '5px 12px', borderRadius: 999, border: `1px solid ${cor}` }}>
+              <span style={{ fontSize: 12.5, color: cor, fontWeight: 700, fontFamily: 'var(--mono)', background: 'rgba(6,10,20,0.85)', padding: '5px 12px', borderRadius: 999, border: `1px solid ${cor}`, boxShadow: '0 2px 12px rgba(0,0,0,.35)' }}>
                 ▼ {reducao}% mais fina que a 1.56
               </span>
             )}
@@ -1178,19 +1180,19 @@ function Espessura() {
         </div>
 
         {/* Cotas — canto inferior esquerdo (longe do dock Menu/Extras/OS) */}
-        <div style={{ position: 'absolute', bottom: 14, left: 18, display: 'flex', gap: 18, pointerEvents: 'none', background: 'rgba(8,10,18,0.55)', padding: '8px 14px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ position: 'absolute', bottom: 14, left: 18, display: 'flex', gap: 18, pointerEvents: 'none', background: 'rgba(6,10,20,0.8)', padding: '8px 14px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', boxShadow: '0 2px 16px rgba(0,0,0,.35)' }}>
           {[['Centro', centerMm], ['Borda', edgeMm], ['Ø', '65']].map(([l, v]) => (
             <div key={l as string} style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: '#dfe4ee', fontFamily: 'var(--mono)' }}>
-                {typeof v === 'number' ? fmt(v) : v}<span style={{ fontSize: 10, color: '#8a93a6' }}> mm</span>
+              <div style={{ fontSize: 15, fontWeight: 700, color: '#eef2f9', fontFamily: 'var(--mono)' }}>
+                {typeof v === 'number' ? fmt(v) : v}<span style={{ fontSize: 10, color: '#9aa4b8' }}> mm</span>
               </div>
-              <div style={{ fontSize: 9, color: '#6b7385', fontFamily: 'var(--mono)', letterSpacing: '.06em', textTransform: 'uppercase' }}>{l}</div>
+              <div style={{ fontSize: 9, color: '#8a93a6', fontFamily: 'var(--mono)', letterSpacing: '.06em', textTransform: 'uppercase' }}>{l}</div>
             </div>
           ))}
         </div>
 
-        {/* Dica girar */}
-        <div style={{ position: 'absolute', top: 12, right: 14, fontSize: 10.5, color: '#6b7385', fontFamily: 'var(--mono)', display: 'flex', alignItems: 'center', gap: 5, pointerEvents: 'none' }}>
+        {/* Dica girar — pill escura p/ ler sobre a grade clara */}
+        <div style={{ position: 'absolute', top: 12, right: 14, fontSize: 10.5, color: '#b7c0d2', fontFamily: 'var(--mono)', display: 'flex', alignItems: 'center', gap: 5, pointerEvents: 'none', background: 'rgba(6,10,20,0.7)', padding: '5px 10px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.1)' }}>
           <span style={{ fontSize: 13 }}>↻</span> arraste para girar
         </div>
       </div>
