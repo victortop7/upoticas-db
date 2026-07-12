@@ -360,10 +360,10 @@ export default function VisionHome() {
                 ◆ Simulação de Tratamentos ◆
               </div>
               <div style={{
-                display: 'flex', gap: '22px 18px',
-                flexWrap: 'wrap',
+                display: 'flex', gap: '10px 8px',
+                flexWrap: 'nowrap',
                 justifyContent: 'center', alignItems: 'flex-start',
-                paddingInline: 16, maxWidth: 960, margin: '0 auto',
+                paddingInline: 10, maxWidth: 960, margin: '0 auto',
               }}>
                 {[...DEMO_ITEMS].sort((a, b) => DEMO_ORDER.indexOf(a.id) - DEMO_ORDER.indexOf(b.id)).map((item, i) => (
                   <button
@@ -372,8 +372,8 @@ export default function VisionHome() {
                     style={{
                       background: 'none', border: 'none', cursor: 'pointer',
                       display: 'flex', flexDirection: 'column',
-                      alignItems: 'center', gap: 10,
-                      width: 100, flex: '0 0 auto', padding: 0,
+                      alignItems: 'center', gap: 7,
+                      width: 82, flex: '1 1 0', minWidth: 0, maxWidth: 100, padding: 0,
                       transition: 'transform 0.14s cubic-bezier(0.3,1.4,0.5,1)',
                       WebkitTapHighlightColor: 'transparent',
                       animation: `riseIn .4s cubic-bezier(0.22,1,0.36,1) ${i * 0.04}s both`,
@@ -384,7 +384,7 @@ export default function VisionHome() {
                   >
                     {/* Squircle de vidro estilo iOS */}
                     <div style={{
-                      width: 84, height: 84, borderRadius: 23,
+                      width: 64, height: 64, borderRadius: 18, flexShrink: 0,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       background: 'linear-gradient(160deg, rgba(255,255,255,0.18), rgba(255,255,255,0.06))',
                       border: '0.5px solid rgba(255,255,255,0.25)',
@@ -405,7 +405,7 @@ export default function VisionHome() {
                       }} />
                     </div>
                     <span style={{
-                      fontSize: 13, color: 'rgba(245,248,255,0.95)',
+                      fontSize: 11, color: 'rgba(245,248,255,0.95)',
                       fontWeight: 500, letterSpacing: '-0.01em',
                       textAlign: 'center', lineHeight: 1.1,
                     }}>{item.label}</span>
