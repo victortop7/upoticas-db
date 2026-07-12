@@ -4,9 +4,9 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 
 const BASE_SCALE = 0.5; // tamanho base da lente na tela (zoom multiplica)
-const R = 1;            // raio geométrico (diâmetro = 2)
-const ESP_SCALE = 0.08; // mm -> unidades (exagera p/ ver a espessura)
-const BC = 0.6;         // curvatura base (dome do bloco — mostra a espessura interna)
+const R = 1;            // raio geométrico (R=1 ↔ 32,5mm; Ø65mm de referência)
+const ESP_SCALE = 0.05; // mm -> unidades (~1.6× a escala real, só p/ a espessura ficar visível)
+const BC = 0.12;        // sag da curvatura base (menisco SUTIL — disco fino, nunca tigela)
 
 // Lente 3D girável (arraste para rodar). Espessura muda por grau/índice.
 // `cor` = tom do vidro; `edgeCor` = cor sólida da borda (contraste p/ ver a espessura).
@@ -56,11 +56,11 @@ export default function LenteEspessura3D({
     const fill = new THREE.DirectionalLight(0x88aaff, 1.2); fill.position.set(-3, 1, 2); scene.add(fill);
     scene.add(new THREE.AmbientLight(0xffffff, 0.35));
 
-    // Vidro reflexivo/espelhado (reflexos fortes p/ a lente "brilhar" e aparecer)
+    // Vidro reflexivo/espelhado (sem transmission — pesado demais p/ celular de entrada)
     const glass = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color(cor), metalness: 0, roughness: 0.02,
-      clearcoat: 1, clearcoatRoughness: 0.02, reflectivity: 1,
-      transparent: true, opacity: 0.33, envMapIntensity: 2.6, side: THREE.DoubleSide,
+      color: new THREE.Color(cor), metalness: 0, roughness: 0.03,
+      clearcoat: 1, clearcoatRoughness: 0.04, reflectivity: 1,
+      transparent: true, opacity: 0.28, envMapIntensity: 2.4, side: THREE.DoubleSide,
     });
     glassRef.current = glass;
 
@@ -81,10 +81,11 @@ export default function LenteEspessura3D({
     group.scale.setScalar(BASE_SCALE * zoom);
     groupRef.current = group;
 
-    // Pivô: inclina p/ revelar a curvatura interna e oscila (vista 3/4, nunca de perfil)
+    // Pivô: leve inclinação + oscilação ampla (vai da frente até quase o perfil lateral,
+    // onde o corte centro×borda da lente fica evidente)
     const pivot = new THREE.Group();
     pivot.add(group);
-    pivot.rotation.x = -0.2;
+    pivot.rotation.x = -0.18;
     scene.add(pivot);
     pivotRef.current = pivot;
 
@@ -101,7 +102,7 @@ export default function LenteEspessura3D({
     const t0 = performance.now();
     let raf = 0;
     const animate = () => {
-      if (!dragging) pivot.rotation.y = Math.sin((performance.now() - t0) * 0.00045) * 1.2;
+      if (!dragging) pivot.rotation.y = Math.sin((performance.now() - t0) * 0.00042) * 1.5;
       controls.update(); renderer.render(scene, camera); raf = requestAnimationFrame(animate);
     };
     animate();
@@ -144,18 +145,22 @@ export default function LenteEspessura3D({
   return <div ref={mountRef} style={{ width: '100%', height: '100%', cursor: 'grab' }} />;
 }
 
+// Espessura no raio r: interpola centro→borda (quadrático, como numa lente esférica).
 const espAt = (r: number, Tc: number, Te: number) => Tc + (Te - Tc) * (r / R) * (r / R);
+// Superfície média: menisco sutil (sag BC). A forma vem da espessura, não da curvatura.
 const midAt = (r: number) => -BC * (r / R) * (r / R);
 
-// Corpo da lente (perfil revolvido, com curvatura base tipo bloco).
+// Corpo da lente: disco fino revolvido em torno da superfície média curva.
+// Grau negativo (Te > Tc) → perfil ") (" côncavo, centro fino e borda grossa.
+// Grau positivo (Tc > Te) → perfil "( )" convexo tipo lupa, centro grosso e borda fina.
 function buildLensGeometry(centerMm: number, edgeMm: number): THREE.LatheGeometry {
   const Tc = Math.max(0.02, centerMm * ESP_SCALE);
   const Te = Math.max(0.02, edgeMm * ESP_SCALE);
-  const seg = 40;
+  const seg = 36;
   const pts: THREE.Vector2[] = [];
   for (let i = 0; i <= seg; i++) { const r = (i / seg) * R; pts.push(new THREE.Vector2(r, midAt(r) - espAt(r, Tc, Te) / 2)); }
   for (let i = seg; i >= 0; i--) { const r = (i / seg) * R; pts.push(new THREE.Vector2(r, midAt(r) + espAt(r, Tc, Te) / 2)); }
-  const geo = new THREE.LatheGeometry(pts, 96);
+  const geo = new THREE.LatheGeometry(pts, 80);
   geo.computeVertexNormals();
   return geo;
 }
@@ -163,7 +168,7 @@ function buildLensGeometry(centerMm: number, edgeMm: number): THREE.LatheGeometr
 // Anel da borda: mostra a espessura no bordo com cor sólida de contraste.
 function buildRimGeometry(edgeMm: number): THREE.CylinderGeometry {
   const Te = Math.max(0.02, edgeMm * ESP_SCALE);
-  const geo = new THREE.CylinderGeometry(R + 0.004, R + 0.004, Te, 96, 1, true);
-  geo.translate(0, midAt(R), 0); // acompanha a curvatura base no bordo
+  const geo = new THREE.CylinderGeometry(R + 0.004, R + 0.004, Te, 80, 1, true);
+  geo.translate(0, midAt(R), 0); // acompanha o menisco no bordo
   return geo;
 }
