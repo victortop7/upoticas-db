@@ -354,17 +354,29 @@ export default function LabNovaOrdem() {
     setErro('');
     if (!oticaId) { setErro('Selecione a ótica'); return; }
 
+    // Preserva o zero: 0,00 é um grau válido e NÃO pode virar null (só vazio → null)
+    const numN = (s: string): number | null => {
+      if (s == null || String(s).trim() === '') return null;
+      const n = parseFloat(String(s).replace(',', '.'));
+      return isNaN(n) ? null : n;
+    };
+    const intN = (s: string): number | null => {
+      if (s == null || String(s).trim() === '') return null;
+      const n = parseInt(String(s), 10);
+      return isNaN(n) ? null : n;
+    };
+
     const receitaPayload = ([['D', od], ['E', oe]] as const).map(([olho, r]) => ({
       olho,
-      esf_longe: parseFloat(r.esf_longe.replace(',', '.')) || null,
-      cil_longe: parseFloat(r.cil_longe.replace(',', '.')) || null,
-      eixo_longe: parseInt(r.eixo_longe) || null,
-      adicao: parseFloat(r.adicao.replace(',', '.')) || null,
-      esf_perto: parseFloat(r.esf_perto.replace(',', '.')) || null,
-      cil_perto: parseFloat(r.cil_perto.replace(',', '.')) || null,
-      dnp: parseFloat(r.dnp_longe.replace(',', '.')) || null,
-      alt: parseFloat(r.alt.replace(',', '.')) || null,
-      dec_h: parseFloat(r.dec_h.replace(',', '.')) || null,
+      esf_longe: numN(r.esf_longe),
+      cil_longe: numN(r.cil_longe),
+      eixo_longe: intN(r.eixo_longe),
+      adicao: numN(r.adicao),
+      esf_perto: numN(r.esf_perto),
+      cil_perto: numN(r.cil_perto),
+      dnp: numN(r.dnp_longe),
+      alt: numN(r.alt),
+      dec_h: numN(r.dec_h),
       prisma: r.prisma_valor || null,
     }));
 
