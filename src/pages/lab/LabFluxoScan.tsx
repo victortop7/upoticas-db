@@ -28,10 +28,7 @@ const STATUS_COLOR: Record<string, string> = {
   aguardando: '#886600', em_producao: '#003388', pronto: '#006600', entregue: '#444', cancelado: '#005500',
 };
 
-const R = {
-  bg: '#c8c4b0', panel: '#d4d0c8', alt: '#dedad2', bdr: '#b0aca4',
-  hdr: 'linear-gradient(90deg,#005500,#008800)', hdrTxt: '#ccffcc', hdrBdr: '#007700',
-};
+import { R } from '../../lib/labTheme';
 
 function statusBadge(s: string) {
   return (

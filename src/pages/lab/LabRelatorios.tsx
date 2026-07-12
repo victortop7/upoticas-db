@@ -39,7 +39,7 @@ const TIPOS: Record<string, string> = {
   E:'Encomenda', Z:'Recibo',   N:'Orçamento', M:'Mostruário',
 };
 
-const R = { bg:'#c8c4b0', panel:'#d4d0c8', alt:'#dedad2', bdr:'#b0aca4', hdr:'linear-gradient(90deg,#005500,#008800)', hdrTxt:'#ccffcc', hdrBdr:'#007700', txt:'#000', inp:'#fff' };
+import { R } from '../../lib/labTheme';
 const INP: React.CSSProperties = { padding:'5px 8px', fontSize:'12px', background:R.inp, border:'1px solid #999', color:R.txt, outline:'none', fontFamily:"'Courier New', monospace", boxSizing:'border-box' };
 
 export default function LabRelatorios() {

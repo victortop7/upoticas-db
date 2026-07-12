@@ -75,20 +75,7 @@ function calcItem(s: ItemCobranca) {
 }
 
 // ── Paleta retro igual aos painéis MÓDULOS/OPÇÕES ──
-const R = {
-  bg:       '#c8c4b0',
-  panel:    '#d4d0c8',
-  panelAlt: '#dedad2',
-  border:   '#b0aca4',
-  hdrBg:    'linear-gradient(90deg,#005500,#008800)',
-  hdrTxt:   '#ccffcc',
-  hdrBorder:'#007700',
-  txt:      '#000000',
-  accent:   '#005500',
-  dim:      '#444444',
-  inpBg:    '#ffffff',
-  inpBdr:   '1px solid #999',
-};
+import { R } from '../../lib/labTheme';
 
 const INP: React.CSSProperties = {
   width: '100%', padding: '4px 7px', fontSize: '12px',

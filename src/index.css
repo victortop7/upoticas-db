@@ -71,3 +71,34 @@ input, select, textarea, button { font-family: var(--sans); }
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* ─── Connect Lab — tema (claro/escuro) via variáveis ───
+   Trocadas de uma vez pelo atributo data-lab-theme no <html>. */
+:root {
+  --lab-bg: #c8c4b0;
+  --lab-panel: #d4d0c8;
+  --lab-alt: #dedad2;
+  --lab-bdr: #b0aca4;
+  --lab-hdr: linear-gradient(90deg, #005500, #008800);
+  --lab-hdr-txt: #ccffcc;
+  --lab-hdr-bdr: #007700;
+  --lab-txt: #000000;
+  --lab-accent: #005500;
+  --lab-dim: #444444;
+  --lab-inp: #ffffff;
+  --lab-inp-bdr: #999999;
+}
+:root[data-lab-theme="dark"] {
+  --lab-bg: #141414;
+  --lab-panel: #1c1c1c;
+  --lab-alt: #232323;
+  --lab-bdr: #333333;
+  --lab-hdr: linear-gradient(90deg, #003300, #005500);
+  --lab-hdr-txt: #aaffbb;
+  --lab-hdr-bdr: #1a4a1a;
+  --lab-txt: #dcdcdc;
+  --lab-accent: #33cc55;
+  --lab-dim: #999999;
+  --lab-inp: #262626;
+  --lab-inp-bdr: #444444;
+}

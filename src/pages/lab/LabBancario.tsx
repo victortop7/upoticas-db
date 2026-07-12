@@ -18,7 +18,7 @@ function fmtDate(s: string | null) {
   return `${d}/${m}/${y}`;
 }
 
-const R = { bg:'#c8c4b0', panel:'#d4d0c8', alt:'#dedad2', bdr:'#b0aca4', hdr:'linear-gradient(90deg,#005500,#008800)', hdrTxt:'#ccffcc', hdrBdr:'#007700', txt:'#000' };
+import { R } from '../../lib/labTheme';
 const INP: React.CSSProperties = { padding: '5px 8px', fontSize: '12px', background: '#fff', border: `1px solid ${R.bdr}`, borderRadius: 0, color: R.txt, outline: 'none', fontFamily: "'Courier New', monospace", width: '100%', boxSizing: 'border-box' };
 const LBL: React.CSSProperties = { fontSize: '10px', fontWeight: '700', color: '#444', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '3px' };
 

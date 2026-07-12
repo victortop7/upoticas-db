@@ -4,7 +4,7 @@ import { api } from '../../lib/api';
 
 interface Otica { id: string; codigo?: string; nome: string; nome_reduzido?: string; cnpj?: string; telefone?: string; email?: string; cidade?: string; uf?: string; ativo: number; }
 
-const R = { bg:'#c8c4b0', panel:'#d4d0c8', alt:'#dedad2', bdr:'#b0aca4', hdr:'linear-gradient(90deg,#005500,#008800)', hdrTxt:'#ccffcc', hdrBdr:'#007700', txt:'#000', inp:'#fff' };
+import { R } from '../../lib/labTheme';
 const INP: React.CSSProperties = { width:'100%', padding:'5px 8px', fontSize:'12px', background:R.inp, border:'1px solid #999', color:R.txt, outline:'none', boxSizing:'border-box', fontFamily:"'Courier New', monospace" };
 
 export default function LabOticas() {

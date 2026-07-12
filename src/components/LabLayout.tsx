@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Outlet, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import LabAltF1 from './LabAltF1';
+import { applyLabTheme } from '../lib/labTheme';
 
 type ModuleKey = 'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'|'K'|'L';
 type Opcao = { num: number; label: string; to?: string; disabled?: boolean };
@@ -123,6 +124,9 @@ export default function LabLayout() {
     window.addEventListener('labtheme', handler);
     return () => window.removeEventListener('labtheme', handler);
   }, []);
+
+  // Aplica o tema (claro/escuro) no <html> — faz TODAS as páginas do lab mudarem juntas
+  useEffect(() => { applyLabTheme(dark); }, [dark]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

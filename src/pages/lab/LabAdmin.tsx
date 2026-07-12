@@ -136,10 +136,7 @@ interface Codigo {
   criado_em: string;
 }
 
-const R = {
-  bg: '#c8c4b0', panel: '#d4d0c8', alt: '#dedad2', bdr: '#b0aca4',
-  hdr: 'linear-gradient(90deg,#005500,#008800)', hdrTxt: '#ccffcc', hdrBdr: '#007700',
-};
+import { R } from '../../lib/labTheme';
 const INP: React.CSSProperties = {
   padding: '5px 8px', fontSize: '12px', background: '#fff',
   border: '1px solid #999', color: '#000', outline: 'none',
