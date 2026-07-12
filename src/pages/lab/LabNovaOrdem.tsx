@@ -64,15 +64,6 @@ function addBusinessDays(start: Date, days: number): Date {
 }
 function toYMD(d: Date) { return d.toISOString().split('T')[0]; }
 
-// Gera uma referência única da ótica: prefixo da ótica + data/hora compacta (não repete entre óticas)
-function gerarRefOtica(oticaIdent: string) {
-  const prefixo = (oticaIdent || 'OT')
-    .toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4) || 'OT';
-  const d = new Date();
-  const p = (n: number) => String(n).padStart(2, '0');
-  const carimbo = `${String(d.getFullYear()).slice(2)}${p(d.getMonth() + 1)}${p(d.getDate())}${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
-  return `${prefixo}-${carimbo}`;
-}
 
 function calcItem(s: ItemCobranca) {
   const q = parseFloat(s.qtd.replace(',', '.')) || 0;
@@ -253,8 +244,7 @@ export default function LabNovaOrdem() {
       // Auto-fill lista de preço e condição de pagamento (do cadastro da ótica)
       if (found.lista_preco) setListaPreco(String(found.lista_preco));
       if (found.condicao_pgto) setCondPgto(found.condicao_pgto);
-      // Gera REF. ÓTICA único — baseado na ótica + data/hora (não repete entre óticas)
-      setRefOtica(prev => prev.trim() ? prev : gerarRefOtica(found.codigo || found.nome));
+      // REF. ÓTICA é MANUAL: o digitador informa a numeração que veio da ótica (não gerar).
     } else {
       setOticaId('');
       setOticaNome('NÃO ENCONTRADO');
@@ -516,7 +506,7 @@ export default function LabNovaOrdem() {
             </div>
             <div>
               <label style={LBL}>Ref. Ótica</label>
-              <input value={refOtica} onChange={e => setRefOtica(e.target.value)} style={INP} placeholder="Auto ao escolher ótica" />
+              <input value={refOtica} onChange={e => setRefOtica(e.target.value)} style={INP} placeholder="Nº que veio da ótica" />
             </div>
             <div>
               <label style={LBL}>Data Emissão</label>
