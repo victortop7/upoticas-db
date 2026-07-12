@@ -30,16 +30,25 @@ export default function LenteEspessura3D({
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // leve no celular
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.25;
+    renderer.toneMappingExposure = 1.15;
     mount.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(32, mount.clientWidth / mount.clientHeight, 0.1, 100);
     camera.position.set(0, 0.35, 3.3);
 
-    // Ambiente p/ reflexos de vidro (custo só na inicialização)
+    // Ambiente p/ reflexos: estúdio + faixas de luz brilhantes (efeito espelho na lente)
     const pmrem = new THREE.PMREMGenerator(renderer);
-    const env = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    const envBase = new RoomEnvironment();
+    const barMat = new THREE.MeshBasicMaterial(); barMat.color.setRGB(3.2, 3.4, 3.8);
+    const addBar = (w: number, h: number, px: number, py: number, pz: number, rx: number, ry: number) => {
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), barMat);
+      m.position.set(px, py, pz); m.rotation.set(rx, ry, 0); envBase.add(m);
+    };
+    addBar(12, 2.6, 0, 6, -1, -Math.PI / 2.2, 0);   // faixa de luz superior
+    addBar(2.6, 9, -6.5, 1, 2, 0, Math.PI / 2.4);   // softbox lateral esquerdo
+    addBar(2.2, 8, 6, 2, 3, 0, -Math.PI / 3);       // reflexo lateral direito
+    const env = pmrem.fromScene(envBase, 0.02).texture;
     scene.environment = env;
 
     const key = new THREE.DirectionalLight(0xffffff, 3.4); key.position.set(3, 4, 3); scene.add(key);
@@ -49,9 +58,9 @@ export default function LenteEspessura3D({
 
     // Vidro reflexivo/espelhado (reflexos fortes p/ a lente "brilhar" e aparecer)
     const glass = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color(cor), metalness: 0.15, roughness: 0.03,
+      color: new THREE.Color(cor), metalness: 0, roughness: 0.04,
       clearcoat: 1, clearcoatRoughness: 0.02, reflectivity: 1,
-      transparent: true, opacity: 0.55, envMapIntensity: 2.6, side: THREE.DoubleSide,
+      transparent: true, opacity: 0.5, envMapIntensity: 2.0, side: THREE.DoubleSide,
     });
     glassRef.current = glass;
 
