@@ -30,7 +30,7 @@ export default function LenteEspessura3D({
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // leve no celular
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.08;
+    renderer.toneMappingExposure = 1.25;
     mount.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
@@ -42,15 +42,16 @@ export default function LenteEspessura3D({
     const env = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
     scene.environment = env;
 
-    const key = new THREE.DirectionalLight(0xffffff, 2.4); key.position.set(3, 4, 3); scene.add(key);
-    const fill = new THREE.DirectionalLight(0x88aaff, 1.1); fill.position.set(-3, 1, 2); scene.add(fill);
-    scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+    const key = new THREE.DirectionalLight(0xffffff, 3.4); key.position.set(3, 4, 3); scene.add(key);
+    const spec = new THREE.DirectionalLight(0xffffff, 2.6); spec.position.set(-2.5, 3, 4); scene.add(spec);
+    const fill = new THREE.DirectionalLight(0x88aaff, 1.2); fill.position.set(-3, 1, 2); scene.add(fill);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.35));
 
-    // Vidro leve (sem transmission/refração — roda liso no celular)
+    // Vidro reflexivo/espelhado (reflexos fortes p/ a lente "brilhar" e aparecer)
     const glass = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color(cor), metalness: 0, roughness: 0.08,
-      clearcoat: 1, clearcoatRoughness: 0.06, reflectivity: 0.7,
-      transparent: true, opacity: 0.62, envMapIntensity: 1.5, side: THREE.DoubleSide,
+      color: new THREE.Color(cor), metalness: 0.15, roughness: 0.03,
+      clearcoat: 1, clearcoatRoughness: 0.02, reflectivity: 1,
+      transparent: true, opacity: 0.55, envMapIntensity: 2.6, side: THREE.DoubleSide,
     });
     glassRef.current = glass;
 
