@@ -105,20 +105,18 @@ const DEMO_ITEMS = [
 const MODULES = [
   {
     id: 'demonstracoes',
-    label: 'Demonstrações',
+    label: 'Simulação de\nTratamentos',
     path: '/vision/demonstracoes',
     active: true,
     submenu: 'demo',
     grad: 'linear-gradient(180deg, #c45cff 0%, #8e2de2 100%)',
     icon: (
+      // Olho/lente com brilhos = simulação de tratamentos
       <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.4" />
-        {[0,45,90,135,180,225,270,315].map((deg, i) => {
-          const r2 = deg * Math.PI / 180;
-          const x1 = 12 + 6 * Math.cos(r2), y1 = 12 + 6 * Math.sin(r2);
-          const x2 = 12 + 9 * Math.cos(r2), y2 = 12 + 9 * Math.sin(r2);
-          return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />;
-        })}
+        <path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6S2.5 12 2.5 12z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+        <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.4" />
+        <path d="M19 3l.6 1.55L21.2 5l-1.6.45L19 7l-.6-1.55L16.8 5l1.6-.45z" fill="currentColor" />
+        <path d="M5.6 3.8l.42 1.1L7 5.3l-1 .4L5.6 6.7l-.42-1L4.2 5.3l.98-.4z" fill="currentColor" />
       </svg>
     ),
   },
@@ -359,7 +357,7 @@ export default function VisionHome() {
                 textTransform: 'uppercase', letterSpacing: '0.22em', marginBottom: 28,
                 textAlign: 'center', fontWeight: 700,
               }}>
-                ◆ Demonstrações de Lentes ◆
+                ◆ Simulação de Tratamentos ◆
               </div>
               <div style={{
                 display: 'flex', gap: '22px 18px',
