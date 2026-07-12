@@ -5,8 +5,8 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 
 const BASE_SCALE = 0.5; // tamanho base da lente na tela (zoom multiplica)
 const R = 1;            // raio geométrico (diâmetro = 2)
-const ESP_SCALE = 0.06; // mm -> unidades (exagera p/ ver a espessura)
-const BC = 0.34;        // curvatura base (formato de bloco/lente curva)
+const ESP_SCALE = 0.08; // mm -> unidades (exagera p/ ver a espessura)
+const BC = 0.6;         // curvatura base (dome do bloco — mostra a espessura interna)
 
 // Lente 3D girável (arraste para rodar). Espessura muda por grau/índice.
 // `cor` = tom do vidro; `edgeCor` = cor sólida da borda (contraste p/ ver a espessura).
@@ -17,6 +17,7 @@ export default function LenteEspessura3D({
   const lensRef = useRef<THREE.Mesh | null>(null);
   const rimRef = useRef<THREE.Mesh | null>(null);
   const groupRef = useRef<THREE.Group | null>(null);
+  const pivotRef = useRef<THREE.Group | null>(null);
   const glassRef = useRef<THREE.MeshPhysicalMaterial | null>(null);
   const rimMatRef = useRef<THREE.MeshStandardMaterial | null>(null);
 
@@ -34,7 +35,7 @@ export default function LenteEspessura3D({
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(32, mount.clientWidth / mount.clientHeight, 0.1, 100);
-    camera.position.set(1.4, 0.9, 3.0);
+    camera.position.set(0, 0.35, 3.3);
 
     // Ambiente p/ reflexos de vidro (custo só na inicialização)
     const pmrem = new THREE.PMREMGenerator(renderer);
@@ -48,8 +49,8 @@ export default function LenteEspessura3D({
     // Vidro leve (sem transmission/refração — roda liso no celular)
     const glass = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color(cor), metalness: 0, roughness: 0.08,
-      clearcoat: 1, clearcoatRoughness: 0.06, reflectivity: 0.6,
-      transparent: true, opacity: 0.5, envMapIntensity: 1.35, side: THREE.DoubleSide,
+      clearcoat: 1, clearcoatRoughness: 0.06, reflectivity: 0.7,
+      transparent: true, opacity: 0.62, envMapIntensity: 1.5, side: THREE.DoubleSide,
     });
     glassRef.current = glass;
 
@@ -68,17 +69,31 @@ export default function LenteEspessura3D({
     group.add(lens); group.add(rim);
     group.rotation.x = Math.PI / 2;              // eixo óptico p/ frente
     group.scale.setScalar(BASE_SCALE * zoom);
-    scene.add(group);
     groupRef.current = group;
+
+    // Pivô: inclina p/ revelar a curvatura interna e oscila (vista 3/4, nunca de perfil)
+    const pivot = new THREE.Group();
+    pivot.add(group);
+    pivot.rotation.x = -0.34;
+    scene.add(pivot);
+    pivotRef.current = pivot;
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableZoom = false; controls.enablePan = false;
     controls.enableDamping = true; controls.dampingFactor = 0.08;
-    controls.autoRotate = true; controls.autoRotateSpeed = 1.5;
+    controls.autoRotate = false;
     controls.target.set(0, 0, 0);
 
+    let dragging = false;
+    controls.addEventListener('start', () => { dragging = true; });
+    controls.addEventListener('end', () => { dragging = false; });
+
+    const t0 = performance.now();
     let raf = 0;
-    const animate = () => { controls.update(); renderer.render(scene, camera); raf = requestAnimationFrame(animate); };
+    const animate = () => {
+      if (!dragging) pivot.rotation.y = Math.sin((performance.now() - t0) * 0.0006) * 0.6;
+      controls.update(); renderer.render(scene, camera); raf = requestAnimationFrame(animate);
+    };
     animate();
 
     const onResize = () => {
