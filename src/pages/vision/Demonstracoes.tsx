@@ -1203,7 +1203,7 @@ function Espessura() {
         {/* Rótulos OD/OE + cotas — cantos inferiores */}
         {[
           { sig: 'OD', lbl: 'Olho Direito', e: eOD, pos: { left: 18 } as React.CSSProperties },
-          { sig: 'OE', lbl: 'Olho Esquerdo', e: eOE, pos: { right: 18 } as React.CSSProperties },
+          { sig: 'OE', lbl: 'Olho Esquerdo', e: eOE, pos: { right: 18, bottom: 84 } as React.CSSProperties },
         ].map(({ sig, lbl, e, pos }) => (
           <div key={sig} style={{ position: 'absolute', bottom: 14, ...pos, pointerEvents: 'none', background: 'rgba(6,10,20,0.8)', padding: '7px 13px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', boxShadow: '0 2px 16px rgba(0,0,0,.35)' }}>
             <div style={{ fontSize: 9.5, color: cor, fontFamily: 'var(--mono)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 3, textAlign: 'center' }}>{lbl} ({sig})</div>
