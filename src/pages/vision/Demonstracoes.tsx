@@ -1043,7 +1043,8 @@ function espVal(sinal: 'negativo' | 'positivo', grau: number, indice: string): n
 
 function Espessura() {
   const [sinal, setSinal] = useState<'negativo' | 'positivo'>('negativo');
-  const [grau, setGrau] = useState(6);
+  const [grauOD, setGrauOD] = useState(6);   // olho direito
+  const [grauOE, setGrauOE] = useState(6);   // olho esquerdo
   const [indice, setIndice] = useState('1.56');
   const [tabela, setTabela] = useState(false);
   const [zoom, setZoom] = useState(1);
@@ -1051,17 +1052,24 @@ function Espessura() {
 
   const cor = sinal === 'negativo' ? '#38bdf8' : '#34d399';
   const tint = sinal === 'negativo' ? '#d6ecff' : '#d6f7e4';
-  const val = espVal(sinal, grau, indice);
-  const val156 = espVal(sinal, grau, '1.56');
-  const reducao = Math.round((1 - val / val156) * 100);
 
-  // Espessuras de centro e borda para a lente 3D + cotas
-  const centerMm = sinal === 'negativo' ? Math.max(0.4, Math.min(1.2, val - 0.6)) : val;
-  const edgeMm = sinal === 'negativo' ? val : Math.max(0.4, Math.min(1.0, val - 0.6));
+  // Espessura (mm) + cotas de centro/borda para um grau
+  const eyeThick = (g: number) => {
+    const v = espVal(sinal, g, indice);
+    const centerMm = sinal === 'negativo' ? Math.max(0.4, Math.min(1.2, v - 0.6)) : v;
+    const edgeMm = sinal === 'negativo' ? v : Math.max(0.4, Math.min(1.0, v - 0.6));
+    return { v, centerMm, edgeMm };
+  };
+  const eOD = eyeThick(grauOD);
+  const eOE = eyeThick(grauOE);
+  const red = (g: number) => Math.round((1 - espVal(sinal, g, indice) / espVal(sinal, g, '1.56')) * 100);
+  const reducao = Math.max(red(grauOD), red(grauOE));
 
   const fmt = (n: number) => n.toFixed(1).replace('.', ',');
-  const grauStr = `${sinal === 'negativo' ? '−' : '+'}${grau.toFixed(2).replace('.', ',')}`;
-  const setG = (g: number) => setGrau(Math.max(0, Math.min(12, Math.round(g * 4) / 4)));
+  const grauStr = (g: number) => `${sinal === 'negativo' ? '−' : '+'}${g.toFixed(2).replace('.', ',')}`;
+  const clampG = (g: number) => Math.max(0, Math.min(12, Math.round(g * 4) / 4));
+  const setGOD = (g: number) => setGrauOD(clampG(g));
+  const setGOE = (g: number) => setGrauOE(clampG(g));
 
   const btn = (ativo: boolean): React.CSSProperties => ({
     fontFamily: 'var(--mono)', fontWeight: 700, cursor: 'pointer',
@@ -1102,21 +1110,26 @@ function Espessura() {
           })}
         </div>
 
-        {/* Grau (passo 0,25) */}
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 7 }}>
-            <span style={eyebrow}>Grau</span>
-            <span style={{ fontSize: 22, fontWeight: 800, color: cor, fontFamily: 'var(--mono)' }}>{grauStr}</span>
+        {/* Grau por olho (passo 0,25) */}
+        {([
+          { lbl: 'Olho Direito', sig: 'OD', g: grauOD, set: setGOD },
+          { lbl: 'Olho Esquerdo', sig: 'OE', g: grauOE, set: setGOE },
+        ] as const).map(o => (
+          <div key={o.sig}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 5 }}>
+              <span style={eyebrow}>{o.lbl} <span style={{ color: cor }}>({o.sig})</span></span>
+              <span style={{ fontSize: 20, fontWeight: 800, color: cor, fontFamily: 'var(--mono)' }}>{grauStr(o.g)}</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <button onClick={() => o.set(o.g - 0.25)} style={fine}>−</button>
+              <input type="range" min={0} max={12} step={0.25} value={o.g}
+                onChange={e => o.set(+e.target.value)}
+                style={{ flex: 1, accentColor: cor, height: 6, cursor: 'pointer' }} />
+              <button onClick={() => o.set(o.g + 0.25)} style={fine}>+</button>
+            </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <button onClick={() => setG(grau - 0.25)} style={fine}>−</button>
-            <input type="range" min={0} max={12} step={0.25} value={grau}
-              onChange={e => setG(+e.target.value)}
-              style={{ flex: 1, accentColor: cor, height: 6, cursor: 'pointer' }} />
-            <button onClick={() => setG(grau + 0.25)} style={fine}>+</button>
-          </div>
-          <div style={{ fontSize: 10, color: '#5b6273', fontFamily: 'var(--mono)', marginTop: 4, textAlign: 'center' }}>passo de 0,25 · 0 a 12 graus</div>
-        </div>
+        ))}
+        <div style={{ fontSize: 10, color: '#5b6273', fontFamily: 'var(--mono)', marginTop: -2, textAlign: 'center' }}>passo de 0,25 · 0 a 12 graus</div>
 
         {/* Índice de refração */}
         <div>
@@ -1156,40 +1169,56 @@ function Espessura() {
             <span style={{ animation: 'pulse 1.4s ease-in-out infinite' }}>carregando lente 3D…</span>
           </div>
         }>
-          <LenteEspessura3D centerMm={centerMm} edgeMm={edgeMm} cor={tint} edgeCor={cor} zoom={zoom} />
+          <LenteEspessura3D
+            od={{ centerMm: eOD.centerMm, edgeMm: eOD.edgeMm }}
+            oe={{ centerMm: eOE.centerMm, edgeMm: eOE.edgeMm }}
+            cor={tint} edgeCor={cor} zoom={zoom} />
         </Suspense>
 
-        {/* Leitura principal (topo) — pill escura p/ contraste sobre a grade azul do lightbox */}
-        <div style={{ position: 'absolute', top: 16, left: 0, right: 0, textAlign: 'center', pointerEvents: 'none' }}>
-          <div style={{ display: 'inline-block', background: 'rgba(6,10,20,0.78)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 16, padding: '8px 20px 9px', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', boxShadow: '0 4px 24px rgba(0,0,0,.35)' }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 8 }}>
-              <span style={{ fontSize: 46, fontWeight: 800, color: '#f8fafc', fontFamily: 'var(--mono)', lineHeight: 1, textShadow: '0 2px 20px rgba(0,0,0,.6)' }}>{fmt(val)}</span>
-              <span style={{ fontSize: 18, color: '#c3cbdd', fontFamily: 'var(--mono)' }}>mm</span>
-            </div>
-            <div style={{ fontSize: 11.5, color: cor, fontFamily: 'var(--mono)', fontWeight: 700, letterSpacing: '.06em', marginTop: 3, textTransform: 'uppercase', textShadow: '0 1px 6px rgba(0,0,0,.5)' }}>
-              {sinal === 'negativo' ? 'espessura na borda' : 'espessura no centro'}
-            </div>
+        {/* Leitura principal (topo) — dois visores: OD e OE */}
+        <div style={{ position: 'absolute', top: 14, left: 0, right: 0, textAlign: 'center', pointerEvents: 'none' }}>
+          <div style={{ display: 'inline-flex', gap: 10, background: 'rgba(6,10,20,0.78)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 16, padding: '9px 16px', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', boxShadow: '0 4px 24px rgba(0,0,0,.35)' }}>
+            {[{ sig: 'OD', e: eOD }, { sig: 'OE', e: eOE }].map(({ sig, e }) => (
+              <div key={sig} style={{ minWidth: 96 }}>
+                <div style={{ fontSize: 9.5, color: cor, fontFamily: 'var(--mono)', fontWeight: 700, letterSpacing: '.1em' }}>{sig}</div>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 5 }}>
+                  <span style={{ fontSize: 34, fontWeight: 800, color: '#f8fafc', fontFamily: 'var(--mono)', lineHeight: 1, textShadow: '0 2px 20px rgba(0,0,0,.6)' }}>{fmt(e.v)}</span>
+                  <span style={{ fontSize: 14, color: '#c3cbdd', fontFamily: 'var(--mono)' }}>mm</span>
+                </div>
+              </div>
+            ))}
           </div>
-          <div style={{ minHeight: 24, marginTop: 6 }}>
+          <div style={{ fontSize: 10.5, color: cor, fontFamily: 'var(--mono)', fontWeight: 700, letterSpacing: '.06em', marginTop: 4, textTransform: 'uppercase', textShadow: '0 1px 6px rgba(0,0,0,.5)' }}>
+            {sinal === 'negativo' ? 'espessura na borda' : 'espessura no centro'}
+          </div>
+          <div style={{ minHeight: 22, marginTop: 5 }}>
             {indice !== '1.56' && (
-              <span style={{ fontSize: 12.5, color: cor, fontWeight: 700, fontFamily: 'var(--mono)', background: 'rgba(6,10,20,0.85)', padding: '5px 12px', borderRadius: 999, border: `1px solid ${cor}`, boxShadow: '0 2px 12px rgba(0,0,0,.35)' }}>
-                ▼ {reducao}% mais fina que a 1.56
+              <span style={{ fontSize: 12, color: cor, fontWeight: 700, fontFamily: 'var(--mono)', background: 'rgba(6,10,20,0.85)', padding: '4px 11px', borderRadius: 999, border: `1px solid ${cor}`, boxShadow: '0 2px 12px rgba(0,0,0,.35)' }}>
+                ▼ até {reducao}% mais fina que a 1.56
               </span>
             )}
           </div>
         </div>
 
-        {/* Cotas — canto inferior esquerdo (longe do dock Menu/Extras/OS) */}
-        <div style={{ position: 'absolute', bottom: 14, left: 18, display: 'flex', gap: 18, pointerEvents: 'none', background: 'rgba(6,10,20,0.8)', padding: '8px 14px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', boxShadow: '0 2px 16px rgba(0,0,0,.35)' }}>
-          {[['Centro', centerMm], ['Borda', edgeMm], ['Ø', '65']].map(([l, v]) => (
-            <div key={l as string} style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: '#eef2f9', fontFamily: 'var(--mono)' }}>
-                {typeof v === 'number' ? fmt(v) : v}<span style={{ fontSize: 10, color: '#9aa4b8' }}> mm</span>
-              </div>
-              <div style={{ fontSize: 9, color: '#8a93a6', fontFamily: 'var(--mono)', letterSpacing: '.06em', textTransform: 'uppercase' }}>{l}</div>
+        {/* Rótulos OD/OE + cotas — cantos inferiores */}
+        {[
+          { sig: 'OD', lbl: 'Olho Direito', e: eOD, pos: { left: 18 } as React.CSSProperties },
+          { sig: 'OE', lbl: 'Olho Esquerdo', e: eOE, pos: { right: 18 } as React.CSSProperties },
+        ].map(({ sig, lbl, e, pos }) => (
+          <div key={sig} style={{ position: 'absolute', bottom: 14, ...pos, pointerEvents: 'none', background: 'rgba(6,10,20,0.8)', padding: '7px 13px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', boxShadow: '0 2px 16px rgba(0,0,0,.35)' }}>
+            <div style={{ fontSize: 9.5, color: cor, fontFamily: 'var(--mono)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 3, textAlign: 'center' }}>{lbl} ({sig})</div>
+            <div style={{ display: 'flex', gap: 14 }}>
+              {[['Centro', e.centerMm], ['Borda', e.edgeMm], ['Ø', '65']].map(([l, v]) => (
+                <div key={l as string} style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#eef2f9', fontFamily: 'var(--mono)' }}>
+                    {typeof v === 'number' ? fmt(v) : v}<span style={{ fontSize: 9, color: '#9aa4b8' }}> mm</span>
+                  </div>
+                  <div style={{ fontSize: 8.5, color: '#8a93a6', fontFamily: 'var(--mono)', letterSpacing: '.06em', textTransform: 'uppercase' }}>{l}</div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
 
         {/* Dica girar — pill escura p/ ler sobre a grade clara */}
         <div style={{ position: 'absolute', top: 12, right: 14, fontSize: 10.5, color: '#b7c0d2', fontFamily: 'var(--mono)', display: 'flex', alignItems: 'center', gap: 5, pointerEvents: 'none', background: 'rgba(6,10,20,0.7)', padding: '5px 10px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.1)' }}>
