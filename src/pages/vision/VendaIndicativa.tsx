@@ -376,16 +376,7 @@ export default function VendaIndicativa() {
 
                 {/* Campo de visão da lente (por cima da paisagem) */}
                 {p?.campoImg ? (
-                  // Contorno/zonas da lente pintados em cinza sólido (PNG usado como máscara)
-                  <div key={p.campoImg} style={{
-                    position: 'absolute', top: '1%', left: 128, right: '1%', bottom: '1%',
-                    WebkitMaskImage: `url("${cvSrc(p.campoImg)}")`, maskImage: `url("${cvSrc(p.campoImg)}")`,
-                    WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
-                    WebkitMaskPosition: 'center', maskPosition: 'center',
-                    WebkitMaskSize: 'contain', maskSize: 'contain',
-                    background: '#8b9099',
-                    filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.45))', pointerEvents: 'none',
-                  }} />
+                  <LenteCampo key={p.campoImg} campoImg={p.campoImg} />
                 ) : (
                   // Fallback: lente de vidro genérica
                   <div style={{ position: 'absolute', top: '5%', left: '18%', right: '6%', bottom: '6%', borderRadius: '48% 48% 46% 46% / 52% 52% 48% 48%', border: '2px solid rgba(255,255,255,0.75)', boxShadow: 'inset 0 0 80px rgba(255,255,255,0.14), 0 14px 44px rgba(0,0,0,0.22)', background: 'linear-gradient(135deg, rgba(255,255,255,0.16) 0%, transparent 42%)', pointerEvents: 'none' }} />
@@ -489,6 +480,93 @@ function Dock({ navigate, onOS }: { navigate: ReturnType<typeof useNavigate>; on
   );
 }
 
+// ─── Máscara com o formato PREENCHIDO da lente (flood-fill a partir do centro) ──
+// O PNG do campo de visão tem só as linhas (fundo transparente). Para sombrear o
+// interior da lente sem vazar, geramos uma máscara sólida com a forma da lente.
+const shapeMaskCache = new Map<string, string>();
+
+function useShapeMask(campoImg: string): string | null {
+  const [mask, setMask] = useState<string | null>(() => shapeMaskCache.get(campoImg) ?? null);
+  useEffect(() => {
+    const cached = shapeMaskCache.get(campoImg);
+    if (cached) { setMask(cached); return; }
+    let cancelled = false;
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const scale = Math.min(1, 640 / Math.max(img.naturalWidth, img.naturalHeight));
+        const cw = Math.max(1, Math.round(img.naturalWidth * scale));
+        const ch = Math.max(1, Math.round(img.naturalHeight * scale));
+        const cnv = document.createElement('canvas'); cnv.width = cw; cnv.height = ch;
+        const ctx = cnv.getContext('2d')!;
+        ctx.drawImage(img, 0, 0, cw, ch);
+        const a = ctx.getImageData(0, 0, cw, ch).data;
+        const N = cw * ch;
+        const isLine = (i: number) => a[i * 4 + 3] > 60; // pixel de linha (contorno/zonas)
+        const fill = new Uint8Array(N);
+        // começa no centro (interior transparente) e preenche até bater no contorno
+        const start = Math.floor(ch / 2) * cw + Math.floor(cw / 2);
+        const stack = [start];
+        while (stack.length) {
+          const p = stack.pop()!;
+          if (p < 0 || p >= N || fill[p] || isLine(p)) continue;
+          fill[p] = 1;
+          const x = p % cw;
+          if (x > 0) stack.push(p - 1);
+          if (x < cw - 1) stack.push(p + 1);
+          stack.push(p - cw);
+          stack.push(p + cw);
+        }
+        const out = ctx.createImageData(cw, ch);
+        for (let i = 0; i < N; i++) {
+          const inside = fill[i] || isLine(i); // inclui a própria linha na forma
+          out.data[i * 4] = 255; out.data[i * 4 + 1] = 255; out.data[i * 4 + 2] = 255;
+          out.data[i * 4 + 3] = inside ? 255 : 0;
+        }
+        ctx.putImageData(out, 0, 0);
+        const url = cnv.toDataURL();
+        shapeMaskCache.set(campoImg, url);
+        if (!cancelled) setMask(url);
+      } catch { /* CORS/decoding — segue só com as linhas */ }
+    };
+    img.src = cvSrc(campoImg);
+    return () => { cancelled = true; };
+  }, [campoImg]);
+  return mask;
+}
+
+// Lente sobre a paisagem: aberrações (cinza claro por dentro) + contorno/zonas em preto.
+function LenteCampo({ campoImg, box }: { campoImg: string; box?: React.CSSProperties }) {
+  const shape = useShapeMask(campoImg);
+  const baseBox: React.CSSProperties = { position: 'absolute', top: '1%', left: 128, right: '1%', bottom: '1%', pointerEvents: 'none', ...box };
+  const maskCommon = (u: string): React.CSSProperties => ({
+    WebkitMaskImage: `url("${u}")`, maskImage: `url("${u}")`,
+    WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
+    WebkitMaskPosition: 'center', maskPosition: 'center',
+    WebkitMaskSize: 'contain', maskSize: 'contain',
+  });
+  return (
+    <>
+      {/* Aberrações: cinza claro nas zonas periféricas (corredor central fica limpo) */}
+      {shape && (
+        <div style={{
+          ...baseBox, ...maskCommon(shape),
+          background:
+            'radial-gradient(ellipse 32% 42% at 22% 63%, rgba(184,187,196,0.55) 0%, rgba(184,187,196,0.12) 55%, transparent 74%),' +
+            'radial-gradient(ellipse 32% 42% at 78% 60%, rgba(184,187,196,0.55) 0%, rgba(184,187,196,0.12) 55%, transparent 74%),' +
+            'rgba(200,203,210,0.08)',
+        }} />
+      )}
+      {/* Contorno + zonas em PRETO */}
+      <div style={{
+        ...baseBox, ...maskCommon(cvSrc(campoImg)),
+        background: '#141416',
+        filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.42))',
+      }} />
+    </>
+  );
+}
+
 // ─── Modo Desenhar (canvas de anotação sobre paisagem + campo de visão) ────────
 function Desenhar({ campoImg, paisagemId }: { campoImg?: string; paisagemId: number }) {
   const cvRef = useRef<HTMLCanvasElement>(null);
@@ -528,7 +606,7 @@ function Desenhar({ campoImg, paisagemId }: { campoImg?: string; paisagemId: num
     <div ref={wrapRef} style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
       <img src={`/paisagens/${paisagemId}.png`} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
       {campoImg
-        ? <div style={{ position: 'absolute', top: '1%', left: '2%', right: '2%', bottom: '1%', WebkitMaskImage: `url("${cvSrc(campoImg)}")`, maskImage: `url("${cvSrc(campoImg)}")`, WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat', WebkitMaskPosition: 'center', maskPosition: 'center', WebkitMaskSize: 'contain', maskSize: 'contain', background: '#8b9099', filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.45))', pointerEvents: 'none' }} />
+        ? <LenteCampo campoImg={campoImg} box={{ left: '2%' }} />
         : <div style={{ position: 'absolute', top: '5%', left: '18%', right: '6%', bottom: '6%', borderRadius: '48% 48% 46% 46% / 52% 52% 48% 48%', border: '2px solid rgba(255,255,255,0.75)', background: 'linear-gradient(135deg, rgba(255,255,255,0.16), transparent 42%)', pointerEvents: 'none' }} />}
       <canvas ref={cvRef} onPointerDown={start} onPointerMove={move} onPointerUp={end} onPointerLeave={end} style={{ position: 'absolute', inset: 0, cursor: 'crosshair', touchAction: 'none' }} />
       {/* toolbar */}
