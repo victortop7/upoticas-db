@@ -543,7 +543,7 @@ function LenteCampo({ campoImg, box }: { campoImg: string; box?: React.CSSProper
     WebkitMaskImage: `url("${u}")`, maskImage: `url("${u}")`,
     WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
     WebkitMaskPosition: 'center', maskPosition: 'center',
-    WebkitMaskSize: 'contain', maskSize: 'contain',
+    WebkitMaskSize: 'auto 132%', maskSize: 'auto 132%', // lente maior (recorta a margem transparente do PNG)
   });
   return (
     <>
