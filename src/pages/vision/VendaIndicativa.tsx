@@ -1,454 +1,381 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// WhatsApp da UP7 para marcar a reunião de configuração das lentes
-const UP7_WHATSAPP = '5585991507887';
-
-// ─── Tipos de dados ─────────────────────────────────────────────────────────
+// ─── Tipos ────────────────────────────────────────────────────────────────────
 type TipoLenteId = 'multifocais' | 'visao-simples' | 'ocupacionais' | 'bifocais';
 
 interface Produto {
   nome: string;
   parcela: number;            // valor da parcela 12x
+  campo?: string;             // família/linha da lente
   superficie?: string;        // Digital / Convencional
   foto?: string;              // Incolor / Fotossensível
-  material?: string;          // 1.50 / 1.56 / Orma Blue UV ...
+  material?: string;          // 1.50 / Orma Blue UV ...
   tratamento?: string;        // AR / Optifog / Verniz HC ...
+  codigo?: string;
+  disp?: string;              // disponibilidade (dioptria)
 }
+interface Tabela { id: string; nome: string; marca: string; cor: string; tipos: TipoLenteId[]; produtos: Produto[]; }
 
-interface Tabela {
-  id: string;
-  marca: string;
-  data: string;
-  cor: string;
-  tipos: TipoLenteId[];
-  produtos: Produto[];
-}
+// helper
+const P = (nome: string, parcela: number, o: Partial<Produto> = {}): Produto => ({
+  nome, parcela, campo: o.campo, superficie: o.superficie ?? 'Digital', foto: o.foto ?? 'Incolor',
+  material: o.material ?? '1.50', tratamento: o.tratamento ?? 'AR', codigo: o.codigo, disp: o.disp,
+});
 
-// helper: P(nome, parcela, material?, tratamento?)
-const P = (nome: string, parcela: number, material = '1.50', tratamento = 'AR'): Produto =>
-  ({ nome, parcela, superficie: 'Digital', foto: 'Incolor', material, tratamento });
-
-// ─── Tipos de lente ─────────────────────────────────────────────────────────
-const TIPOS_LENTE: { id: TipoLenteId; label: string; icon: React.ReactNode }[] = [
-  { id: 'multifocais', label: 'Multifocais', icon: <svg width="44" height="44" viewBox="0 0 24 24" fill="none"><path d="M6 4h12l-2 16H8L6 4z" stroke="#2563eb" strokeWidth="1.4" strokeLinejoin="round" /><line x1="7" y1="9" x2="17" y2="9" stroke="#2563eb" strokeWidth="1.2" /><line x1="7.5" y1="14" x2="16.5" y2="14" stroke="#2563eb" strokeWidth="1.2" /></svg> },
-  { id: 'visao-simples', label: 'Visão Simples', icon: <svg width="44" height="44" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="#2563eb" strokeWidth="1.4" /><circle cx="12" cy="12" r="3" stroke="#2563eb" strokeWidth="1.2" /></svg> },
-  { id: 'ocupacionais', label: 'Ocupacionais', icon: <svg width="44" height="44" viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="14" rx="2" stroke="#2563eb" strokeWidth="1.4" /><path d="M4 10h16M9 19v-9" stroke="#2563eb" strokeWidth="1.2" /></svg> },
-  { id: 'bifocais', label: 'Bifocais', icon: <svg width="44" height="44" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="#2563eb" strokeWidth="1.4" /><path d="M7 15h10" stroke="#2563eb" strokeWidth="1.2" /><path d="M9.5 15a2.5 2.5 0 0 1 5 0" stroke="#2563eb" strokeWidth="1.2" /></svg> },
+// ─── Tipos de lente (barra do topo) ───────────────────────────────────────────
+const TIPOS: { id: TipoLenteId; label: string }[] = [
+  { id: 'multifocais', label: 'Multifocal' },
+  { id: 'visao-simples', label: 'Simples' },
+  { id: 'ocupacionais', label: 'Ocupacional' },
+  { id: 'bifocais', label: 'Bifocal' },
 ];
 
-// ─── Catálogos (preços transcritos dos prints) ──────────────────────────────
+// ─── Catálogos (Fase 1 — dados de exemplo; Fase 2 recebe o PDF Essilor completo) ─
+const DISP_MULTI = '-6,00 a +6,00 / Cil. até -6,00';
 const TABELAS: Tabela[] = [
   {
-    id: 'essilor', marca: 'VARILUX', data: 'Essilor 04 2026', cor: '#003a70', tipos: ['multifocais'],
+    id: 'essilor-mf', nome: 'Essilor 04 2026', marca: 'VARILUX', cor: '#003a70', tipos: ['multifocais'],
     produtos: [
-      P('Varilux XR Pro', 887.42, 'Orma Blue UV', 'Optifog'),
-      P('Varilux XR Track', 534.10, 'Orma Blue UV', 'Optifog'),
-      P('Varilux XR Track Lite', 510.76, 'Orma Blue UV', 'Optifog'),
-      P('Varilux XR Design', 457.42, 'Orma Blue UV', 'Optifog'),
-      P('Varilux Physio Extensee Track', 286.60, 'Orma', 'Optifog'),
-      P('Varilux Physio Extensee', 254.10, 'Orma', 'Optifog'),
-      P('Varilux Comfort Max', 124.92, 'Orma', 'Verniz HC'),
-      P('Varilux Comfort', 124.92, 'Orma', 'Verniz HC'),
-      P('Varilux Liberty 3.0', 83.26, 'Orma', 'Verniz HC'),
-      P('Varilux Liberty', 83.26, 'Orma', 'Sem AR'),
-      P('Kodak Unique Infinite', 79.92),
-      P('Kodak Unique UHD', 69.10),
-      P('Kodak Network UHD', 59.10),
-      P('Kodak Precise UHD', 37.42),
-      P('Kodak Precise', 37.42, '1.50', 'Sem AR'),
-      P('Varilux Sport', 134.92, 'Airwear Blue UV', 'Optifog'),
-      P('Varilux Sport Wrap', 134.92, 'Airwear Blue UV', 'Optifog'),
-      P('Varilux Roadpilot', 77.42, 'Orma', 'Trio Easy Clean'),
-      P('Kodak Easy Sun', 85.76),
+      P('Varilux XR Pro Orma Blue UV Optifog', 887.42, { material: 'Orma Blue UV', tratamento: 'Optifog', campo: 'Varilux XR', disp: DISP_MULTI }),
+      P('Varilux XR Track Orma Blue UV Optifog', 534.10, { material: 'Orma Blue UV', tratamento: 'Optifog', campo: 'Varilux XR' }),
+      P('Varilux XR Design Orma Blue UV Optifog', 457.42, { material: 'Orma Blue UV', tratamento: 'Optifog', campo: 'Varilux XR' }),
+      P('Varilux Physio Extensee Orma Optifog', 254.10, { material: 'Orma', tratamento: 'Optifog', campo: 'Varilux Physio' }),
+      P('Varilux Comfort Max Orma Verniz HC', 124.92, { material: 'Orma', tratamento: 'Verniz HC', campo: 'Varilux Comfort' }),
+      P('Varilux Liberty 3.0 Orma Verniz HC', 83.26, { material: 'Orma', tratamento: 'Verniz HC', campo: 'Varilux Liberty' }),
+      P('Kodak Unique Infinite 1.50 AR', 79.92, { campo: 'Kodak Unique' }),
+      P('Kodak Precise UHD 1.50 AR', 37.42, { campo: 'Kodak Precise' }),
     ],
   },
   {
-    id: 'zeiss', marca: 'ZEISS', data: 'Zeiss 10 2024', cor: '#1a1a2e', tipos: ['multifocais'],
+    id: 'hoya-mf', nome: 'Hoya 05 2024', marca: 'HOYA', cor: '#0072c6', tipos: ['multifocais'],
     produtos: [
-      P('Zeiss Progressive SmartLife Individual 3', 750.00, '1.50 BlueGuard', 'DV Chrome'),
-      P('Zeiss Progressive SmartLife Individual', 750.00, '1.50 BlueGuard', 'DV Chrome'),
-      P('Zeiss Progressive SmartLife Superb', 499.10, '1.50 BlueGuard', 'DV Chrome'),
-      P('Zeiss Progressive SmartLife Plus', 399.18, '1.50 BlueGuard', 'DV Chrome'),
-      P('Zeiss Progressive SmartLife Pure', 306.68, '1.50 BlueGuard', 'DV Chrome'),
-      P('Zeiss Progressive Smartlife Essential / Essential Short', 224.18, '1.50 BlueGuard', 'DV Chrome'),
-      P('Zeiss Progressive Light 3Dv', 224.18, '1.50 BlueGuard', 'DV Chrome'),
-      P('Zeiss Progressive Light 3D', 158.26, '1.50 BlueGuard', 'DV Chrome'),
-      P('Zeiss Progressive Light D FreeForm', 116.60, '1.50 BlueGuard', 'DV Chrome'),
-      P('Zeiss Progressive GT2 New Edition', 83.26, '1.50 BlueGuard', 'DV Chrome'),
-      P('Zeiss Progressive Individual Sport', 427.42, '1.50 BlueGuard', 'DV Chrome'),
-      P('Zeiss Progressive Individual DriveSafe', 374.92, '1.50', 'DV DriveSafe'),
-      P('Coloração', 17.50, 'Preto 12 FARB490', 'Preço'),
+      P('HOYALUX Myself 1.50 HV LongLife UV', 790.84, { material: '1.50', tratamento: 'HV LongLife UV', campo: 'HOYALUX Myself' }),
+      P('HOYALUX Mystyle V+ 1.50 HV LongLife UV', 707.50, { material: '1.50', tratamento: 'HV LongLife UV', campo: 'HOYALUX Mystyle' }),
+      P('HOYALUX Lifestyle 4 1.50 No-Risk', 395.00, { material: '1.50', tratamento: 'No-Risk', campo: 'HOYALUX Lifestyle' }),
+      P('HOYALUX Balansis 1.50 No-Risk', 311.68, { material: '1.50', tratamento: 'No-Risk', campo: 'HOYALUX Balansis' }),
     ],
   },
   {
-    id: 'hoya', marca: 'HOYA', data: 'Hoya 05 2024', cor: '#0072c6', tipos: ['multifocais'],
+    id: 'essilor-vs', nome: 'Essilor 04 2026', marca: 'EYEZEN', cor: '#c0006a', tipos: ['visao-simples'],
     produtos: [
-      P('HOYALUX Myself', 790.84, '1.50', 'HV LongLife UV Control'),
-      P('HOYALUX Mystyle V+', 707.50, '1.50', 'HV LongLife UV Control'),
-      P('HOYALUX Lifestyle 4i', 420.00, '1.50', 'No-Risk'),
-      P('HOYALUX Lifestyle 4', 395.00, '1.50', 'No-Risk'),
-      P('HOYALUX Lifestyle 3i', 386.68, '1.50', 'No-Risk'),
-      P('HOYALUX Lifestyle 3', 370.00, '1.50', 'No-Risk'),
-      P('HOYALUX Balansis', 311.68, '1.50', 'No-Risk'),
-      P('HOYALUX Daynamic', 157.50, '1.50', 'HV Hard'),
-      P('Argos', 82.50, '1.50', 'HV Hard'),
-      P('Amplus', 57.50, '1.50', 'HV Hard'),
-      P('Enroute', 365.84, '1.60', 'AR'),
-      P('Sportive', 257.50, '1.50', 'HV Hard'),
+      P('Eyezen Boost Orma Blue UV', 134.08, { material: 'Orma Blue UV', tratamento: 'Crizal', campo: 'Eyezen', disp: '-10,00 a +6,00 / Cil. até -6,00' }),
+      P('Eyezen Start Orma Blue UV', 124.92, { material: 'Orma Blue UV', tratamento: 'Crizal', campo: 'Eyezen' }),
+      P('Visão Simples Surfaçada Orma AR', 101.58, { material: 'Orma', tratamento: 'Crizal Sapphire', campo: 'Visão Simples', superficie: 'Surfaçada' }),
+      P('Lentes Kodak Single 1.50 AR', 104.92, { campo: 'Kodak Single' }),
     ],
   },
   {
-    id: 'progressiva', marca: 'PROGRESSIVA', data: 'Genérica', cor: '#16a34a', tipos: ['multifocais'],
+    id: 'essilor-oc', nome: 'Essilor 04 2026', marca: 'DIGITIME', cor: '#5b2a86', tipos: ['ocupacionais'],
     produtos: [
-      P('Progressiva Pro ID Freeform', 140.00, '1.56', 'Sem AR'),
-      P('Progressiva Top Freeform', 107.92, '1.56', 'Sem AR'),
-      P('Progressiva Smart Freeform', 70.42, '1.56', 'Sem AR'),
-      P('Progressiva Acabada', 36.68, '1.56', 'AR Verde'),
-      P('Haytek Light Freeform', 10.00, '1.56', 'Antirrisco'),
+      P('Varilux Digitime Near Orma Blue UV', 134.92, { material: 'Orma Blue UV', tratamento: 'Crizal', campo: 'Digitime', disp: '-10,00 a +6,00 / Cil. até -6,00' }),
+      P('Varilux Digitime Mid Orma Blue UV', 134.92, { material: 'Orma Blue UV', tratamento: 'Crizal', campo: 'Digitime' }),
+      P('Kodak SoftWear 1.50 AR', 122.42, { campo: 'Kodak SoftWear' }),
     ],
   },
   {
-    id: 'freeview', marca: 'FREEVIEW', data: 'Freeview 06 2025', cor: '#2563eb', tipos: ['multifocais'],
+    id: 'forla-bf', nome: 'Forla 04 2024', marca: 'BIFOCAL', cor: '#1e5aa8', tipos: ['bifocais'],
     produtos: [
-      P('FREEVIEW GENESIS', 573.34, '1.50', 'Titanium'),
-      P('FREEVIEW SILVER', 360.00, '1.49'),
-      P('FREEVIEW HDI', 293.34),
-      P('FREEVIEW HD', 243.34),
-      P('FREEVIEW SLIM', 316.68),
-      P('FREEVIEW PRO', 160.00),
-      P('FREEVIEW EASY', 126.68),
-      P('TOPVIEW', 75.00),
-      P('TOPLIGHT', 53.34),
+      P('Bifocal Digital 1.60 AR Blue', 205.92, { material: '1.60', tratamento: 'AR Blue', campo: 'Bifocal Digital', codigo: '142131345700', disp: '+6,00 a -10,00 / Cil. até -4,00' }),
+      P('Bifocal Digital 1.67 AR Clean', 186.60, { material: '1.67', tratamento: 'AR Clean', campo: 'Bifocal Digital' }),
+      P('Bifocal Digital 1.67 AR Premium', 220.84, { material: '1.67', tratamento: 'AR Premium', campo: 'Bifocal Digital' }),
+      P('Bifocal Digital 1.74 Surf. Incolor', 320.00, { material: '1.74', tratamento: 'Surf. Incolor', campo: 'Bifocal Digital', superficie: 'Surfaçada' }),
     ],
   },
+];
+
+// ─── Ambientes (Fase 1: gradiente; troque colocando fotos em public/ambientes/{id}.jpg) ─
+const AMBIENTES = [
+  { id: 'interno', label: 'Interno', grad: 'linear-gradient(160deg,#d3dbe6,#a7b4c6)' },
+  { id: 'externo', label: 'Externo', grad: 'linear-gradient(160deg,#bcd7f2,#7fa8dc)' },
+  { id: 'dirigir', label: 'Dirigir', grad: 'linear-gradient(160deg,#9aa7b3,#586472)' },
+  { id: 'leitura', label: 'Leitura', grad: 'linear-gradient(160deg,#efe7d7,#d6c6a8)' },
+  { id: 'olho', label: 'Olho', grad: 'linear-gradient(160deg,#eccdb7,#c79880)' },
+  { id: 'praia', label: 'Praia', grad: 'linear-gradient(160deg,#c2e8f3,#ecdcae)' },
+  { id: 'casa', label: 'Casa', grad: 'linear-gradient(160deg,#e7dfd3,#c1b6a3)' },
+  { id: 'computador', label: 'Computador', grad: 'linear-gradient(160deg,#2c3541,#12181f)' },
 ];
 
 const brl = (v: number) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const AMBIENTE = '/home-hero.jpg';
 
-// ─── Header ─────────────────────────────────────────────────────────────────
-function Header({ titulo }: { titulo: string }) {
-  return (
-    <div style={{ position: 'absolute', top: 22, left: 26, zIndex: 5, pointerEvents: 'none' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 5 }}>
-        <div style={{ width: 32, height: 32, borderRadius: 9, background: 'linear-gradient(180deg,#3ba6ff,#007aff)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, color: '#fff', boxShadow: '0 4px 12px rgba(0,122,255,0.3)' }}>V</div>
-        <div style={{ fontSize: 15, fontWeight: 700, color: '#0f172a', letterSpacing: '-0.3px' }}>Connect <span style={{ color: '#007aff' }}>Vision</span></div>
-      </div>
-      <div style={{ fontSize: 11.5, color: '#64748b', fontWeight: 600, paddingLeft: 2 }}>{titulo}</div>
-    </div>
-  );
-}
-
-// ─── Diagrama de espessura (aba Desenho) ────────────────────────────────────
-function Espessura() {
-  const lente = (idx: string, idxAlt: string) => (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 30 }}>
-      <svg viewBox="0 0 360 120" width="100%" style={{ maxWidth: 420 }}>
-        {/* lente seção transversal */}
-        <path d="M 30 70 Q 180 40 330 70 L 330 76 Q 180 50 30 76 Z" fill="#dbe4ec" stroke="#9fb3c8" strokeWidth="1" />
-        <line x1="180" y1="46" x2="180" y2="74" stroke="#7a90a4" strokeWidth="1" />
-        {/* cota centro */}
-        <text x="180" y="30" textAnchor="middle" fontSize="11" fill="#1e3a5f" fontWeight="600">2,0 mm</text>
-        <text x="180" y="42" textAnchor="middle" fontSize="9" fill="#64748b">de centro</text>
-        {/* cota borda */}
-        <text x="6" y="64" fontSize="9" fill="#1e3a5f" fontWeight="600">2,00 mm</text>
-        <text x="6" y="74" fontSize="8" fill="#64748b">de borda</text>
-        <rect x="28" y="68" width="6" height="10" fill="none" stroke="#9fb3c8" strokeWidth="0.8" />
-        {/* diâmetro */}
-        <line x1="30" y1="92" x2="330" y2="92" stroke="#9fb3c8" strokeWidth="0.8" strokeDasharray="3 3" />
-        <text x="180" y="106" textAnchor="middle" fontSize="10" fill="#1e3a5f">∅ 65 mm</text>
-        <text x="345" y="74" fontSize="11" fill="#64748b">0</text>
-      </svg>
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: 13, color: '#94a3b8' }}>-1</div>
-        <div style={{ display: 'flex', gap: 36, alignItems: 'center', margin: '4px 0' }}>
-          <div style={{ fontSize: 22, fontWeight: 700, color: '#1e293b' }}>{idx}</div>
-          <div style={{ fontSize: 22, fontWeight: 700, color: '#1e293b' }}>0</div>
-        </div>
-        <div style={{ fontSize: 13, color: '#94a3b8' }}>{idxAlt} &nbsp;&nbsp; +1</div>
-      </div>
-    </div>
-  );
-  return (
-    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 40, padding: '40px 30px', background: '#fff' }}>
-      {lente('1.50', '1.53')}
-      {lente('1.50', '1.53')}
-    </div>
-  );
-}
-
-// ─── Vista detalhada de uma tabela ──────────────────────────────────────────
-function Detalhe({ tabela, onVoltar }: { tabela: Tabela; onVoltar: () => void }) {
-  const navigate = useNavigate();
-  const [idx, setIdx] = useState(0);
-  const [aba, setAba] = useState<'tabela' | 'ambientes' | 'desenho'>('ambientes');
-  const p = tabela.produtos[idx];
-  const LENTE = 'ellipse(46% 44% at 52% 48%)';
-
-  return (
-    <div style={{ flex: 1, display: 'flex', overflow: 'hidden', background: '#0f172a' }}>
-      {/* Lista lateral de produtos */}
-      <div style={{ width: 230, flexShrink: 0, background: '#fff', display: 'flex', flexDirection: 'column', borderRight: '1px solid #e2e8f0' }}>
-        {/* Specs do produto selecionado */}
-        <div style={{ borderBottom: '1px solid #e2e8f0' }}>
-          <div style={{ padding: '12px 14px 8px' }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: tabela.cor, lineHeight: 1.25 }}>{p.nome}</div>
-            <div style={{ fontSize: 13, fontWeight: 800, color: '#1e293b', fontFamily: 'var(--mono)', marginTop: 2 }}>12x {brl(p.parcela)}</div>
-          </div>
-          {[['Superfície', p.superficie], ['Fotossensível', p.foto], ['Material', p.material], ['Tratamento', p.tratamento]].map(([k, v]) => (
-            <div key={k} style={{ display: 'flex', gap: 6, padding: '5px 14px', borderTop: '1px solid #f1f5f9', fontSize: 11 }}>
-              <span style={{ color: '#94a3b8', minWidth: 78 }}>{k}:</span>
-              <span style={{ color: '#1e293b', fontWeight: 600 }}>{v}</span>
-            </div>
-          ))}
-        </div>
-        {/* Lista de produtos */}
-        <div style={{ flex: 1, overflowY: 'auto' }}>
-          {tabela.produtos.map((pr, i) => {
-            const ativo = i === idx;
-            return (
-              <button key={i} onClick={() => setIdx(i)} style={{
-                width: '100%', textAlign: 'left', cursor: 'pointer',
-                background: ativo ? '#eff6ff' : 'transparent',
-                borderLeft: `3px solid ${ativo ? tabela.cor : 'transparent'}`,
-                border: 'none', borderBottom: '1px solid #f1f5f9',
-                padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 3,
-                WebkitTapHighlightColor: 'transparent',
-              }}>
-                <span style={{ fontSize: 12, fontWeight: ativo ? 700 : 500, color: ativo ? '#1d4ed8' : '#334155', lineHeight: 1.2 }}>{pr.nome}</span>
-                <span style={{ fontSize: 12.5, fontWeight: 800, color: ativo ? '#1d4ed8' : '#64748b', fontFamily: 'var(--mono)' }}>12x {brl(pr.parcela)}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Centro */}
-      <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
-        {/* Abas topo */}
-        <div style={{ position: 'absolute', top: 14, left: '50%', transform: 'translateX(-50%)', zIndex: 6, display: 'flex', gap: 2, background: 'rgba(28,28,30,0.6)', backdropFilter: 'blur(16px)', borderRadius: 10, padding: 3 }}>
-          {([['tabela', 'Tabela'], ['ambientes', 'Ambientes'], ['desenho', 'Desenho']] as const).map(([id, label]) => (
-            <button key={id} onClick={() => setAba(id)} style={{
-              padding: '7px 18px', borderRadius: 8, border: 'none', cursor: 'pointer',
-              background: aba === id ? 'rgba(255,255,255,0.95)' : 'transparent',
-              color: aba === id ? '#111827' : 'rgba(255,255,255,0.7)',
-              fontSize: 12.5, fontWeight: 600, letterSpacing: '-0.01em',
-              WebkitTapHighlightColor: 'transparent',
-            }}>{label}</button>
-          ))}
-        </div>
-
-        {/* Conteúdo central */}
-        {aba === 'desenho' ? (
-          <Espessura />
-        ) : aba === 'tabela' ? (
-          <div style={{ position: 'absolute', inset: 0, background: '#f8fafc', overflowY: 'auto', padding: '64px 28px 20px' }}>
-            <div style={{ maxWidth: 620, margin: '0 auto', background: '#fff', borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-              {tabela.produtos.map((pr, i) => (
-                <div key={i} onClick={() => setIdx(i)} style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  padding: '12px 18px', borderBottom: i < tabela.produtos.length - 1 ? '1px solid #f1f5f9' : 'none',
-                  background: i === idx ? '#eff6ff' : 'transparent', cursor: 'pointer',
-                }}>
-                  <span style={{ fontSize: 13.5, fontWeight: 600, color: '#1e293b' }}>{pr.nome}</span>
-                  <span style={{ fontSize: 14, fontWeight: 800, color: tabela.cor, fontFamily: 'var(--mono)' }}>12x {brl(pr.parcela)}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <>
-            {/* Ambiente desfocado */}
-            <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${AMBIENTE})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'blur(7px) brightness(.85)' }} />
-            {/* Lente nítida */}
-            <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${AMBIENTE})`, backgroundSize: 'cover', backgroundPosition: 'center', clipPath: LENTE, WebkitClipPath: LENTE }} />
-            {/* Contorno da lente */}
-            <div style={{ position: 'absolute', top: '4%', left: '6%', right: '6%', bottom: '8%', borderRadius: '50%', border: '2px solid rgba(255,255,255,.8)', pointerEvents: 'none' }} />
-            {/* brilho */}
-            <div style={{ position: 'absolute', inset: 0, clipPath: LENTE, WebkitClipPath: LENTE, background: 'linear-gradient(135deg, rgba(255,255,255,.22) 0%, transparent 35%)', pointerEvents: 'none' }} />
-          </>
-        )}
-
-        {/* Ícones direita */}
-        <div style={{ position: 'absolute', top: '50%', right: 8, transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', gap: 18, zIndex: 6 }}>
-          {[
-            { l: 'Descrição', i: <path d="M4 4h16v14H7l-3 3z" /> },
-            { l: 'Detalhes', i: <><circle cx="12" cy="12" r="9" /><line x1="12" y1="11" x2="12" y2="16" /><circle cx="12" cy="8" r="0.5" fill="currentColor" /></> },
-            { l: 'Linha', i: <circle cx="12" cy="12" r="8" /> },
-            { l: 'Simulação', i: <><rect x="3" y="6" width="18" height="14" rx="2" /><circle cx="12" cy="13" r="3.5" /></> },
-          ].map(b => (
-            <button key={b.l} onClick={() => b.l === 'Simulação' && navigate('/vision/demonstracoes?tab=visao')} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, color: aba === 'ambientes' ? '#475569' : '#94a3b8', WebkitTapHighlightColor: 'transparent' }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">{b.i}</svg>
-              <span style={{ fontSize: 9, fontWeight: 600 }}>{b.l}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Barra inferior */}
-      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, height: 40, background: '#fff', borderTop: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', zIndex: 7 }}>
-        <button onClick={onVoltar} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', color: '#007aff', fontSize: 13, fontWeight: 600 }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#007aff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
-          Marcas
-        </button>
-        <span style={{ fontSize: 12.5, color: '#475569', fontWeight: 600 }}>
-          {p.nome} · {p.superficie} {p.material} {p.tratamento} · <span style={{ color: tabela.cor, fontFamily: 'var(--mono)' }}>12x {brl(p.parcela)}</span>
-        </span>
-      </div>
-    </div>
-  );
-}
-
-// ─── Página principal ────────────────────────────────────────────────────────
+// ─── Módulo ───────────────────────────────────────────────────────────────────
 export default function VendaIndicativa() {
   const navigate = useNavigate();
-  const [tipo, setTipo] = useState<TipoLenteId | null>(null);
-  const [tabela, setTabela] = useState<Tabela | null>(null);
+  const [tipo, setTipo] = useState<TipoLenteId>('multifocais');
+  const tabelasTipo = TABELAS.filter(t => t.tipos.includes(tipo));
+  const [tabelaId, setTabelaId] = useState(tabelasTipo[0]?.id ?? '');
+  const tabela = TABELAS.find(t => t.id === tabelaId) ?? tabelasTipo[0] ?? TABELAS[0];
+  const [busca, setBusca] = useState('');
+  const [idx, setIdx] = useState(0);
+  const [aba, setAba] = useState<'ambientes' | 'desenhar'>('ambientes');
+  const [amb, setAmb] = useState(AMBIENTES[0].id);
+  const [painel, setPainel] = useState<null | 'descricao' | 'detalhes'>(null);
 
-  const tabelasFiltradas = tipo ? TABELAS.filter(t => t.tipos.includes(tipo)) : [];
-
-  // ── EM BREVE: tela de reunião (remover este bloco quando as lentes estiverem cadastradas) ──
-  const EM_BREVE: boolean = true;
-  if (EM_BREVE) {
-    const msg = encodeURIComponent('Olá! Quero marcar uma reunião para incluir as lentes e valores na Tabela Digital do Connect Vision.');
-    return (
-      <div style={{
-        position: 'absolute', inset: 0, overflow: 'auto',
-        background: 'radial-gradient(ellipse 90% 70% at 50% 0%, #0e2a1a 0%, #08080c 60%)',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        padding: '32px 24px', textAlign: 'center',
-      }}>
-        <button onClick={() => navigate('/vision')} style={{
-          position: 'absolute', top: 18, left: 18, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.14)',
-          borderRadius: 9, padding: '8px 14px', color: '#e5e7eb', fontSize: 13, fontWeight: 600, cursor: 'pointer',
-          display: 'flex', alignItems: 'center', gap: 6,
-        }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e5e7eb" strokeWidth="2.4" strokeLinecap="round"><polyline points="15 18 9 12 15 6" /></svg>
-          Menu
-        </button>
-
-        <div style={{
-          width: 76, height: 76, borderRadius: 22, margin: '0 auto 20px',
-          background: 'linear-gradient(180deg, #41d96b 0%, #1faf4a 100%)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 12px 34px rgba(31,175,74,0.4)',
-        }}>
-          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /><path d="M9 15l2 2 4-4" />
-          </svg>
-        </div>
-
-        <div style={{ display: 'inline-block', fontSize: 10, color: '#34d399', fontWeight: 700, fontFamily: 'var(--mono)', letterSpacing: '.16em', textTransform: 'uppercase', background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 999, padding: '4px 12px', marginBottom: 14 }}>
-          Em breve
-        </div>
-        <h1 style={{ fontSize: 26, fontWeight: 800, color: '#f1f5f9', margin: '0 0 12px' }}>Tabela Digital</h1>
-        <p style={{ fontSize: 15, color: '#9aa4b8', lineHeight: 1.6, maxWidth: 420, margin: '0 auto 26px' }}>
-          Estamos preparando a sua Tabela Digital personalizada. Marque uma reunião para incluirmos as lentes, marcas e valores da sua ótica.
-        </p>
-
-        <a href={`https://wa.me/${UP7_WHATSAPP}?text=${msg}`} target="_blank" rel="noopener noreferrer" style={{
-          display: 'inline-flex', alignItems: 'center', gap: 10, textDecoration: 'none',
-          background: '#25D366', color: '#fff', borderRadius: 14, padding: '15px 32px',
-          fontSize: 16, fontWeight: 700, boxShadow: '0 10px 28px rgba(37,211,102,0.4)',
-        }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M17.5 14.4c-.3-.15-1.8-.9-2.1-1-.3-.1-.5-.15-.7.15s-.8 1-.95 1.2-.35.22-.65.07a8.5 8.5 0 0 1-2.5-1.55 9.3 9.3 0 0 1-1.7-2.15c-.18-.3 0-.47.13-.62.13-.13.3-.35.44-.52.15-.18.2-.3.3-.5.1-.2 0-.37-.03-.52-.07-.15-.66-1.6-.9-2.2-.24-.57-.48-.5-.66-.5h-.57c-.2 0-.52.07-.8.37-.27.3-1.05 1.03-1.05 2.5s1.08 2.9 1.23 3.1c.15.2 2.12 3.24 5.13 4.54.72.3 1.27.5 1.7.64.72.23 1.37.2 1.88.12.57-.08 1.76-.72 2-1.4.26-.7.26-1.28.18-1.4-.07-.13-.27-.2-.57-.35z" /><path d="M12 2a10 10 0 0 0-8.6 15.05L2 22l5.1-1.34A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.1.8.83-3-.2-.3A8.2 8.2 0 1 1 12 20.2z" /></svg>
-          Marcar reunião
-        </a>
-
-        <p style={{ fontSize: 12, color: '#5b6273', marginTop: 22 }}>Conexão Óticas · Connect Vision</p>
-      </div>
-    );
+  // Ao trocar de tipo, seleciona a 1ª tabela daquele tipo
+  function selTipo(t: TipoLenteId) {
+    setTipo(t);
+    const primeira = TABELAS.find(tb => tb.tipos.includes(t));
+    setTabelaId(primeira?.id ?? '');
+    setIdx(0); setBusca('');
   }
 
-  // ── Vista detalhada ──
-  if (tabela) {
-    return (
-      <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: '#0f172a', overflow: 'hidden' }}>
-        <Detalhe tabela={tabela} onVoltar={() => setTabela(null)} />
-      </div>
-    );
-  }
+  const produtos = tabela?.produtos ?? [];
+  const filtrados = busca.trim()
+    ? produtos.filter(p => p.nome.toLowerCase().includes(busca.trim().toLowerCase()))
+    : produtos;
+  const p = produtos[idx] ?? produtos[0];
+  const ambiente = AMBIENTES.find(a => a.id === amb) ?? AMBIENTES[0];
 
-  // ── Etapa 1: tipo de lente ──
-  if (!tipo) {
-    return (
-      <div style={{ height: '100dvh', position: 'relative', overflow: 'hidden', background: '#f0f4f8' }}>
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${AMBIENTE})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(232,240,254,0.85) 0%, rgba(219,234,254,0.6) 100%)' }} />
-        <Header titulo="Tabela Digital" />
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 28 }}>
-          <div style={{ fontSize: 22, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.4px' }}>Escolha o tipo de lente</div>
-          <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', justifyContent: 'center' }}>
-            {TIPOS_LENTE.map(t => (
-              <button key={t.id} onClick={() => setTipo(t.id)} style={cardTipo}
-                onPointerDown={e => (e.currentTarget.style.transform = 'scale(0.95)')}
-                onPointerUp={e => (e.currentTarget.style.transform = 'scale(1)')}
-                onPointerLeave={e => (e.currentTarget.style.transform = 'scale(1)')}>
-                <div style={{ width: 60, height: 60, borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, rgba(37,99,235,0.10), rgba(124,58,237,0.08))' }}>{t.icon}</div>
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#1e293b', textTransform: 'uppercase', letterSpacing: '.04em' }}>{t.label}</span>
+  const cards: [string, string | undefined][] = p ? [
+    ['Campo', p.campo], ['Superfície', p.superficie], ['Fotossensível', p.foto],
+    ['Material', p.material], ['Tratamento', p.tratamento],
+  ] : [];
+
+  return (
+    <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: '#e9edf2', overflow: 'hidden', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', userSelect: 'none' }}>
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
+
+        {/* ══ PAINEL ESQUERDO ══ */}
+        <div style={{ width: 392, flexShrink: 0, background: '#fff', display: 'flex', flexDirection: 'column', borderRight: '1px solid #d5dbe3' }}>
+          {/* Barra de tipo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px 12px', borderBottom: '1px solid #eef1f5' }}>
+            {TIPOS.map(t => (
+              <button key={t.id} onClick={() => selTipo(t.id)} style={{
+                display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                fontSize: 12.5, fontWeight: 600, color: tipo === t.id ? '#0a2f6b' : '#7b8794', WebkitTapHighlightColor: 'transparent',
+              }}>
+                <span style={{ width: 15, height: 15, borderRadius: '50%', border: `2px solid ${tipo === t.id ? '#1d4ed8' : '#c3ccd6'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {tipo === t.id && <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#1d4ed8' }} />}
+                </span>
+                {t.label}
               </button>
             ))}
           </div>
-        </div>
-        <NavInferior onMenu={() => navigate('/vision')} onOS={() => navigate('/vision/os')} />
-      </div>
-    );
-  }
 
-  // ── Etapa 2: marcas ──
-  return (
-    <div style={{ height: '100dvh', position: 'relative', overflow: 'hidden', background: '#f0f4f8' }}>
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(240,244,248,0.95)' }} />
-      <Header titulo={`Tabela Digital · ${TIPOS_LENTE.find(t => t.id === tipo)?.label}`} />
-      <div style={{ position: 'absolute', top: 90, left: 0, right: 0, bottom: 48, overflowY: 'auto', padding: '8px 28px 28px' }}>
-        <div style={{ textAlign: 'center', fontSize: 15, fontWeight: 700, color: '#334155', marginBottom: 18 }}>Escolha uma tabela</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 14, maxWidth: 1000, margin: '0 auto' }}>
-          {tabelasFiltradas.length === 0 && (
-            <div style={{ gridColumn: '1/-1', textAlign: 'center', color: '#94a3b8', fontSize: 14, padding: '40px 0' }}>
-              Nenhuma tabela cadastrada para este tipo ainda.
+          {/* Dropdown de tabela */}
+          <div style={{ padding: '10px 12px 8px' }}>
+            <select value={tabelaId} onChange={e => { setTabelaId(e.target.value); setIdx(0); }} style={{
+              width: '100%', padding: '10px 12px', fontSize: 14, borderRadius: 8, border: '1px solid #c3ccd6',
+              background: '#fff', color: '#1e293b', outline: 'none', cursor: 'pointer', fontFamily: 'inherit',
+            }}>
+              {tabelasTipo.length === 0 && <option>Nenhuma tabela para este tipo</option>}
+              {tabelasTipo.map(t => <option key={t.id} value={t.id}>{t.marca} · {t.nome}</option>)}
+            </select>
+          </div>
+
+          {/* Busca */}
+          <div style={{ display: 'flex', gap: 8, padding: '0 12px 10px' }}>
+            <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Nome do Produto..." style={{
+              flex: 1, padding: '9px 12px', fontSize: 13.5, borderRadius: 8, border: '1px solid #c3ccd6',
+              outline: 'none', color: '#1e293b', background: '#fff', fontFamily: 'inherit',
+            }} />
+            <button style={{ background: '#1d4ed8', color: '#fff', border: 'none', borderRadius: 8, padding: '0 22px', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>Buscar</button>
+          </div>
+
+          {/* Lista de produtos */}
+          <div style={{ flex: 1, overflowY: 'auto', borderTop: '1px solid #eef1f5' }}>
+            {filtrados.length === 0 && (
+              <div style={{ padding: 24, textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>Nenhum produto encontrado.</div>
+            )}
+            {filtrados.map((pr) => {
+              const realIdx = produtos.indexOf(pr);
+              const ativo = realIdx === idx;
+              return (
+                <button key={pr.nome} onClick={() => { setIdx(realIdx); setPainel(null); }} style={{
+                  width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8,
+                  textAlign: 'left', cursor: 'pointer', border: 'none', borderBottom: '1px solid #f1f4f8',
+                  background: ativo ? '#dbe4f5' : 'transparent', padding: '11px 14px', WebkitTapHighlightColor: 'transparent',
+                }}>
+                  <span style={{ fontSize: 12.5, fontWeight: ativo ? 700 : 500, color: ativo ? '#0a2f6b' : (tabela?.cor ?? '#1e40af') }}>{pr.nome}</span>
+                  <span style={{ fontSize: 12.5, fontWeight: 700, color: ativo ? '#0a2f6b' : '#334155', fontFamily: 'var(--mono)', whiteSpace: 'nowrap' }}>12x {brl(pr.parcela)}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ══ ÁREA DIREITA ══ */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, background: '#c9d1da' }}>
+          {/* Abas Ambientes / Desenhar */}
+          <div style={{ display: 'flex', flexShrink: 0 }}>
+            {(['ambientes', 'desenhar'] as const).map(a => (
+              <button key={a} onClick={() => { setAba(a); setPainel(null); }} style={{
+                display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', border: 'none', cursor: 'pointer',
+                background: aba === a ? '#0a1a2f' : '#243447', color: '#fff', fontSize: 13, fontWeight: 600,
+                borderRight: '1px solid #1a2838', WebkitTapHighlightColor: 'transparent',
+              }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  {a === 'ambientes'
+                    ? <><rect x="3" y="4" width="18" height="14" rx="2" /><circle cx="8.5" cy="9" r="1.5" /><path d="M4 16l4-4 4 3 3-2 5 5" /></>
+                    : <path d="M12 19l7-7-4-4-7 7v4h4zM15 6l3 3" />}
+                </svg>
+                {a === 'ambientes' ? 'Ambientes' : 'Desenhar'}
+              </button>
+            ))}
+          </div>
+
+          {/* Visualização da lente */}
+          <div style={{ flex: 1, position: 'relative', overflow: 'hidden', minHeight: 0 }}>
+            {aba === 'ambientes' ? (
+              <>
+                {/* Fundo do ambiente (gradiente + foto opcional) */}
+                <div style={{ position: 'absolute', inset: 0, background: ambiente.grad }} />
+                <img key={ambiente.id} src={`/ambientes/${ambiente.id}.jpg`} alt="" onError={e => { e.currentTarget.style.display = 'none'; }}
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+
+                {/* Menu de ambientes (esquerda) */}
+                <div style={{ position: 'absolute', top: 10, left: 0, display: 'flex', flexDirection: 'column', zIndex: 4 }}>
+                  {AMBIENTES.map(a => (
+                    <button key={a.id} onClick={() => setAmb(a.id)} style={{
+                      textAlign: 'left', border: 'none', cursor: 'pointer', padding: '9px 20px 9px 16px', minWidth: 110,
+                      background: amb === a.id ? 'rgba(10,20,35,0.92)' : 'rgba(30,42,58,0.72)', color: '#fff',
+                      fontSize: 13, fontWeight: amb === a.id ? 700 : 500, borderBottom: '1px solid rgba(255,255,255,0.08)',
+                      WebkitTapHighlightColor: 'transparent',
+                    }}>{a.label}</button>
+                  ))}
+                </div>
+
+                {/* Lente de vidro */}
+                <div style={{ position: 'absolute', top: '5%', left: '16%', right: '9%', bottom: '6%', borderRadius: '48% 48% 46% 46% / 52% 52% 48% 48%', border: '2px solid rgba(255,255,255,0.75)', boxShadow: 'inset 0 0 80px rgba(255,255,255,0.14), 0 14px 44px rgba(0,0,0,0.22)', background: 'linear-gradient(135deg, rgba(255,255,255,0.16) 0%, transparent 42%)', pointerEvents: 'none' }} />
+
+                {/* Botões laterais direita */}
+                <div style={{ position: 'absolute', top: '50%', right: 4, transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', gap: 14, zIndex: 5 }}>
+                  {[
+                    { id: 'descricao', l: 'Descrição', i: <path d="M4 4h16v13H8l-4 4z" /> },
+                    { id: 'detalhes', l: 'Detalhes', i: <><circle cx="12" cy="12" r="9" /><line x1="12" y1="11" x2="12" y2="16" /><circle cx="12" cy="8" r="0.6" fill="currentColor" /></> },
+                    { id: 'linha', l: 'Linha', i: <><circle cx="7" cy="12" r="4" /><circle cx="17" cy="12" r="4" /></> },
+                    { id: 'olho', l: 'Olho', i: <><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12z" /><circle cx="12" cy="12" r="2.5" /></> },
+                    { id: 'mlp', l: 'MLP', i: <><circle cx="12" cy="12" r="9" /><path d="M12 3v18M4 8l16 8M20 8L4 16" /></> },
+                  ].map(b => (
+                    <button key={b.id} onClick={() => setPainel(prev => prev === (b.id as 'detalhes' | 'descricao') ? null : (b.id === 'detalhes' ? 'detalhes' : b.id === 'descricao' ? 'descricao' : prev))}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, color: 'rgba(30,41,59,0.85)', WebkitTapHighlightColor: 'transparent' }}>
+                      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">{b.i}</svg>
+                      <span style={{ fontSize: 9, fontWeight: 600 }}>{b.l}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Overlay: Detalhes / Descrição */}
+                {painel && p && (
+                  <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, background: 'rgba(6,10,18,0.92)', color: '#e8ecf3', padding: '16px 22px', zIndex: 6, animation: 'fadeIn .18s ease' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#7fb2ff' }}>{p.campo ?? p.nome}</div>
+                      <button onClick={() => setPainel(null)} style={{ background: 'none', border: 'none', color: '#9aa4b8', fontSize: 20, cursor: 'pointer', lineHeight: 1 }}>×</button>
+                    </div>
+                    {painel === 'detalhes' ? (
+                      <div style={{ fontSize: 13, lineHeight: 1.7 }}>
+                        <div>Código: <b>{p.codigo ?? '—'}</b></div>
+                        <div>Disponibilidade: <b>{p.disp ?? '—'}</b></div>
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: 13, lineHeight: 1.6, color: '#c7cede', maxWidth: 640 }}>
+                        {p.nome} — lente {p.superficie?.toLowerCase()} em {p.material}, tratamento {p.tratamento}.
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            ) : (
+              <Desenhar />
+            )}
+          </div>
+
+          {/* 5 cards */}
+          <div style={{ display: 'flex', gap: 6, padding: 8, background: '#dbe0e7', flexShrink: 0 }}>
+            {cards.map(([k, v]) => (
+              <div key={k} style={{ flex: 1, background: '#fff', borderRadius: 8, border: '1px solid #cdd5df', overflow: 'hidden', minWidth: 0 }}>
+                <div style={{ textAlign: 'center', padding: '8px 6px 4px', fontSize: 11.5 }}>
+                  <div style={{ color: '#64748b' }}>{k}:</div>
+                  <div style={{ color: '#1e293b', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{v ?? '—'}</div>
+                </div>
+                <div style={{ height: 58, background: 'linear-gradient(160deg,#eef2f7,#dbe2ea)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#9fb0c4" strokeWidth="1.3"><ellipse cx="12" cy="12" rx="9" ry="6.5" /><circle cx="12" cy="12" r="2.5" /></svg>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Barra de status */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '8px 16px', background: '#eef1f5', borderTop: '1px solid #d5dbe3', flexShrink: 0 }}>
+            <span style={{ fontSize: 12.5, color: '#334155', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {p ? `${p.nome} · ` : ''}<span style={{ color: tabela?.cor, fontFamily: 'var(--mono)', fontWeight: 800 }}>{p ? `12x ${brl(p.parcela)}` : ''}</span>
+            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#64748b' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6" /></svg>
+              <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--mono)' }}>00</span>
             </div>
-          )}
-          {tabelasFiltradas.map(t => (
-            <button key={t.id} onClick={() => setTabela(t)} style={cardMarca}
-              onPointerDown={e => (e.currentTarget.style.transform = 'scale(0.96)')}
-              onPointerUp={e => (e.currentTarget.style.transform = 'scale(1)')}
-              onPointerLeave={e => (e.currentTarget.style.transform = 'scale(1)')}>
-              <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: '-0.5px', color: t.cor }}>{t.marca}</div>
-              <div style={{ fontSize: 10.5, color: '#94a3b8', fontWeight: 600, marginTop: 4 }}>{t.data} · {t.produtos.length} lentes</div>
-            </button>
-          ))}
+          </div>
         </div>
       </div>
-      <NavInferior onMenu={() => navigate('/vision')} onOS={() => navigate('/vision/os')} onBack={() => setTipo(null)} />
+
+      {/* Dock inferior */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px', background: '#f5f6f8', borderTop: '1px solid #d5dbe3', flexShrink: 0 }}>
+        {[
+          { l: 'Menu', on: () => navigate('/vision'), i: <><line x1="4" y1="7" x2="20" y2="7" /><line x1="4" y1="12" x2="20" y2="12" /><line x1="4" y1="17" x2="20" y2="17" /></> },
+          { l: 'Extras', on: () => {}, i: <><circle cx="6" cy="12" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="18" cy="12" r="1.5" /></> },
+          { l: 'OS', on: () => navigate('/vision/os'), i: <><rect x="5" y="2" width="14" height="20" rx="2" /><line x1="8" y1="7" x2="16" y2="7" /><line x1="8" y1="11" x2="16" y2="11" /></> },
+          { l: 'Valor', on: () => {}, i: <><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></> },
+          { l: 'Calculadora', on: () => {}, i: <><rect x="5" y="2" width="14" height="20" rx="2" /><line x1="8" y1="6" x2="16" y2="6" /><line x1="8" y1="11" x2="8" y2="11" /><line x1="12" y1="11" x2="12" y2="11" /><line x1="16" y1="11" x2="16" y2="11" /><line x1="8" y1="15" x2="8" y2="15" /><line x1="12" y1="15" x2="12" y2="15" /></> },
+        ].map(b => (
+          <button key={b.l} onClick={b.on} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, padding: '3px 14px', color: '#1d4ed8', WebkitTapHighlightColor: 'transparent' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">{b.i}</svg>
+            <span style={{ fontSize: 10, fontWeight: 600 }}>{b.l}</span>
+          </button>
+        ))}
+        <div style={{ flex: 1 }} />
+        <span style={{ fontSize: 10.5, color: '#94a3b8', paddingRight: 6 }}>1.0.15</span>
+      </div>
     </div>
   );
 }
 
-// ─── Barra de navegação inferior ─────────────────────────────────────────────
-function NavInferior({ onMenu, onOS, onBack }: { onMenu: () => void; onOS: () => void; onBack?: () => void }) {
+// ─── Modo Desenhar (canvas de anotação) ───────────────────────────────────────
+function Desenhar() {
+  const cvRef = useRef<HTMLCanvasElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const drawing = useRef(false);
+  const [cor, setCor] = useState('#e11d48');
+
+  useEffect(() => {
+    const cv = cvRef.current, wrap = wrapRef.current;
+    if (!cv || !wrap) return;
+    const resize = () => { cv.width = wrap.clientWidth; cv.height = wrap.clientHeight; };
+    resize();
+    window.addEventListener('resize', resize);
+    return () => window.removeEventListener('resize', resize);
+  }, []);
+
+  const pos = (e: React.PointerEvent) => {
+    const r = cvRef.current!.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  };
+  const start = (e: React.PointerEvent) => {
+    drawing.current = true;
+    const ctx = cvRef.current!.getContext('2d')!;
+    const { x, y } = pos(e); ctx.beginPath(); ctx.moveTo(x, y);
+  };
+  const move = (e: React.PointerEvent) => {
+    if (!drawing.current) return;
+    const ctx = cvRef.current!.getContext('2d')!;
+    const { x, y } = pos(e);
+    ctx.strokeStyle = cor; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.lineTo(x, y); ctx.stroke();
+  };
+  const end = () => { drawing.current = false; };
+  const limpar = () => { const c = cvRef.current!; c.getContext('2d')!.clearRect(0, 0, c.width, c.height); };
+
   return (
-    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(249,249,251,0.85)', backdropFilter: 'blur(24px)', borderTop: '0.5px solid rgba(60,60,67,0.22)', display: 'flex', alignItems: 'center', padding: '6px 16px', gap: 6 }}>
-      {onBack && (
-        <button onClick={onBack} style={navBtn}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#007aff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
-          <span style={navLbl}>Voltar</span>
-        </button>
-      )}
-      <button onClick={onMenu} style={navBtn}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#007aff" strokeWidth="1.8" strokeLinecap="round"><line x1="3" y1="7" x2="21" y2="7" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="17" x2="21" y2="17" /></svg>
-        <span style={navLbl}>Menu</span>
-      </button>
-      <div style={{ flex: 1 }} />
-      <button onClick={onOS} style={navBtn}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#007aff" strokeWidth="1.8" strokeLinecap="round"><rect x="5" y="2" width="14" height="20" rx="2" /><line x1="8" y1="7" x2="16" y2="7" /><line x1="8" y1="11" x2="16" y2="11" /></svg>
-        <span style={navLbl}>O.S.</span>
-      </button>
+    <div ref={wrapRef} style={{ position: 'absolute', inset: 0, background: 'linear-gradient(160deg,#d9e0e8,#b9c3cf)' }}>
+      {/* lente base */}
+      <div style={{ position: 'absolute', top: '5%', left: '16%', right: '9%', bottom: '6%', borderRadius: '48% 48% 46% 46% / 52% 52% 48% 48%', border: '2px solid rgba(255,255,255,0.75)', background: 'linear-gradient(135deg, rgba(255,255,255,0.16), transparent 42%)', pointerEvents: 'none' }} />
+      <canvas ref={cvRef} onPointerDown={start} onPointerMove={move} onPointerUp={end} onPointerLeave={end} style={{ position: 'absolute', inset: 0, cursor: 'crosshair', touchAction: 'none' }} />
+      {/* toolbar */}
+      <div style={{ position: 'absolute', bottom: 14, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 10, background: '#0a2540', borderRadius: 14, padding: '10px 16px', boxShadow: '0 10px 30px rgba(0,0,0,0.35)' }}>
+        {['#e11d48', '#2563eb', '#16a34a', '#f59e0b', '#111827'].map(c => (
+          <button key={c} onClick={() => setCor(c)} style={{ width: 26, height: 26, borderRadius: '50%', background: c, border: cor === c ? '2.5px solid #fff' : '2px solid rgba(255,255,255,0.3)', cursor: 'pointer' }} />
+        ))}
+        <button onClick={limpar} style={{ background: 'rgba(255,255,255,0.14)', border: 'none', borderRadius: 9, color: '#fff', padding: '0 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Limpar</button>
+      </div>
     </div>
   );
 }
-
-const navBtn: React.CSSProperties = { background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, padding: '4px 14px', WebkitTapHighlightColor: 'transparent' };
-const navLbl: React.CSSProperties = { fontSize: 10, fontWeight: 500, color: '#007aff' };
-const cardTipo: React.CSSProperties = { width: 156, height: 162, background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(16px)', border: '1.5px solid rgba(255,255,255,0.95)', borderRadius: 22, boxShadow: '0 10px 36px rgba(15,23,42,0.12)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, transition: 'transform .12s', WebkitTapHighlightColor: 'transparent' };
-const cardMarca: React.CSSProperties = { background: 'linear-gradient(170deg,#fff,#f8fafc)', border: '1.5px solid #e2e8f0', borderRadius: 16, boxShadow: '0 2px 12px rgba(15,23,42,0.06)', cursor: 'pointer', padding: '22px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 92, transition: 'transform .12s', WebkitTapHighlightColor: 'transparent' };
