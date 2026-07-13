@@ -1,5 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
+
+// Somente este e-mail (administrador) tem a Tabela Digital liberada.
+// Os demais usuários veem um aviso para entrar em contato e cadastrar as lentes.
+const ADMIN_EMAIL = 'victormarketing093@gmail.com';
+const SUPORTE_WA = '5585991507887';
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 type TipoLenteId = 'multifocais' | 'visao-simples' | 'ocupacionais' | 'bifocais';
@@ -149,6 +155,8 @@ const brl = (v: number) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2,
 // ─── Módulo ───────────────────────────────────────────────────────────────────
 export default function VendaIndicativa() {
   const navigate = useNavigate();
+  const { usuario } = useAuth();
+  const isAdmin = (usuario?.email || '').trim().toLowerCase() === ADMIN_EMAIL;
   const [view, setView] = useState<'grade' | 'tabela'>('grade');
   const [tipo, setTipo] = useState<TipoLenteId>('multifocais');
   const [tabelaId, setTabelaId] = useState('');
@@ -163,6 +171,39 @@ export default function VendaIndicativa() {
 
   function abrirTabela(id: string) {
     setTabelaId(id); setIdx(0); setBusca(''); setPainel(null); setView('tabela');
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // TELA 0 — AVISO (usuários que não são o administrador)
+  // ══════════════════════════════════════════════════════════════════════════
+  if (!isAdmin) {
+    const msg = encodeURIComponent('Olá! Quero cadastrar as lentes da minha ótica na Tabela Digital do Connect Vision.');
+    return (
+      <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: '#eef1f5', overflow: 'hidden', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', userSelect: 'none' }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <div style={{ maxWidth: 460, textAlign: 'center', background: '#fff', border: '1px solid #dfe4ea', borderRadius: 18, padding: '38px 30px', boxShadow: '0 10px 40px rgba(15,23,42,0.08)' }}>
+            <div style={{ width: 72, height: 72, margin: '0 auto 20px', borderRadius: 20, background: 'linear-gradient(160deg,#e8effb,#dbe4f5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="12" rx="9" ry="6" /><circle cx="12" cy="12" r="2.5" /><path d="M3 12h4M17 12h4" /></svg>
+            </div>
+            <h2 style={{ margin: '0 0 10px', fontSize: 20, fontWeight: 800, color: '#0a2f6b' }}>Tabela Digital</h2>
+            <p style={{ margin: '0 0 22px', fontSize: 14.5, lineHeight: 1.6, color: '#475569' }}>
+              As tabelas de lentes da sua ótica ainda <b>não foram cadastradas</b>. Entre em contato com a nossa equipe para liberarmos as lentes e os preços na sua Tabela Digital.
+            </p>
+            <a href={`https://wa.me/${SUPORTE_WA}?text=${msg}`} target="_blank" rel="noopener noreferrer" style={{
+              display: 'inline-flex', alignItems: 'center', gap: 9, background: '#22c55e', color: '#fff', textDecoration: 'none',
+              padding: '13px 26px', borderRadius: 12, fontSize: 15, fontWeight: 700, boxShadow: '0 6px 18px rgba(34,197,94,0.32)',
+            }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51l-.57-.01c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.63.71.22 1.36.19 1.87.12.57-.09 1.77-.72 2.02-1.42.25-.7.25-1.29.17-1.42-.07-.13-.27-.2-.57-.35zM12 2a10 10 0 0 0-8.5 15.3L2 22l4.8-1.26A10 10 0 1 0 12 2z" /></svg>
+              Falar no WhatsApp
+            </a>
+            <div style={{ marginTop: 22 }}>
+              <button onClick={() => navigate('/vision')} style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>← Voltar ao menu</button>
+            </div>
+          </div>
+        </div>
+        <Dock navigate={navigate} onOS={() => navigate('/vision/os')} />
+      </div>
+    );
   }
 
   // ══════════════════════════════════════════════════════════════════════════
