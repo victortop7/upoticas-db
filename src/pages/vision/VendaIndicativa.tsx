@@ -336,8 +336,8 @@ export default function VendaIndicativa() {
                 {/* Campo de visão da lente (por cima da paisagem) */}
                 {p?.campoImg ? (
                   <img key={p.campoImg} src={cvSrc(p.campoImg)} alt="" style={{
-                    position: 'absolute', top: '4%', left: '17%', right: '5%', bottom: '5%', width: 'auto', height: 'auto',
-                    maxWidth: '78%', maxHeight: '90%', margin: 'auto', objectFit: 'contain',
+                    position: 'absolute', top: '1%', left: 128, right: '1%', bottom: '1%', width: 'auto', height: 'auto',
+                    maxWidth: '96%', maxHeight: '98%', margin: 'auto', objectFit: 'contain',
                     mixBlendMode: 'multiply', filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.35))', pointerEvents: 'none',
                   }} />
                 ) : (
@@ -482,7 +482,7 @@ function Desenhar({ campoImg, paisagemId }: { campoImg?: string; paisagemId: num
     <div ref={wrapRef} style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
       <img src={`/paisagens/${paisagemId}.png`} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
       {campoImg
-        ? <img src={cvSrc(campoImg)} alt="" style={{ position: 'absolute', top: '4%', left: '17%', right: '5%', bottom: '5%', width: 'auto', height: 'auto', maxWidth: '78%', maxHeight: '90%', margin: 'auto', objectFit: 'contain', mixBlendMode: 'multiply', pointerEvents: 'none' }} />
+        ? <img src={cvSrc(campoImg)} alt="" style={{ position: 'absolute', top: '1%', left: '2%', right: '2%', bottom: '1%', width: 'auto', height: 'auto', maxWidth: '96%', maxHeight: '98%', margin: 'auto', objectFit: 'contain', mixBlendMode: 'multiply', pointerEvents: 'none' }} />
         : <div style={{ position: 'absolute', top: '5%', left: '18%', right: '6%', bottom: '6%', borderRadius: '48% 48% 46% 46% / 52% 52% 48% 48%', border: '2px solid rgba(255,255,255,0.75)', background: 'linear-gradient(135deg, rgba(255,255,255,0.16), transparent 42%)', pointerEvents: 'none' }} />}
       <canvas ref={cvRef} onPointerDown={start} onPointerMove={move} onPointerUp={end} onPointerLeave={end} style={{ position: 'absolute', inset: 0, cursor: 'crosshair', touchAction: 'none' }} />
       {/* toolbar */}
