@@ -134,13 +134,10 @@ const TABELAS: Tabela[] = [
   },
 ];
 
-// ─── Fundo atrás do campo de visão: FOTO DE OLHO (public/foto de olhos/{id}.png) ─
+// ─── Fundo atrás do campo de visão: FOTO DE OLHO fixa (public/foto de olhos/) ────
 // As paisagens ficam guardadas em public/paisagens/ para uso futuro.
 const FUNDO_DIR = '/foto de olhos';
-const FUNDOS: { id: number; label: string }[] = [
-  { id: 13, label: 'Olho 1' },
-  { id: 14, label: 'Olho 2' },
-];
+const FUNDO_ID = 14; // Olho 2 (único, sem seletor)
 const fundoSrc = (id: number) => encodeURI(`${FUNDO_DIR}/${id}.jpg`);
 
 const brl = (v: number) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -156,7 +153,6 @@ export default function VendaIndicativa() {
   const [busca, setBusca] = useState('');
   const [idx, setIdx] = useState(0);
   const [aba, setAba] = useState<'ambientes' | 'desenhar'>('ambientes');
-  const [pais, setPais] = useState(FUNDOS[0].id);
   const [painel, setPainel] = useState<null | 'descricao' | 'detalhes'>(null);
 
   const tabelasTipo = TABELAS.filter(t => t.tipos.includes(tipo));
@@ -272,7 +268,6 @@ export default function VendaIndicativa() {
     ? produtos.filter(pr => pr.nome.toLowerCase().includes(busca.trim().toLowerCase()))
     : produtos;
   const p = produtos[idx] ?? produtos[0];
-  const paisagem = FUNDOS.find(a => a.id === pais) ?? FUNDOS[0];
 
   const cards: [string, string | undefined][] = p ? [
     ['Campo', p.campo], ['Superfície', p.superficie], ['Fotossensível', p.foto],
@@ -352,24 +347,12 @@ export default function VendaIndicativa() {
           <div style={{ flex: 1, position: 'relative', overflow: 'hidden', minHeight: 0 }}>
             {aba === 'ambientes' ? (
               <>
-                {/* Paisagem de fundo */}
-                <img key={paisagem.id} src={fundoSrc(paisagem.id)} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                {/* Foto de olho de fundo */}
+                <img key={FUNDO_ID} src={fundoSrc(FUNDO_ID)} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
 
-                {/* Menu de paisagens (esquerda) */}
-                <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', zIndex: 4 }}>
-                  {FUNDOS.map(a => (
-                    <button key={a.id} onClick={() => setPais(a.id)} style={{
-                      textAlign: 'left', border: 'none', cursor: 'pointer', padding: '9px 20px 9px 16px', minWidth: 116,
-                      background: pais === a.id ? 'rgba(10,20,35,0.92)' : 'rgba(30,42,58,0.66)', color: '#fff',
-                      fontSize: 12.5, fontWeight: pais === a.id ? 700 : 500, borderBottom: '1px solid rgba(255,255,255,0.08)',
-                      borderLeft: pais === a.id ? '3px solid #3b82f6' : '3px solid transparent', WebkitTapHighlightColor: 'transparent',
-                    }}>{a.label}</button>
-                  ))}
-                </div>
-
-                {/* Campo de visão da lente (por cima da paisagem) */}
+                {/* Campo de visão da lente (por cima do olho) */}
                 {p?.campoImg ? (
-                  <LenteCampo key={p.campoImg} campoImg={p.campoImg} />
+                  <LenteCampo key={p.campoImg} campoImg={p.campoImg} box={{ left: '2%' }} />
                 ) : (
                   // Fallback: lente de vidro genérica
                   <div style={{ position: 'absolute', top: '5%', left: '18%', right: '6%', bottom: '6%', borderRadius: '48% 48% 46% 46% / 52% 52% 48% 48%', border: '2px solid rgba(255,255,255,0.75)', boxShadow: 'inset 0 0 80px rgba(255,255,255,0.14), 0 14px 44px rgba(0,0,0,0.22)', background: 'linear-gradient(135deg, rgba(255,255,255,0.16) 0%, transparent 42%)', pointerEvents: 'none' }} />
@@ -413,7 +396,7 @@ export default function VendaIndicativa() {
                 )}
               </>
             ) : (
-              <Desenhar campoImg={p?.campoImg} paisagemId={paisagem.id} />
+              <Desenhar campoImg={p?.campoImg} paisagemId={FUNDO_ID} />
             )}
           </div>
 
