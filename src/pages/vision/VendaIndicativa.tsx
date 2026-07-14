@@ -483,7 +483,7 @@ function Dock({ navigate, onOS, produto, tabela }: {
             background: '#fff', borderRadius: 16, width: modal === 'calc' ? 300 : 380, maxWidth: '94vw', maxHeight: '92dvh',
             overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', borderBottom: '1px solid #eef1f5' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: '1px solid #eef1f5' }}>
               <span style={{ fontSize: 15, fontWeight: 800, color: '#0a2f6b' }}>
                 {modal === 'extras' ? 'Ficha técnica' : modal === 'valor' ? 'Valor da lente' : 'Calculadora'}
               </span>
@@ -574,15 +574,15 @@ function Calculadora() {
   ];
 
   return (
-    <div style={{ padding: 14 }}>
-      <div style={{ background: '#0a1526', color: '#fff', borderRadius: 12, padding: '14px 16px', textAlign: 'right', fontFamily: 'var(--mono)', fontSize: 30, fontWeight: 700, marginBottom: 12, overflow: 'hidden', textOverflow: 'ellipsis' }}>{disp}</div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+    <div style={{ padding: '10px 12px 12px' }}>
+      <div style={{ background: '#0a1526', color: '#fff', borderRadius: 10, padding: '8px 14px', textAlign: 'right', fontFamily: 'var(--mono)', fontSize: 22, fontWeight: 700, marginBottom: 8, overflow: 'hidden', textOverflow: 'ellipsis' }}>{disp}</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
         {keys.map((k, i) => (
           <button key={i} onClick={k.on} style={{
             gridColumn: k.t === '0' ? 'span 2' : undefined,
-            padding: '14px 0', borderRadius: 10, border: 'none', cursor: 'pointer',
+            padding: '9px 0', borderRadius: 9, border: 'none', cursor: 'pointer',
             background: k.bg ?? '#f5f6f8', color: k.col ?? '#1e293b',
-            fontSize: 18, fontWeight: 700, fontFamily: 'var(--mono)', WebkitTapHighlightColor: 'transparent',
+            fontSize: 16, fontWeight: 700, fontFamily: 'var(--mono)', WebkitTapHighlightColor: 'transparent',
           }}>{k.t}</button>
         ))}
       </div>
