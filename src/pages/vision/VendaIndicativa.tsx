@@ -480,15 +480,13 @@ function Dock({ navigate, onOS }: { navigate: ReturnType<typeof useNavigate>; on
   );
 }
 
-// ─── Máscara das ABERRAÇÕES (periferia da lente) para o efeito espelho ──────────
-// O PNG do campo de visão tem só as linhas (fundo transparente). Fazemos flood-fill
-// a partir do centro para achar o interior da lente e, dentro dele, geramos uma
-// máscara concentrada nas laterais (aberrações) — o corredor central fica limpo.
+// ─── Máscara das ABERRAÇÕES (os dois lóbulos laterais) para o efeito espelho ────
+// O PNG tem só as linhas (contorno + pontilhados do corredor). Passos:
+//  1) dilata as linhas p/ FECHAR os pontilhados (viram paredes contínuas);
+//  2) "full" = flood do centro cruzando os pontilhados → interior inteiro da lente;
+//  3) "central" = flood do centro limitado pelas paredes → faixa central (distância+corredor+leitura);
+//  4) aberrações = full − central = exatamente os 2 lóbulos (fora do corredor).
 const frostMaskCache = new Map<string, string>();
-const smoothstep = (lo: number, hi: number, x: number) => {
-  const t = Math.min(1, Math.max(0, (x - lo) / (hi - lo)));
-  return t * t * (3 - 2 * t);
-};
 
 function useFrostMask(campoImg: string): string | null {
   const [mask, setMask] = useState<string | null>(() => frostMaskCache.get(campoImg) ?? null);
@@ -507,32 +505,41 @@ function useFrostMask(campoImg: string): string | null {
         ctx.drawImage(img, 0, 0, cw, ch);
         const a = ctx.getImageData(0, 0, cw, ch).data;
         const N = cw * ch;
-        const isLine = (i: number) => a[i * 4 + 3] > 60; // pixel de linha (contorno/zonas)
-        const fill = new Uint8Array(N);
-        const stack = [Math.floor(ch / 2) * cw + Math.floor(cw / 2)];
-        while (stack.length) {
-          const p = stack.pop()!;
-          if (p < 0 || p >= N || fill[p] || isLine(p)) continue;
-          fill[p] = 1;
-          const x = p % cw;
-          if (x > 0) stack.push(p - 1);
-          if (x < cw - 1) stack.push(p + 1);
-          stack.push(p - cw);
-          stack.push(p + cw);
+        const line = new Uint8Array(N);
+        for (let i = 0; i < N; i++) line[i] = a[i * 4 + 3] > 60 ? 1 : 0;
+        // dilata as linhas (fecha os pontilhados)
+        const bnd = new Uint8Array(N); const r = 3;
+        for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) {
+          if (!line[y * cw + x]) continue;
+          for (let dy = -r; dy <= r; dy++) { const yy = y + dy; if (yy < 0 || yy >= ch) continue;
+            for (let dx = -r; dx <= r; dx++) { const xx = x + dx; if (xx < 0 || xx >= cw) continue; bnd[yy * cw + xx] = 1; } }
         }
-        // Aberrações = dentro da lente e afastado do corredor central (peso pela distância horizontal)
-        const cx = (cw - 1) / 2;
+        const flood = (seed: number, walls: Uint8Array) => {
+          const m = new Uint8Array(N); const st = [seed];
+          while (st.length) {
+            const p = st.pop()!;
+            if (p < 0 || p >= N || m[p] || walls[p]) continue;
+            m[p] = 1; const x = p % cw;
+            if (x > 0) st.push(p - 1);
+            if (x < cw - 1) st.push(p + 1);
+            st.push(p - cw); st.push(p + cw);
+          }
+          return m;
+        };
+        const center = Math.floor(ch / 2) * cw + Math.floor(cw / 2);
+        const full = flood(center, line);     // interior inteiro (cruza os pontilhados)
+        const central = flood(center, bnd);   // faixa central (limitada pelas paredes)
         const out = ctx.createImageData(cw, ch);
         for (let i = 0; i < N; i++) {
-          if (!fill[i]) { out.data[i * 4 + 3] = 0; continue; }
-          const x = i % cw;
-          const nx = Math.abs(x - cx) / cx;             // 0 no centro, 1 nas laterais
-          const w = smoothstep(0.26, 0.64, nx);         // limpo no meio, fosco nas bordas
+          const on = full[i] && !central[i] && !line[i]; // = os 2 lóbulos
           out.data[i * 4] = 255; out.data[i * 4 + 1] = 255; out.data[i * 4 + 2] = 255;
-          out.data[i * 4 + 3] = Math.round(255 * w);
+          out.data[i * 4 + 3] = on ? 255 : 0;
         }
         ctx.putImageData(out, 0, 0);
-        const url = cnv.toDataURL();
+        // suaviza a borda dos lóbulos
+        const c2 = document.createElement('canvas'); c2.width = cw; c2.height = ch;
+        const x2 = c2.getContext('2d')!; x2.filter = 'blur(1.6px)'; x2.drawImage(cnv, 0, 0);
+        const url = c2.toDataURL();
         frostMaskCache.set(campoImg, url);
         if (!cancelled) setMask(url);
       } catch { /* CORS/decoding — segue só com as linhas */ }
@@ -559,9 +566,9 @@ function LenteCampo({ campoImg, box }: { campoImg: string; box?: React.CSSProper
       {frost && (
         <div style={{
           ...baseBox, ...maskCommon(frost),
-          background: 'linear-gradient(120deg, rgba(255,255,255,0.62), rgba(226,236,248,0.5) 45%, rgba(255,255,255,0.62))',
-          backdropFilter: 'blur(4px) brightness(1.16) saturate(1.05)',
-          WebkitBackdropFilter: 'blur(4px) brightness(1.16) saturate(1.05)',
+          background: 'linear-gradient(120deg, rgba(255,255,255,0.6), rgba(226,236,248,0.48) 45%, rgba(255,255,255,0.6))',
+          backdropFilter: 'blur(4px) brightness(1.15) saturate(1.05)',
+          WebkitBackdropFilter: 'blur(4px) brightness(1.15) saturate(1.05)',
         }} />
       )}
       {/* Contorno + zonas em PRETO */}
