@@ -142,6 +142,18 @@ const fundoSrc = (id: number) => encodeURI(`${FUNDO_DIR}/${id}.jpg`);
 
 const brl = (v: number) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+// Celular (paisagem): pouca altura → dá mais destaque à imagem, encolhe cards/opções.
+function useCompact() {
+  const calc = () => typeof window !== 'undefined' && (window.innerHeight < 460 || window.innerWidth < 720);
+  const [c, setC] = useState(calc);
+  useEffect(() => {
+    const o = () => setC(calc());
+    window.addEventListener('resize', o);
+    return () => window.removeEventListener('resize', o);
+  }, []);
+  return c;
+}
+
 // ─── Módulo ───────────────────────────────────────────────────────────────────
 export default function VendaIndicativa() {
   const navigate = useNavigate();
@@ -154,6 +166,7 @@ export default function VendaIndicativa() {
   const [idx, setIdx] = useState(0);
   const [aba, setAba] = useState<'ambientes' | 'desenhar'>('ambientes');
   const [painel, setPainel] = useState<null | 'descricao' | 'detalhes'>(null);
+  const compact = useCompact();
 
   const tabelasTipo = TABELAS.filter(t => t.tipos.includes(tipo));
   const tabela = TABELAS.find(t => t.id === tabelaId);
@@ -279,7 +292,7 @@ export default function VendaIndicativa() {
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
 
         {/* ══ PAINEL ESQUERDO ══ */}
-        <div style={{ width: 392, flexShrink: 0, background: '#fff', display: 'flex', flexDirection: 'column', borderRight: '1px solid #d5dbe3' }}>
+        <div style={{ width: compact ? 264 : 392, flexShrink: 0, background: '#fff', display: 'flex', flexDirection: 'column', borderRight: '1px solid #d5dbe3' }}>
           {/* Voltar + marca */}
           <button onClick={() => setView('grade')} style={{
             display: 'flex', alignItems: 'center', gap: 8, background: '#f7f9fc', border: 'none', borderBottom: '1px solid #eef1f5',
@@ -329,8 +342,8 @@ export default function VendaIndicativa() {
           <div style={{ display: 'flex', flexShrink: 0 }}>
             {(['ambientes', 'desenhar'] as const).map(a => (
               <button key={a} onClick={() => { setAba(a); setPainel(null); }} style={{
-                display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', border: 'none', cursor: 'pointer',
-                background: aba === a ? '#0a1a2f' : '#243447', color: '#fff', fontSize: 13, fontWeight: 600,
+                display: 'flex', alignItems: 'center', gap: 7, padding: compact ? '5px 14px' : '9px 18px', border: 'none', cursor: 'pointer',
+                background: aba === a ? '#0a1a2f' : '#243447', color: '#fff', fontSize: compact ? 12 : 13, fontWeight: 600,
                 borderRight: '1px solid #1a2838', WebkitTapHighlightColor: 'transparent',
               }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -400,23 +413,25 @@ export default function VendaIndicativa() {
             )}
           </div>
 
-          {/* 5 cards */}
-          <div style={{ display: 'flex', gap: 6, padding: 8, background: '#dbe0e7', flexShrink: 0 }}>
+          {/* 5 cards (compactos no celular p/ dar espaço à imagem) */}
+          <div style={{ display: 'flex', gap: compact ? 4 : 6, padding: compact ? '5px 6px' : 8, background: '#dbe0e7', flexShrink: 0 }}>
             {cards.map(([k, v]) => (
               <div key={k} style={{ flex: 1, background: '#fff', borderRadius: 8, border: '1px solid #cdd5df', overflow: 'hidden', minWidth: 0 }}>
-                <div style={{ textAlign: 'center', padding: '8px 6px 4px', fontSize: 11.5 }}>
+                <div style={{ textAlign: 'center', padding: compact ? '5px 5px' : '8px 6px 4px', fontSize: compact ? 10 : 11.5 }}>
                   <div style={{ color: '#64748b' }}>{k}:</div>
                   <div style={{ color: '#1e293b', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{v ?? '—'}</div>
                 </div>
-                <div style={{ height: 58, background: 'linear-gradient(160deg,#eef2f7,#dbe2ea)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#9fb0c4" strokeWidth="1.3"><ellipse cx="12" cy="12" rx="9" ry="6.5" /><circle cx="12" cy="12" r="2.5" /></svg>
-                </div>
+                {!compact && (
+                  <div style={{ height: 58, background: 'linear-gradient(160deg,#eef2f7,#dbe2ea)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#9fb0c4" strokeWidth="1.3"><ellipse cx="12" cy="12" rx="9" ry="6.5" /><circle cx="12" cy="12" r="2.5" /></svg>
+                  </div>
+                )}
               </div>
             ))}
           </div>
 
           {/* Barra de status */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '8px 16px', background: '#eef1f5', borderTop: '1px solid #d5dbe3', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: compact ? '5px 12px' : '8px 16px', background: '#eef1f5', borderTop: '1px solid #d5dbe3', flexShrink: 0 }}>
             <span style={{ fontSize: 12.5, color: '#334155', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {p ? `${p.nome} · ` : ''}<span style={{ color: tabela.cor, fontFamily: 'var(--mono)', fontWeight: 800 }}>{p ? `12x ${brl(p.parcela)}` : ''}</span>
             </span>
@@ -429,21 +444,26 @@ export default function VendaIndicativa() {
       </div>
 
       {/* Dock inferior */}
-      <Dock navigate={navigate} onOS={() => navigate('/vision/os')} />
+      <Dock navigate={navigate} onOS={() => navigate('/vision/os')} produto={p} tabela={tabela} />
     </div>
   );
 }
 
 // ─── Dock inferior (compartilhado) ─────────────────────────────────────────────
-function Dock({ navigate, onOS }: { navigate: ReturnType<typeof useNavigate>; onOS: () => void }) {
+function Dock({ navigate, onOS, produto, tabela }: {
+  navigate: ReturnType<typeof useNavigate>; onOS: () => void; produto?: Produto; tabela?: Tabela;
+}) {
+  const [modal, setModal] = useState<null | 'extras' | 'valor' | 'calc'>(null);
+  const total = produto ? produto.parcela * 12 : 0;
+
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px', background: '#f5f6f8', borderTop: '1px solid #d5dbe3', flexShrink: 0 }}>
       {[
         { l: 'Menu', on: () => navigate('/vision'), i: <><line x1="4" y1="7" x2="20" y2="7" /><line x1="4" y1="12" x2="20" y2="12" /><line x1="4" y1="17" x2="20" y2="17" /></> },
-        { l: 'Extras', on: () => {}, i: <><circle cx="6" cy="12" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="18" cy="12" r="1.5" /></> },
+        { l: 'Extras', on: () => setModal('extras'), i: <><circle cx="6" cy="12" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="18" cy="12" r="1.5" /></> },
         { l: 'OS', on: onOS, i: <><rect x="5" y="2" width="14" height="20" rx="2" /><line x1="8" y1="7" x2="16" y2="7" /><line x1="8" y1="11" x2="16" y2="11" /></> },
-        { l: 'Valor', on: () => {}, i: <><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></> },
-        { l: 'Calculadora', on: () => {}, i: <><rect x="5" y="2" width="14" height="20" rx="2" /><line x1="8" y1="6" x2="16" y2="6" /><line x1="8" y1="11" x2="8" y2="11" /><line x1="12" y1="11" x2="12" y2="11" /><line x1="16" y1="11" x2="16" y2="11" /><line x1="8" y1="15" x2="8" y2="15" /><line x1="12" y1="15" x2="12" y2="15" /></> },
+        { l: 'Valor', on: () => setModal('valor'), i: <><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></> },
+        { l: 'Calculadora', on: () => setModal('calc'), i: <><rect x="5" y="2" width="14" height="20" rx="2" /><line x1="8" y1="6" x2="16" y2="6" /><line x1="8" y1="11" x2="8" y2="11" /><line x1="12" y1="11" x2="12" y2="11" /><line x1="16" y1="11" x2="16" y2="11" /><line x1="8" y1="15" x2="8" y2="15" /><line x1="12" y1="15" x2="12" y2="15" /></> },
       ].map(b => (
         <button key={b.l} onClick={b.on} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, padding: '3px 14px', color: '#1d4ed8', WebkitTapHighlightColor: 'transparent' }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">{b.i}</svg>
@@ -451,7 +471,121 @@ function Dock({ navigate, onOS }: { navigate: ReturnType<typeof useNavigate>; on
         </button>
       ))}
       <div style={{ flex: 1 }} />
-      <span style={{ fontSize: 10.5, color: '#94a3b8', paddingRight: 6 }}>1.0.16</span>
+      <span style={{ fontSize: 10.5, color: '#94a3b8', paddingRight: 6 }}>1.0.17</span>
+
+      {/* ── Modais ── */}
+      {modal && (
+        <div onClick={() => setModal(null)} style={{
+          position: 'fixed', inset: 0, background: 'rgba(6,10,18,0.55)', zIndex: 300,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, animation: 'fadeIn .15s ease',
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: '#fff', borderRadius: 16, width: modal === 'calc' ? 300 : 380, maxWidth: '94vw', maxHeight: '92dvh',
+            overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', borderBottom: '1px solid #eef1f5' }}>
+              <span style={{ fontSize: 15, fontWeight: 800, color: '#0a2f6b' }}>
+                {modal === 'extras' ? 'Ficha técnica' : modal === 'valor' ? 'Valor da lente' : 'Calculadora'}
+              </span>
+              <button onClick={() => setModal(null)} style={{ background: 'none', border: 'none', fontSize: 22, color: '#94a3b8', cursor: 'pointer', lineHeight: 1 }}>×</button>
+            </div>
+
+            {/* VALOR */}
+            {modal === 'valor' && (
+              <div style={{ padding: 18 }}>
+                {produto ? (
+                  <>
+                    <div style={{ fontSize: 13.5, fontWeight: 700, color: '#1e293b', marginBottom: 4 }}>{produto.nome}</div>
+                    <div style={{ fontSize: 11.5, color: '#94a3b8', marginBottom: 16 }}>{tabela?.marca} · {tabela?.nome}</div>
+                    {[
+                      ['Parcela (12x)', `R$ ${brl(produto.parcela)}`],
+                      ['Total (12×)', `R$ ${brl(total)}`],
+                      ['À vista', `R$ ${brl(total)}`],
+                    ].map(([k, v], i) => (
+                      <div key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '10px 0', borderTop: i ? '1px solid #f1f4f8' : 'none' }}>
+                        <span style={{ fontSize: 13, color: '#64748b' }}>{k}</span>
+                        <span style={{ fontSize: i === 1 ? 20 : 15, fontWeight: 800, color: i === 1 ? (tabela?.cor ?? '#0a2f6b') : '#1e293b', fontFamily: 'var(--mono)' }}>{v}</span>
+                      </div>
+                    ))}
+                  </>
+                ) : (
+                  <div style={{ color: '#94a3b8', fontSize: 13, textAlign: 'center', padding: '10px 0' }}>Selecione um produto na lista.</div>
+                )}
+              </div>
+            )}
+
+            {/* EXTRAS — ficha técnica */}
+            {modal === 'extras' && (
+              <div style={{ padding: 18 }}>
+                {produto ? (
+                  <>
+                    <div style={{ fontSize: 13.5, fontWeight: 700, color: '#1e293b', marginBottom: 12 }}>{produto.nome}</div>
+                    {([
+                      ['Linha', produto.campo], ['Superfície', produto.superficie], ['Fotossensível', produto.foto],
+                      ['Material', produto.material], ['Tratamento', produto.tratamento],
+                      ['Código', produto.codigo], ['Disponibilidade', produto.disp],
+                    ] as [string, string | undefined][]).map(([k, v]) => (
+                      <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '8px 0', borderTop: '1px solid #f1f4f8' }}>
+                        <span style={{ fontSize: 12.5, color: '#64748b', flexShrink: 0 }}>{k}</span>
+                        <span style={{ fontSize: 12.5, fontWeight: 700, color: '#1e293b', textAlign: 'right' }}>{v || '—'}</span>
+                      </div>
+                    ))}
+                  </>
+                ) : (
+                  <div style={{ color: '#94a3b8', fontSize: 13, textAlign: 'center', padding: '10px 0' }}>Selecione um produto na lista.</div>
+                )}
+              </div>
+            )}
+
+            {/* CALCULADORA */}
+            {modal === 'calc' && <Calculadora />}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Calculadora simples ───────────────────────────────────────────────────────
+function Calculadora() {
+  const [disp, setDisp] = useState('0');
+  const [acc, setAcc] = useState<number | null>(null);
+  const [op, setOp] = useState<string | null>(null);
+  const [fresh, setFresh] = useState(true);
+  const fmt = (n: number) => (Number.isFinite(n) ? String(Number(n.toFixed(8))) : '0');
+  const apply = (a: number, b: number, o: string) => o === '+' ? a + b : o === '−' ? a - b : o === '×' ? a * b : o === '÷' ? (b === 0 ? 0 : a / b) : b;
+  const digit = (d: string) => { setDisp(p => (fresh || p === '0') ? d : p + d); setFresh(false); };
+  const dot = () => { if (fresh) { setDisp('0.'); setFresh(false); } else if (!disp.includes('.')) setDisp(disp + '.'); };
+  const clear = () => { setDisp('0'); setAcc(null); setOp(null); setFresh(true); };
+  const chooseOp = (o: string) => {
+    const cur = parseFloat(disp);
+    if (op != null && !fresh) { const r = apply(acc ?? 0, cur, op); setAcc(r); setDisp(fmt(r)); } else setAcc(cur);
+    setOp(o); setFresh(true);
+  };
+  const equals = () => { if (op == null) return; const r = apply(acc ?? 0, parseFloat(disp), op); setDisp(fmt(r)); setAcc(null); setOp(null); setFresh(true); };
+
+  const keys: { t: string; on: () => void; bg?: string; col?: string }[] = [
+    { t: 'C', on: clear, bg: '#fde2e2', col: '#dc2626' }, { t: '÷', on: () => chooseOp('÷'), bg: '#e8effb', col: '#1d4ed8' },
+    { t: '×', on: () => chooseOp('×'), bg: '#e8effb', col: '#1d4ed8' }, { t: '⌫', on: () => setDisp(d => d.length > 1 ? d.slice(0, -1) : '0'), bg: '#eef1f5', col: '#334155' },
+    { t: '7', on: () => digit('7') }, { t: '8', on: () => digit('8') }, { t: '9', on: () => digit('9') }, { t: '−', on: () => chooseOp('−'), bg: '#e8effb', col: '#1d4ed8' },
+    { t: '4', on: () => digit('4') }, { t: '5', on: () => digit('5') }, { t: '6', on: () => digit('6') }, { t: '+', on: () => chooseOp('+'), bg: '#e8effb', col: '#1d4ed8' },
+    { t: '1', on: () => digit('1') }, { t: '2', on: () => digit('2') }, { t: '3', on: () => digit('3') }, { t: '=', on: equals, bg: '#1d4ed8', col: '#fff' },
+    { t: '0', on: () => digit('0') }, { t: '.', on: dot },
+  ];
+
+  return (
+    <div style={{ padding: 14 }}>
+      <div style={{ background: '#0a1526', color: '#fff', borderRadius: 12, padding: '14px 16px', textAlign: 'right', fontFamily: 'var(--mono)', fontSize: 30, fontWeight: 700, marginBottom: 12, overflow: 'hidden', textOverflow: 'ellipsis' }}>{disp}</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+        {keys.map((k, i) => (
+          <button key={i} onClick={k.on} style={{
+            gridColumn: k.t === '0' ? 'span 2' : undefined,
+            padding: '14px 0', borderRadius: 10, border: 'none', cursor: 'pointer',
+            background: k.bg ?? '#f5f6f8', color: k.col ?? '#1e293b',
+            fontSize: 18, fontWeight: 700, fontFamily: 'var(--mono)', WebkitTapHighlightColor: 'transparent',
+          }}>{k.t}</button>
+        ))}
+      </div>
     </div>
   );
 }
