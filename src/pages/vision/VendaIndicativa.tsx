@@ -282,165 +282,124 @@ export default function VendaIndicativa() {
     : produtos;
   const p = produtos[idx] ?? produtos[0];
 
-  const cards: [string, string | undefined][] = p ? [
-    ['Campo', p.campo], ['Superfície', p.superficie], ['Fotossensível', p.foto],
-    ['Material', p.material], ['Tratamento', p.tratamento],
+  const specs: [string, string | undefined][] = p ? [
+    ['Linha', p.campo], ['Superfície', p.superficie], ['Fotossensível', p.foto],
+    ['Material', p.material], ['Tratamento', p.tratamento], ['Código', p.codigo], ['Disponibilidade', p.disp],
   ] : [];
 
   return (
-    <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: '#e9edf2', overflow: 'hidden', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', userSelect: 'none' }}>
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
+    <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: '#0a0b0e', overflow: 'hidden', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', userSelect: 'none' }}>
+      {/* ══ ÁREA IMERSIVA — imagem em tela cheia, lente centralizada ══ */}
+      <div style={{ flex: 1, position: 'relative', overflow: 'hidden', minHeight: 0 }}>
 
-        {/* ══ PAINEL ESQUERDO ══ */}
-        <div style={{ width: compact ? 264 : 392, flexShrink: 0, background: '#fff', display: 'flex', flexDirection: 'column', borderRight: '1px solid #d5dbe3' }}>
-          {/* Voltar + marca */}
-          <button onClick={() => setView('grade')} style={{
-            display: 'flex', alignItems: 'center', gap: 8, background: '#f7f9fc', border: 'none', borderBottom: '1px solid #eef1f5',
-            cursor: 'pointer', padding: '11px 14px', textAlign: 'left', WebkitTapHighlightColor: 'transparent',
-          }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
-            <span style={{ fontSize: 12.5, fontWeight: 700, color: '#0a2f6b' }}>Tabelas</span>
-            <span style={{ flex: 1 }} />
-            <span style={{ fontSize: 12, fontWeight: 700, color: tabela.cor }}>{tabela.marca}</span>
-            <span style={{ fontSize: 11, color: '#94a3b8' }}>· {tabela.nome}</span>
-          </button>
+        {/* Fundo: foto de olho em tela cheia */}
+        <img key={FUNDO_ID} src={fundoSrc(FUNDO_ID)} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
 
-          {/* Busca */}
-          <div style={{ display: 'flex', gap: 8, padding: '10px 12px' }}>
-            <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Nome do Produto..." style={{
-              flex: 1, padding: '9px 12px', fontSize: 13.5, borderRadius: 8, border: '1px solid #c3ccd6',
-              outline: 'none', color: '#1e293b', background: '#fff', fontFamily: 'inherit',
+        {/* Lente (campo de visão) centralizada — ou modo Desenhar */}
+        {aba === 'ambientes' ? (
+          p?.campoImg ? (
+            <LenteCampo key={p.campoImg} campoImg={p.campoImg} box={{ left: '1%', right: '1%' }} />
+          ) : (
+            <div style={{ position: 'absolute', top: '4%', left: '20%', right: '20%', bottom: '5%', borderRadius: '48% 48% 46% 46% / 52% 52% 48% 48%', border: '2px solid rgba(255,255,255,0.75)', pointerEvents: 'none' }} />
+          )
+        ) : (
+          <Desenhar campoImg={p?.campoImg} paisagemId={FUNDO_ID} />
+        )}
+
+        {/* Voltar (topo-esquerda) */}
+        <button onClick={() => setView('grade')} style={{
+          position: 'absolute', top: 12, left: 12, zIndex: 8, display: 'flex', alignItems: 'center', gap: 6,
+          background: 'rgba(255,255,255,0.9)', border: 'none', borderRadius: 10, padding: '8px 12px', cursor: 'pointer',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.25)', WebkitTapHighlightColor: 'transparent',
+        }}>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+          <span style={{ fontSize: 12.5, fontWeight: 700, color: '#0a2f6b' }}>Tabelas</span>
+        </button>
+
+        {/* Nome da lente (topo-centro) */}
+        {p && (
+          <div style={{ position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)', zIndex: 7, maxWidth: '46%' }}>
+            <div style={{ background: 'rgba(255,255,255,0.92)', borderRadius: 9, padding: compact ? '7px 16px' : '8px 24px', boxShadow: '0 2px 12px rgba(0,0,0,0.22)', textAlign: 'center' }}>
+              <div style={{ fontSize: compact ? 12 : 14, fontWeight: 800, letterSpacing: '.06em', color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textTransform: 'uppercase' }}>{p.campo ?? p.nome}</div>
+            </div>
+          </div>
+        )}
+
+        {/* Lista flutuante de produtos (esquerda) */}
+        {aba === 'ambientes' && (
+          <div style={{ position: 'absolute', top: 58, left: 10, bottom: 10, width: compact ? 152 : 208, display: 'flex', flexDirection: 'column', gap: 7, zIndex: 6 }}>
+            <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar..." style={{
+              padding: '8px 11px', fontSize: 12.5, borderRadius: 9, border: 'none', outline: 'none',
+              color: '#1e293b', background: 'rgba(255,255,255,0.92)', fontFamily: 'inherit', boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
             }} />
-            <button style={{ background: '#1d4ed8', color: '#fff', border: 'none', borderRadius: 8, padding: '0 22px', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>Buscar</button>
+            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 7, paddingRight: 2 }}>
+              {filtrados.length === 0 && <div style={{ color: '#fff', fontSize: 12, textShadow: '0 1px 4px #000', padding: 6 }}>Nada encontrado.</div>}
+              {filtrados.map(pr => {
+                const realIdx = produtos.indexOf(pr);
+                const ativo = realIdx === idx;
+                return (
+                  <button key={pr.nome} onClick={() => { setIdx(realIdx); setPainel(null); }} style={{
+                    textAlign: 'left', cursor: 'pointer', border: 'none', borderRadius: 10, padding: '8px 11px',
+                    background: ativo ? tabela.cor : 'rgba(12,22,42,0.72)', color: '#fff',
+                    boxShadow: ativo ? '0 3px 12px rgba(0,0,0,0.35)' : '0 2px 8px rgba(0,0,0,0.25)',
+                    backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)', WebkitTapHighlightColor: 'transparent',
+                  }}>
+                    <div style={{ fontSize: 11.5, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pr.nome}</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, fontFamily: 'var(--mono)', opacity: 0.92, marginTop: 1 }}>12x {brl(pr.parcela)}</div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
+        )}
 
-          {/* Lista de produtos */}
-          <div style={{ flex: 1, overflowY: 'auto', borderTop: '1px solid #eef1f5' }}>
-            {filtrados.length === 0 && (
-              <div style={{ padding: 24, textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>Nenhum produto encontrado.</div>
-            )}
-            {filtrados.map((pr) => {
-              const realIdx = produtos.indexOf(pr);
-              const ativo = realIdx === idx;
-              return (
-                <button key={pr.nome} onClick={() => { setIdx(realIdx); setPainel(null); }} style={{
-                  width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8,
-                  textAlign: 'left', cursor: 'pointer', border: 'none', borderBottom: '1px solid #f1f4f8',
-                  background: ativo ? '#dbe4f5' : 'transparent', padding: '11px 14px', WebkitTapHighlightColor: 'transparent',
-                }}>
-                  <span style={{ fontSize: 12.5, fontWeight: ativo ? 700 : 500, color: ativo ? '#0a2f6b' : tabela.cor }}>{pr.nome}</span>
-                  <span style={{ fontSize: 12.5, fontWeight: 700, color: ativo ? '#0a2f6b' : '#334155', fontFamily: 'var(--mono)', whiteSpace: 'nowrap' }}>12x {brl(pr.parcela)}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* ══ ÁREA DIREITA ══ */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, background: '#c9d1da' }}>
-          {/* Abas Ambientes / Desenhar */}
-          <div style={{ display: 'flex', flexShrink: 0 }}>
-            {(['ambientes', 'desenhar'] as const).map(a => (
-              <button key={a} onClick={() => { setAba(a); setPainel(null); }} style={{
-                display: 'flex', alignItems: 'center', gap: 7, padding: compact ? '5px 14px' : '9px 18px', border: 'none', cursor: 'pointer',
-                background: aba === a ? '#0a1a2f' : '#243447', color: '#fff', fontSize: compact ? 12 : 13, fontWeight: 600,
-                borderRight: '1px solid #1a2838', WebkitTapHighlightColor: 'transparent',
-              }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                  {a === 'ambientes'
-                    ? <><rect x="3" y="4" width="18" height="14" rx="2" /><circle cx="8.5" cy="9" r="1.5" /><path d="M4 16l4-4 4 3 3-2 5 5" /></>
-                    : <path d="M12 19l7-7-4-4-7 7v4h4zM15 6l3 3" />}
-                </svg>
-                {a === 'ambientes' ? 'Ambientes' : 'Desenhar'}
+        {/* Botões laterais (direita) */}
+        {aba === 'ambientes' && (
+          <div style={{ position: 'absolute', top: '50%', right: 8, transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', gap: 10, zIndex: 6 }}>
+            {[
+              { id: 'descricao', l: 'Descrição', i: <path d="M4 4h16v13H8l-4 4z" /> },
+              { id: 'detalhes', l: 'Detalhes', i: <><circle cx="12" cy="12" r="9" /><line x1="12" y1="11" x2="12" y2="16" /><circle cx="12" cy="8" r="0.6" fill="currentColor" /></> },
+            ].map(b => (
+              <button key={b.id} onClick={() => setPainel(prev => prev === b.id ? null : (b.id as 'detalhes' | 'descricao'))}
+                style={{ background: painel === b.id ? '#1d4ed8' : 'rgba(255,255,255,0.85)', border: 'none', borderRadius: 11, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '8px 10px', color: painel === b.id ? '#fff' : 'rgba(15,23,42,0.9)', boxShadow: '0 2px 8px rgba(0,0,0,0.25)', WebkitTapHighlightColor: 'transparent' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">{b.i}</svg>
+                <span style={{ fontSize: 9, fontWeight: 600 }}>{b.l}</span>
               </button>
             ))}
           </div>
+        )}
 
-          {/* Visualização da lente */}
-          <div style={{ flex: 1, position: 'relative', overflow: 'hidden', minHeight: 0 }}>
-            {aba === 'ambientes' ? (
-              <>
-                {/* Foto de olho de fundo */}
-                <img key={FUNDO_ID} src={fundoSrc(FUNDO_ID)} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+        {/* Toggle Desenhar (baixo-direita) */}
+        <button onClick={() => { setAba(aba === 'desenhar' ? 'ambientes' : 'desenhar'); setPainel(null); }} style={{
+          position: 'absolute', bottom: 12, right: 12, zIndex: 8, width: 46, height: 46, borderRadius: 13, border: 'none', cursor: 'pointer',
+          background: aba === 'desenhar' ? '#1d4ed8' : 'rgba(15,20,30,0.82)', color: '#fff',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 3px 12px rgba(0,0,0,0.35)', WebkitTapHighlightColor: 'transparent',
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19l7-7-4-4-7 7v4h4zM15 6l3 3" /></svg>
+        </button>
 
-                {/* Campo de visão da lente (por cima do olho) */}
-                {p?.campoImg ? (
-                  <LenteCampo key={p.campoImg} campoImg={p.campoImg} box={{ left: '2%' }} />
-                ) : (
-                  // Fallback: lente de vidro genérica
-                  <div style={{ position: 'absolute', top: '5%', left: '18%', right: '6%', bottom: '6%', borderRadius: '48% 48% 46% 46% / 52% 52% 48% 48%', border: '2px solid rgba(255,255,255,0.75)', boxShadow: 'inset 0 0 80px rgba(255,255,255,0.14), 0 14px 44px rgba(0,0,0,0.22)', background: 'linear-gradient(135deg, rgba(255,255,255,0.16) 0%, transparent 42%)', pointerEvents: 'none' }} />
-                )}
-
-                {/* Botões laterais direita */}
-                <div style={{ position: 'absolute', top: '50%', right: 4, transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', gap: 14, zIndex: 5 }}>
-                  {[
-                    { id: 'descricao', l: 'Descrição', i: <path d="M4 4h16v13H8l-4 4z" /> },
-                    { id: 'detalhes', l: 'Detalhes', i: <><circle cx="12" cy="12" r="9" /><line x1="12" y1="11" x2="12" y2="16" /><circle cx="12" cy="8" r="0.6" fill="currentColor" /></> },
-                    { id: 'linha', l: 'Linha', i: <><circle cx="7" cy="12" r="4" /><circle cx="17" cy="12" r="4" /></> },
-                    { id: 'olho', l: 'Olho', i: <><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12z" /><circle cx="12" cy="12" r="2.5" /></> },
-                    { id: 'mlp', l: 'MLP', i: <><circle cx="12" cy="12" r="9" /><path d="M12 3v18M4 8l16 8M20 8L4 16" /></> },
-                  ].map(b => (
-                    <button key={b.id} onClick={() => setPainel(prev => prev === (b.id as 'detalhes' | 'descricao') ? null : (b.id === 'detalhes' ? 'detalhes' : b.id === 'descricao' ? 'descricao' : prev))}
-                      style={{ background: 'rgba(255,255,255,0.55)', border: 'none', borderRadius: 10, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '6px 8px', color: 'rgba(15,23,42,0.9)', WebkitTapHighlightColor: 'transparent' }}>
-                      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">{b.i}</svg>
-                      <span style={{ fontSize: 9, fontWeight: 600 }}>{b.l}</span>
-                    </button>
-                  ))}
-                </div>
-
-                {/* Overlay: Detalhes / Descrição */}
-                {painel && p && (
-                  <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, background: 'rgba(6,10,18,0.92)', color: '#e8ecf3', padding: '16px 22px', zIndex: 6, animation: 'fadeIn .18s ease' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: '#7fb2ff' }}>{p.campo ?? p.nome}</div>
-                      <button onClick={() => setPainel(null)} style={{ background: 'none', border: 'none', color: '#9aa4b8', fontSize: 20, cursor: 'pointer', lineHeight: 1 }}>×</button>
-                    </div>
-                    {painel === 'detalhes' ? (
-                      <div style={{ fontSize: 13, lineHeight: 1.7 }}>
-                        <div>Código: <b>{p.codigo ?? '—'}</b></div>
-                        <div>Disponibilidade: <b>{p.disp ?? '—'}</b></div>
-                      </div>
-                    ) : (
-                      <div style={{ fontSize: 13, lineHeight: 1.6, color: '#c7cede', maxWidth: 640 }}>
-                        {p.nome} — lente {p.superficie?.toLowerCase()} em {p.material}, tratamento {p.tratamento}.
-                      </div>
-                    )}
+        {/* Overlay: Detalhes / Descrição */}
+        {painel && p && (
+          <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, background: 'rgba(6,10,18,0.94)', color: '#e8ecf3', padding: '14px 20px 16px', zIndex: 9, animation: 'fadeIn .18s ease' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <div style={{ fontSize: 13.5, fontWeight: 800, color: '#7fb2ff' }}>{p.nome}</div>
+              <button onClick={() => setPainel(null)} style={{ background: 'none', border: 'none', color: '#9aa4b8', fontSize: 22, cursor: 'pointer', lineHeight: 1 }}>×</button>
+            </div>
+            {painel === 'detalhes' ? (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 18px' }}>
+                {specs.map(([k, v]) => (
+                  <div key={k} style={{ fontSize: 12.5, minWidth: 130 }}>
+                    <span style={{ color: '#8fa0bd' }}>{k}: </span><b style={{ color: '#eef2fb' }}>{v || '—'}</b>
                   </div>
-                )}
-              </>
+                ))}
+              </div>
             ) : (
-              <Desenhar campoImg={p?.campoImg} paisagemId={FUNDO_ID} />
+              <div style={{ fontSize: 13, lineHeight: 1.6, color: '#c7cede', maxWidth: 720 }}>
+                {p.nome} — lente {p.superficie?.toLowerCase()} em {p.material}, tratamento {p.tratamento}. Valor: <b style={{ color: '#fff' }}>12x {brl(p.parcela)}</b>.
+              </div>
             )}
           </div>
-
-          {/* 5 cards (compactos no celular p/ dar espaço à imagem) */}
-          <div style={{ display: 'flex', gap: compact ? 4 : 6, padding: compact ? '5px 6px' : 8, background: '#dbe0e7', flexShrink: 0 }}>
-            {cards.map(([k, v]) => (
-              <div key={k} style={{ flex: 1, background: '#fff', borderRadius: 8, border: '1px solid #cdd5df', overflow: 'hidden', minWidth: 0 }}>
-                <div style={{ textAlign: 'center', padding: compact ? '5px 5px' : '8px 6px 4px', fontSize: compact ? 10 : 11.5 }}>
-                  <div style={{ color: '#64748b' }}>{k}:</div>
-                  <div style={{ color: '#1e293b', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{v ?? '—'}</div>
-                </div>
-                {!compact && (
-                  <div style={{ height: 58, background: 'linear-gradient(160deg,#eef2f7,#dbe2ea)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#9fb0c4" strokeWidth="1.3"><ellipse cx="12" cy="12" rx="9" ry="6.5" /><circle cx="12" cy="12" r="2.5" /></svg>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* Barra de status */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: compact ? '5px 12px' : '8px 16px', background: '#eef1f5', borderTop: '1px solid #d5dbe3', flexShrink: 0 }}>
-            <span style={{ fontSize: 12.5, color: '#334155', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {p ? `${p.nome} · ` : ''}<span style={{ color: tabela.cor, fontFamily: 'var(--mono)', fontWeight: 800 }}>{p ? `12x ${brl(p.parcela)}` : ''}</span>
-            </span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#64748b' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6" /></svg>
-              <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--mono)' }}>00</span>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Dock inferior */}
