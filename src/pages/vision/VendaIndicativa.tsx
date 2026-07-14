@@ -505,15 +505,9 @@ function useFrostMask(campoImg: string): string | null {
         ctx.drawImage(img, 0, 0, cw, ch);
         const a = ctx.getImageData(0, 0, cw, ch).data;
         const N = cw * ch;
+        const idx = (x: number, y: number) => y * cw + x;
         const line = new Uint8Array(N);
         for (let i = 0; i < N; i++) line[i] = a[i * 4 + 3] > 60 ? 1 : 0;
-        // dilata as linhas (fecha os pontilhados)
-        const bnd = new Uint8Array(N); const r = 3;
-        for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) {
-          if (!line[y * cw + x]) continue;
-          for (let dy = -r; dy <= r; dy++) { const yy = y + dy; if (yy < 0 || yy >= ch) continue;
-            for (let dx = -r; dx <= r; dx++) { const xx = x + dx; if (xx < 0 || xx >= cw) continue; bnd[yy * cw + xx] = 1; } }
-        }
         const flood = (seed: number, walls: Uint8Array) => {
           const m = new Uint8Array(N); const st = [seed];
           while (st.length) {
@@ -526,19 +520,55 @@ function useFrostMask(campoImg: string): string | null {
           }
           return m;
         };
-        const center = Math.floor(ch / 2) * cw + Math.floor(cw / 2);
-        const full = flood(center, line);     // interior inteiro (cruza os pontilhados)
-        const central = flood(center, bnd);   // faixa central (limitada pelas paredes)
+        const dilate = (src: Uint8Array, r: number) => {
+          const d = new Uint8Array(N);
+          for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) {
+            if (!src[idx(x, y)]) continue;
+            for (let dy = -r; dy <= r; dy++) { const yy = y + dy; if (yy < 0 || yy >= ch) continue;
+              for (let dx = -r; dx <= r; dx++) { const xx = x + dx; if (xx < 0 || xx >= cw) continue; d[idx(xx, yy)] = 1; } }
+          }
+          return d;
+        };
+        const center = idx(cw >> 1, ch >> 1);
+        const full = flood(center, line);                       // interior inteiro
+        const ext = new Uint8Array(N);
+        for (let i = 0; i < N; i++) ext[i] = (!full[i] && !line[i]) ? 1 : 0; // fora da lente
+        // contorno = componente de linha que encosta no exterior (grosso incluso); pontilhados = resto
+        const contour = new Uint8Array(N); const cst: number[] = [];
+        for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) {
+          const i = idx(x, y); if (!line[i]) continue; let adj = false;
+          for (let dy = -1; dy <= 1 && !adj; dy++) for (let dx = -1; dx <= 1; dx++) {
+            const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= cw || yy >= ch) continue;
+            if (ext[idx(xx, yy)]) { adj = true; break; }
+          }
+          if (adj) { contour[i] = 1; cst.push(i); }
+        }
+        while (cst.length) {
+          const p = cst.pop()!; const x = p % cw, y = (p - x) / cw;
+          for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+            const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= cw || yy >= ch) continue;
+            const q = idx(xx, yy); if (line[q] && !contour[q]) { contour[q] = 1; cst.push(q); }
+          }
+        }
+        const dotted = new Uint8Array(N);
+        for (let i = 0; i < N; i++) dotted[i] = (line[i] && !contour[i]) ? 1 : 0;
+        const bnd = dilate(dotted, 3);                          // fecha os pontilhados (paredes do corredor)
+        const wallsC = new Uint8Array(N);
+        for (let i = 0; i < N; i++) wallsC[i] = (bnd[i] || line[i]) ? 1 : 0;
+        const central = flood(center, wallsC);                  // faixa central (chega ao contorno no topo)
+        const lobe = new Uint8Array(N);
+        for (let i = 0; i < N; i++) lobe[i] = (full[i] && !central[i] && !line[i]) ? 1 : 0;
+        const lobeG = dilate(lobe, 2);                          // cresce até o contorno (preenche a beirada)
         const out = ctx.createImageData(cw, ch);
         for (let i = 0; i < N; i++) {
-          const on = full[i] && !central[i] && !line[i]; // = os 2 lóbulos
+          const on = lobeG[i] && (full[i] || line[i]);          // = os 2 lóbulos, presos ao interior
           out.data[i * 4] = 255; out.data[i * 4 + 1] = 255; out.data[i * 4 + 2] = 255;
           out.data[i * 4 + 3] = on ? 255 : 0;
         }
         ctx.putImageData(out, 0, 0);
         // suaviza a borda dos lóbulos
         const c2 = document.createElement('canvas'); c2.width = cw; c2.height = ch;
-        const x2 = c2.getContext('2d')!; x2.filter = 'blur(1.6px)'; x2.drawImage(cnv, 0, 0);
+        const x2 = c2.getContext('2d')!; x2.filter = 'blur(1.2px)'; x2.drawImage(cnv, 0, 0);
         const url = c2.toDataURL();
         frostMaskCache.set(campoImg, url);
         if (!cancelled) setMask(url);
