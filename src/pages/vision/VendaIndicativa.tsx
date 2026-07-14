@@ -480,134 +480,19 @@ function Dock({ navigate, onOS }: { navigate: ReturnType<typeof useNavigate>; on
   );
 }
 
-// ─── Máscara das ABERRAÇÕES (os dois lóbulos laterais) para o efeito espelho ────
-// O PNG tem só as linhas (contorno + pontilhados do corredor). Passos:
-//  1) dilata as linhas p/ FECHAR os pontilhados (viram paredes contínuas);
-//  2) "full" = flood do centro cruzando os pontilhados → interior inteiro da lente;
-//  3) "central" = flood do centro limitado pelas paredes → faixa central (distância+corredor+leitura);
-//  4) aberrações = full − central = exatamente os 2 lóbulos (fora do corredor).
-const frostMaskCache = new Map<string, string>();
-
-function useFrostMask(campoImg: string): string | null {
-  const [mask, setMask] = useState<string | null>(() => frostMaskCache.get(campoImg) ?? null);
-  useEffect(() => {
-    const cached = frostMaskCache.get(campoImg);
-    if (cached) { setMask(cached); return; }
-    let cancelled = false;
-    const img = new Image();
-    img.onload = () => {
-      try {
-        const scale = Math.min(1, 640 / Math.max(img.naturalWidth, img.naturalHeight));
-        const cw = Math.max(1, Math.round(img.naturalWidth * scale));
-        const ch = Math.max(1, Math.round(img.naturalHeight * scale));
-        const cnv = document.createElement('canvas'); cnv.width = cw; cnv.height = ch;
-        const ctx = cnv.getContext('2d')!;
-        ctx.drawImage(img, 0, 0, cw, ch);
-        const a = ctx.getImageData(0, 0, cw, ch).data;
-        const N = cw * ch;
-        const idx = (x: number, y: number) => y * cw + x;
-        const line = new Uint8Array(N);
-        for (let i = 0; i < N; i++) line[i] = a[i * 4 + 3] > 60 ? 1 : 0;
-        const flood = (seed: number, walls: Uint8Array) => {
-          const m = new Uint8Array(N); const st = [seed];
-          while (st.length) {
-            const p = st.pop()!;
-            if (p < 0 || p >= N || m[p] || walls[p]) continue;
-            m[p] = 1; const x = p % cw;
-            if (x > 0) st.push(p - 1);
-            if (x < cw - 1) st.push(p + 1);
-            st.push(p - cw); st.push(p + cw);
-          }
-          return m;
-        };
-        const dilate = (src: Uint8Array, r: number) => {
-          const d = new Uint8Array(N);
-          for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) {
-            if (!src[idx(x, y)]) continue;
-            for (let dy = -r; dy <= r; dy++) { const yy = y + dy; if (yy < 0 || yy >= ch) continue;
-              for (let dx = -r; dx <= r; dx++) { const xx = x + dx; if (xx < 0 || xx >= cw) continue; d[idx(xx, yy)] = 1; } }
-          }
-          return d;
-        };
-        const center = idx(cw >> 1, ch >> 1);
-        const full = flood(center, line);                       // interior inteiro
-        const ext = new Uint8Array(N);
-        for (let i = 0; i < N; i++) ext[i] = (!full[i] && !line[i]) ? 1 : 0; // fora da lente
-        // contorno = componente de linha que encosta no exterior (grosso incluso); pontilhados = resto
-        const contour = new Uint8Array(N); const cst: number[] = [];
-        for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) {
-          const i = idx(x, y); if (!line[i]) continue; let adj = false;
-          for (let dy = -1; dy <= 1 && !adj; dy++) for (let dx = -1; dx <= 1; dx++) {
-            const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= cw || yy >= ch) continue;
-            if (ext[idx(xx, yy)]) { adj = true; break; }
-          }
-          if (adj) { contour[i] = 1; cst.push(i); }
-        }
-        while (cst.length) {
-          const p = cst.pop()!; const x = p % cw, y = (p - x) / cw;
-          for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
-            const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= cw || yy >= ch) continue;
-            const q = idx(xx, yy); if (line[q] && !contour[q]) { contour[q] = 1; cst.push(q); }
-          }
-        }
-        const dotted = new Uint8Array(N);
-        for (let i = 0; i < N; i++) dotted[i] = (line[i] && !contour[i]) ? 1 : 0;
-        const bnd = dilate(dotted, 3);                          // fecha os pontilhados (paredes do corredor)
-        const wallsC = new Uint8Array(N);
-        for (let i = 0; i < N; i++) wallsC[i] = (bnd[i] || line[i]) ? 1 : 0;
-        const central = flood(center, wallsC);                  // faixa central (chega ao contorno no topo)
-        const lobe = new Uint8Array(N);
-        for (let i = 0; i < N; i++) lobe[i] = (full[i] && !central[i] && !line[i]) ? 1 : 0;
-        const lobeG = dilate(lobe, 2);                          // cresce até o contorno (preenche a beirada)
-        const out = ctx.createImageData(cw, ch);
-        for (let i = 0; i < N; i++) {
-          const on = lobeG[i] && (full[i] || line[i]);          // = os 2 lóbulos, presos ao interior
-          out.data[i * 4] = 255; out.data[i * 4 + 1] = 255; out.data[i * 4 + 2] = 255;
-          out.data[i * 4 + 3] = on ? 255 : 0;
-        }
-        ctx.putImageData(out, 0, 0);
-        // suaviza a borda dos lóbulos
-        const c2 = document.createElement('canvas'); c2.width = cw; c2.height = ch;
-        const x2 = c2.getContext('2d')!; x2.filter = 'blur(1.2px)'; x2.drawImage(cnv, 0, 0);
-        const url = c2.toDataURL();
-        frostMaskCache.set(campoImg, url);
-        if (!cancelled) setMask(url);
-      } catch { /* CORS/decoding — segue só com as linhas */ }
-    };
-    img.src = cvSrc(campoImg);
-    return () => { cancelled = true; };
-  }, [campoImg]);
-  return mask;
-}
-
-// Lente sobre a paisagem: corredor central limpo + aberrações com efeito espelho (fosco).
+// Lente sobre a paisagem: apenas o contorno + zonas (campo de visão) em preto.
 function LenteCampo({ campoImg, box }: { campoImg: string; box?: React.CSSProperties }) {
-  const frost = useFrostMask(campoImg);
   const baseBox: React.CSSProperties = { position: 'absolute', top: '1%', left: 128, right: '1%', bottom: '1%', pointerEvents: 'none', ...box };
-  const maskCommon = (u: string): React.CSSProperties => ({
-    WebkitMaskImage: `url("${u}")`, maskImage: `url("${u}")`,
-    WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
-    WebkitMaskPosition: 'center', maskPosition: 'center',
-    WebkitMaskSize: 'auto 132%', maskSize: 'auto 132%', // lente maior (recorta a margem transparente do PNG)
-  });
   return (
-    <>
-      {/* Aberrações: efeito espelho / fosco só na periferia (corredor central limpo) */}
-      {frost && (
-        <div style={{
-          ...baseBox, ...maskCommon(frost),
-          background: 'linear-gradient(120deg, rgba(255,255,255,0.6), rgba(226,236,248,0.48) 45%, rgba(255,255,255,0.6))',
-          backdropFilter: 'blur(4px) brightness(1.15) saturate(1.05)',
-          WebkitBackdropFilter: 'blur(4px) brightness(1.15) saturate(1.05)',
-        }} />
-      )}
-      {/* Contorno + zonas em PRETO */}
-      <div style={{
-        ...baseBox, ...maskCommon(cvSrc(campoImg)),
-        background: '#141416',
-        filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.42))',
-      }} />
-    </>
+    <div style={{
+      ...baseBox,
+      WebkitMaskImage: `url("${cvSrc(campoImg)}")`, maskImage: `url("${cvSrc(campoImg)}")`,
+      WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
+      WebkitMaskPosition: 'center', maskPosition: 'center',
+      WebkitMaskSize: 'auto 132%', maskSize: 'auto 132%', // lente maior (recorta a margem transparente do PNG)
+      background: '#141416',
+      filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.42))',
+    }} />
   );
 }
 
