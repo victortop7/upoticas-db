@@ -480,18 +480,18 @@ function Dock({ navigate, onOS }: { navigate: ReturnType<typeof useNavigate>; on
   );
 }
 
-// Lente sobre a paisagem: apenas o contorno + zonas (campo de visão) em preto.
+// Lente sobre a paisagem: mostra o PNG do campo de visão COMO ELE É (cores/arte do PNG).
+// O PNG deve ter o fundo FORA da lente transparente; dentro, o desenho/preenchimento desejado.
 function LenteCampo({ campoImg, box }: { campoImg: string; box?: React.CSSProperties }) {
   const baseBox: React.CSSProperties = { position: 'absolute', top: '1%', left: 128, right: '1%', bottom: '1%', pointerEvents: 'none', ...box };
   return (
     <div style={{
       ...baseBox,
-      WebkitMaskImage: `url("${cvSrc(campoImg)}")`, maskImage: `url("${cvSrc(campoImg)}")`,
-      WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
-      WebkitMaskPosition: 'center', maskPosition: 'center',
-      WebkitMaskSize: 'auto 132%', maskSize: 'auto 132%', // lente maior (recorta a margem transparente do PNG)
-      background: '#141416',
-      filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.42))',
+      backgroundImage: `url("${cvSrc(campoImg)}")`,
+      backgroundRepeat: 'no-repeat',
+      backgroundPosition: 'center',
+      backgroundSize: 'auto 132%', // lente maior (recorta a margem transparente do PNG)
+      filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.4))',
     }} />
   );
 }
