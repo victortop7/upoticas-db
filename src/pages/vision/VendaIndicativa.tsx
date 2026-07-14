@@ -134,21 +134,14 @@ const TABELAS: Tabela[] = [
   },
 ];
 
-// ─── Paisagens (cenário atrás do campo de visão — public/paisagens/{id}.png) ────
-const PAISAGENS: { id: number; label: string }[] = [
-  { id: 8, label: 'Pôr do sol' },
-  { id: 9, label: 'Estrada' },
-  { id: 10, label: 'Montanha' },
-  { id: 11, label: 'Lago' },
-  { id: 12, label: 'Cânion' },
-  { id: 13, label: 'Neve' },
-  { id: 14, label: 'Vale' },
-  { id: 15, label: 'Alameda' },
-  { id: 16, label: 'Parque' },
-  { id: 17, label: 'Campo' },
-  { id: 18, label: 'Cerejeiras' },
-  { id: 19, label: 'Floresta' },
+// ─── Fundo atrás do campo de visão: FOTO DE OLHO (public/foto de olhos/{id}.png) ─
+// As paisagens ficam guardadas em public/paisagens/ para uso futuro.
+const FUNDO_DIR = '/foto de olhos';
+const FUNDOS: { id: number; label: string }[] = [
+  { id: 13, label: 'Olho 1' },
+  { id: 14, label: 'Olho 2' },
 ];
+const fundoSrc = (id: number) => encodeURI(`${FUNDO_DIR}/${id}.jpg`);
 
 const brl = (v: number) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -163,7 +156,7 @@ export default function VendaIndicativa() {
   const [busca, setBusca] = useState('');
   const [idx, setIdx] = useState(0);
   const [aba, setAba] = useState<'ambientes' | 'desenhar'>('ambientes');
-  const [pais, setPais] = useState(PAISAGENS[0].id);
+  const [pais, setPais] = useState(FUNDOS[0].id);
   const [painel, setPainel] = useState<null | 'descricao' | 'detalhes'>(null);
 
   const tabelasTipo = TABELAS.filter(t => t.tipos.includes(tipo));
@@ -279,7 +272,7 @@ export default function VendaIndicativa() {
     ? produtos.filter(pr => pr.nome.toLowerCase().includes(busca.trim().toLowerCase()))
     : produtos;
   const p = produtos[idx] ?? produtos[0];
-  const paisagem = PAISAGENS.find(a => a.id === pais) ?? PAISAGENS[0];
+  const paisagem = FUNDOS.find(a => a.id === pais) ?? FUNDOS[0];
 
   const cards: [string, string | undefined][] = p ? [
     ['Campo', p.campo], ['Superfície', p.superficie], ['Fotossensível', p.foto],
@@ -360,11 +353,11 @@ export default function VendaIndicativa() {
             {aba === 'ambientes' ? (
               <>
                 {/* Paisagem de fundo */}
-                <img key={paisagem.id} src={`/paisagens/${paisagem.id}.png`} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img key={paisagem.id} src={fundoSrc(paisagem.id)} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
 
                 {/* Menu de paisagens (esquerda) */}
                 <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', zIndex: 4 }}>
-                  {PAISAGENS.map(a => (
+                  {FUNDOS.map(a => (
                     <button key={a.id} onClick={() => setPais(a.id)} style={{
                       textAlign: 'left', border: 'none', cursor: 'pointer', padding: '9px 20px 9px 16px', minWidth: 116,
                       background: pais === a.id ? 'rgba(10,20,35,0.92)' : 'rgba(30,42,58,0.66)', color: '#fff',
@@ -533,7 +526,7 @@ function Desenhar({ campoImg, paisagemId }: { campoImg?: string; paisagemId: num
 
   return (
     <div ref={wrapRef} style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-      <img src={`/paisagens/${paisagemId}.png`} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+      <img src={fundoSrc(paisagemId)} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
       {campoImg
         ? <LenteCampo campoImg={campoImg} box={{ left: '2%' }} />
         : <div style={{ position: 'absolute', top: '5%', left: '18%', right: '6%', bottom: '6%', borderRadius: '48% 48% 46% 46% / 52% 52% 48% 48%', border: '2px solid rgba(255,255,255,0.75)', background: 'linear-gradient(135deg, rgba(255,255,255,0.16), transparent 42%)', pointerEvents: 'none' }} />}
