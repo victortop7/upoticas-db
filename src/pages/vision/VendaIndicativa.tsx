@@ -480,15 +480,20 @@ function Dock({ navigate, onOS }: { navigate: ReturnType<typeof useNavigate>; on
   );
 }
 
-// ─── Máscara com o formato PREENCHIDO da lente (flood-fill a partir do centro) ──
-// O PNG do campo de visão tem só as linhas (fundo transparente). Para sombrear o
-// interior da lente sem vazar, geramos uma máscara sólida com a forma da lente.
-const shapeMaskCache = new Map<string, string>();
+// ─── Máscara das ABERRAÇÕES (periferia da lente) para o efeito espelho ──────────
+// O PNG do campo de visão tem só as linhas (fundo transparente). Fazemos flood-fill
+// a partir do centro para achar o interior da lente e, dentro dele, geramos uma
+// máscara concentrada nas laterais (aberrações) — o corredor central fica limpo.
+const frostMaskCache = new Map<string, string>();
+const smoothstep = (lo: number, hi: number, x: number) => {
+  const t = Math.min(1, Math.max(0, (x - lo) / (hi - lo)));
+  return t * t * (3 - 2 * t);
+};
 
-function useShapeMask(campoImg: string): string | null {
-  const [mask, setMask] = useState<string | null>(() => shapeMaskCache.get(campoImg) ?? null);
+function useFrostMask(campoImg: string): string | null {
+  const [mask, setMask] = useState<string | null>(() => frostMaskCache.get(campoImg) ?? null);
   useEffect(() => {
-    const cached = shapeMaskCache.get(campoImg);
+    const cached = frostMaskCache.get(campoImg);
     if (cached) { setMask(cached); return; }
     let cancelled = false;
     const img = new Image();
@@ -504,9 +509,7 @@ function useShapeMask(campoImg: string): string | null {
         const N = cw * ch;
         const isLine = (i: number) => a[i * 4 + 3] > 60; // pixel de linha (contorno/zonas)
         const fill = new Uint8Array(N);
-        // começa no centro (interior transparente) e preenche até bater no contorno
-        const start = Math.floor(ch / 2) * cw + Math.floor(cw / 2);
-        const stack = [start];
+        const stack = [Math.floor(ch / 2) * cw + Math.floor(cw / 2)];
         while (stack.length) {
           const p = stack.pop()!;
           if (p < 0 || p >= N || fill[p] || isLine(p)) continue;
@@ -517,15 +520,20 @@ function useShapeMask(campoImg: string): string | null {
           stack.push(p - cw);
           stack.push(p + cw);
         }
+        // Aberrações = dentro da lente e afastado do corredor central (peso pela distância horizontal)
+        const cx = (cw - 1) / 2;
         const out = ctx.createImageData(cw, ch);
         for (let i = 0; i < N; i++) {
-          const inside = fill[i] || isLine(i); // inclui a própria linha na forma
+          if (!fill[i]) { out.data[i * 4 + 3] = 0; continue; }
+          const x = i % cw;
+          const nx = Math.abs(x - cx) / cx;             // 0 no centro, 1 nas laterais
+          const w = smoothstep(0.26, 0.64, nx);         // limpo no meio, fosco nas bordas
           out.data[i * 4] = 255; out.data[i * 4 + 1] = 255; out.data[i * 4 + 2] = 255;
-          out.data[i * 4 + 3] = inside ? 255 : 0;
+          out.data[i * 4 + 3] = Math.round(255 * w);
         }
         ctx.putImageData(out, 0, 0);
         const url = cnv.toDataURL();
-        shapeMaskCache.set(campoImg, url);
+        frostMaskCache.set(campoImg, url);
         if (!cancelled) setMask(url);
       } catch { /* CORS/decoding — segue só com as linhas */ }
     };
@@ -535,9 +543,9 @@ function useShapeMask(campoImg: string): string | null {
   return mask;
 }
 
-// Lente sobre a paisagem: aberrações (cinza claro por dentro) + contorno/zonas em preto.
+// Lente sobre a paisagem: corredor central limpo + aberrações com efeito espelho (fosco).
 function LenteCampo({ campoImg, box }: { campoImg: string; box?: React.CSSProperties }) {
-  const shape = useShapeMask(campoImg);
+  const frost = useFrostMask(campoImg);
   const baseBox: React.CSSProperties = { position: 'absolute', top: '1%', left: 128, right: '1%', bottom: '1%', pointerEvents: 'none', ...box };
   const maskCommon = (u: string): React.CSSProperties => ({
     WebkitMaskImage: `url("${u}")`, maskImage: `url("${u}")`,
@@ -547,14 +555,13 @@ function LenteCampo({ campoImg, box }: { campoImg: string; box?: React.CSSProper
   });
   return (
     <>
-      {/* Aberrações: cinza claro nas zonas periféricas (corredor central fica limpo) */}
-      {shape && (
+      {/* Aberrações: efeito espelho / fosco só na periferia (corredor central limpo) */}
+      {frost && (
         <div style={{
-          ...baseBox, ...maskCommon(shape),
-          background:
-            'radial-gradient(ellipse 32% 42% at 22% 63%, rgba(184,187,196,0.55) 0%, rgba(184,187,196,0.12) 55%, transparent 74%),' +
-            'radial-gradient(ellipse 32% 42% at 78% 60%, rgba(184,187,196,0.55) 0%, rgba(184,187,196,0.12) 55%, transparent 74%),' +
-            'rgba(200,203,210,0.08)',
+          ...baseBox, ...maskCommon(frost),
+          background: 'linear-gradient(120deg, rgba(255,255,255,0.62), rgba(226,236,248,0.5) 45%, rgba(255,255,255,0.62))',
+          backdropFilter: 'blur(4px) brightness(1.16) saturate(1.05)',
+          WebkitBackdropFilter: 'blur(4px) brightness(1.16) saturate(1.05)',
         }} />
       )}
       {/* Contorno + zonas em PRETO */}
