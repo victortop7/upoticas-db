@@ -22,22 +22,6 @@ function useFit(): 'cover' | 'contain' {
 // Virar para true quando as imagens das lentes estiverem prontas.
 const SIMULACAO_ATIVA: boolean = false;
 
-// ─── Visual padrão (mesmo da Tabela Digital): pills flutuantes sobre a imagem ───
-const pillCol: React.CSSProperties = {
-  position: 'absolute', top: 10, right: 10, bottom: 76, zIndex: 12,
-  display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6,
-  overflowY: 'auto', maxWidth: 190,
-};
-const pill = (ativo: boolean, cor: string): React.CSSProperties => ({
-  border: 'none', borderRadius: 9, cursor: 'pointer', padding: '6px 11px', textAlign: 'left',
-  background: ativo ? cor : 'rgba(12,22,42,0.7)', color: '#fff',
-  boxShadow: '0 2px 8px rgba(0,0,0,0.25)', backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)',
-  fontSize: 10.5, fontWeight: 700, whiteSpace: 'nowrap', letterSpacing: '.02em',
-  WebkitTapHighlightColor: 'transparent', transition: 'background .15s',
-});
-// container da imagem em tela cheia (pills flutuam por cima)
-const telaCheia: React.CSSProperties = { flex: 1, position: 'relative', overflow: 'hidden', background: '#0a0a0c' };
-
 const TRATAMENTOS = [
   { id: 'ar',  label: 'Anti-Reflexo',   cor: '#3b82f6' },
   { id: 'az',  label: 'Luz Azul',       cor: '#8b5cf6' },
@@ -241,8 +225,8 @@ function SequenciaLente({ tipo, onSimular }: { tipo: 'campos' | 'adicao'; onSimu
   }, [auto]);
 
   return (
-    <div style={telaCheia}>
-      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'row', overflow: 'hidden' }}>
+      <div style={{ flex: 1, position: 'relative', overflow: 'hidden', background: '#0a0a0c', minWidth: 0 }}>
       {/* Imagens empilhadas (crossfade) */}
       {Array.from({ length: total }).map((_, i) => (
         <img
@@ -276,27 +260,51 @@ function SequenciaLente({ tipo, onSimular }: { tipo: 'campos' | 'adicao'; onSimu
       </button>
       </div>
 
-      {/* Níveis — pills flutuantes (mesmo visual da Tabela Digital) */}
-      <div style={pillCol}>
+      {/* Painel de níveis — ao lado (não sobrepõe a imagem) */}
+      <div style={{
+        display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: 12, paddingBottom: 92,
+        background: '#0d0d12', borderLeft: '1px solid #1f1f28',
+        width: 158, flexShrink: 0, overflowY: 'auto', zIndex: 10,
+      }}>
         {Array.from({ length: total }).map((_, i) => {
           const ativo = i === idx;
           const label = tipo === 'campos' ? `Campo ${i + 1}` : `Adição ${String(i + 1).padStart(2, '0')}`;
           return (
-            <button key={i} onClick={() => { setAuto(false); setIdx(i); }} style={pill(ativo, cor)}>
-              {label}
+            <button key={i} onClick={() => { setAuto(false); setIdx(i); }} style={{
+              background: ativo ? 'rgba(255,255,255,0.12)' : 'transparent',
+              border: 'none', cursor: 'pointer',
+              padding: '9px 12px',
+              textAlign: 'left', width: '100%',
+              display: 'flex', alignItems: 'center', gap: 8,
+              transition: 'background .15s', WebkitTapHighlightColor: 'transparent',
+            }}>
+              <div style={{
+                width: 3, height: 15, borderRadius: 2, flexShrink: 0,
+                background: ativo ? cor : 'transparent', transition: 'background .15s',
+              }} />
+              <span style={{
+                fontSize: 12, fontWeight: ativo ? 700 : 400,
+                fontFamily: 'var(--sans)', letterSpacing: '.05em', textTransform: 'uppercase',
+                color: ativo ? '#ffffff' : 'rgba(255,255,255,0.5)', transition: 'color .15s',
+              }}>{label}</span>
             </button>
           );
         })}
 
         {/* Última opção: Simulação na câmera (campo/adição) */}
-        {SIMULACAO_ATIVA && (
-          <button onClick={() => onSimular?.(tipo)} style={{ ...pill(false, cor), display: 'flex', alignItems: 'center', gap: 7, color: cor }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={cor} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" />
-            </svg>
-            Simulação
-          </button>
-        )}
+        {SIMULACAO_ATIVA && (<>
+        <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '6px 14px' }} />
+        <button onClick={() => onSimular?.(tipo)} style={{
+          background: 'transparent', border: 'none', cursor: 'pointer',
+          padding: '12px 18px 12px 14px', textAlign: 'left', width: '100%',
+          display: 'flex', alignItems: 'center', gap: 10, WebkitTapHighlightColor: 'transparent',
+        }}>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={cor} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" />
+          </svg>
+          <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--sans)', letterSpacing: '.07em', textTransform: 'uppercase', color: cor }}>Simulação</span>
+        </button>
+        </>)}
       </div>
     </div>
   );
@@ -328,7 +336,7 @@ function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimula
   }
 
   return (
-    <div style={telaCheia}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'row', overflow: 'hidden' }}>
     <div
       ref={containerRef}
       onMouseDown={() => { if (tipo === 'demonstracao') dragging.current = true; }}
@@ -338,7 +346,7 @@ function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimula
       onTouchStart={() => { if (tipo === 'demonstracao') dragging.current = true; }}
       onTouchMove={e => { if (dragging.current) move(e.touches[0].clientX); }}
       onTouchEnd={() => { dragging.current = false; }}
-      style={{ position: 'absolute', inset: 0, overflow: 'hidden', cursor: tipo === 'demonstracao' ? 'col-resize' : 'default', userSelect: 'none' }}
+      style={{ flex: 1, position: 'relative', overflow: 'hidden', cursor: tipo === 'demonstracao' ? 'col-resize' : 'default', userSelect: 'none', minWidth: 0 }}
     >
       {tipo !== 'demonstracao' ? (
         /* Foto full-screen — contain para não cortar textos da imagem */
@@ -391,7 +399,7 @@ function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimula
           <div style={{ position: 'absolute', bottom: 64, left: 16, fontSize: 11, color: '#e2e8f0', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
             ✓ DIGITAL
           </div>
-          <div style={{ position: 'absolute', bottom: 84, right: 16, fontSize: 11, color: '#9ca3af', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
+          <div style={{ position: 'absolute', bottom: 64, right: 16, fontSize: 11, color: '#9ca3af', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
             ✗ CONVENCIONAL
           </div>
 
@@ -399,21 +407,39 @@ function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimula
       )}
       </div>
 
-      {/* Toggle — pills flutuantes (mesmo visual da Tabela Digital) */}
-      <div style={pillCol}>
+      {/* Toggle — coluna lateral (não sobrepõe a imagem) */}
+      <div
+        style={{ display: 'flex', flexDirection: 'column', gap: 8, justifyContent: 'center', background: '#0d0d12', borderLeft: '1px solid #1f1f28', width: 180, flexShrink: 0, padding: '12px 10px', zIndex: 10 }}
+      >
         {([
           { id: 'convencional',  label: 'Convencional'  },
           { id: 'digital',       label: 'Digital'       },
           { id: 'demonstracao',  label: 'Demonstração'  },
         ] as const).map(t => (
-          <button key={t.id} onClick={() => setTipo(t.id)} style={pill(tipo === t.id, '#3b82f6')}>{t.label}</button>
+          <button key={t.id} onClick={() => setTipo(t.id)} style={{
+            padding: '10px 8px', borderRadius: 8, border: 'none', cursor: 'pointer', width: '100%',
+            background: tipo === t.id ? 'rgba(255,255,255,0.92)' : 'rgba(0,0,0,0.45)',
+            color: tipo === t.id ? '#111827' : 'rgba(255,255,255,0.65)',
+            fontSize: 12, fontWeight: 700, fontFamily: 'var(--sans)',
+            textTransform: 'uppercase', letterSpacing: '.03em', whiteSpace: 'nowrap',
+            boxShadow: tipo === t.id ? '0 2px 12px rgba(0,0,0,.25)' : 'none',
+            transition: 'all .15s',
+            WebkitTapHighlightColor: 'transparent',
+          }}>{t.label}</button>
         ))}
         {/* Simulação na câmera (lente digital) */}
         {SIMULACAO_ATIVA && (
-          <button onClick={() => onSimular?.('digital')} style={{ ...pill(false, '#3b82f6'), display: 'flex', alignItems: 'center', gap: 7 }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>
-            Simulação
-          </button>
+        <button onClick={() => onSimular?.('digital')} style={{
+          marginTop: 4, padding: '10px 18px', borderRadius: 8, border: 'none', cursor: 'pointer',
+          background: 'rgba(59,130,246,0.9)', color: '#fff',
+          fontSize: 13, fontWeight: 700, fontFamily: 'var(--sans)',
+          textTransform: 'uppercase', letterSpacing: '.07em',
+          display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center',
+          boxShadow: '0 2px 12px rgba(0,0,0,.25)', WebkitTapHighlightColor: 'transparent',
+        }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>
+          Simulação
+        </button>
         )}
       </div>
     </div>
@@ -505,7 +531,7 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
   }
 
   return (
-    <div style={telaCheia}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'row', overflow: 'hidden' }}>
       {/* Comparador */}
       <div
         ref={containerRef}
@@ -516,7 +542,7 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
         onTouchStart={() => { dragging.current = true; }}
         onTouchMove={e => move(e.touches[0].clientX)}
         onTouchEnd={() => { dragging.current = false; }}
-        style={{ position: 'absolute', inset: 0, cursor: 'col-resize', userSelect: 'none', overflow: 'hidden', background: '#05060a' }}
+        style={{ flex: 1, position: 'relative', cursor: 'col-resize', userSelect: 'none', overflow: 'hidden', minWidth: 0, background: '#05060a' }}
       >
         {/* SEM base */}
         {useRealPhoto ? (
@@ -594,35 +620,87 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
         <div style={{ position: 'absolute', bottom: 64, left: 16, fontSize: 11, color: '#e2e8f0', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
           ✓ COM {trObj.label.toUpperCase()}
         </div>
-        <div style={{ position: 'absolute', bottom: 84, right: 16, fontSize: 11, color: '#9ca3af', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', bottom: 64, right: 16, fontSize: 11, color: '#9ca3af', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
           ✗ SEM
         </div>
 
       </div>
 
-      {/* Tratamentos — pills flutuantes (mesmo visual da Tabela Digital) */}
-      <div style={pillCol}>
+      {/* Painel de tratamentos — ao lado (não sobrepõe a imagem) */}
+      <div
+        style={{
+          display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: 12, paddingBottom: 92,
+          background: '#0d0d12', borderLeft: '1px solid #1f1f28',
+          width: 172, flexShrink: 0, overflowY: 'auto', zIndex: 10,
+        }}
+      >
           {TRATAMENTOS.map(t => (
-            <button key={t.id} onClick={() => setTratamento(t.id)} style={pill(tratamento === t.id, t.cor)}>
-              {t.label}
+            <button key={t.id} onClick={() => setTratamento(t.id)} style={{
+              background: tratamento === t.id ? 'rgba(255,255,255,0.12)' : 'transparent',
+              border: 'none', cursor: 'pointer',
+              padding: '8px 12px',
+              textAlign: 'left', width: '100%',
+              display: 'flex', alignItems: 'center', gap: 8,
+              transition: 'background .15s',
+              WebkitTapHighlightColor: 'transparent',
+            }}>
+              <div style={{
+                width: 3, height: 15, borderRadius: 2, flexShrink: 0,
+                background: tratamento === t.id ? t.cor : 'transparent',
+                transition: 'background .15s',
+              }} />
+              <span style={{
+                fontSize: 11.5, fontWeight: tratamento === t.id ? 700 : 400,
+                fontFamily: 'var(--sans)', letterSpacing: '.03em', textTransform: 'uppercase', whiteSpace: 'nowrap',
+                color: tratamento === t.id ? '#ffffff' : 'rgba(255,255,255,0.5)',
+                transition: 'color .15s',
+              }}>{t.label}</span>
             </button>
           ))}
 
           {/* Última opção: Simulação na câmera (efeito do tratamento atual) */}
-          {SIMULACAO_ATIVA && (
-            <button onClick={() => onSimular?.(tratamento)} style={{ ...pill(false, trObj.cor), display: 'flex', alignItems: 'center', gap: 7, color: trObj.cor }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={trObj.cor} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" />
-              </svg>
-              Simular
-            </button>
-          )}
+          {SIMULACAO_ATIVA && (<>
+          <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '6px 14px' }} />
+          <button onClick={() => onSimular?.(tratamento)} style={{
+            background: 'transparent', border: 'none', cursor: 'pointer',
+            padding: '12px 18px 12px 14px', textAlign: 'left', width: '100%',
+            display: 'flex', alignItems: 'center', gap: 10,
+            WebkitTapHighlightColor: 'transparent',
+          }}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={trObj.cor} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" />
+            </svg>
+            <span style={{
+              fontSize: 14, fontWeight: 700, fontFamily: 'var(--sans)',
+              letterSpacing: '.07em', textTransform: 'uppercase', color: trObj.cor,
+            }}>Simular {trObj.label}</span>
+          </button>
+          </>)}
 
-          {!useRealPhoto && AMBIENTES.map(a => (
-            <button key={a.id} onClick={() => setAmbiente(a.id)} style={{ ...pill(ambiente === a.id, trObj.cor), display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 12 }}>{a.emoji}</span>{a.label}
-            </button>
-          ))}
+          {!useRealPhoto && (
+            <>
+              <div style={{ height: 1, background: 'rgba(255,255,255,0.08)', margin: '4px 14px' }} />
+              {AMBIENTES.map(a => (
+                <button key={a.id} onClick={() => setAmbiente(a.id)} style={{
+                  background: ambiente === a.id ? 'rgba(255,255,255,0.1)' : 'transparent',
+                  border: 'none', cursor: 'pointer',
+                  padding: '7px 18px 7px 14px',
+                  textAlign: 'left', width: '100%',
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  transition: 'background .15s',
+                  WebkitTapHighlightColor: 'transparent',
+                }}>
+                  <span style={{ fontSize: 13 }}>{a.emoji}</span>
+                  <span style={{
+                    fontSize: 10.5, fontWeight: ambiente === a.id ? 700 : 400,
+                    fontFamily: 'var(--sans)', letterSpacing: '.05em',
+                    color: ambiente === a.id ? '#ffffff' : 'rgba(255,255,255,0.38)',
+                    transition: 'color .15s',
+                  }}>{a.label}</span>
+                </button>
+              ))}
+            </>
+          )}
       </div>
     </div>
   );
@@ -682,7 +760,7 @@ function Polarizado({ onSimular }: { onSimular?: (efeito: string) => void }) {
   }
 
   return (
-    <div style={telaCheia}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'row', overflow: 'hidden' }}>
       <div
         ref={containerRef}
         onMouseDown={() => { dragging.current = true; }}
@@ -692,7 +770,7 @@ function Polarizado({ onSimular }: { onSimular?: (efeito: string) => void }) {
         onTouchStart={() => { dragging.current = true; }}
         onTouchMove={e => move(e.touches[0].clientX)}
         onTouchEnd={() => { dragging.current = false; }}
-        style={{ position: 'absolute', inset: 0, cursor: 'col-resize', userSelect: 'none', overflow: 'hidden', background: '#0a0a0c' }}
+        style={{ flex: 1, position: 'relative', cursor: 'col-resize', userSelect: 'none', overflow: 'hidden', background: '#0a0a0c', minWidth: 0 }}
       >
         {/* SEM base */}
         <img src={c.sem} draggable={false}
@@ -748,32 +826,56 @@ function Polarizado({ onSimular }: { onSimular?: (efeito: string) => void }) {
         <div style={{ position: 'absolute', bottom: 64, left: 16, fontSize: 11, color: '#e2e8f0', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
           ✓ COM POLARIZADO
         </div>
-        <div style={{ position: 'absolute', bottom: 84, right: 16, fontSize: 11, color: '#9ca3af', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', bottom: 64, right: 16, fontSize: 11, color: '#9ca3af', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
           ✗ SEM
         </div>
 
       </div>
 
-      {/* Cenas — pills flutuantes (mesmo visual da Tabela Digital) */}
-      <div style={pillCol}>
+      {/* Painel de cenas — ao lado (não sobrepõe a imagem) */}
+      <div
+        style={{
+          display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: 12, paddingBottom: 92,
+          background: '#0d0d12', borderLeft: '1px solid #1f1f28',
+          width: 158, flexShrink: 0, overflowY: 'auto', zIndex: 10,
+        }}
+      >
           {(['peixe', 'estrada'] as const).map(id => {
+            const ativo = cena === id;
             const o = POL_CENAS[id];
             return (
-              <button key={id} onClick={() => setCena(id)} style={{ ...pill(cena === id, POL_COR), display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontSize: 12 }}>{o.emoji}</span>{o.label}
+              <button key={id} onClick={() => setCena(id)} style={{
+                background: ativo ? 'rgba(255,255,255,0.12)' : 'transparent',
+                border: 'none', cursor: 'pointer',
+                padding: '12px 18px 12px 14px', textAlign: 'left', width: '100%',
+                display: 'flex', alignItems: 'center', gap: 10,
+                transition: 'background .15s', WebkitTapHighlightColor: 'transparent',
+              }}>
+                <div style={{ width: 3, height: 18, borderRadius: 2, flexShrink: 0, background: ativo ? POL_COR : 'transparent', transition: 'background .15s' }} />
+                <span style={{ fontSize: 15 }}>{o.emoji}</span>
+                <span style={{
+                  fontSize: 14, fontWeight: ativo ? 700 : 400,
+                  fontFamily: 'var(--sans)', letterSpacing: '.07em', textTransform: 'uppercase',
+                  color: ativo ? '#ffffff' : 'rgba(255,255,255,0.45)', transition: 'color .15s',
+                }}>{o.label}</span>
               </button>
             );
           })}
 
           {/* Simulação na câmera */}
-          {SIMULACAO_ATIVA && (
-            <button onClick={() => onSimular?.('pol')} style={{ ...pill(false, POL_COR), display: 'flex', alignItems: 'center', gap: 7, color: POL_COR }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={POL_COR} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" />
-              </svg>
-              Simular
-            </button>
-          )}
+          {SIMULACAO_ATIVA && (<>
+          <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '6px 14px' }} />
+          <button onClick={() => onSimular?.('pol')} style={{
+            background: 'transparent', border: 'none', cursor: 'pointer',
+            padding: '12px 18px 12px 14px', textAlign: 'left', width: '100%',
+            display: 'flex', alignItems: 'center', gap: 10, WebkitTapHighlightColor: 'transparent',
+          }}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={POL_COR} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" />
+            </svg>
+            <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--sans)', letterSpacing: '.07em', textTransform: 'uppercase', color: POL_COR }}>Simular</span>
+          </button>
+          </>)}
       </div>
     </div>
   );
@@ -881,7 +983,7 @@ function Fotossensivel({ onSimular }: { onSimular?: (efeito: string) => void }) 
         <div style={{ position: 'absolute', bottom: 64, left: 16, fontSize: 11, color: '#e2e8f0', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
           ✓ COM FOTOSSENSÍVEL
         </div>
-        <div style={{ position: 'absolute', bottom: 84, right: 16, fontSize: 11, color: '#9ca3af', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', bottom: 64, right: 16, fontSize: 11, color: '#9ca3af', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
           ✗ SEM
         </div>
 
