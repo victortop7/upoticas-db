@@ -134,10 +134,19 @@ const TABELAS: Tabela[] = [
   },
 ];
 
-// ─── Fundo atrás do campo de visão: PAISAGENS (public/paisagens/{id}.png) ───────
-// Trocáveis pelo botão de paisagem. (As fotos de olho ficam guardadas em /foto de olhos/.)
-const BGS = [8, 10, 11, 13, 16, 17, 18, 19, 9];
-const paisSrc = (id: number) => `/paisagens/${id}.png`;
+// ─── Ambientes de fundo (public/ambientes/{slug}.jpg) — arrasta p/ trocar (estilo story) ─
+// Começa no Olho. (Paisagens antigas seguem guardadas em /paisagens/.)
+const AMBIENTES: { slug: string; label: string }[] = [
+  { slug: 'olho', label: 'Olho' },
+  { slug: 'parque', label: 'Parque' },
+  { slug: 'praia', label: 'Praia' },
+  { slug: 'dirigindo', label: 'Dirigindo' },
+  { slug: 'computador', label: 'Computador' },
+  { slug: 'lendo-livro', label: 'Lendo livro' },
+  { slug: 'aula', label: 'Aula' },
+  { slug: 'cinema', label: 'Cinema' },
+];
+const ambSrc = (slug: string) => `/ambientes/${slug}.jpg`;
 
 const brl = (v: number) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -282,7 +291,7 @@ export default function VendaIndicativa() {
     : produtos;
   const p = produtos[idx] ?? produtos[0];
 
-  const bgId = BGS[bgIdx % BGS.length];
+  const ambiente = AMBIENTES[bgIdx % AMBIENTES.length];
   const aspectos: [string, string | undefined][] = p ? [
     ['Campo', p.campo], ['Superfície', p.superficie], ['Fotossensível', p.foto],
     ['Material', p.material], ['Tratamento', p.tratamento],
@@ -293,8 +302,10 @@ export default function VendaIndicativa() {
       {/* ══ ÁREA IMERSIVA — paisagem em tela cheia, lente centralizada ══ */}
       <div style={{ flex: 1, position: 'relative', overflow: 'hidden', minHeight: 0 }}>
 
-        {/* Fundo: paisagem em tela cheia */}
-        <img key={bgId} src={paisSrc(bgId)} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+        {/* Fundo: ambiente em tela cheia — arraste p/ o lado para trocar (estilo story) */}
+        {aba === 'ambientes'
+          ? <FundoStory idx={bgIdx} onChange={setBgIdx} />
+          : <img src={ambSrc(AMBIENTES[bgIdx].slug)} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
 
         {/* Lente (campo de visão) centralizada — ou modo Desenhar */}
         {aba === 'ambientes' ? (
@@ -304,7 +315,7 @@ export default function VendaIndicativa() {
             <div style={{ position: 'absolute', top: '4%', left: '20%', right: '20%', bottom: '5%', borderRadius: '48% 48% 46% 46% / 52% 52% 48% 48%', border: '2px solid rgba(255,255,255,0.75)', pointerEvents: 'none' }} />
           )
         ) : (
-          <Desenhar campoImg={p?.campoImg} paisagemId={bgId} />
+          <Desenhar campoImg={p?.campoImg} ambSlug={ambiente.slug} />
         )}
 
         {/* Voltar (topo-esquerda) */}
@@ -356,18 +367,21 @@ export default function VendaIndicativa() {
 
         {/* Tecnologias da lente (direita) — só o nome; toque para ver o valor */}
         {aba === 'ambientes' && (
-          <div style={{ position: 'absolute', top: 58, right: 10, bottom: 66, width: compact ? 150 : 178, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 7, zIndex: 6 }}>
+          <div style={{ position: 'absolute', top: 58, right: 10, bottom: 66, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, zIndex: 6 }}>
             {aspectos.map(([k, v]) => {
               const aberto = tech === k;
               return (
                 <button key={k} onClick={() => setTech(aberto ? null : k)} style={{
-                  textAlign: 'left', border: 'none', borderRadius: 10, cursor: 'pointer', padding: '9px 12px',
-                  background: aberto ? tabela.cor : 'rgba(12,22,42,0.72)', color: '#fff',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.25)', backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)', WebkitTapHighlightColor: 'transparent',
+                  textAlign: 'left', border: 'none', borderRadius: 9, cursor: 'pointer',
+                  width: aberto ? (compact ? 160 : 190) : 'auto',
+                  padding: aberto ? '8px 11px' : '5px 9px',
+                  background: aberto ? tabela.cor : 'rgba(12,22,42,0.7)', color: '#fff',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.25)', backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)',
+                  transition: 'width .18s, padding .18s', WebkitTapHighlightColor: 'transparent',
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                    <span style={{ fontSize: 12, fontWeight: 700 }}>{k}</span>
-                    <span style={{ fontSize: 15, opacity: 0.75, transform: aberto ? 'rotate(90deg)' : 'none', transition: 'transform .15s' }}>›</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+                    <span style={{ fontSize: aberto ? 12 : 10, fontWeight: 700, whiteSpace: 'nowrap' }}>{k}</span>
+                    <span style={{ fontSize: aberto ? 14 : 11, opacity: 0.7, transform: aberto ? 'rotate(90deg)' : 'none', transition: 'transform .15s' }}>›</span>
                   </div>
                   {aberto && <div style={{ fontSize: 11.5, fontWeight: 600, marginTop: 5, lineHeight: 1.35, color: '#eaf1ff' }}>{v || '—'}</div>}
                 </button>
@@ -376,13 +390,21 @@ export default function VendaIndicativa() {
           </div>
         )}
 
-        {/* Trocar paisagem (baixo-esquerda) */}
-        <button onClick={() => setBgIdx(i => (i + 1) % BGS.length)} title="Trocar paisagem" style={{
-          position: 'absolute', bottom: 12, left: 12, zIndex: 8, width: 46, height: 46, borderRadius: 13, border: 'none', cursor: 'pointer',
-          background: 'rgba(15,20,30,0.82)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 3px 12px rgba(0,0,0,0.35)', WebkitTapHighlightColor: 'transparent',
-        }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="16" rx="2" /><circle cx="8.5" cy="9.5" r="1.5" /><path d="M4 17l5-5 4 3 3-3 4 4" /></svg>
-        </button>
+        {/* Indicador de ambiente (baixo-centro) — estilo story: arraste p/ trocar */}
+        {aba === 'ambientes' && (
+          <div style={{ position: 'absolute', bottom: 14, left: '50%', transform: 'translateX(-50%)', zIndex: 7, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, pointerEvents: 'none' }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: '#fff', letterSpacing: '.06em', textShadow: '0 1px 6px rgba(0,0,0,0.8)', textTransform: 'uppercase' }}>{ambiente.label}</span>
+            <div style={{ display: 'flex', gap: 5 }}>
+              {AMBIENTES.map((a, i) => (
+                <span key={a.slug} style={{
+                  width: i === bgIdx ? 16 : 6, height: 6, borderRadius: 3,
+                  background: i === bgIdx ? '#fff' : 'rgba(255,255,255,0.45)',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.5)', transition: 'width .2s',
+                }} />
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Toggle Desenhar (baixo-direita) */}
         <button onClick={() => { setAba(aba === 'desenhar' ? 'ambientes' : 'desenhar'); setTech(null); }} style={{
@@ -538,6 +560,56 @@ function Calculadora() {
   );
 }
 
+// ─── Fundo estilo story: arraste para o lado p/ trocar de ambiente ──────────────
+function FundoStory({ idx, onChange }: { idx: number; onChange: (i: number) => void }) {
+  const N = AMBIENTES.length;
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
+  const startX = useRef(0);
+  const [dx, setDx] = useState(0);
+  const [anim, setAnim] = useState(false);
+
+  const largura = () => wrapRef.current?.clientWidth || 1;
+  const wrapIdx = (i: number) => (i + N) % N;
+
+  const soltar = () => {
+    if (!dragging.current) return;
+    dragging.current = false;
+    const w = largura();
+    const passou = Math.abs(dx) > w * 0.15;
+    if (!passou) { setAnim(true); setDx(0); setTimeout(() => setAnim(false), 260); return; }
+    const dir = dx < 0 ? 1 : -1;              // arrastou p/ esquerda → próximo
+    setAnim(true); setDx(dir > 0 ? -w : w);   // desliza até o fim
+    setTimeout(() => { setAnim(false); onChange(wrapIdx(idx + dir)); setDx(0); }, 260);
+  };
+
+  const onDown = (e: React.PointerEvent) => { dragging.current = true; startX.current = e.clientX; setAnim(false); };
+  const onMove = (e: React.PointerEvent) => { if (dragging.current) setDx(e.clientX - startX.current); };
+
+  return (
+    <div
+      ref={wrapRef}
+      onPointerDown={onDown} onPointerMove={onMove} onPointerUp={soltar} onPointerLeave={soltar} onPointerCancel={soltar}
+      style={{ position: 'absolute', inset: 0, overflow: 'hidden', touchAction: 'pan-y', cursor: 'grab' }}
+    >
+      {[-1, 0, 1].map(off => {
+        const a = AMBIENTES[wrapIdx(idx + off)];
+        return (
+          <img
+            key={`${a.slug}-${off}`} src={ambSrc(a.slug)} alt="" draggable={false}
+            style={{
+              position: 'absolute', top: 0, bottom: 0, left: `${off * 100}%`, width: '100%', height: '100%',
+              objectFit: 'cover', transform: `translateX(${dx}px)`,
+              transition: anim ? 'transform .26s cubic-bezier(.22,.61,.36,1)' : 'none',
+              pointerEvents: 'none', userSelect: 'none',
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 // Lente sobre a paisagem: mostra o PNG do campo de visão COMO ELE É (cores/arte do PNG).
 // O PNG deve ter o fundo FORA da lente transparente; dentro, o desenho/preenchimento desejado.
 function LenteCampo({ campoImg, box }: { campoImg: string; box?: React.CSSProperties }) {
@@ -555,7 +627,7 @@ function LenteCampo({ campoImg, box }: { campoImg: string; box?: React.CSSProper
 }
 
 // ─── Modo Desenhar (canvas de anotação sobre paisagem + campo de visão) ────────
-function Desenhar({ campoImg, paisagemId }: { campoImg?: string; paisagemId: number }) {
+function Desenhar({ campoImg, ambSlug }: { campoImg?: string; ambSlug: string }) {
   const cvRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const drawing = useRef(false);
@@ -591,7 +663,7 @@ function Desenhar({ campoImg, paisagemId }: { campoImg?: string; paisagemId: num
 
   return (
     <div ref={wrapRef} style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-      <img src={paisSrc(paisagemId)} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+      <img src={ambSrc(ambSlug)} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
       {campoImg
         ? <LenteCampo campoImg={campoImg} box={{ left: '1%', right: '1%' }} />
         : <div style={{ position: 'absolute', top: '5%', left: '18%', right: '6%', bottom: '6%', borderRadius: '48% 48% 46% 46% / 52% 52% 48% 48%', border: '2px solid rgba(255,255,255,0.75)', background: 'linear-gradient(135deg, rgba(255,255,255,0.16), transparent 42%)', pointerEvents: 'none' }} />}
