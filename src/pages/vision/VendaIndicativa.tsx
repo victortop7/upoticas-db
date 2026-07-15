@@ -2,9 +2,12 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
-// Somente este e-mail (administrador) tem a Tabela Digital liberada.
+// Somente estes e-mails têm a Tabela Digital liberada (tudo minúsculo).
 // Os demais usuários veem um aviso para entrar em contato e cadastrar as lentes.
-const ADMIN_EMAIL = 'victormarketing093@gmail.com';
+const EMAILS_LIBERADOS = [
+  'victormarketing093@gmail.com',
+  'marcosmouraforca@gmail.com',
+];
 const SUPORTE_WA = '5585991507887';
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
@@ -166,7 +169,7 @@ function useCompact() {
 export default function VendaIndicativa() {
   const navigate = useNavigate();
   const { usuario } = useAuth();
-  const isAdmin = (usuario?.email || '').trim().toLowerCase() === ADMIN_EMAIL;
+  const isAdmin = EMAILS_LIBERADOS.includes((usuario?.email || '').trim().toLowerCase());
   const [view, setView] = useState<'grade' | 'tabela'>('grade');
   const [tipo, setTipo] = useState<TipoLenteId>('multifocais');
   const [tabelaId, setTabelaId] = useState('');
