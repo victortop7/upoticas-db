@@ -391,7 +391,7 @@ function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimula
           <div style={{ position: 'absolute', bottom: 64, left: 16, fontSize: 11, color: '#e2e8f0', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
             ✓ DIGITAL
           </div>
-          <div style={{ position: 'absolute', bottom: 64, right: 16, fontSize: 11, color: '#9ca3af', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
+          <div style={{ position: 'absolute', bottom: 84, right: 16, fontSize: 11, color: '#9ca3af', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
             ✗ CONVENCIONAL
           </div>
 
@@ -594,7 +594,7 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
         <div style={{ position: 'absolute', bottom: 64, left: 16, fontSize: 11, color: '#e2e8f0', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
           ✓ COM {trObj.label.toUpperCase()}
         </div>
-        <div style={{ position: 'absolute', bottom: 64, right: 16, fontSize: 11, color: '#9ca3af', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', bottom: 84, right: 16, fontSize: 11, color: '#9ca3af', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
           ✗ SEM
         </div>
 
@@ -748,7 +748,7 @@ function Polarizado({ onSimular }: { onSimular?: (efeito: string) => void }) {
         <div style={{ position: 'absolute', bottom: 64, left: 16, fontSize: 11, color: '#e2e8f0', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
           ✓ COM POLARIZADO
         </div>
-        <div style={{ position: 'absolute', bottom: 64, right: 16, fontSize: 11, color: '#9ca3af', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', bottom: 84, right: 16, fontSize: 11, color: '#9ca3af', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
           ✗ SEM
         </div>
 
@@ -881,7 +881,7 @@ function Fotossensivel({ onSimular }: { onSimular?: (efeito: string) => void }) 
         <div style={{ position: 'absolute', bottom: 64, left: 16, fontSize: 11, color: '#e2e8f0', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
           ✓ COM FOTOSSENSÍVEL
         </div>
-        <div style={{ position: 'absolute', bottom: 64, right: 16, fontSize: 11, color: '#9ca3af', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', bottom: 84, right: 16, fontSize: 11, color: '#9ca3af', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
           ✗ SEM
         </div>
 
