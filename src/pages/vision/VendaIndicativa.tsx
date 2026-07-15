@@ -134,11 +134,10 @@ const TABELAS: Tabela[] = [
   },
 ];
 
-// ─── Fundo atrás do campo de visão: FOTO DE OLHO fixa (public/foto de olhos/) ────
-// As paisagens ficam guardadas em public/paisagens/ para uso futuro.
-const FUNDO_DIR = '/foto de olhos';
-const FUNDO_ID = 14; // Olho 2 (único, sem seletor)
-const fundoSrc = (id: number) => encodeURI(`${FUNDO_DIR}/${id}.jpg`);
+// ─── Fundo atrás do campo de visão: PAISAGENS (public/paisagens/{id}.png) ───────
+// Trocáveis pelo botão de paisagem. (As fotos de olho ficam guardadas em /foto de olhos/.)
+const BGS = [8, 10, 11, 13, 16, 17, 18, 19, 9];
+const paisSrc = (id: number) => `/paisagens/${id}.png`;
 
 const brl = (v: number) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -165,14 +164,15 @@ export default function VendaIndicativa() {
   const [busca, setBusca] = useState('');
   const [idx, setIdx] = useState(0);
   const [aba, setAba] = useState<'ambientes' | 'desenhar'>('ambientes');
-  const [painel, setPainel] = useState<null | 'descricao' | 'detalhes'>(null);
+  const [tech, setTech] = useState<string | null>(null); // aspecto técnico aberto (direita)
+  const [bgIdx, setBgIdx] = useState(0);                  // paisagem de fundo
   const compact = useCompact();
 
   const tabelasTipo = TABELAS.filter(t => t.tipos.includes(tipo));
   const tabela = TABELAS.find(t => t.id === tabelaId);
 
   function abrirTabela(id: string) {
-    setTabelaId(id); setIdx(0); setBusca(''); setPainel(null); setView('tabela');
+    setTabelaId(id); setIdx(0); setBusca(''); setTech(null); setView('tabela');
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -282,18 +282,19 @@ export default function VendaIndicativa() {
     : produtos;
   const p = produtos[idx] ?? produtos[0];
 
-  const specs: [string, string | undefined][] = p ? [
-    ['Linha', p.campo], ['Superfície', p.superficie], ['Fotossensível', p.foto],
-    ['Material', p.material], ['Tratamento', p.tratamento], ['Código', p.codigo], ['Disponibilidade', p.disp],
+  const bgId = BGS[bgIdx % BGS.length];
+  const aspectos: [string, string | undefined][] = p ? [
+    ['Campo', p.campo], ['Superfície', p.superficie], ['Fotossensível', p.foto],
+    ['Material', p.material], ['Tratamento', p.tratamento],
   ] : [];
 
   return (
     <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: '#0a0b0e', overflow: 'hidden', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', userSelect: 'none' }}>
-      {/* ══ ÁREA IMERSIVA — imagem em tela cheia, lente centralizada ══ */}
+      {/* ══ ÁREA IMERSIVA — paisagem em tela cheia, lente centralizada ══ */}
       <div style={{ flex: 1, position: 'relative', overflow: 'hidden', minHeight: 0 }}>
 
-        {/* Fundo: foto de olho em tela cheia */}
-        <img key={FUNDO_ID} src={fundoSrc(FUNDO_ID)} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+        {/* Fundo: paisagem em tela cheia */}
+        <img key={bgId} src={paisSrc(bgId)} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
 
         {/* Lente (campo de visão) centralizada — ou modo Desenhar */}
         {aba === 'ambientes' ? (
@@ -303,7 +304,7 @@ export default function VendaIndicativa() {
             <div style={{ position: 'absolute', top: '4%', left: '20%', right: '20%', bottom: '5%', borderRadius: '48% 48% 46% 46% / 52% 52% 48% 48%', border: '2px solid rgba(255,255,255,0.75)', pointerEvents: 'none' }} />
           )
         ) : (
-          <Desenhar campoImg={p?.campoImg} paisagemId={FUNDO_ID} />
+          <Desenhar campoImg={p?.campoImg} paisagemId={bgId} />
         )}
 
         {/* Voltar (topo-esquerda) */}
@@ -318,7 +319,7 @@ export default function VendaIndicativa() {
 
         {/* Nome da lente (topo-centro) */}
         {p && (
-          <div style={{ position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)', zIndex: 7, maxWidth: '46%' }}>
+          <div style={{ position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)', zIndex: 7, maxWidth: '42%' }}>
             <div style={{ background: 'rgba(255,255,255,0.92)', borderRadius: 9, padding: compact ? '7px 16px' : '8px 24px', boxShadow: '0 2px 12px rgba(0,0,0,0.22)', textAlign: 'center' }}>
               <div style={{ fontSize: compact ? 12 : 14, fontWeight: 800, letterSpacing: '.06em', color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textTransform: 'uppercase' }}>{p.campo ?? p.nome}</div>
             </div>
@@ -327,7 +328,7 @@ export default function VendaIndicativa() {
 
         {/* Lista flutuante de produtos (esquerda) */}
         {aba === 'ambientes' && (
-          <div style={{ position: 'absolute', top: 58, left: 10, bottom: 10, width: compact ? 152 : 208, display: 'flex', flexDirection: 'column', gap: 7, zIndex: 6 }}>
+          <div style={{ position: 'absolute', top: 58, left: 10, bottom: 66, width: compact ? 150 : 206, display: 'flex', flexDirection: 'column', gap: 7, zIndex: 6 }}>
             <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar..." style={{
               padding: '8px 11px', fontSize: 12.5, borderRadius: 9, border: 'none', outline: 'none',
               color: '#1e293b', background: 'rgba(255,255,255,0.92)', fontFamily: 'inherit', boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
@@ -338,7 +339,7 @@ export default function VendaIndicativa() {
                 const realIdx = produtos.indexOf(pr);
                 const ativo = realIdx === idx;
                 return (
-                  <button key={pr.nome} onClick={() => { setIdx(realIdx); setPainel(null); }} style={{
+                  <button key={pr.nome} onClick={() => { setIdx(realIdx); setTech(null); }} style={{
                     textAlign: 'left', cursor: 'pointer', border: 'none', borderRadius: 10, padding: '8px 11px',
                     background: ativo ? tabela.cor : 'rgba(12,22,42,0.72)', color: '#fff',
                     boxShadow: ativo ? '0 3px 12px rgba(0,0,0,0.35)' : '0 2px 8px rgba(0,0,0,0.25)',
@@ -353,57 +354,45 @@ export default function VendaIndicativa() {
           </div>
         )}
 
-        {/* Botões laterais (direita) */}
+        {/* Tecnologias da lente (direita) — só o nome; toque para ver o valor */}
         {aba === 'ambientes' && (
-          <div style={{ position: 'absolute', top: '50%', right: 8, transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', gap: 10, zIndex: 6 }}>
-            {[
-              { id: 'descricao', l: 'Descrição', i: <path d="M4 4h16v13H8l-4 4z" /> },
-              { id: 'detalhes', l: 'Detalhes', i: <><circle cx="12" cy="12" r="9" /><line x1="12" y1="11" x2="12" y2="16" /><circle cx="12" cy="8" r="0.6" fill="currentColor" /></> },
-            ].map(b => (
-              <button key={b.id} onClick={() => setPainel(prev => prev === b.id ? null : (b.id as 'detalhes' | 'descricao'))}
-                style={{ background: painel === b.id ? '#1d4ed8' : 'rgba(255,255,255,0.85)', border: 'none', borderRadius: 11, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '8px 10px', color: painel === b.id ? '#fff' : 'rgba(15,23,42,0.9)', boxShadow: '0 2px 8px rgba(0,0,0,0.25)', WebkitTapHighlightColor: 'transparent' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">{b.i}</svg>
-                <span style={{ fontSize: 9, fontWeight: 600 }}>{b.l}</span>
-              </button>
-            ))}
+          <div style={{ position: 'absolute', top: 58, right: 10, bottom: 66, width: compact ? 150 : 178, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 7, zIndex: 6 }}>
+            {aspectos.map(([k, v]) => {
+              const aberto = tech === k;
+              return (
+                <button key={k} onClick={() => setTech(aberto ? null : k)} style={{
+                  textAlign: 'left', border: 'none', borderRadius: 10, cursor: 'pointer', padding: '9px 12px',
+                  background: aberto ? tabela.cor : 'rgba(12,22,42,0.72)', color: '#fff',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.25)', backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)', WebkitTapHighlightColor: 'transparent',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                    <span style={{ fontSize: 12, fontWeight: 700 }}>{k}</span>
+                    <span style={{ fontSize: 15, opacity: 0.75, transform: aberto ? 'rotate(90deg)' : 'none', transition: 'transform .15s' }}>›</span>
+                  </div>
+                  {aberto && <div style={{ fontSize: 11.5, fontWeight: 600, marginTop: 5, lineHeight: 1.35, color: '#eaf1ff' }}>{v || '—'}</div>}
+                </button>
+              );
+            })}
           </div>
         )}
 
+        {/* Trocar paisagem (baixo-esquerda) */}
+        <button onClick={() => setBgIdx(i => (i + 1) % BGS.length)} title="Trocar paisagem" style={{
+          position: 'absolute', bottom: 12, left: 12, zIndex: 8, width: 46, height: 46, borderRadius: 13, border: 'none', cursor: 'pointer',
+          background: 'rgba(15,20,30,0.82)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 3px 12px rgba(0,0,0,0.35)', WebkitTapHighlightColor: 'transparent',
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="16" rx="2" /><circle cx="8.5" cy="9.5" r="1.5" /><path d="M4 17l5-5 4 3 3-3 4 4" /></svg>
+        </button>
+
         {/* Toggle Desenhar (baixo-direita) */}
-        <button onClick={() => { setAba(aba === 'desenhar' ? 'ambientes' : 'desenhar'); setPainel(null); }} style={{
+        <button onClick={() => { setAba(aba === 'desenhar' ? 'ambientes' : 'desenhar'); setTech(null); }} style={{
           position: 'absolute', bottom: 12, right: 12, zIndex: 8, width: 46, height: 46, borderRadius: 13, border: 'none', cursor: 'pointer',
           background: aba === 'desenhar' ? '#1d4ed8' : 'rgba(15,20,30,0.82)', color: '#fff',
           display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 3px 12px rgba(0,0,0,0.35)', WebkitTapHighlightColor: 'transparent',
         }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19l7-7-4-4-7 7v4h4zM15 6l3 3" /></svg>
         </button>
-
-        {/* Overlay: Detalhes / Descrição */}
-        {painel && p && (
-          <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, background: 'rgba(6,10,18,0.94)', color: '#e8ecf3', padding: '14px 20px 16px', zIndex: 9, animation: 'fadeIn .18s ease' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-              <div style={{ fontSize: 13.5, fontWeight: 800, color: '#7fb2ff' }}>{p.nome}</div>
-              <button onClick={() => setPainel(null)} style={{ background: 'none', border: 'none', color: '#9aa4b8', fontSize: 22, cursor: 'pointer', lineHeight: 1 }}>×</button>
-            </div>
-            {painel === 'detalhes' ? (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 18px' }}>
-                {specs.map(([k, v]) => (
-                  <div key={k} style={{ fontSize: 12.5, minWidth: 130 }}>
-                    <span style={{ color: '#8fa0bd' }}>{k}: </span><b style={{ color: '#eef2fb' }}>{v || '—'}</b>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div style={{ fontSize: 13, lineHeight: 1.6, color: '#c7cede', maxWidth: 720 }}>
-                {p.nome} — lente {p.superficie?.toLowerCase()} em {p.material}, tratamento {p.tratamento}. Valor: <b style={{ color: '#fff' }}>12x {brl(p.parcela)}</b>.
-              </div>
-            )}
-          </div>
-        )}
       </div>
-
-      {/* Dock inferior */}
-      <Dock navigate={navigate} onOS={() => navigate('/vision/os')} produto={p} tabela={tabela} />
     </div>
   );
 }
@@ -602,9 +591,9 @@ function Desenhar({ campoImg, paisagemId }: { campoImg?: string; paisagemId: num
 
   return (
     <div ref={wrapRef} style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-      <img src={fundoSrc(paisagemId)} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+      <img src={paisSrc(paisagemId)} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
       {campoImg
-        ? <LenteCampo campoImg={campoImg} box={{ left: '2%' }} />
+        ? <LenteCampo campoImg={campoImg} box={{ left: '1%', right: '1%' }} />
         : <div style={{ position: 'absolute', top: '5%', left: '18%', right: '6%', bottom: '6%', borderRadius: '48% 48% 46% 46% / 52% 52% 48% 48%', border: '2px solid rgba(255,255,255,0.75)', background: 'linear-gradient(135deg, rgba(255,255,255,0.16), transparent 42%)', pointerEvents: 'none' }} />}
       <canvas ref={cvRef} onPointerDown={start} onPointerMove={move} onPointerUp={end} onPointerLeave={end} style={{ position: 'absolute', inset: 0, cursor: 'crosshair', touchAction: 'none' }} />
       {/* toolbar */}
