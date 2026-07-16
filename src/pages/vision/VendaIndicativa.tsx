@@ -457,7 +457,7 @@ export default function VendaIndicativa() {
                     backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)', WebkitTapHighlightColor: 'transparent',
                   }}>
                     <div style={{ fontSize: 11.5, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pr.nome}</div>
-                    <div style={{ fontSize: 11, fontWeight: 700, fontFamily: 'var(--mono)', opacity: 0.92, marginTop: 1 }}>12x {brl(parcela(pr))}</div>
+                    <div style={{ fontSize: 11.5, fontWeight: 700, fontFamily: 'var(--mono)', opacity: 0.95, marginTop: 1 }}>R$ {brl(pr.preco)}</div>
                   </button>
                 );
               })}
@@ -568,13 +568,12 @@ function Dock({ navigate, onOS, produto, tabela }: {
                     <div style={{ fontSize: 13.5, fontWeight: 700, color: '#1e293b', marginBottom: 4 }}>{produto.nome}</div>
                     <div style={{ fontSize: 11.5, color: '#94a3b8', marginBottom: 16 }}>{tabela?.marca} · {tabela?.nome}</div>
                     {[
-                      ['Parcela (12x)', `R$ ${brl(parcela(produto))}`],
-                      ['Total (12×)', `R$ ${brl(total)}`],
-                      ['À vista', `R$ ${brl(total)}`],
+                      ['Valor do par', `R$ ${brl(total)}`],
+                      ['Em 12x', `R$ ${brl(parcela(produto))}`],
                     ].map(([k, v], i) => (
                       <div key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '10px 0', borderTop: i ? '1px solid #f1f4f8' : 'none' }}>
                         <span style={{ fontSize: 13, color: '#64748b' }}>{k}</span>
-                        <span style={{ fontSize: i === 1 ? 20 : 15, fontWeight: 800, color: i === 1 ? (tabela?.cor ?? '#0a2f6b') : '#1e293b', fontFamily: 'var(--mono)' }}>{v}</span>
+                        <span style={{ fontSize: i === 0 ? 20 : 15, fontWeight: 800, color: i === 0 ? (tabela?.cor ?? '#0a2f6b') : '#1e293b', fontFamily: 'var(--mono)' }}>{v}</span>
                       </div>
                     ))}
                   </>
