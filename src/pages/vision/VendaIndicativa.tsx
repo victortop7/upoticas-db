@@ -73,7 +73,7 @@ const TABELAS: Tabela[] = [
     ],
   },
   {
-    id: 'zeiss-mf', nome: 'Zeiss 04 2026', marca: 'ZEISS', cor: '#0a2a66', tipos: ['multifocais'],
+    id: 'zeiss-mf', nome: 'Zeiss 04 2026', marca: 'ZEISS', cor: '#0a2a66', logo: '/logo das lentes/zeizz.png', tipos: ['multifocais'],
     produtos: [
       P('Zeiss SmartLife Individual 3 DVBP', 640.00, { tratamento: 'DuraVision Blue', campo: 'SmartLife' }),
       P('Zeiss SmartLife Superb DVBP', 420.00, { tratamento: 'DuraVision Blue', campo: 'SmartLife' }),
@@ -96,7 +96,7 @@ const TABELAS: Tabela[] = [
     ],
   },
   {
-    id: 'rodenstock-mf', nome: 'Rodenstock 01 2026', marca: 'RODENSTOCK', cor: '#003057', tipos: ['multifocais'],
+    id: 'rodenstock-mf', nome: 'Rodenstock 01 2026', marca: 'RODENSTOCK', cor: '#003057', logo: '/logo das lentes/rodenstock.png', tipos: ['multifocais'],
     produtos: [
       P('Rodenstock B.I.G. Exact 1.60 Solitaire', 690.00, { material: '1.60', tratamento: 'Solitaire Protect', campo: 'B.I.G.' }),
       P('Rodenstock Pro 1.50 Solitaire', 320.00, { tratamento: 'Solitaire', campo: 'Rodenstock Pro' }),
