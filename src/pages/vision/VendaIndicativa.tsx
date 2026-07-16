@@ -15,23 +15,24 @@ type TipoLenteId = 'multifocais' | 'visao-simples' | 'ocupacionais' | 'bifocais'
 
 interface Produto {
   nome: string;
-  parcela: number;            // valor da parcela 12x
+  preco: number;              // PVC do PAR (como vem na tabela Essilor/Unilab). 12x = preco/12
   campo?: string;             // família/linha da lente
-  superficie?: string;        // Digital / Convencional
+  superficie?: string;        // Digital / Tradicional
   foto?: string;              // Incolor / Fotossensível
-  material?: string;          // 1.50 / Orma Blue UV ...
-  tratamento?: string;        // AR / Optifog / Verniz HC ...
+  material?: string;          // Orma / Airwear / Stylis 1.67 / 1.50 / Poly ...
+  tratamento?: string;        // Verniz HC / Sem AR / Crizal Easy Pro ...
   codigo?: string;
-  disp?: string;              // disponibilidade (dioptria)
+  disp?: string;              // disponibilidade (esférico)
   campoImg?: string;          // arquivo em /campos de visão varilux/{campoImg}
 }
 interface Tabela { id: string; nome: string; marca: string; cor: string; logo?: string; tipos: TipoLenteId[]; produtos: Produto[]; }
 
-// helper
-const P = (nome: string, parcela: number, o: Partial<Produto> = {}): Produto => ({
-  nome, parcela, campo: o.campo, superficie: o.superficie ?? 'Digital', foto: o.foto ?? 'Incolor',
-  material: o.material ?? '1.50', tratamento: o.tratamento ?? 'AR', codigo: o.codigo, disp: o.disp, campoImg: o.campoImg,
+// helper — preço é o PAR; o 12x sai de preco/12
+const P = (nome: string, preco: number, o: Partial<Produto> = {}): Produto => ({
+  nome, preco, campo: o.campo, superficie: o.superficie ?? 'Digital', foto: o.foto ?? 'Incolor',
+  material: o.material ?? 'Orma', tratamento: o.tratamento ?? 'Verniz HC', codigo: o.codigo, disp: o.disp, campoImg: o.campoImg,
 });
+const parcela = (p: Produto) => p.preco / 12;
 
 // caminho de imagem do campo de visão (nomes com espaço/acento → encodeURI)
 const cvSrc = (f?: string) => (f ? encodeURI(`/campos de visão varilux/${f}`) : '');
@@ -47,94 +48,186 @@ const TIPO_LABEL: Record<TipoLenteId, string> = {
   'multifocais': 'multifocal', 'visao-simples': 'visão simples', 'ocupacionais': 'ocupacional', 'bifocais': 'bifocal',
 };
 
-// ─── Catálogos (Fase 1 — dados de exemplo; Fase 2 recebe o PDF Essilor completo) ─
-const DISP_MULTI = '-6,00 a +6,00 / Cil. até -6,00';
+// ─── Catálogo — dados REAIS da tabela Unilab/Essilor (vigência 06/04 a 31/07/2026) ─
+// Preços = PVC do PAR. Só modelos INCOLOR e SEM TRATAMENTO (coluna Verniz HC / Sem AR).
+// Famílias "sempre com Crizal" (XR Series, Physio, Eyezen) não têm versão sem AR:
+// nelas usamos a entrada mais barata e o tratamento fica anotado.
+// Tratamentos/tecnologias adicionais entram depois, no painel da esquerda.
+const CIL6 = 'Cil. até -6,00';
 const TABELAS: Tabela[] = [
+  // ══════════════ VARILUX (Essilor) ══════════════
   {
-    id: 'essilor-mf', nome: 'Essilor 04 2026', marca: 'VARILUX', cor: '#003a70', logo: '/logo das lentes/varilux-logo-1.png', tipos: ['multifocais'],
+    id: 'varilux-mf', nome: 'Essilor · Unilab 04/2026', marca: 'VARILUX', cor: '#003a70',
+    logo: '/logo das lentes/varilux-logo-1.png', tipos: ['multifocais'],
     produtos: [
-      P('Varilux XR Pro Orma Blue UV Optifog', 887.42, { material: 'Orma Blue UV', tratamento: 'Optifog', campo: 'Varilux XR', disp: DISP_MULTI, campoImg: 'E DESIGN.png' }),
-      P('Varilux XR Design Orma Blue UV Optifog', 457.42, { material: 'Orma Blue UV', tratamento: 'Optifog', campo: 'Varilux XR', campoImg: 'E DESIGN.png' }),
-      P('Varilux Physio 3.0 Orma Optifog', 254.10, { material: 'Orma', tratamento: 'Optifog', campo: 'Varilux Physio', campoImg: 'PHYSIO 3.0.png' }),
-      P('Varilux Comfort Max Orma Verniz HC', 124.92, { material: 'Orma', tratamento: 'Verniz HC', campo: 'Varilux Comfort', campoImg: 'CONFORT MAX.png' }),
-      P('Varilux Comfort Orma Verniz HC', 108.26, { material: 'Orma', tratamento: 'Verniz HC', campo: 'Varilux Comfort', campoImg: 'COMFORT.png' }),
-      P('Varilux Liberty 3.0 Orma Verniz HC', 83.26, { material: 'Orma', tratamento: 'Verniz HC', campo: 'Varilux Liberty', campoImg: 'LIBERTY 3.0.png' }),
-      P('Varilux Liberty Orma Verniz HC', 74.92, { material: 'Orma', tratamento: 'Verniz HC', campo: 'Varilux Liberty', campoImg: 'LIBERTY.png' }),
-      P('Kodak Unique Infinite 1.50 AR', 79.92, { campo: 'Kodak Unique' }),
+      // XR Series — sempre com Crizal (não há versão sem AR)
+      P('Varilux XR Pro Orma', 3507, { material: 'Orma', tratamento: 'Crizal Sapphire HR', campo: 'Varilux XR', disp: `-10,00 a +6,00 / ${CIL6}`, campoImg: 'E DESIGN.png' }),
+      P('Varilux XR Pro Airwear', 3640, { material: 'Airwear', tratamento: 'Crizal Sapphire HR', campo: 'Varilux XR', disp: `-10,00 a +6,00 / ${CIL6}`, campoImg: 'E DESIGN.png' }),
+      P('Varilux XR Pro Stylis 1.67', 4514, { material: 'Stylis 1.67', tratamento: 'Crizal Sapphire HR', campo: 'Varilux XR', disp: `-12,00 a +9,00 / ${CIL6}`, campoImg: 'E DESIGN.png' }),
+      P('Varilux XR Pro Stylis 1.74', 5037, { material: 'Stylis 1.74', tratamento: 'Crizal Sapphire HR', campo: 'Varilux XR', disp: `-14,00 a +13,00 / ${CIL6}`, campoImg: 'E DESIGN.png' }),
+      P('Varilux XR Track Orma', 1969, { material: 'Orma', tratamento: 'Crizal Easy Pro', campo: 'Varilux XR', disp: `-10,00 a +6,00 / ${CIL6}`, campoImg: 'E DESIGN.png' }),
+      P('Varilux XR Track Airwear', 2100, { material: 'Airwear', tratamento: 'Crizal Easy Pro', campo: 'Varilux XR', disp: `-10,00 a +6,00 / ${CIL6}`, campoImg: 'E DESIGN.png' }),
+      P('Varilux XR Track Stylis 1.67', 2968, { material: 'Stylis 1.67', tratamento: 'Crizal Easy Pro', campo: 'Varilux XR', disp: `-12,00 a +9,00 / ${CIL6}`, campoImg: 'E DESIGN.png' }),
+      P('Varilux XR Track Stylis 1.74', 3717, { material: 'Stylis 1.74', tratamento: 'Crizal Sapphire HR', campo: 'Varilux XR', disp: `-14,00 a +13,00 / ${CIL6}`, campoImg: 'E DESIGN.png' }),
+      P('Varilux XR Track Lite Orma', 1881, { material: 'Orma', tratamento: 'Crizal Easy Pro', campo: 'Varilux XR', disp: `-10,00 a +6,00 / ${CIL6}`, campoImg: 'E DESIGN.png' }),
+      P('Varilux XR Track Lite Airwear', 2011, { material: 'Airwear', tratamento: 'Crizal Easy Pro', campo: 'Varilux XR', disp: `-10,00 a +6,00 / ${CIL6}`, campoImg: 'E DESIGN.png' }),
+      P('Varilux XR Track Lite Stylis 1.67', 2883, { material: 'Stylis 1.67', tratamento: 'Crizal Easy Pro', campo: 'Varilux XR', disp: `-12,00 a +9,00 / ${CIL6}`, campoImg: 'E DESIGN.png' }),
+      P('Varilux XR Design Orma', 1679, { material: 'Orma', tratamento: 'Crizal Easy Pro', campo: 'Varilux XR', disp: `-10,00 a +6,00 / ${CIL6}`, campoImg: 'E DESIGN.png' }),
+      P('Varilux XR Design Airwear', 1811, { material: 'Airwear', tratamento: 'Crizal Easy Pro', campo: 'Varilux XR', disp: `-10,00 a +6,00 / ${CIL6}`, campoImg: 'E DESIGN.png' }),
+      P('Varilux XR Design Stylis 1.67', 2682, { material: 'Stylis 1.67', tratamento: 'Crizal Easy Pro', campo: 'Varilux XR', disp: `-12,00 a +9,00 / ${CIL6}`, campoImg: 'E DESIGN.png' }),
+      P('Varilux XR Design Stylis 1.74', 3430, { material: 'Stylis 1.74', tratamento: 'Crizal Sapphire HR', campo: 'Varilux XR', disp: `-14,00 a +13,00 / ${CIL6}`, campoImg: 'E DESIGN.png' }),
+      // Physio Extensee — sempre com Crizal
+      P('Varilux Physio Extensee track Orma', 1410, { material: 'Orma', tratamento: 'Crizal Easy Pro', campo: 'Varilux Physio', disp: `-11,00 a +7,00 / ${CIL6}`, campoImg: 'PHYSIO 3.0.png' }),
+      P('Varilux Physio Extensee track Airwear', 1513, { material: 'Airwear', tratamento: 'Crizal Easy Pro', campo: 'Varilux Physio', disp: `-12,00 a +7,00 / ${CIL6}`, campoImg: 'PHYSIO 3.0.png' }),
+      P('Varilux Physio Extensee track Stylis 1.67', 2269, { material: 'Stylis 1.67', tratamento: 'Crizal Easy Pro', campo: 'Varilux Physio', disp: `-14,00 a +10,00 / ${CIL6}`, campoImg: 'PHYSIO 3.0.png' }),
+      P('Varilux Physio Extensee Orma', 1266, { material: 'Orma', tratamento: 'Crizal Easy Pro', campo: 'Varilux Physio', disp: `-11,00 a +7,00 / ${CIL6}`, campoImg: 'PHYSIO 3.0.png' }),
+      P('Varilux Physio Extensee Airwear', 1367, { material: 'Airwear', tratamento: 'Crizal Easy Pro', campo: 'Varilux Physio', disp: `-12,00 a +7,00 / ${CIL6}`, campoImg: 'PHYSIO 3.0.png' }),
+      P('Varilux Physio Extensee Stylis 1.67', 2123, { material: 'Stylis 1.67', tratamento: 'Crizal Easy Pro', campo: 'Varilux Physio', disp: `-14,00 a +10,00 / ${CIL6}`, campoImg: 'PHYSIO 3.0.png' }),
+      P('Varilux Physio Extensee Stylis 1.74', 2900, { material: 'Stylis 1.74', tratamento: 'Crizal Sapphire HR', campo: 'Varilux Physio', disp: `-14,00 a +12,00 / ${CIL6}`, campoImg: 'PHYSIO 3.0.png' }),
+      // Comfort — tem Verniz HC (sem tratamento) ✓
+      P('Varilux Comfort Max Orma', 652, { material: 'Orma', tratamento: 'Verniz HC', campo: 'Varilux Comfort', disp: `-11,00 a +7,00 / ${CIL6}`, campoImg: 'CONFORT MAX.png' }),
+      P('Varilux Comfort Max Airwear', 782, { material: 'Airwear', tratamento: 'Verniz HC', campo: 'Varilux Comfort', disp: `-12,00 a +7,00 / ${CIL6}`, campoImg: 'CONFORT MAX.png' }),
+      P('Varilux Comfort Max Stylis 1.67', 1720, { material: 'Stylis 1.67', tratamento: 'Crizal Easy Pro', campo: 'Varilux Comfort', disp: `-14,00 a +10,00 / ${CIL6}`, campoImg: 'CONFORT MAX.png' }),
+      P('Varilux Comfort Orma', 652, { material: 'Orma', tratamento: 'Sem AR', superficie: 'Tradicional', campo: 'Varilux Comfort', disp: `-10,00 a +6,00 / ${CIL6}`, campoImg: 'COMFORT.png' }),
+      P('Varilux Comfort Airwear', 782, { material: 'Airwear', tratamento: 'Sem AR', superficie: 'Tradicional', campo: 'Varilux Comfort', disp: `-10,00 a +6,00 / ${CIL6}`, campoImg: 'COMFORT.png' }),
+      // Liberty — tem Verniz HC ✓
+      P('Varilux Liberty 3.0 Orma', 541, { material: 'Orma', tratamento: 'Verniz HC', campo: 'Varilux Liberty', disp: `-11,00 a +7,00 / ${CIL6}`, campoImg: 'LIBERTY 3.0.png' }),
+      P('Varilux Liberty 3.0 Airwear', 672, { material: 'Airwear', tratamento: 'Verniz HC', campo: 'Varilux Liberty', disp: `-12,00 a +7,00 / ${CIL6}`, campoImg: 'LIBERTY 3.0.png' }),
+      P('Varilux Liberty Orma', 541, { material: 'Orma', tratamento: 'Sem AR', superficie: 'Tradicional', campo: 'Varilux Liberty', disp: `-7,00 a +6,00 / ${CIL6}`, campoImg: 'LIBERTY.png' }),
+      P('Varilux Liberty Airwear', 672, { material: 'Airwear', tratamento: 'Sem AR', superficie: 'Tradicional', campo: 'Varilux Liberty', disp: `-7,00 a +6,00 / ${CIL6}`, campoImg: 'LIBERTY.png' }),
+    ],
+  },
+  // ══════════════ VARILUX — OCUPACIONAIS (Digitime) ══════════════
+  {
+    id: 'varilux-oc', nome: 'Essilor · Unilab 04/2026', marca: 'VARILUX', cor: '#5b2a86',
+    logo: '/logo das lentes/varilux-logo-1.png', tipos: ['ocupacionais'],
+    produtos: [
+      P('Varilux Digitime Near Orma', 381, { material: 'Orma', tratamento: 'Verniz HC', campo: 'Varilux Digitime', disp: `-10,00 a +6,00 / ${CIL6}` }),
+      P('Varilux Digitime Near Airwear', 505, { material: 'Airwear', tratamento: 'Verniz HC', campo: 'Varilux Digitime', disp: `-10,00 a +6,00 / ${CIL6}` }),
+      P('Varilux Digitime Near Stylis 1.67', 1457, { material: 'Stylis 1.67', tratamento: 'Crizal Easy Pro', campo: 'Varilux Digitime', disp: `-14,00 a +9,00 / ${CIL6}` }),
+      P('Varilux Digitime Mid Orma', 381, { material: 'Orma', tratamento: 'Verniz HC', campo: 'Varilux Digitime', disp: `-10,00 a +6,00 / ${CIL6}` }),
+      P('Varilux Digitime Mid Airwear', 505, { material: 'Airwear', tratamento: 'Verniz HC', campo: 'Varilux Digitime', disp: `-10,00 a +6,00 / ${CIL6}` }),
+      P('Varilux Digitime Mid Stylis 1.67', 1457, { material: 'Stylis 1.67', tratamento: 'Crizal Easy Pro', campo: 'Varilux Digitime', disp: `-14,00 a +9,00 / ${CIL6}` }),
+    ],
+  },
+  // ══════════════ LENTES KODAK ══════════════
+  {
+    id: 'kodak-mf', nome: 'Lentes Kodak · Unilab 04/2026', marca: 'KODAK', cor: '#e01f26',
+    logo: '/logo das lentes/lentes kodak.png', tipos: ['multifocais'],
+    produtos: [
+      P('Kodak Unique Infinite 1.50', 439, { material: '1.50', tratamento: 'Verniz HC', campo: 'Kodak Unique Infinite', disp: `-10,00 a +5,25 / ${CIL6}` }),
+      P('Kodak Unique Infinite Poly', 521, { material: 'Poly', tratamento: 'Verniz HC', campo: 'Kodak Unique Infinite', disp: `-10,00 a +6,50 / ${CIL6}` }),
+      P('Kodak Unique Infinite 1.67', 1152, { material: '1.67', tratamento: 'Crizal Easy Pro', campo: 'Kodak Unique Infinite', disp: `-14,00 a +8,00 / ${CIL6}` }),
+      P('Kodak Unique Infinite 1.74', 1754, { material: '1.74', tratamento: 'Crizal Sapphire HR', campo: 'Kodak Unique Infinite', disp: `-18,00 a +13,00 / ${CIL6}` }),
+      P('Kodak Unique UHD 1.50', 390, { material: '1.50', tratamento: 'Verniz HC', campo: 'Kodak Unique UHD', disp: `-10,00 a +5,25 / ${CIL6}` }),
+      P('Kodak Unique UHD Poly', 472, { material: 'Poly', tratamento: 'Verniz HC', campo: 'Kodak Unique UHD', disp: `-10,00 a +6,50 / ${CIL6}` }),
+      P('Kodak Unique UHD 1.67', 1103, { material: '1.67', tratamento: 'Crizal Easy Pro', campo: 'Kodak Unique UHD', disp: `-14,00 a +8,00 / ${CIL6}` }),
+      P('Kodak Unique UHD 1.74', 1701, { material: '1.74', tratamento: 'Crizal Sapphire HR', campo: 'Kodak Unique UHD', disp: `-18,00 a +13,00 / ${CIL6}` }),
+      P('Kodak Network UHD 1.50', 355, { material: '1.50', tratamento: 'Verniz HC', campo: 'Kodak Network UHD', disp: `-10,25 a +5,25 / ${CIL6}` }),
+      P('Kodak Network UHD Poly', 436, { material: 'Poly', tratamento: 'Verniz HC', campo: 'Kodak Network UHD', disp: `-10,00 a +6,50 / ${CIL6}` }),
+      P('Kodak Network UHD 1.67', 1067, { material: '1.67', tratamento: 'Crizal Easy Pro', campo: 'Kodak Network UHD', disp: `-14,00 a +8,00 / ${CIL6}` }),
+      P('Kodak Precise UHD 1.50', 279, { material: '1.50', tratamento: 'Verniz HC', campo: 'Kodak Precise UHD', disp: `-10,25 a +5,25 / ${CIL6}` }),
+      P('Kodak Precise UHD Poly', 369, { material: 'Poly', tratamento: 'Verniz HC', campo: 'Kodak Precise UHD', disp: `-11,75 a +6,50 / ${CIL6}` }),
+      P('Kodak Precise UHD 1.67', 1032, { material: '1.67', tratamento: 'Crizal Easy Pro', campo: 'Kodak Precise UHD', disp: `-14,00 a +8,00 / ${CIL6}` }),
+      P('Kodak Precise 1.50', 279, { material: '1.50', tratamento: 'Sem AR', superficie: 'Tradicional', campo: 'Kodak Precise', disp: `-9,00 a +6,00 / ${CIL6}` }),
+      P('Kodak Precise Poly', 372, { material: 'Poly', tratamento: 'Sem AR', superficie: 'Tradicional', campo: 'Kodak Precise', disp: `-10,00 a +6,00 / ${CIL6}` }),
     ],
   },
   {
-    id: 'hoya-mf', nome: 'Hoya 05 2024', marca: 'HOYA', cor: '#0072c6', tipos: ['multifocais'],
+    id: 'kodak-vs', nome: 'Lentes Kodak · Unilab 04/2026', marca: 'KODAK', cor: '#e01f26',
+    logo: '/logo das lentes/lentes kodak.png', tipos: ['visao-simples'],
     produtos: [
-      P('HOYALUX Myself 1.50 HV LongLife UV', 790.84, { tratamento: 'HV LongLife UV', campo: 'HOYALUX Myself' }),
-      P('HOYALUX Mystyle V+ 1.50 HV LongLife UV', 707.50, { tratamento: 'HV LongLife UV', campo: 'HOYALUX Mystyle' }),
-      P('HOYALUX Lifestyle 4 1.50 No-Risk', 395.00, { tratamento: 'No-Risk', campo: 'HOYALUX Lifestyle' }),
-      P('HOYALUX Balansis 1.50 No-Risk', 311.68, { tratamento: 'No-Risk', campo: 'HOYALUX Balansis' }),
+      P('Kodak Single 1.50', 162, { material: '1.50', tratamento: 'Verniz HC', campo: 'Kodak Single', disp: `-10,00 a +6,00 / ${CIL6}` }),
+      P('Kodak Single Poly', 225, { material: 'Poly', tratamento: 'Verniz HC', campo: 'Kodak Single', disp: `-10,00 a +6,00 / ${CIL6}` }),
+      P('Kodak Single 1.67', 784, { material: '1.67', tratamento: 'Crizal Easy Pro', campo: 'Kodak Single', disp: `-14,00 a +8,00 / ${CIL6}` }),
+      P('Kodak Single 1.74', 1391, { material: '1.74', tratamento: 'Crizal Sapphire HR', campo: 'Kodak Single', disp: `-18,00 a +13,00 / ${CIL6}` }),
     ],
   },
   {
-    id: 'zeiss-mf', nome: 'Zeiss 04 2026', marca: 'ZEISS', cor: '#0a2a66', logo: '/logo das lentes/zeizz.png', tipos: ['multifocais'],
+    id: 'kodak-oc', nome: 'Lentes Kodak · Unilab 04/2026', marca: 'KODAK', cor: '#e01f26',
+    logo: '/logo das lentes/lentes kodak.png', tipos: ['ocupacionais'],
     produtos: [
-      P('Zeiss SmartLife Individual 3 DVBP', 640.00, { tratamento: 'DuraVision Blue', campo: 'SmartLife' }),
-      P('Zeiss SmartLife Superb DVBP', 420.00, { tratamento: 'DuraVision Blue', campo: 'SmartLife' }),
-      P('Zeiss SmartLife Pure DVP', 280.00, { tratamento: 'DuraVision', campo: 'SmartLife' }),
+      P('Kodak SoftWear 1.50', 255, { material: '1.50', tratamento: 'Verniz HC', campo: 'Kodak SoftWear', disp: `-10,00 a +5,00 / ${CIL6}` }),
+      P('Kodak SoftWear Poly', 337, { material: 'Poly', tratamento: 'Verniz HC', campo: 'Kodak SoftWear', disp: `-10,00 a +6,00 / ${CIL6}` }),
+      P('Kodak SoftWear 1.67', 968, { material: '1.67', tratamento: 'Crizal Easy Pro', campo: 'Kodak SoftWear', disp: `-14,00 a +8,00 / ${CIL6}` }),
+    ],
+  },
+  // ══════════════ EYEZEN (Essilor) ══════════════
+  {
+    id: 'eyezen-vs', nome: 'Essilor · Unilab 04/2026', marca: 'EYEZEN', cor: '#c0006a', tipos: ['visao-simples'],
+    produtos: [
+      P('Eyezen Boost Orma', 433, { material: 'Orma', tratamento: 'Crizal Easy Pro', campo: 'Eyezen Boost', disp: `-10,00 a +6,00 / ${CIL6}` }),
+      P('Eyezen Boost Airwear', 491, { material: 'Airwear', tratamento: 'Crizal Easy Pro', campo: 'Eyezen Boost', disp: `-10,00 a +6,00 / ${CIL6}` }),
+      P('Eyezen Boost Stylis 1.67', 945, { material: 'Stylis 1.67', tratamento: 'Crizal Easy Pro', campo: 'Eyezen Boost', disp: `-14,00 a +9,00 / ${CIL6}` }),
+      P('Eyezen Boost Stylis 1.74', 1481, { material: 'Stylis 1.74', tratamento: 'Crizal Sapphire HR', campo: 'Eyezen Boost', disp: `-18,00 a +13,00 / ${CIL6}` }),
+      P('Eyezen Start Orma', 405, { material: 'Orma', tratamento: 'Crizal Easy Pro', campo: 'Eyezen Start', disp: `-10,00 a +6,00 / ${CIL6}` }),
+      P('Eyezen Start Airwear', 487, { material: 'Airwear', tratamento: 'Crizal Easy Pro', campo: 'Eyezen Start', disp: `-10,00 a +6,00 / ${CIL6}` }),
+      P('Eyezen Start Stylis 1.67', 940, { material: 'Stylis 1.67', tratamento: 'Crizal Easy Pro', campo: 'Eyezen Start', disp: `-14,00 a +9,00 / ${CIL6}` }),
+      P('Eyezen Start Stylis 1.74', 1443, { material: 'Stylis 1.74', tratamento: 'Crizal Sapphire HR', campo: 'Eyezen Start', disp: `-18,00 a +13,00 / ${CIL6}` }),
+      P('Eyezen Kids Airwear', 405, { material: 'Airwear', tratamento: 'Crizal Easy Pro', campo: 'Eyezen Kids', disp: `-10,00 a +6,00 / ${CIL6}` }),
+      P('Eyezen Start Stock 1.60 (pronta)', 648, { material: '1.60', tratamento: 'Crizal Sapphire HR', campo: 'Eyezen Start', disp: '-6,00 a +3,00 / Cil. -2,00' }),
+    ],
+  },
+  // ══════════════ LENTES ESSILOR — VISÃO SIMPLES SURFAÇADA ══════════════
+  {
+    id: 'essilor-vs', nome: 'Essilor · Unilab 04/2026', marca: 'ESSILOR', cor: '#0a4d8c', tipos: ['visao-simples'],
+    produtos: [
+      P('Visão Simples Surfaçada Orma', 208, { material: 'Orma', tratamento: 'Trio Easy Clean', superficie: 'Surfaçada', campo: 'Visão Simples', disp: '-10,00 a +7,50 / Cil. até -6,00' }),
+      P('Visão Simples Surfaçada Airwear', 302, { material: 'Airwear', tratamento: 'Trio Easy Clean', superficie: 'Surfaçada', campo: 'Visão Simples', disp: '-12,00 a +9,25 / Cil. até -8,00' }),
+      P('Visão Simples Surfaçada Stylis 1.67', 631, { material: 'Stylis 1.67', tratamento: 'No Reflex', superficie: 'Surfaçada', campo: 'Visão Simples', disp: '-14,00 a +10,00 / Cil. até -8,00' }),
+      P('Visão Simples Surfaçada Stylis 1.74', 1325, { material: 'Stylis 1.74', tratamento: 'Crizal Sapphire HR', superficie: 'Surfaçada', campo: 'Visão Simples', disp: '-20,00 a +14,00 / Cil. até -8,00' }),
+      P('Essilor Interview Orma 0,80', 212, { material: 'Orma', tratamento: 'Sem AR', campo: 'Essilor Interview', disp: '-2,00 a +4,00 / Cil. até -4,00' }),
+      P('Essilor Interview Orma 1,30', 212, { material: 'Orma', tratamento: 'Sem AR', campo: 'Essilor Interview', disp: '-2,00 a +4,00 / Cil. até -4,00' }),
+    ],
+  },
+  // ══════════════ ESPACE (Brasilor) ══════════════
+  {
+    id: 'espace-mf', nome: 'Brasilor · Unilab 04/2026', marca: 'ESPACE', cor: '#e8631a', tipos: ['multifocais'],
+    produtos: [
+      P('Espace Plus Digital Orma', 290, { material: 'Orma', tratamento: 'Sem AR', campo: 'Espace Plus Digital', disp: `-10,25 a +5,25 / ${CIL6}` }),
+      P('Espace Plus Digital Poly', 404, { material: 'Poly', tratamento: 'Sem AR', campo: 'Espace Plus Digital', disp: `-11,75 a +6,50 / ${CIL6}` }),
+      P('Espace Plus Digital 1.67', 1144, { material: '1.67', tratamento: 'Trio Easy Clean', campo: 'Espace Plus Digital', disp: `-14,00 a +8,00 / ${CIL6}` }),
+      P('Espace Plus Orma', 286, { material: 'Orma', tratamento: 'Sem AR', campo: 'Espace Plus', disp: `-10,00 a +7,00 / ${CIL6}` }),
+      P('Espace Plus Poly', 402, { material: 'Poly', tratamento: 'Sem AR', campo: 'Espace Plus', disp: `-10,00 a +6,50 / ${CIL6}` }),
+      P('Espace Orma', 171, { material: 'Orma', tratamento: 'Sem AR', campo: 'Espace', disp: `-10,00 a +5,75 / ${CIL6}` }),
+      P('Espace Poly', 298, { material: 'Poly', tratamento: 'Sem AR', campo: 'Espace', disp: `-10,00 a +6,00 / ${CIL6}` }),
+    ],
+  },
+  // ══════════════ GRANDVIEW (Unilab) ══════════════
+  {
+    id: 'grandview-mf', nome: 'GrandView · Unilab 04/2026', marca: 'GRANDVIEW', cor: '#199aa8', tipos: ['multifocais'],
+    produtos: [
+      P('GrandView Resina 1.49', 178, { material: 'Resina 1.49', tratamento: 'Verniz HC', campo: 'GrandView', disp: `-10,00 a +6,00 / ${CIL6}` }),
+      P('GrandView Poly 1.59', 282, { material: 'Poly 1.59', tratamento: 'Verniz HC', campo: 'GrandView', disp: `-10,00 a +6,00 / ${CIL6}` }),
+      P('GrandView 1.60 No Blue', 524, { material: '1.60', tratamento: 'Verniz HC', campo: 'GrandView', disp: `-10,00 a +6,00 / ${CIL6}` }),
+      P('GrandView 1.67', 744, { material: '1.67', tratamento: 'Clean', campo: 'GrandView', disp: `-12,00 a +7,00 / ${CIL6}` }),
+      P('GrandView 1.74', 1164, { material: '1.74', tratamento: 'Clean', campo: 'GrandView', disp: `-12,00 a +7,00 / ${CIL6}` }),
     ],
   },
   {
-    id: 'forla-mf', nome: 'Forla 06 2025', marca: 'FORLA', cor: '#e0a800', tipos: ['multifocais'],
+    id: 'grandview-vs', nome: 'GrandView · Unilab 04/2026', marca: 'GRANDVIEW', cor: '#199aa8', tipos: ['visao-simples'],
     produtos: [
-      P('Forla Ultra HD 1.67 AR Blue', 245.00, { material: '1.67', tratamento: 'AR Blue', campo: 'Forla Ultra' }),
-      P('Forla Digital 1.60 AR Blue', 168.00, { material: '1.60', tratamento: 'AR Blue', campo: 'Forla Digital' }),
-      P('Forla Digital 1.56 AR', 122.00, { material: '1.56', tratamento: 'AR', campo: 'Forla Digital' }),
+      P('GrandView Single Vision Resina 1.49', 156, { material: 'Resina 1.49', tratamento: 'Verniz HC', campo: 'GrandView SV', disp: `-10,00 a +6,00 / ${CIL6}` }),
+      P('GrandView Single Vision Poly 1.59', 230, { material: 'Poly 1.59', tratamento: 'Verniz HC', campo: 'GrandView SV', disp: `-10,00 a +6,00 / ${CIL6}` }),
+      P('GrandView Single Vision 1.60 No Blue', 387, { material: '1.60', tratamento: 'Verniz HC', campo: 'GrandView SV', disp: `-10,00 a +6,00 / ${CIL6}` }),
+      P('GrandView Single Vision 1.67', 587, { material: '1.67', tratamento: 'Clean', campo: 'GrandView SV', disp: `-12,00 a +7,00 / ${CIL6}` }),
+      P('GrandView Single Vision 1.74', 1028, { material: '1.74', tratamento: 'Clean', campo: 'GrandView SV', disp: `-12,00 a +7,00 / ${CIL6}` }),
+      P('GrandView Relax Orma No Blue', 378, { material: 'Orma', tratamento: 'Clean', campo: 'GrandView Relax', disp: `-10,00 a +6,00 / ${CIL6}` }),
+      P('GrandView Relax Poly No Blue', 467, { material: 'Poly', tratamento: 'Clean', campo: 'GrandView Relax', disp: `-10,00 a +6,00 / ${CIL6}` }),
+      P('GrandView Relax 1.67 No Blue', 955, { material: '1.67', tratamento: 'Clean', campo: 'GrandView Relax', disp: `-14,00 a +7,00 / ${CIL6}` }),
     ],
   },
   {
-    id: 'indo-mf', nome: 'Indo 01 2026', marca: 'INDO', cor: '#009640', tipos: ['multifocais'],
+    id: 'grandview-oc', nome: 'GrandView · Unilab 04/2026', marca: 'GRANDVIEW', cor: '#199aa8', tipos: ['ocupacionais'],
     produtos: [
-      P('Indo Maxima Fusion 1.60 Neva Max', 355.00, { material: '1.60', tratamento: 'Neva Max', campo: 'Indo Maxima' }),
-      P('Indo Base 1.50 Neva', 190.00, { tratamento: 'Neva', campo: 'Indo Base' }),
+      P('GrandView Office Resina 1.50 Blue Filter', 177, { material: 'Resina 1.50', tratamento: 'Verniz HC', campo: 'GrandView Office', disp: `-10,00 a +6,00 / ${CIL6}` }),
+      P('GrandView Office Poly Blue Filter', 240, { material: 'Poly', tratamento: 'Verniz HC', campo: 'GrandView Office', disp: `-10,00 a +6,00 / ${CIL6}` }),
+      P('GrandView Office Resina 1.67 Blue Filter', 744, { material: '1.67', tratamento: 'Clean', campo: 'GrandView Office', disp: `-14,00 a +7,00 / ${CIL6}` }),
     ],
   },
-  {
-    id: 'rodenstock-mf', nome: 'Rodenstock 01 2026', marca: 'RODENSTOCK', cor: '#003057', logo: '/logo das lentes/rodenstock.png', tipos: ['multifocais'],
-    produtos: [
-      P('Rodenstock B.I.G. Exact 1.60 Solitaire', 690.00, { material: '1.60', tratamento: 'Solitaire Protect', campo: 'B.I.G.' }),
-      P('Rodenstock Pro 1.50 Solitaire', 320.00, { tratamento: 'Solitaire', campo: 'Rodenstock Pro' }),
-    ],
-  },
-  {
-    id: 'essilor-vs', nome: 'Essilor 04 2026', marca: 'EYEZEN', cor: '#c0006a', tipos: ['visao-simples'],
-    produtos: [
-      P('Eyezen Boost Orma Blue UV', 134.08, { material: 'Orma Blue UV', tratamento: 'Crizal', campo: 'Eyezen', disp: '-10,00 a +6,00 / Cil. até -6,00' }),
-      P('Eyezen Start Orma Blue UV', 124.92, { material: 'Orma Blue UV', tratamento: 'Crizal', campo: 'Eyezen' }),
-      P('Visão Simples Surfaçada Orma AR', 101.58, { material: 'Orma', tratamento: 'Crizal Sapphire', campo: 'Visão Simples', superficie: 'Surfaçada' }),
-      P('Lentes Kodak Single 1.50 AR', 104.92, { campo: 'Kodak Single' }),
-    ],
-  },
-  {
-    id: 'forla-vs', nome: 'Forla 06 2025', marca: 'FORLA', cor: '#e0a800', tipos: ['visao-simples'],
-    produtos: [
-      P('Forla Digital VS 1.67 AR Blue', 138.00, { material: '1.67', tratamento: 'AR Blue', campo: 'Forla VS' }),
-      P('Forla VS 1.56 AR', 74.00, { material: '1.56', tratamento: 'AR', campo: 'Forla VS' }),
-    ],
-  },
-  {
-    id: 'essilor-oc', nome: 'Essilor 04 2026', marca: 'DIGITIME', cor: '#5b2a86', tipos: ['ocupacionais'],
-    produtos: [
-      P('Varilux Digitime Near Orma Blue UV', 134.92, { material: 'Orma Blue UV', tratamento: 'Crizal', campo: 'Digitime', disp: '-10,00 a +6,00 / Cil. até -6,00' }),
-      P('Varilux Digitime Mid Orma Blue UV', 134.92, { material: 'Orma Blue UV', tratamento: 'Crizal', campo: 'Digitime' }),
-      P('Kodak SoftWear 1.50 AR', 122.42, { campo: 'Kodak SoftWear' }),
-    ],
-  },
-  {
-    id: 'forla-bf', nome: 'Forla 04 2024', marca: 'BIFOCAL', cor: '#1e5aa8', tipos: ['bifocais'],
-    produtos: [
-      P('Bifocal Digital 1.60 AR Blue', 205.92, { material: '1.60', tratamento: 'AR Blue', campo: 'Bifocal Digital', codigo: '142131345700', disp: '+6,00 a -10,00 / Cil. até -4,00' }),
-      P('Bifocal Digital 1.67 AR Clean', 186.60, { material: '1.67', tratamento: 'AR Clean', campo: 'Bifocal Digital' }),
-      P('Bifocal Digital 1.67 AR Premium', 220.84, { material: '1.67', tratamento: 'AR Premium', campo: 'Bifocal Digital' }),
-      P('Bifocal Digital 1.74 Surf. Incolor', 320.00, { material: '1.74', tratamento: 'Surf. Incolor', campo: 'Bifocal Digital', superficie: 'Surfaçada' }),
-    ],
-  },
+  // ══════════════ SEM TABELA AINDA (só a logo) ══════════════
+  { id: 'zeiss-mf', nome: 'Tabela em breve', marca: 'ZEISS', cor: '#0a2a66', logo: '/logo das lentes/zeizz.png', tipos: ['multifocais'], produtos: [] },
+  { id: 'rodenstock-mf', nome: 'Tabela em breve', marca: 'RODENSTOCK', cor: '#003057', logo: '/logo das lentes/rodenstock.png', tipos: ['multifocais'], produtos: [] },
 ];
 
 // ─── Ambientes de fundo (public/ambientes/{slug}.jpg) — arrasta p/ trocar (estilo story) ─
@@ -255,13 +348,16 @@ export default function VendaIndicativa() {
             <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: 14, marginTop: 40 }}>Nenhuma tabela cadastrada para {TIPO_LABEL[tipo]}.</div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
-              {tabelasTipo.map(t => (
-                <button key={t.id} onClick={() => abrirTabela(t.id)} style={{
-                  background: '#fff', border: '1px solid #dfe4ea', borderRadius: 12, cursor: 'pointer', padding: 0, overflow: 'hidden',
+              {tabelasTipo.map(t => {
+                const vazia = t.produtos.length === 0;
+                return (
+                <button key={t.id} disabled={vazia} onClick={() => !vazia && abrirTabela(t.id)} style={{
+                  opacity: vazia ? 0.5 : 1, cursor: vazia ? 'default' : 'pointer',
+                  background: '#fff', border: '1px solid #dfe4ea', borderRadius: 12, padding: 0, overflow: 'hidden',
                   display: 'flex', flexDirection: 'column', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', WebkitTapHighlightColor: 'transparent',
                   transition: 'transform .12s, box-shadow .12s',
                 }}
-                  onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 8px 24px rgba(29,78,216,0.16)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                  onMouseEnter={e => { if (vazia) return; e.currentTarget.style.boxShadow = '0 8px 24px rgba(29,78,216,0.16)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
                   onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)'; e.currentTarget.style.transform = 'none'; }}
                 >
                   <div style={{ height: 96, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 14, background: 'linear-gradient(160deg,#fbfcfe,#eef2f7)' }}>
@@ -271,10 +367,11 @@ export default function VendaIndicativa() {
                   </div>
                   <div style={{ padding: '9px 12px', borderTop: '1px solid #eef1f5', textAlign: 'center' }}>
                     <div style={{ fontSize: 12.5, fontWeight: 700, color: '#334155' }}>{t.nome}</div>
-                    <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 1 }}>{t.produtos.length} produtos</div>
+                    <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 1 }}>{vazia ? 'aguardando tabela' : `${t.produtos.length} produtos`}</div>
                   </div>
                 </button>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -360,7 +457,7 @@ export default function VendaIndicativa() {
                     backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)', WebkitTapHighlightColor: 'transparent',
                   }}>
                     <div style={{ fontSize: 11.5, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pr.nome}</div>
-                    <div style={{ fontSize: 11, fontWeight: 700, fontFamily: 'var(--mono)', opacity: 0.92, marginTop: 1 }}>12x {brl(pr.parcela)}</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, fontFamily: 'var(--mono)', opacity: 0.92, marginTop: 1 }}>12x {brl(parcela(pr))}</div>
                   </button>
                 );
               })}
@@ -427,7 +524,7 @@ function Dock({ navigate, onOS, produto, tabela }: {
   navigate: ReturnType<typeof useNavigate>; onOS: () => void; produto?: Produto; tabela?: Tabela;
 }) {
   const [modal, setModal] = useState<null | 'extras' | 'valor' | 'calc'>(null);
-  const total = produto ? produto.parcela * 12 : 0;
+  const total = produto ? produto.preco : 0;
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px', background: '#f5f6f8', borderTop: '1px solid #d5dbe3', flexShrink: 0 }}>
@@ -471,7 +568,7 @@ function Dock({ navigate, onOS, produto, tabela }: {
                     <div style={{ fontSize: 13.5, fontWeight: 700, color: '#1e293b', marginBottom: 4 }}>{produto.nome}</div>
                     <div style={{ fontSize: 11.5, color: '#94a3b8', marginBottom: 16 }}>{tabela?.marca} · {tabela?.nome}</div>
                     {[
-                      ['Parcela (12x)', `R$ ${brl(produto.parcela)}`],
+                      ['Parcela (12x)', `R$ ${brl(parcela(produto))}`],
                       ['Total (12×)', `R$ ${brl(total)}`],
                       ['À vista', `R$ ${brl(total)}`],
                     ].map(([k, v], i) => (
