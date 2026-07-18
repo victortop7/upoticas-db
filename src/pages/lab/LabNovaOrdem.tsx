@@ -472,9 +472,10 @@ export default function LabNovaOrdem() {
         <div style={card}>
           <div style={secTitle}>Cabeçalho da OS</div>
 
-          {/* Row 1: Ótica + Ref + Classificação + Lista + Previsão */}
-          <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr 1fr 130px 80px 80px 1fr', gap: '8px', marginBottom: '8px' }}>
-            <div>
+          {/* Grid uniforme de 12 colunas — as bordas alinham entre as linhas */}
+          {/* Linha 1: identificação da ótica */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '8px', marginBottom: '8px' }}>
+            <div style={{ gridColumn: 'span 2' }}>
               <label style={LBL}>Cód. Ótica *</label>
               <input
                 value={oticaCod}
@@ -485,28 +486,36 @@ export default function LabNovaOrdem() {
                 placeholder="Cód."
               />
             </div>
-            <div>
+            <div style={{ gridColumn: 'span 6' }}>
               <label style={LBL}>Nome da Ótica</label>
               <div style={{ ...INP, background: '#d4d0c8', color: oticaErro ? '#cc0000' : oticaNome ? '#000' : '#666', fontFamily: "'Montserrat', sans-serif", minHeight: '32px', display: 'flex', alignItems: 'center' }}>
                 {oticaNome || <span style={{ color: R.dim, fontSize: '11px' }}>Digite o código ou nome acima...</span>}
               </div>
             </div>
-            <div>
+            <div style={{ gridColumn: 'span 4' }}>
               <label style={LBL}>Ref. Ótica</label>
               <input value={refOtica} onChange={e => setRefOtica(e.target.value)} style={INP} placeholder="Nº que veio da ótica" />
             </div>
-            <div>
+          </div>
+
+          {/* Linha 2: datas + classificação + lista */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '8px', marginBottom: '8px' }}>
+            <div style={{ gridColumn: 'span 3' }}>
               <label style={LBL}>Data Emissão</label>
               <input type="date" value={dataEmissao} onChange={e => setDataEmissao(e.target.value)} style={INP} />
             </div>
-            <div>
+            <div style={{ gridColumn: 'span 3' }}>
+              <label style={LBL}>Previsão Entrega</label>
+              <input type="date" value={previsao} onChange={e => setPrevisao(e.target.value)} style={INP} />
+            </div>
+            <div style={{ gridColumn: 'span 3' }}>
               <label style={LBL}>Classif.</label>
               <select value={classificacao} onChange={e => setClassificacao(e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                 <option value="N">N - Normal</option>
                 <option value="E">E - Especial</option>
               </select>
             </div>
-            <div>
+            <div style={{ gridColumn: 'span 3' }}>
               <label style={LBL}>Lista Preço</label>
               <select value={listaPreco} onChange={e => setListaPreco(e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                 {listasDisponiveis.map(l => (
@@ -514,78 +523,74 @@ export default function LabNovaOrdem() {
                 ))}
               </select>
             </div>
-            <div>
-              <label style={LBL}>Previsão Entrega</label>
-              <input type="date" value={previsao} onChange={e => setPrevisao(e.target.value)} style={INP} />
-            </div>
           </div>
 
-          {/* Row 2: Nº Vias + Cobrança + Fechamento + Frete + Desconto */}
-          <div style={{ display: 'grid', gridTemplateColumns: '70px 70px 1fr 100px 100px', gap: '8px', marginBottom: '8px' }}>
-            <div>
-              <label style={LBL}>Nº Vias</label>
-              <input value={numVias} onChange={e => setNumVias(e.target.value)} style={{ ...INP, textAlign: 'center' }} />
-            </div>
-            <div>
-              <label style={LBL}>Cobrança</label>
-              <input value={cobrancaTipo} onChange={e => setCobrancaTipo(e.target.value)} style={{ ...INP, textAlign: 'center' }} />
-            </div>
-            <div>
-              <label style={LBL}>Fechamento (ref)</label>
-              <input value={fechamento} onChange={e => setFechamento(e.target.value)} style={INP} placeholder="Ref. fechamento" />
-            </div>
-            <div>
-              <label style={LBL}>Frete (R$)</label>
-              <input value={frete} onChange={e => setFrete(e.target.value)} style={{ ...INP, textAlign: 'right' }} placeholder="0,00" />
-            </div>
-            <div>
-              <label style={LBL}>Desconto (R$)</label>
-              <input value={desconto} onChange={e => setDesconto(e.target.value)} style={{ ...INP, textAlign: 'right' }} placeholder="0,00" />
-            </div>
-          </div>
-
-          {/* Row 3: Operador + Vendedor + Médico + Usuário Receita */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '8px', marginBottom: '8px' }}>
-            <div>
+          {/* Linha 3: pessoas */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '8px', marginBottom: '8px' }}>
+            <div style={{ gridColumn: 'span 3' }}>
               <label style={LBL}>Operador</label>
               <select value={operador} onChange={e => setOperador(e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                 <option value="">— Operador</option>
                 {operadores.map(u => <option key={u.id} value={u.nome}>{u.nome}</option>)}
               </select>
             </div>
-            <div>
+            <div style={{ gridColumn: 'span 3' }}>
               <label style={LBL}>Vendedor (da ótica)</label>
               <input value={vendedor1Id} onChange={e => setVendedor1Id(e.target.value)} style={INP} placeholder="Nome do vendedor..." />
             </div>
-            <div>
+            <div style={{ gridColumn: 'span 3' }}>
               <label style={LBL}>Médico / Oftalmo</label>
               <input value={medico} onChange={e => setMedico(e.target.value)} style={INP} />
             </div>
-            <div>
+            <div style={{ gridColumn: 'span 3' }}>
               <label style={LBL}>Usuário / Receita</label>
               <input value={usuarioReceita} onChange={e => setUsuarioReceita(e.target.value)} style={INP} />
             </div>
           </div>
 
-          {/* Row 4: Cond Pgto + Cont Interno + Caixa + flags */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px 90px auto auto', gap: '8px', alignItems: 'flex-end' }}>
-            <div>
+          {/* Linha 4: pagamento + controle */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '8px', marginBottom: '8px' }}>
+            <div style={{ gridColumn: 'span 4' }}>
               <label style={LBL}>Cond. Pagamento</label>
               <input value={condPgto} onChange={e => setCondPgto(e.target.value)} style={INP} placeholder="VV, F..." />
             </div>
-            <div>
+            <div style={{ gridColumn: 'span 2' }}>
               <label style={LBL}>Cont. Interno</label>
               <input value={contInterno} onChange={e => setContInterno(e.target.value)} style={INP} />
             </div>
-            <div>
+            <div style={{ gridColumn: 'span 2' }}>
               <label style={LBL}>Caixa</label>
               <input value={caixa} onChange={e => setCaixa(e.target.value)} style={INP} />
             </div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', fontSize: '12px', color: R.txt, paddingBottom: '2px' }}>
+            <div style={{ gridColumn: 'span 2' }}>
+              <label style={LBL}>Nº Vias</label>
+              <input value={numVias} onChange={e => setNumVias(e.target.value)} style={{ ...INP, textAlign: 'center' }} />
+            </div>
+            <div style={{ gridColumn: 'span 2' }}>
+              <label style={LBL}>Cobrança</label>
+              <input value={cobrancaTipo} onChange={e => setCobrancaTipo(e.target.value)} style={{ ...INP, textAlign: 'center' }} />
+            </div>
+          </div>
+
+          {/* Linha 5: fechamento + valores + flags */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '8px', alignItems: 'end' }}>
+            <div style={{ gridColumn: 'span 4' }}>
+              <label style={LBL}>Fechamento (ref)</label>
+              <input value={fechamento} onChange={e => setFechamento(e.target.value)} style={INP} placeholder="Ref. fechamento" />
+            </div>
+            <div style={{ gridColumn: 'span 2' }}>
+              <label style={LBL}>Frete (R$)</label>
+              <input value={frete} onChange={e => setFrete(e.target.value)} style={{ ...INP, textAlign: 'right' }} placeholder="0,00" />
+            </div>
+            <div style={{ gridColumn: 'span 2' }}>
+              <label style={LBL}>Desconto (R$)</label>
+              <input value={desconto} onChange={e => setDesconto(e.target.value)} style={{ ...INP, textAlign: 'right' }} placeholder="0,00" />
+            </div>
+            <label style={{ gridColumn: 'span 2', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', fontSize: '12px', color: R.txt, height: '32px' }}>
               <input type="checkbox" checked={fluxoLab} onChange={e => setFluxoLab(e.target.checked)} />
               Fluxo LAB
             </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', fontSize: '12px', color: R.txt, paddingBottom: '2px' }}>
+            <label style={{ gridColumn: 'span 2', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', fontSize: '12px', color: R.txt, height: '32px' }}>
               <input type="checkbox" checked={etiqGarantia} onChange={e => setEtiqGarantia(e.target.checked)} />
               Etiq. Garantia
             </label>
