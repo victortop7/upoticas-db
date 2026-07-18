@@ -37,31 +37,39 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
     await ensureTable(env);
 
     const url = new URL(request.url);
-    const status = url.searchParams.get('status') || 'em_producao';
+    // status: valor específico | '' (fila ativa) | 'board' (Kanban: inclui pronto/entregue)
+    const status = url.searchParams.has('status') ? url.searchParams.get('status')! : 'em_producao';
 
-    const query = status
-      ? `SELECT o.id, o.numero, o.status, o.tipo, o.ref_otica, o.cont_interno, o.caixa,
-                o.previsao_entrega, o.created_at, o.vendedor, o.setor_atual,
-                ot.nome as otica_nome,
-                a.tipo_lente, a.marca_material
-         FROM lab_ordens o
-         LEFT JOIN lab_oticas ot ON ot.id = o.otica_id
-         LEFT JOIN lab_armacao a ON a.ordem_id = o.id
-         WHERE o.tenant_id = ? AND o.status = ?
-         ORDER BY o.previsao_entrega ASC, o.created_at ASC
-         LIMIT 300`
-      : `SELECT o.id, o.numero, o.status, o.tipo, o.ref_otica, o.cont_interno, o.caixa,
-                o.previsao_entrega, o.created_at, o.vendedor, o.setor_atual,
-                ot.nome as otica_nome,
-                a.tipo_lente, a.marca_material
-         FROM lab_ordens o
-         LEFT JOIN lab_oticas ot ON ot.id = o.otica_id
-         LEFT JOIN lab_armacao a ON a.ordem_id = o.id
-         WHERE o.tenant_id = ? AND o.status NOT IN ('entregue','cancelado')
-         ORDER BY o.previsao_entrega ASC, o.created_at ASC
-         LIMIT 300`;
+    // hora de entrada na etapa atual (registro aberto mais recente)
+    const setorDesde = `(SELECT f.inicio_data || ' ' || COALESCE(f.inicio_hora,'')
+                          FROM lab_fluxo f WHERE f.ordem_id = o.id AND f.termino_data IS NULL
+                          ORDER BY f.created_at DESC LIMIT 1) as setor_desde`;
+    const cols = `o.id, o.numero, o.status, o.tipo, o.ref_otica, o.cont_interno, o.caixa,
+                  o.previsao_entrega, o.created_at, o.vendedor, o.setor_atual,
+                  ot.nome as otica_nome, a.tipo_lente, a.marca_material, ${setorDesde}`;
+    const base = `FROM lab_ordens o
+                  LEFT JOIN lab_oticas ot ON ot.id = o.otica_id
+                  LEFT JOIN lab_armacao a ON a.ordem_id = o.id`;
 
-    const params = status ? [tenant_id, status] : [tenant_id];
+    let query: string; let params: unknown[];
+    if (status === 'board') {
+      // Kanban: tudo menos cancelado (entregue limitado aos mais recentes pelo LIMIT/ordem)
+      query = `SELECT ${cols} ${base}
+               WHERE o.tenant_id = ? AND o.status != 'cancelado'
+               ORDER BY (o.status = 'entregue'), o.previsao_entrega ASC, o.created_at ASC
+               LIMIT 400`;
+      params = [tenant_id];
+    } else if (status) {
+      query = `SELECT ${cols} ${base}
+               WHERE o.tenant_id = ? AND o.status = ?
+               ORDER BY o.previsao_entrega ASC, o.created_at ASC LIMIT 300`;
+      params = [tenant_id, status];
+    } else {
+      query = `SELECT ${cols} ${base}
+               WHERE o.tenant_id = ? AND o.status NOT IN ('entregue','cancelado')
+               ORDER BY o.previsao_entrega ASC, o.created_at ASC LIMIT 300`;
+      params = [tenant_id];
+    }
     const result = await env.DB.prepare(query).bind(...params).all();
     return json(result.results);
   } catch (err) {

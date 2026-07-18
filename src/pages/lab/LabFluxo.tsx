@@ -8,7 +8,40 @@ interface OrdemFluxo {
   caixa: string | null; otica_nome: string; vendedor: string | null;
   previsao_entrega: string | null; created_at: string;
   tipo_lente: string | null; marca_material: string | null;
-  setor_atual: string | null;
+  setor_atual: string | null; setor_desde?: string | null;
+}
+
+// ─── Funil (Kanban): etapas por tipo de lente ──────────────────────────────────
+type Etapa = { key: string; label: string; icon: string; color: string };
+const FLUXOS: Record<'simples' | 'progressiva', Etapa[]> = {
+  simples: [
+    { key: 'digitacao', label: 'Digitação', icon: '⌨️', color: '#a07500' },
+    { key: 'estoque', label: 'Estoque', icon: '📦', color: '#1069c0' },
+    { key: 'montagem', label: 'Montagem', icon: '🔧', color: '#7a3fb5' },
+    { key: 'pronto', label: 'Pronto', icon: '✅', color: '#0a8a2a' },
+    { key: 'entregue', label: 'Entregue', icon: '🚚', color: '#6b7280' },
+  ],
+  progressiva: [
+    { key: 'digitacao', label: 'Digitação', icon: '⌨️', color: '#a07500' },
+    { key: 'estoque', label: 'Estoque', icon: '📦', color: '#1069c0' },
+    { key: 'surfacagem', label: 'Surfaçagem', icon: '🪚', color: '#c05a1a' },
+    { key: 'antirrisco', label: 'Antirrisco', icon: '🛡️', color: '#0e9488' },
+    { key: 'antirreflexo', label: 'Antirreflexo', icon: '💠', color: '#2563c7' },
+    { key: 'montagem', label: 'Montagem', icon: '🔧', color: '#7a3fb5' },
+    { key: 'pronto', label: 'Pronto', icon: '✅', color: '#0a8a2a' },
+    { key: 'entregue', label: 'Entregue', icon: '🚚', color: '#6b7280' },
+  ],
+};
+function flowOf(o: OrdemFluxo): 'simples' | 'progressiva' {
+  const t = (o.tipo_lente || '').toUpperCase().trim();
+  return (t.includes('PROGRESS') || t === '02' || t.startsWith('02 ')) ? 'progressiva' : 'simples';
+}
+function cardStage(o: OrdemFluxo, etapas: Etapa[]): string {
+  if (o.status === 'entregue') return 'entregue';
+  if (o.status === 'pronto') return 'pronto';
+  const s = o.setor_atual;
+  if (s && etapas.some(e => e.key === s)) return s;
+  return etapas[0].key; // default: primeira etapa (digitação)
 }
 
 interface FluxoRecord {
@@ -20,7 +53,7 @@ interface FluxoRecord {
 }
 
 const MODO_OPTS = [
-  { key: 'consulta', label: 'Consulta / Produção', num: 4 },
+  { key: 'consulta', label: 'Funil de Produção', num: 4 },
   { key: 'individual', label: 'Lançar Fluxo/Individual', num: 1 },
 ];
 
@@ -44,11 +77,13 @@ function nowTime() { return new Date().toTimeString().slice(0, 5); }
 export default function LabFluxo() {
   const [modo, setModo] = useState<'consulta' | 'individual'>('consulta');
 
-  // --- CONSULTA ---
+  // --- FUNIL (Kanban) ---
   const [ordens, setOrdens] = useState<OrdemFluxo[]>([]);
   const [loadingOrdens, setLoadingOrdens] = useState(true);
-  const [filtroStatus, setFiltroStatus] = useState('em_producao');
   const [busca, setBusca] = useState('');
+  const [fluxoTipo, setFluxoTipo] = useState<'simples' | 'progressiva'>('simples');
+  const [dragging, setDragging] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState<string | null>(null);
 
   // --- INDIVIDUAL ---
   const [buscaOS, setBuscaOS] = useState('');
@@ -71,12 +106,18 @@ export default function LabFluxo() {
 
   const loadOrdens = useCallback(() => {
     setLoadingOrdens(true);
-    const p = new URLSearchParams();
-    if (filtroStatus) p.set('status', filtroStatus);
-    api.get<OrdemFluxo[]>(`/lab/fluxo?${p}`)
+    api.get<OrdemFluxo[]>(`/lab/fluxo?status=board`)
       .then(setOrdens).catch(() => setOrdens([]))
       .finally(() => setLoadingOrdens(false));
-  }, [filtroStatus]);
+  }, []);
+
+  // move a OS para outra etapa (drag & drop) — otimista + persiste
+  async function mover(ordId: string, setor: string) {
+    const novoStatus = setor === 'entregue' ? 'entregue' : setor === 'pronto' ? 'pronto' : 'em_producao';
+    setOrdens(prev => prev.map(o => o.id === ordId ? { ...o, setor_atual: setor, status: novoStatus, setor_desde: null } : o));
+    try { await api.post('/lab/fluxo/mover', { ordem_id: ordId, setor }); } catch { /* ignora */ }
+    loadOrdens();
+  }
 
   useEffect(() => { if (modo === 'consulta') loadOrdens(); }, [modo, loadOrdens]);
 
@@ -183,86 +224,80 @@ export default function LabFluxo() {
       {/* ===== CONTEÚDO ===== */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
-        {/* ============ CONSULTA / PRODUÇÃO ============ */}
-        {modo === 'consulta' && (
+        {/* ============ FUNIL DE PRODUÇÃO (Kanban) ============ */}
+        {modo === 'consulta' && (() => {
+          const etapas = FLUXOS[fluxoTipo];
+          const cards = filtrados.filter(o => flowOf(o) === fluxoTipo);
+          return (
           <>
             <div style={{ padding: '12px 20px', borderBottom: '1px solid #b0aca4', background: R.panel, display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-              <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: R.txt, marginRight: '8px' }}>Fila de Produção</h2>
-              <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar OS, ótica, ref..." style={{ ...INP, width: '200px' }} />
-              {['aguardando', 'em_producao', 'pronto', ''].map((s, i) => {
-                const labels = ['Aguardando', 'Em Produção', 'Pronto', 'Todos'];
-                return (
-                  <button key={i} onClick={() => setFiltroStatus(s)}
-                    style={{ padding: '5px 12px', fontSize: '11px', fontWeight: '600', borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${filtroStatus === s ? (STATUS_COLOR[s] || '#b8b4ac') : '#b0aca4'}`, background: filtroStatus === s ? `${STATUS_COLOR[s] || R.dim}18` : 'transparent', color: filtroStatus === s ? (STATUS_COLOR[s] || R.txt) : R.dim }}>
-                    {labels[i]} ({ordens.filter(o => !s || o.status === s).length})
+              <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: R.txt, marginRight: '4px' }}>Funil de Produção</h2>
+              {/* Toggle tipo de fluxo */}
+              <div style={{ display: 'flex', border: '1px solid #b0aca4', borderRadius: '8px', overflow: 'hidden' }}>
+                {(['simples', 'progressiva'] as const).map(t => (
+                  <button key={t} onClick={() => setFluxoTipo(t)}
+                    style={{ padding: '6px 14px', fontSize: '12px', fontWeight: '700', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                      background: fluxoTipo === t ? R.accent : 'transparent', color: fluxoTipo === t ? '#fff' : R.dim }}>
+                    {t === 'simples' ? 'Visão Simples' : 'Progressiva'}
                   </button>
-                );
-              })}
+                ))}
+              </div>
+              <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar OS, ótica, ref..." style={{ ...INP, width: '200px' }} />
+              <span style={{ fontSize: '11px', color: R.dim }}>{cards.length} OS · arraste os cards entre as etapas</span>
+              <button onClick={loadOrdens} style={{ marginLeft: 'auto', padding: '6px 12px', fontSize: '13px', background: R.alt, color: R.dim, border: '1px solid #b0aca4', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>↺</button>
             </div>
-            <div style={{ flex: 1, overflowY: 'auto' }}>
-              {loadingOrdens ? (
-                <div style={{ padding: '60px', textAlign: 'center', color: R.dim, fontSize: '14px' }}>Carregando...</div>
-              ) : filtrados.length === 0 ? (
-                <div style={{ padding: '60px', textAlign: 'center', color: R.dim, fontSize: '14px' }}>Nenhuma OS na fila.</div>
-              ) : (
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead style={{ position: 'sticky', top: 0 }}>
-                    <tr style={{ background: R.alt, borderBottom: '1px solid #b0aca4' }}>
-                      {['OS', 'Ótica', 'Ref.', 'C/Int.', 'Caixa', 'Entrada', 'Previsão', 'Lente', 'Status', 'Ação'].map(h => (
-                        <th key={h} style={{ padding: '8px 10px', textAlign: 'left', fontSize: '10px', fontWeight: '600', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtrados.map(o => (
-                      <tr key={o.id} style={{ borderBottom: '1px solid #b0aca4' }}
-                        onMouseEnter={e => (e.currentTarget.style.background = R.alt)}
-                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                        <td style={{ padding: '8px 10px', fontFamily: "'Courier New', monospace", fontSize: '13px', fontWeight: '700', color: R.txt, whiteSpace: 'nowrap' }}>
-                          #{String(o.numero).padStart(4, '0')}
-                        </td>
-                        <td style={{ padding: '8px 10px', fontSize: '12px', color: R.txt, maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.otica_nome}</td>
-                        <td style={{ padding: '8px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim }}>{o.ref_otica ?? '—'}</td>
-                        <td style={{ padding: '8px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim }}>{o.cont_interno ?? '—'}</td>
-                        <td style={{ padding: '8px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim }}>{o.caixa ?? '—'}</td>
-                        <td style={{ padding: '8px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim, whiteSpace: 'nowrap' }}>{fmtDt(o.created_at)}</td>
-                        <td style={{ padding: '8px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim, whiteSpace: 'nowrap' }}>{fmtDate(o.previsao_entrega)}</td>
-                        <td style={{ padding: '8px 10px', fontSize: '11px', color: R.dim }}>{o.tipo_lente ?? o.marca_material ?? '—'}</td>
-                        <td style={{ padding: '8px 10px' }}>
-                          <span style={{ fontSize: '10px', fontWeight: '600', color: STATUS_COLOR[o.status] ?? R.dim, background: `${STATUS_COLOR[o.status] ?? R.dim}18`, padding: '2px 7px', borderRadius: '20px', whiteSpace: 'nowrap' }}>
-                            {o.status.replace('_', ' ')}
-                          </span>
-                        </td>
-                        <td style={{ padding: '8px 10px' }}>
-                          <div style={{ display: 'flex', gap: '4px' }}>
-                            {o.status === 'aguardando' && (
-                              <button onClick={() => avancarStatus(o.id, 'em_producao')}
-                                style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '5px', border: `1px solid #003388`, background: 'rgba(0,51,136,0.12)', color: R.accent2, cursor: 'pointer', fontFamily: 'inherit', fontWeight: '600', whiteSpace: 'nowrap' }}>
-                                → Produção
-                              </button>
-                            )}
-                            {o.status === 'em_producao' && (
-                              <button onClick={() => avancarStatus(o.id, 'pronto')}
-                                style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '5px', border: `1px solid #006600`, background: 'rgba(0,102,0,0.15)', color: R.accent, cursor: 'pointer', fontFamily: 'inherit', fontWeight: '600', whiteSpace: 'nowrap' }}>
-                                ✓ Pronto
-                              </button>
-                            )}
-                            {o.status === 'pronto' && (
-                              <button onClick={() => avancarStatus(o.id, 'entregue')}
-                                style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '5px', border: `1px solid #555`, background: 'transparent', color: R.dim, cursor: 'pointer', fontFamily: 'inherit', fontWeight: '600', whiteSpace: 'nowrap' }}>
-                                Entregue
-                              </button>
-                            )}
+
+            {loadingOrdens ? (
+              <div style={{ padding: '60px', textAlign: 'center', color: R.dim, fontSize: '14px' }}>Carregando...</div>
+            ) : (
+              <div style={{ flex: 1, display: 'flex', gap: '12px', overflowX: 'auto', overflowY: 'hidden', padding: '14px 16px' }}>
+                {etapas.map(et => {
+                  const col = cards.filter(o => cardStage(o, etapas) === et.key);
+                  const isOver = dragOver === et.key;
+                  return (
+                    <div key={et.key}
+                      onDragOver={e => { e.preventDefault(); if (dragOver !== et.key) setDragOver(et.key); }}
+                      onDrop={() => { if (dragging) mover(dragging, et.key); setDragging(null); setDragOver(null); }}
+                      style={{ width: '224px', flexShrink: 0, display: 'flex', flexDirection: 'column', maxHeight: '100%',
+                        background: isOver ? `${et.color}22` : R.panel, border: `1px solid ${isOver ? et.color : '#b0aca4'}`, borderRadius: '10px', transition: 'background .12s, border-color .12s' }}>
+                      {/* topo da coluna */}
+                      <div style={{ padding: '9px 12px', borderBottom: `2px solid ${et.color}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '700', color: R.txt, textTransform: 'uppercase', letterSpacing: '0.3px' }}>
+                          <span style={{ fontSize: '13px' }}>{et.icon}</span>{et.label}
+                        </span>
+                        <span style={{ fontSize: '11px', fontWeight: '700', minWidth: '20px', height: '20px', padding: '0 5px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: col.length ? et.color : R.alt, color: col.length ? '#fff' : R.dim }}>{col.length}</span>
+                      </div>
+                      {/* cards */}
+                      <div style={{ flex: 1, overflowY: 'auto', padding: '8px', display: 'flex', flexDirection: 'column', gap: '7px' }}>
+                        {col.length === 0 ? (
+                          <div style={{ padding: '18px 8px', textAlign: 'center', fontSize: '11px', color: R.dim, border: '1px dashed #b0aca4', borderRadius: '7px' }}>
+                            {isOver ? 'Soltar aqui' : '—'}
                           </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
+                        ) : col.map(o => (
+                          <div key={o.id} draggable
+                            onDragStart={() => setDragging(o.id)}
+                            onDragEnd={() => { setDragging(null); setDragOver(null); }}
+                            style={{ opacity: dragging === o.id ? 0.4 : 1, cursor: 'grab', background: R.alt, border: `1px solid #b0aca4`, borderLeft: `3px solid ${et.color}`, borderRadius: '7px', padding: '8px 10px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', marginBottom: '3px' }}>
+                              <span style={{ fontFamily: "'Courier New', monospace", fontSize: '13px', fontWeight: '700', color: R.txt }}>#{String(o.numero).padStart(4, '0')}</span>
+                              <span style={{ fontSize: '9.5px', color: R.dim, fontFamily: "'Courier New', monospace", whiteSpace: 'nowrap' }}>{o.ref_otica || o.cont_interno || ''}</span>
+                            </div>
+                            <div style={{ fontSize: '12px', color: R.txt, fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '4px' }}>{o.otica_nome}</div>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
+                              <span style={{ fontSize: '10px', color: R.dim }}>📅 {fmtDate(o.previsao_entrega)}</span>
+                              {o.setor_desde && <span style={{ fontSize: '9.5px', color: R.dim, fontFamily: "'Courier New', monospace" }}>desde {o.setor_desde.slice(11, 16) || o.setor_desde.slice(0, 10)}</span>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </>
-        )}
+          );
+        })()}
 
         {/* ============ LANÇAR FLUXO INDIVIDUAL ============ */}
         {modo === 'individual' && (
