@@ -85,6 +85,12 @@ export default function LabFluxo() {
   const [dragging, setDragging] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<string | null>(null);
 
+  // --- DETALHE (drawer ao clicar no card) ---
+  const [detOrd, setDetOrd] = useState<OrdemFluxo | null>(null);
+  const [detData, setDetData] = useState<any>(null);
+  const [detHist, setDetHist] = useState<FluxoRecord[]>([]);
+  const [detLoading, setDetLoading] = useState(false);
+
   // --- INDIVIDUAL ---
   const [buscaOS, setBuscaOS] = useState('');
   const [ordemSel, setOrdemSel] = useState<OrdemFluxo | null>(null);
@@ -168,6 +174,32 @@ export default function LabFluxo() {
       await api.patch(`/lab/ordens/${ordId}`, { status: novoStatus });
       loadOrdens();
     } catch {}
+  }
+
+  // abre o drawer com detalhes + histórico do fluxo da OS
+  async function abrirDetalhe(o: OrdemFluxo) {
+    setDetOrd(o);
+    setDetData(null);
+    setDetHist([]);
+    setDetLoading(true);
+    try {
+      const [det, flx] = await Promise.all([
+        api.get<any>(`/lab/ordens/${o.id}`).catch(() => null),
+        api.get<{ ordem: OrdemFluxo; fluxo: FluxoRecord[] }>(`/lab/fluxo/os?q=${encodeURIComponent(String(o.numero))}`).catch(() => null),
+      ]);
+      setDetData(det);
+      setDetHist(flx?.fluxo ?? []);
+    } catch { /* ignora */ }
+    setDetLoading(false);
+  }
+  function fecharDetalhe() { setDetOrd(null); setDetData(null); setDetHist([]); }
+
+  // altera status pelo drawer (reflete no board e no card aberto)
+  async function statusDetalhe(novoStatus: string) {
+    if (!detOrd) return;
+    setDetOrd({ ...detOrd, status: novoStatus });
+    try { await api.patch(`/lab/ordens/${detOrd.id}`, { status: novoStatus }); } catch {}
+    loadOrdens();
   }
 
   const INP: React.CSSProperties = {
@@ -277,7 +309,9 @@ export default function LabFluxo() {
                           <div key={o.id} draggable
                             onDragStart={() => setDragging(o.id)}
                             onDragEnd={() => { setDragging(null); setDragOver(null); }}
-                            style={{ opacity: dragging === o.id ? 0.4 : 1, cursor: 'grab', background: R.alt, border: `1px solid #b0aca4`, borderLeft: `3px solid ${et.color}`, borderRadius: '7px', padding: '8px 10px' }}>
+                            onClick={() => abrirDetalhe(o)}
+                            title="Clique para ver detalhes"
+                            style={{ opacity: dragging === o.id ? 0.4 : 1, cursor: 'pointer', background: R.alt, border: `1px solid #b0aca4`, borderLeft: `3px solid ${et.color}`, borderRadius: '7px', padding: '8px 10px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', marginBottom: '3px' }}>
                               <span style={{ fontFamily: "'Courier New', monospace", fontSize: '13px', fontWeight: '700', color: R.txt }}>#{String(o.numero).padStart(4, '0')}</span>
                               <span style={{ fontSize: '9.5px', color: R.dim, fontFamily: "'Courier New', monospace", whiteSpace: 'nowrap' }}>{o.ref_otica || o.cont_interno || ''}</span>
@@ -437,6 +471,178 @@ export default function LabFluxo() {
           </div>
         )}
       </div>
+
+      {/* ============ DRAWER DE DETALHES DA OS ============ */}
+      {detOrd && (() => {
+        const ord = detData?.ordem ?? detOrd;
+        const rec = detData?.receita ?? [];
+        const arm = detData?.armacao;
+        const svc = detData?.servicos ?? [];
+        const od = rec.find((r: any) => r.olho === 'D');
+        const oe = rec.find((r: any) => r.olho === 'E');
+        const STS = [
+          { v: 'aguardando', l: 'Aguardando', c: '#886600' },
+          { v: 'em_producao', l: 'Em Produção', c: R.accent2 },
+          { v: 'pronto', l: 'Pronto', c: R.accent },
+          { v: 'entregue', l: 'Entregue', c: R.dim },
+          { v: 'cancelado', l: 'Cancelado', c: '#cc0000' },
+        ];
+        const stAtual = STS.find(s => s.v === ord.status);
+        const fmtNum = (v: any) => (v == null || isNaN(Number(v))) ? '—' : (Number(v) >= 0 ? '+' : '') + Number(v).toFixed(2).replace('.', ',');
+        const Row = ({ k, v }: { k: string; v: any }) => (
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', padding: '3px 0' }}>
+            <span style={{ fontSize: '11px', color: R.dim, fontWeight: '600' }}>{k}</span>
+            <span style={{ fontSize: '12px', color: R.txt, fontFamily: "'Courier New', monospace", textAlign: 'right' }}>{v ?? '—'}</span>
+          </div>
+        );
+        return (
+          <div onClick={fecharDetalhe} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', justifyContent: 'flex-end' }}>
+            <div onClick={e => e.stopPropagation()} style={{ width: '480px', maxWidth: '92vw', height: '100%', background: R.panel, borderLeft: '1px solid #b0aca4', display: 'flex', flexDirection: 'column', boxShadow: '-8px 0 24px rgba(0,0,0,0.35)' }}>
+              {/* header */}
+              <div style={{ padding: '14px 18px', borderBottom: '1px solid #b0aca4', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontFamily: "'Courier New', monospace", fontSize: '18px', fontWeight: '700', color: R.txt }}>OS #{String(ord.numero).padStart(4, '0')}</span>
+                    {stAtual && <span style={{ fontSize: '11px', fontWeight: '600', color: stAtual.c, background: `${stAtual.c}20`, padding: '2px 9px', borderRadius: '20px' }}>{stAtual.l}</span>}
+                  </div>
+                  <div style={{ fontSize: '12px', color: R.dim, marginTop: '2px', maxWidth: '360px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ord.otica_nome}</div>
+                </div>
+                <button onClick={fecharDetalhe} style={{ background: 'none', border: 'none', color: R.dim, fontSize: '22px', cursor: 'pointer', lineHeight: 1 }}>✕</button>
+              </div>
+
+              <div style={{ flex: 1, overflowY: 'auto', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {/* alterar status */}
+                <div>
+                  <div style={{ fontSize: '10px', fontWeight: '700', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '7px' }}>Alterar Status</div>
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                    {STS.map(s => (
+                      <button key={s.v} disabled={ord.status === s.v} onClick={() => statusDetalhe(s.v)}
+                        style={{ padding: '6px 12px', fontSize: '11px', fontWeight: '600', borderRadius: '20px', cursor: ord.status === s.v ? 'default' : 'pointer', fontFamily: 'inherit',
+                          background: ord.status === s.v ? `${s.c}20` : 'transparent', color: ord.status === s.v ? s.c : R.dim, border: `1px solid ${ord.status === s.v ? s.c : '#b0aca4'}` }}>
+                        {s.l}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* histórico do fluxo — o que foi feito */}
+                <div>
+                  <div style={{ fontSize: '10px', fontWeight: '700', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '7px' }}>Histórico do Fluxo — o que foi feito</div>
+                  {detLoading ? (
+                    <div style={{ fontSize: '12px', color: R.dim, padding: '8px 0' }}>Carregando...</div>
+                  ) : detHist.length === 0 ? (
+                    <div style={{ fontSize: '12px', color: R.dim, padding: '10px 12px', border: '1px dashed #b0aca4', borderRadius: '8px' }}>Nenhuma etapa registrada ainda.</div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      {detHist.map((f, i) => {
+                        const aberto = !f.termino_data;
+                        return (
+                          <div key={f.id ?? i} style={{ display: 'flex', gap: '10px', padding: '8px 10px', background: R.alt, border: `1px solid ${aberto ? R.accent : '#b0aca4'}`, borderLeft: `3px solid ${aberto ? R.accent : R.dim}`, borderRadius: '7px' }}>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span style={{ fontSize: '12px', fontWeight: '700', color: R.txt, textTransform: 'capitalize' }}>{String(f.setor).replace('_', ' ')}</span>
+                                {aberto && <span style={{ fontSize: '9px', fontWeight: '700', color: R.accent, background: `${R.accent}20`, padding: '1px 6px', borderRadius: '10px' }}>EM ANDAMENTO</span>}
+                              </div>
+                              <div style={{ fontSize: '10.5px', color: R.dim, fontFamily: "'Courier New', monospace", marginTop: '3px' }}>
+                                Entrada: {fmtDate(f.inicio_data)} {f.inicio_hora ?? ''}
+                                {f.termino_data && <> · Saída: {fmtDate(f.termino_data)} {f.termino_hora ?? ''}</>}
+                              </div>
+                              {(f.operador || f.maquina) && (
+                                <div style={{ fontSize: '10.5px', color: R.dim, marginTop: '2px' }}>
+                                  {f.operador && <>👤 {f.operador}</>}{f.operador && f.maquina && ' · '}{f.maquina && <>🖥️ {f.maquina}</>}
+                                </div>
+                              )}
+                            </div>
+                            {f.tempo_real != null && (
+                              <div style={{ fontSize: '11px', fontWeight: '700', color: R.txt, fontFamily: "'Courier New', monospace", whiteSpace: 'nowrap' }}>{f.tempo_real} min</div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* informações + armação */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div style={{ background: R.alt, border: '1px solid #b0aca4', borderRadius: '8px', padding: '12px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: '700', color: R.txt, marginBottom: '6px' }}>Informações</div>
+                    <Row k="Ref. Ótica" v={ord.ref_otica} />
+                    <Row k="Cont. Int." v={ord.cont_interno} />
+                    <Row k="Caixa" v={ord.caixa} />
+                    <Row k="Operador" v={ord.vendedor} />
+                    <Row k="Médico" v={ord.medico} />
+                    <Row k="Previsão" v={fmtDate(ord.previsao_entrega)} />
+                    <Row k="Tipo Lente" v={arm?.tipo_lente ?? ord.tipo_lente} />
+                  </div>
+                  <div style={{ background: R.alt, border: '1px solid #b0aca4', borderRadius: '8px', padding: '12px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: '700', color: R.txt, marginBottom: '6px' }}>Armação</div>
+                    {arm ? (<>
+                      <Row k="Tipo" v={arm.tipo_material ?? arm.material} />
+                      <Row k="Shape" v={arm.shape} />
+                      <Row k="Marca" v={arm.marca_material} />
+                      <Row k="Ponte" v={arm.ponte ? `${arm.ponte} mm` : null} />
+                      <Row k="Diâmetro" v={arm.diametro_final ? `${arm.diametro_final} mm` : null} />
+                      <Row k="Estojo" v={arm.estojo ? 'Sim' : 'Não'} />
+                    </>) : <div style={{ fontSize: '11px', color: R.dim }}>Sem dados</div>}
+                  </div>
+                </div>
+
+                {/* receita */}
+                {(od || oe) && (
+                  <div style={{ background: R.alt, border: '1px solid #b0aca4', borderRadius: '8px', overflow: 'hidden' }}>
+                    <div style={{ padding: '10px 12px', borderBottom: '1px solid #b0aca4', fontSize: '11px', fontWeight: '700', color: R.txt }}>Receita das Lentes</div>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr style={{ borderBottom: '1px solid #b0aca4' }}>
+                          <th></th>
+                          <th style={{ padding: '5px', fontSize: '10px', color: R.dim, fontWeight: '700' }}>OD</th>
+                          <th style={{ padding: '5px', fontSize: '10px', color: R.dim, fontWeight: '700' }}>OE</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {[
+                          ['ESF Longe', fmtNum(od?.esf_longe), fmtNum(oe?.esf_longe)],
+                          ['CIL Longe', fmtNum(od?.cil_longe), fmtNum(oe?.cil_longe)],
+                          ['Eixo', od?.eixo_longe ?? '—', oe?.eixo_longe ?? '—'],
+                          ['Adição', fmtNum(od?.adicao), fmtNum(oe?.adicao)],
+                          ['DNP', od?.dnp ?? '—', oe?.dnp ?? '—'],
+                          ['ALT', od?.alt ?? '—', oe?.alt ?? '—'],
+                        ].map(([l, d, e]) => (
+                          <tr key={l as string} style={{ borderBottom: '1px solid #b0aca4' }}>
+                            <td style={{ padding: '5px 12px', fontSize: '11px', color: R.dim, fontWeight: '600' }}>{l}</td>
+                            <td style={{ padding: '5px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.txt, textAlign: 'center' }}>{d}</td>
+                            <td style={{ padding: '5px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.txt, textAlign: 'center' }}>{e}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {/* serviços */}
+                {svc.length > 0 && (
+                  <div style={{ background: R.alt, border: '1px solid #b0aca4', borderRadius: '8px', overflow: 'hidden' }}>
+                    <div style={{ padding: '10px 12px', borderBottom: '1px solid #b0aca4', fontSize: '11px', fontWeight: '700', color: R.txt }}>Serviços</div>
+                    {svc.map((s: any, i: number) => (
+                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', padding: '7px 12px', borderBottom: '1px solid #b0aca4' }}>
+                        <span style={{ fontSize: '12px', color: R.txt }}>{s.descricao}</span>
+                        <span style={{ fontSize: '12px', color: R.dim, fontFamily: "'Courier New', monospace", whiteSpace: 'nowrap' }}>R$ {Number(s.total).toFixed(2).replace('.', ',')}</span>
+                      </div>
+                    ))}
+                    <div style={{ padding: '9px 12px', display: 'flex', justifyContent: 'flex-end' }}>
+                      <span style={{ fontSize: '14px', fontWeight: '800', color: R.txt, fontFamily: "'Courier New', monospace" }}>Total: R$ {Number(ord.total ?? 0).toFixed(2).replace('.', ',')}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* atalho para tela completa */}
+                <a href={`/lab/ordens/${ord.id}`} style={{ fontSize: '12px', color: R.accent2, textDecoration: 'none', textAlign: 'center', padding: '4px' }}>Abrir OS completa →</a>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
