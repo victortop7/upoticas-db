@@ -97,10 +97,10 @@ input, select, textarea, button { font-family: var(--sans); }
   --lab-hdr: linear-gradient(90deg, #003300, #005500);
   --lab-hdr-txt: #aaffbb;
   --lab-hdr-bdr: #1a4a1a;
-  --lab-txt: #dcdcdc;
-  --lab-accent: #33cc55;
-  --lab-accent2: #6aa3ff;
-  --lab-dim: #999999;
+  --lab-txt: #f0f0f0;
+  --lab-accent: #45d967;
+  --lab-accent2: #7db0ff;
+  --lab-dim: #b6b6b6;
   --lab-inp: #262626;
   --lab-inp-bdr: #444444;
 }
