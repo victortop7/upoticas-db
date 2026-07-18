@@ -5,17 +5,9 @@ const LenteEspessura3D = lazy(() => import('../../components/LenteEspessura3D'))
 
 type Tab = 'superficie' | 'visao' | 'fotossensivel' | 'espessura' | 'simulacao';
 
-// Telas grandes (tablet grande, desktop) usam 'cover' (imagem cheia, como era antes).
-// Telas menores (10", celular) usam 'contain' pra não cortar a lente nas laterais.
+// Imagem sempre preenche a tela toda (sem barras pretas), em qualquer tablet.
 function useFit(): 'cover' | 'contain' {
-  const calc = (): 'cover' | 'contain' => (typeof window !== 'undefined' && window.innerWidth >= 1150 ? 'cover' : 'contain');
-  const [fit, setFit] = useState<'cover' | 'contain'>(calc);
-  useEffect(() => {
-    const onR = () => setFit(calc());
-    window.addEventListener('resize', onR);
-    return () => window.removeEventListener('resize', onR);
-  }, []);
-  return fit;
+  return 'cover';
 }
 
 // Simulação por câmera desativada até ter as lentes com tratamento em fundo transparente.
