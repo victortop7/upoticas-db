@@ -194,11 +194,25 @@ export default function LabFluxo() {
   }
   function fecharDetalhe() { setDetOrd(null); setDetData(null); setDetHist([]); }
 
-  // altera status pelo drawer (reflete no board e no card aberto)
-  async function statusDetalhe(novoStatus: string) {
+  // move a OS pela esteira a partir do drawer (registra entrada/saída) + atualiza histórico
+  async function moverDetalhe(setorKey: string) {
     if (!detOrd) return;
-    setDetOrd({ ...detOrd, status: novoStatus });
-    try { await api.patch(`/lab/ordens/${detOrd.id}`, { status: novoStatus }); } catch {}
+    const novoStatus = setorKey === 'entregue' ? 'entregue' : setorKey === 'pronto' ? 'pronto' : 'em_producao';
+    setDetOrd({ ...detOrd, setor_atual: setorKey, status: novoStatus });
+    setOrdens(prev => prev.map(o => o.id === detOrd.id ? { ...o, setor_atual: setorKey, status: novoStatus, setor_desde: null } : o));
+    try { await api.post('/lab/fluxo/mover', { ordem_id: detOrd.id, setor: setorKey }); } catch {}
+    try {
+      const flx = await api.get<{ fluxo: FluxoRecord[] }>(`/lab/fluxo/os?q=${encodeURIComponent(String(detOrd.numero))}`);
+      setDetHist(flx?.fluxo ?? []);
+    } catch {}
+    loadOrdens();
+  }
+
+  // cancela a OS pelo drawer
+  async function cancelarDetalhe() {
+    if (!detOrd) return;
+    setDetOrd({ ...detOrd, status: 'cancelado' });
+    try { await api.patch(`/lab/ordens/${detOrd.id}`, { status: 'cancelado' }); } catch {}
     loadOrdens();
   }
 
@@ -488,6 +502,8 @@ export default function LabFluxo() {
           { v: 'cancelado', l: 'Cancelado', c: '#cc0000' },
         ];
         const stAtual = STS.find(s => s.v === ord.status);
+        const etapasDet = FLUXOS[flowOf(ord)];
+        const etapaAtual = cardStage(ord, etapasDet);
         const fmtNum = (v: any) => (v == null || isNaN(Number(v))) ? '—' : (Number(v) >= 0 ? '+' : '') + Number(v).toFixed(2).replace('.', ',');
         const Row = ({ k, v }: { k: string; v: any }) => (
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', padding: '1.5px 0' }}>
@@ -511,17 +527,25 @@ export default function LabFluxo() {
               </div>
 
               <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '11px' }}>
-                {/* alterar status */}
+                {/* mover pela esteira — etapas do funil */}
                 <div>
-                  <div style={{ fontSize: '10px', fontWeight: '700', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '5px' }}>Alterar Status</div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '5px' }}>
+                    <span style={{ fontSize: '10px', fontWeight: '700', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Mover para Etapa — {flowOf(ord) === 'progressiva' ? 'Progressiva' : 'Visão Simples'}</span>
+                    {ord.status !== 'cancelado'
+                      ? <button onClick={cancelarDetalhe} style={{ background: 'none', border: 'none', color: '#cc0000', fontSize: '10.5px', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar OS</button>
+                      : <span style={{ fontSize: '10.5px', fontWeight: '700', color: '#cc0000' }}>CANCELADA</span>}
+                  </div>
                   <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
-                    {STS.map(s => (
-                      <button key={s.v} disabled={ord.status === s.v} onClick={() => statusDetalhe(s.v)}
-                        style={{ padding: '5px 11px', fontSize: '11px', fontWeight: '600', borderRadius: '20px', cursor: ord.status === s.v ? 'default' : 'pointer', fontFamily: 'inherit',
-                          background: ord.status === s.v ? `${s.c}20` : 'transparent', color: ord.status === s.v ? s.c : R.dim, border: `1px solid ${ord.status === s.v ? s.c : '#b0aca4'}` }}>
-                        {s.l}
-                      </button>
-                    ))}
+                    {etapasDet.map(et => {
+                      const ativo = etapaAtual === et.key && ord.status !== 'cancelado';
+                      return (
+                        <button key={et.key} disabled={ativo} onClick={() => moverDetalhe(et.key)}
+                          style={{ padding: '5px 11px', fontSize: '11px', fontWeight: '600', borderRadius: '20px', cursor: ativo ? 'default' : 'pointer', fontFamily: 'inherit', display: 'inline-flex', alignItems: 'center', gap: '5px',
+                            background: ativo ? et.color : 'transparent', color: ativo ? '#fff' : R.dim, border: `1px solid ${ativo ? et.color : '#b0aca4'}` }}>
+                          <span style={{ fontSize: '11px' }}>{et.icon}</span>{et.label}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
