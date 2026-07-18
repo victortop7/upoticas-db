@@ -1,6 +1,7 @@
 ﻿import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
+import { R } from '../../lib/labTheme';
 
 interface Fechamento {
   id: string; numero: number; otica_id: string; otica_nome: string;
@@ -25,8 +26,8 @@ function mesAtual() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
-const INP: React.CSSProperties = { padding: '7px 10px', fontSize: '13px', background: '#fff', border: '1px solid #b0aca4', borderRadius:  0, color: '#000', outline: 'none', fontFamily: "'Courier New', monospace", width: '100%', boxSizing: 'border-box' };
-const LBL: React.CSSProperties = { fontSize: '11px', fontWeight: '600', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '4px' };
+const INP: React.CSSProperties = { padding: '7px 10px', fontSize: '13px', background: R.inp, border: '1px solid #b0aca4', borderRadius:  0, color: R.txt, outline: 'none', fontFamily: "'Courier New', monospace", width: '100%', boxSizing: 'border-box' };
+const LBL: React.CSSProperties = { fontSize: '11px', fontWeight: '600', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '4px' };
 const STATUS_COLOR: Record<string, string> = { aberto: '#886600', emitido: '#003388', pago: '#006600' };
 
 export default function LabFaturamento() {
@@ -106,8 +107,8 @@ export default function LabFaturamento() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
 
       {/* Header */}
-      <div style={{ padding: '12px 20px', borderBottom: '1px solid #b0aca4', background: '#d4d0c8', display: 'flex', gap: '12px', alignItems: 'center' }}>
-        <h2 style={{ margin: 0, fontSize: '17px', fontWeight: '700', color: '#000' }}>Faturamento</h2>
+      <div style={{ padding: '12px 20px', borderBottom: '1px solid #b0aca4', background: R.panel, display: 'flex', gap: '12px', alignItems: 'center' }}>
+        <h2 style={{ margin: 0, fontSize: '17px', fontWeight: '700', color: R.txt }}>Faturamento</h2>
         <div style={{ display: 'flex', gap: '4px' }}>
           {[['fechamentos', 'Fechamentos'], ['gerar', 'Gerar Fechamento']].map(([v, l]) => (
             <button key={v} onClick={() => setAba(v as 'fechamentos' | 'gerar')}
@@ -118,7 +119,7 @@ export default function LabFaturamento() {
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '16px', fontSize: '12px', fontFamily: "'Courier New', monospace" }}>
           <span style={{ color: '#886600' }}>A receber: <b>{brl(totalAberto)}</b></span>
-          <span style={{ color: '#006600' }}>Recebido: <b>{brl(totalPago)}</b></span>
+          <span style={{ color: R.accent }}>Recebido: <b>{brl(totalPago)}</b></span>
         </div>
       </div>
 
@@ -127,33 +128,33 @@ export default function LabFaturamento() {
         <>
           <div style={{ padding: '8px 20px', borderBottom: '1px solid #b0aca4', display: 'flex', gap: '8px' }}>
             {[['', 'Todos'], ['aberto', 'Em Aberto'], ['emitido', 'Emitidos'], ['pago', 'Pagos']].map(([v, l]) => (
-              <button key={v} onClick={() => setStatusFiltro(v)} style={{ padding: '4px 12px', fontSize: '11px', fontWeight: '600', borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${statusFiltro === v ? '#b8b4ac' : '#b0aca4'}`, background: statusFiltro === v ? '#dedad2' : 'transparent', color: statusFiltro === v ? '#000' : '#666' }}>{l}</button>
+              <button key={v} onClick={() => setStatusFiltro(v)} style={{ padding: '4px 12px', fontSize: '11px', fontWeight: '600', borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${statusFiltro === v ? '#b8b4ac' : '#b0aca4'}`, background: statusFiltro === v ? R.alt : 'transparent', color: statusFiltro === v ? '#000' : '#666' }}>{l}</button>
             ))}
           </div>
           <div style={{ flex: 1, overflowY: 'auto' }}>
-            {loading ? <div style={{ padding: '60px', textAlign: 'center', color: '#666' }}>Carregando...</div>
-              : fechamentos.length === 0 ? <div style={{ padding: '60px', textAlign: 'center', color: '#666' }}>Nenhum fechamento. Use "Gerar Fechamento" para criar.</div>
+            {loading ? <div style={{ padding: '60px', textAlign: 'center', color: R.dim }}>Carregando...</div>
+              : fechamentos.length === 0 ? <div style={{ padding: '60px', textAlign: 'center', color: R.dim }}>Nenhum fechamento. Use "Gerar Fechamento" para criar.</div>
               : <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead style={{ position: 'sticky', top: 0 }}>
-                    <tr style={{ background: '#dedad2', borderBottom: '1px solid #b0aca4' }}>
+                    <tr style={{ background: R.alt, borderBottom: '1px solid #b0aca4' }}>
                       {['Nº', 'Ótica', 'Período', 'OS', 'Bruto', 'Desconto', 'Líquido', 'Vencimento', 'Status', ''].map(h => (
-                        <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: '10px', fontWeight: '600', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>{h}</th>
+                        <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: '10px', fontWeight: '600', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {fechamentos.map(f => (
                       <tr key={f.id} style={{ borderBottom: '1px solid #b0aca4' }}
-                        onMouseEnter={e => (e.currentTarget.style.background = '#dedad2')}
+                        onMouseEnter={e => (e.currentTarget.style.background = R.alt)}
                         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                        <td style={{ padding: '9px 12px', fontFamily: "'Courier New', monospace", fontSize: '12px', color: '#555' }}>#{String(f.numero).padStart(4,'0')}</td>
-                        <td style={{ padding: '9px 12px', fontSize: '13px', color: '#000', maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.otica_nome}</td>
-                        <td style={{ padding: '9px 12px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#555', whiteSpace: 'nowrap' }}>{fmtDate(f.periodo_ini)} – {fmtDate(f.periodo_fim)}</td>
-                        <td style={{ padding: '9px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: '#555', textAlign: 'center' }}>{f.qtd_os}</td>
-                        <td style={{ padding: '9px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: '#555', textAlign: 'right' }}>{brl(f.valor_bruto)}</td>
+                        <td style={{ padding: '9px 12px', fontFamily: "'Courier New', monospace", fontSize: '12px', color: R.dim }}>#{String(f.numero).padStart(4,'0')}</td>
+                        <td style={{ padding: '9px 12px', fontSize: '13px', color: R.txt, maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.otica_nome}</td>
+                        <td style={{ padding: '9px 12px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim, whiteSpace: 'nowrap' }}>{fmtDate(f.periodo_ini)} – {fmtDate(f.periodo_fim)}</td>
+                        <td style={{ padding: '9px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim, textAlign: 'center' }}>{f.qtd_os}</td>
+                        <td style={{ padding: '9px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim, textAlign: 'right' }}>{brl(f.valor_bruto)}</td>
                         <td style={{ padding: '9px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: '#cc0000', textAlign: 'right' }}>{f.desconto > 0 ? brl(f.desconto) : '—'}</td>
-                        <td style={{ padding: '9px 12px', fontSize: '13px', fontFamily: "'Courier New', monospace", fontWeight: '700', color: '#000', textAlign: 'right' }}>{brl(f.valor_liquido)}</td>
-                        <td style={{ padding: '9px 12px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#555', whiteSpace: 'nowrap' }}>{fmtDate(f.data_vencimento)}</td>
+                        <td style={{ padding: '9px 12px', fontSize: '13px', fontFamily: "'Courier New', monospace", fontWeight: '700', color: R.txt, textAlign: 'right' }}>{brl(f.valor_liquido)}</td>
+                        <td style={{ padding: '9px 12px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim, whiteSpace: 'nowrap' }}>{fmtDate(f.data_vencimento)}</td>
                         <td style={{ padding: '9px 12px' }}>
                           <span style={{ fontSize: '10px', fontWeight: '600', color: STATUS_COLOR[f.status], background: `${STATUS_COLOR[f.status]}18`, padding: '2px 7px', borderRadius: '20px' }}>
                             {f.status === 'aberto' ? 'Em Aberto' : f.status === 'emitido' ? 'Emitido' : 'Pago'}
@@ -161,8 +162,8 @@ export default function LabFaturamento() {
                         </td>
                         <td style={{ padding: '9px 12px' }}>
                           <div style={{ display: 'flex', gap: '4px' }}>
-                            {f.status !== 'pago' && <button onClick={() => marcarPago(f.id)} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', border: '1px solid #006600', background: 'rgba(0,102,0,0.15)', color: '#006600', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>Pago</button>}
-                            <button onClick={() => navigate(`/lab/ordens?otica_id=${f.otica_id}`)} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', border: '1px solid #b0aca4', background: 'transparent', color: '#666', cursor: 'pointer', fontFamily: 'inherit' }}>OS →</button>
+                            {f.status !== 'pago' && <button onClick={() => marcarPago(f.id)} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', border: '1px solid #006600', background: 'rgba(0,102,0,0.15)', color: R.accent, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>Pago</button>}
+                            <button onClick={() => navigate(`/lab/ordens?otica_id=${f.otica_id}`)} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', border: '1px solid #b0aca4', background: 'transparent', color: R.dim, cursor: 'pointer', fontFamily: 'inherit' }}>OS →</button>
                           </div>
                         </td>
                       </tr>
@@ -176,7 +177,7 @@ export default function LabFaturamento() {
       {/* ABA: GERAR */}
       {aba === 'gerar' && (
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
-          <div style={{ background: '#d4d0c8', border: '1px solid #b0aca4', borderRadius: '10px', padding: '16px', marginBottom: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+          <div style={{ background: R.panel, border: '1px solid #b0aca4', borderRadius: '10px', padding: '16px', marginBottom: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
             <div>
               <label style={LBL}>Mês de Referência</label>
               <input type="month" value={mes} onChange={e => setMes(e.target.value)} style={{ ...INP, width: '160px' }} />
@@ -202,15 +203,15 @@ export default function LabFaturamento() {
           </div>
 
           {resumo.length > 0 && (
-            <div style={{ background: '#d4d0c8', border: '1px solid #b0aca4', borderRadius: '10px' }}>
-              <div style={{ padding: '12px 16px', borderBottom: '1px solid #b0aca4', fontSize: '12px', fontWeight: '700', color: '#000' }}>
+            <div style={{ background: R.panel, border: '1px solid #b0aca4', borderRadius: '10px' }}>
+              <div style={{ padding: '12px 16px', borderBottom: '1px solid #b0aca4', fontSize: '12px', fontWeight: '700', color: R.txt }}>
                 OSes do período — {mes} ({resumo.reduce((a, r) => a + r.qtd_os, 0)} OS, {brl(resumo.reduce((a, r) => a + r.valor_total, 0))})
               </div>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr style={{ background: '#dedad2', borderBottom: '1px solid #b0aca4' }}>
+                  <tr style={{ background: R.alt, borderBottom: '1px solid #b0aca4' }}>
                     {['Ótica', 'Qtd OS', 'Valor Total', 'Líquido (c/ desconto)', ''].map(h => (
-                      <th key={h} style={{ padding: '8px 14px', textAlign: 'left', fontSize: '10px', fontWeight: '600', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
+                      <th key={h} style={{ padding: '8px 14px', textAlign: 'left', fontSize: '10px', fontWeight: '600', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -220,10 +221,10 @@ export default function LabFaturamento() {
                     const liq = Math.max(0, r.valor_total - desc);
                     return (
                       <tr key={r.otica_id} style={{ borderBottom: '1px solid #b0aca4' }}>
-                        <td style={{ padding: '12px 14px', fontSize: '13px', fontWeight: '600', color: '#000' }}>{r.otica_nome}</td>
-                        <td style={{ padding: '12px 14px', fontSize: '13px', fontFamily: "'Courier New', monospace", color: '#555', textAlign: 'center' }}>{r.qtd_os}</td>
-                        <td style={{ padding: '12px 14px', fontSize: '13px', fontFamily: "'Courier New', monospace", color: '#000' }}>{brl(r.valor_total)}</td>
-                        <td style={{ padding: '12px 14px', fontSize: '13px', fontFamily: "'Courier New', monospace", fontWeight: '700', color: '#006600' }}>{brl(liq)}</td>
+                        <td style={{ padding: '12px 14px', fontSize: '13px', fontWeight: '600', color: R.txt }}>{r.otica_nome}</td>
+                        <td style={{ padding: '12px 14px', fontSize: '13px', fontFamily: "'Courier New', monospace", color: R.dim, textAlign: 'center' }}>{r.qtd_os}</td>
+                        <td style={{ padding: '12px 14px', fontSize: '13px', fontFamily: "'Courier New', monospace", color: R.txt }}>{brl(r.valor_total)}</td>
+                        <td style={{ padding: '12px 14px', fontSize: '13px', fontFamily: "'Courier New', monospace", fontWeight: '700', color: R.accent }}>{brl(liq)}</td>
                         <td style={{ padding: '12px 14px' }}>
                           <button
                             onClick={() => gerarFechamento(r.otica_id, r.qtd_os, r.valor_total)}

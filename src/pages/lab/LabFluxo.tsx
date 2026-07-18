@@ -1,5 +1,6 @@
 ﻿import { useEffect, useState, useCallback } from 'react';
 import { api } from '../../lib/api';
+import { R } from '../../lib/labTheme';
 
 interface OrdemFluxo {
   id: string; numero: number; status: string; tipo: string;
@@ -130,11 +131,11 @@ export default function LabFluxo() {
 
   const INP: React.CSSProperties = {
     padding: '6px 9px', fontSize: '12px',
-    background: '#fff', border: '1px solid #b0aca4',
-    borderRadius:  0, color: '#000', outline: 'none', width: '100%', boxSizing: 'border-box',
+    background: R.inp, border: '1px solid #b0aca4',
+    borderRadius:  0, color: R.txt, outline: 'none', width: '100%', boxSizing: 'border-box',
     fontFamily: "'Courier New', monospace",
   };
-  const LBL: React.CSSProperties = { fontSize: '10px', fontWeight: '600', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '3px' };
+  const LBL: React.CSSProperties = { fontSize: '10px', fontWeight: '600', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '3px' };
 
   const filtrados = ordens.filter(o =>
     !busca || o.otica_nome?.toLowerCase().includes(busca.toLowerCase()) ||
@@ -146,8 +147,8 @@ export default function LabFluxo() {
     <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
 
       {/* ===== MENU ESQUERDO ===== */}
-      <div style={{ width: '200px', flexShrink: 0, background: '#d4d0c8', borderRight: '1px solid #b0aca4', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ padding: '12px 14px', borderBottom: '1px solid #b0aca4', fontSize: '10px', fontWeight: '700', color: '#666', textTransform: 'uppercase', letterSpacing: '1px' }}>
+      <div style={{ width: '200px', flexShrink: 0, background: R.panel, borderRight: '1px solid #b0aca4', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ padding: '12px 14px', borderBottom: '1px solid #b0aca4', fontSize: '10px', fontWeight: '700', color: R.dim, textTransform: 'uppercase', letterSpacing: '1px' }}>
           Controle de Fluxo
         </div>
         {MODO_OPTS.map(m => (
@@ -158,22 +159,22 @@ export default function LabFluxo() {
               padding: '10px 14px', cursor: 'pointer', fontSize: '12px', borderBottom: '1px solid #b0aca4',
               fontWeight: modo === m.key ? '700' : '400',
               color: modo === m.key ? '#000' : '#555',
-              background: modo === m.key ? '#dedad2' : 'transparent',
+              background: modo === m.key ? R.alt : 'transparent',
               display: 'flex', justifyContent: 'space-between',
             }}
           >
             <span>{m.label}</span>
-            <span style={{ fontFamily: "'Courier New', monospace", color: '#666', fontSize: '11px' }}>{m.num}</span>
+            <span style={{ fontFamily: "'Courier New', monospace", color: R.dim, fontSize: '11px' }}>{m.num}</span>
           </div>
         ))}
 
         {/* Legenda status */}
         <div style={{ padding: '14px', marginTop: 'auto', borderTop: '1px solid #b0aca4' }}>
-          <div style={{ fontSize: '10px', fontWeight: '700', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Legenda</div>
+          <div style={{ fontSize: '10px', fontWeight: '700', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Legenda</div>
           {[['aguardando', 'Aguardando'], ['em_producao', 'Em Produção'], ['pronto', 'Pronto']].map(([k, l]) => (
             <div key={k} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
               <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: STATUS_COLOR[k], flexShrink: 0 }} />
-              <span style={{ fontSize: '11px', color: '#555' }}>{l}</span>
+              <span style={{ fontSize: '11px', color: R.dim }}>{l}</span>
             </div>
           ))}
         </div>
@@ -185,8 +186,8 @@ export default function LabFluxo() {
         {/* ============ CONSULTA / PRODUÇÃO ============ */}
         {modo === 'consulta' && (
           <>
-            <div style={{ padding: '12px 20px', borderBottom: '1px solid #b0aca4', background: '#d4d0c8', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-              <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#000', marginRight: '8px' }}>Fila de Produção</h2>
+            <div style={{ padding: '12px 20px', borderBottom: '1px solid #b0aca4', background: R.panel, display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: R.txt, marginRight: '8px' }}>Fila de Produção</h2>
               <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar OS, ótica, ref..." style={{ ...INP, width: '200px' }} />
               {['aguardando', 'em_producao', 'pronto', ''].map((s, i) => {
                 const labels = ['Aguardando', 'Em Produção', 'Pronto', 'Todos'];
@@ -200,33 +201,33 @@ export default function LabFluxo() {
             </div>
             <div style={{ flex: 1, overflowY: 'auto' }}>
               {loadingOrdens ? (
-                <div style={{ padding: '60px', textAlign: 'center', color: '#666', fontSize: '14px' }}>Carregando...</div>
+                <div style={{ padding: '60px', textAlign: 'center', color: R.dim, fontSize: '14px' }}>Carregando...</div>
               ) : filtrados.length === 0 ? (
-                <div style={{ padding: '60px', textAlign: 'center', color: '#666', fontSize: '14px' }}>Nenhuma OS na fila.</div>
+                <div style={{ padding: '60px', textAlign: 'center', color: R.dim, fontSize: '14px' }}>Nenhuma OS na fila.</div>
               ) : (
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead style={{ position: 'sticky', top: 0 }}>
-                    <tr style={{ background: '#dedad2', borderBottom: '1px solid #b0aca4' }}>
+                    <tr style={{ background: R.alt, borderBottom: '1px solid #b0aca4' }}>
                       {['OS', 'Ótica', 'Ref.', 'C/Int.', 'Caixa', 'Entrada', 'Previsão', 'Lente', 'Status', 'Ação'].map(h => (
-                        <th key={h} style={{ padding: '8px 10px', textAlign: 'left', fontSize: '10px', fontWeight: '600', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>{h}</th>
+                        <th key={h} style={{ padding: '8px 10px', textAlign: 'left', fontSize: '10px', fontWeight: '600', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {filtrados.map(o => (
                       <tr key={o.id} style={{ borderBottom: '1px solid #b0aca4' }}
-                        onMouseEnter={e => (e.currentTarget.style.background = '#dedad2')}
+                        onMouseEnter={e => (e.currentTarget.style.background = R.alt)}
                         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                        <td style={{ padding: '8px 10px', fontFamily: "'Courier New', monospace", fontSize: '13px', fontWeight: '700', color: '#000', whiteSpace: 'nowrap' }}>
+                        <td style={{ padding: '8px 10px', fontFamily: "'Courier New', monospace", fontSize: '13px', fontWeight: '700', color: R.txt, whiteSpace: 'nowrap' }}>
                           #{String(o.numero).padStart(4, '0')}
                         </td>
-                        <td style={{ padding: '8px 10px', fontSize: '12px', color: '#000', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.otica_nome}</td>
-                        <td style={{ padding: '8px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#555' }}>{o.ref_otica ?? '—'}</td>
-                        <td style={{ padding: '8px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#555' }}>{o.cont_interno ?? '—'}</td>
-                        <td style={{ padding: '8px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#555' }}>{o.caixa ?? '—'}</td>
-                        <td style={{ padding: '8px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#555', whiteSpace: 'nowrap' }}>{fmtDt(o.created_at)}</td>
-                        <td style={{ padding: '8px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#555', whiteSpace: 'nowrap' }}>{fmtDate(o.previsao_entrega)}</td>
-                        <td style={{ padding: '8px 10px', fontSize: '11px', color: '#555' }}>{o.tipo_lente ?? o.marca_material ?? '—'}</td>
+                        <td style={{ padding: '8px 10px', fontSize: '12px', color: R.txt, maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.otica_nome}</td>
+                        <td style={{ padding: '8px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim }}>{o.ref_otica ?? '—'}</td>
+                        <td style={{ padding: '8px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim }}>{o.cont_interno ?? '—'}</td>
+                        <td style={{ padding: '8px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim }}>{o.caixa ?? '—'}</td>
+                        <td style={{ padding: '8px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim, whiteSpace: 'nowrap' }}>{fmtDt(o.created_at)}</td>
+                        <td style={{ padding: '8px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim, whiteSpace: 'nowrap' }}>{fmtDate(o.previsao_entrega)}</td>
+                        <td style={{ padding: '8px 10px', fontSize: '11px', color: R.dim }}>{o.tipo_lente ?? o.marca_material ?? '—'}</td>
                         <td style={{ padding: '8px 10px' }}>
                           <span style={{ fontSize: '10px', fontWeight: '600', color: STATUS_COLOR[o.status] ?? '#555', background: `${STATUS_COLOR[o.status] ?? '#555'}18`, padding: '2px 7px', borderRadius: '20px', whiteSpace: 'nowrap' }}>
                             {o.status.replace('_', ' ')}
@@ -236,19 +237,19 @@ export default function LabFluxo() {
                           <div style={{ display: 'flex', gap: '4px' }}>
                             {o.status === 'aguardando' && (
                               <button onClick={() => avancarStatus(o.id, 'em_producao')}
-                                style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '5px', border: `1px solid #003388`, background: 'rgba(0,51,136,0.12)', color: '#003388', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '600', whiteSpace: 'nowrap' }}>
+                                style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '5px', border: `1px solid #003388`, background: 'rgba(0,51,136,0.12)', color: R.accent2, cursor: 'pointer', fontFamily: 'inherit', fontWeight: '600', whiteSpace: 'nowrap' }}>
                                 → Produção
                               </button>
                             )}
                             {o.status === 'em_producao' && (
                               <button onClick={() => avancarStatus(o.id, 'pronto')}
-                                style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '5px', border: `1px solid #006600`, background: 'rgba(0,102,0,0.15)', color: '#006600', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '600', whiteSpace: 'nowrap' }}>
+                                style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '5px', border: `1px solid #006600`, background: 'rgba(0,102,0,0.15)', color: R.accent, cursor: 'pointer', fontFamily: 'inherit', fontWeight: '600', whiteSpace: 'nowrap' }}>
                                 ✓ Pronto
                               </button>
                             )}
                             {o.status === 'pronto' && (
                               <button onClick={() => avancarStatus(o.id, 'entregue')}
-                                style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '5px', border: `1px solid #555`, background: 'transparent', color: '#555', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '600', whiteSpace: 'nowrap' }}>
+                                style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '5px', border: `1px solid #555`, background: 'transparent', color: R.dim, cursor: 'pointer', fontFamily: 'inherit', fontWeight: '600', whiteSpace: 'nowrap' }}>
                                 Entregue
                               </button>
                             )}
@@ -270,7 +271,7 @@ export default function LabFluxo() {
             {/* LEFT: busca + dados OS */}
             <div style={{ width: '300px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {/* Busca OS */}
-              <div style={{ background: '#d4d0c8', border: '1px solid #b0aca4', borderRadius: '10px', padding: '14px' }}>
+              <div style={{ background: R.panel, border: '1px solid #b0aca4', borderRadius: '10px', padding: '14px' }}>
                 <label style={LBL}>Buscar OS (número, ref, cont. interno)</label>
                 <div style={{ display: 'flex', gap: '6px' }}>
                   <input value={buscaOS} onChange={e => setBuscaOS(e.target.value)} onKeyDown={e => e.key === 'Enter' && buscarOS()} style={INP} placeholder="Ex: 321 / JOSE / 000324" />
@@ -282,8 +283,8 @@ export default function LabFluxo() {
 
               {/* Dados da OS */}
               {ordemSel && (
-                <div style={{ background: '#d4d0c8', border: '1px solid #b0aca4', borderRadius: '10px', padding: '14px' }}>
-                  <div style={{ fontSize: '11px', fontWeight: '700', color: '#000', marginBottom: '10px' }}>
+                <div style={{ background: R.panel, border: '1px solid #b0aca4', borderRadius: '10px', padding: '14px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: R.txt, marginBottom: '10px' }}>
                     OS #{String(ordemSel.numero).padStart(4, '0')} — {ordemSel.otica_nome}
                   </div>
                   {[
@@ -299,8 +300,8 @@ export default function LabFluxo() {
                     ['Status', ordemSel.status.replace('_', ' ')],
                   ].map(([l, v]) => (
                     <div key={l} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                      <span style={{ fontSize: '10px', color: '#666', fontWeight: '600', textTransform: 'uppercase' }}>{l}</span>
-                      <span style={{ fontSize: '12px', fontFamily: "'Courier New', monospace", color: '#000' }}>{v}</span>
+                      <span style={{ fontSize: '10px', color: R.dim, fontWeight: '600', textTransform: 'uppercase' }}>{l}</span>
+                      <span style={{ fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.txt }}>{v}</span>
                     </div>
                   ))}
                 </div>
@@ -308,17 +309,17 @@ export default function LabFluxo() {
 
               {/* Histórico de fluxo */}
               {fluxoRecords.length > 0 && (
-                <div style={{ background: '#d4d0c8', border: '1px solid #b0aca4', borderRadius: '10px', padding: '14px' }}>
-                  <div style={{ fontSize: '11px', fontWeight: '700', color: '#000', marginBottom: '10px' }}>Histórico de Setores</div>
+                <div style={{ background: R.panel, border: '1px solid #b0aca4', borderRadius: '10px', padding: '14px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: R.txt, marginBottom: '10px' }}>Histórico de Setores</div>
                   {fluxoRecords.map(f => (
                     <div key={f.id} style={{ padding: '7px 0', borderBottom: '1px solid #b0aca4', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>
-                        <div style={{ fontSize: '12px', fontWeight: '600', color: '#000' }}>{f.setor}</div>
-                        <div style={{ fontSize: '10px', color: '#666' }}>{f.operador ?? '—'} · {f.maquina ?? '—'}</div>
+                        <div style={{ fontSize: '12px', fontWeight: '600', color: R.txt }}>{f.setor}</div>
+                        <div style={{ fontSize: '10px', color: R.dim }}>{f.operador ?? '—'} · {f.maquina ?? '—'}</div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '10px', fontFamily: "'Courier New', monospace", color: '#555' }}>{f.inicio_hora} {fmtDate(f.inicio_data)}</div>
-                        {f.termino_hora && <div style={{ fontSize: '10px', fontFamily: "'Courier New', monospace", color: '#006600' }}>→ {f.termino_hora} {fmtDate(f.termino_data)}</div>}
+                        <div style={{ fontSize: '10px', fontFamily: "'Courier New', monospace", color: R.dim }}>{f.inicio_hora} {fmtDate(f.inicio_data)}</div>
+                        {f.termino_hora && <div style={{ fontSize: '10px', fontFamily: "'Courier New', monospace", color: R.accent }}>→ {f.termino_hora} {fmtDate(f.termino_data)}</div>}
                       </div>
                     </div>
                   ))}
@@ -329,12 +330,12 @@ export default function LabFluxo() {
             {/* RIGHT: Formulário lançar fluxo */}
             <div style={{ flex: 1 }}>
               {!ordemSel ? (
-                <div style={{ padding: '60px', textAlign: 'center', color: '#666', fontSize: '13px' }}>
+                <div style={{ padding: '60px', textAlign: 'center', color: R.dim, fontSize: '13px' }}>
                   Busque uma OS pelo número, referência ou controle interno
                 </div>
               ) : (
-                <div style={{ background: '#d4d0c8', border: '1px solid #b0aca4', borderRadius: '10px', padding: '18px' }}>
-                  <div style={{ fontSize: '12px', fontWeight: '700', color: '#000', marginBottom: '14px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                <div style={{ background: R.panel, border: '1px solid #b0aca4', borderRadius: '10px', padding: '18px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: '700', color: R.txt, marginBottom: '14px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                     Lançar Entrada/Saída de Setor
                   </div>
 
@@ -368,7 +369,7 @@ export default function LabFluxo() {
                   </div>
 
                   {/* Início */}
-                  <div style={{ fontSize: '11px', fontWeight: '700', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', marginTop: '4px' }}>Início</div>
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', marginTop: '4px' }}>Início</div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '10px' }}>
                     <div><label style={LBL}>Data</label><input type="date" value={inicioDt} onChange={e => setInicioDt(e.target.value)} style={INP} /></div>
                     <div><label style={LBL}>Hora</label><input type="time" value={inicioHr} onChange={e => setInicioHr(e.target.value)} style={INP} /></div>
@@ -376,7 +377,7 @@ export default function LabFluxo() {
                   </div>
 
                   {/* Término */}
-                  <div style={{ fontSize: '11px', fontWeight: '700', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>Término (opcional)</div>
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>Término (opcional)</div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
                     <div><label style={LBL}>Data</label><input type="date" value={terminoDt} onChange={e => setTerminoDt(e.target.value)} style={INP} /></div>
                     <div><label style={LBL}>Hora</label><input type="time" value={terminoHr} onChange={e => setTerminoHr(e.target.value)} style={INP} /></div>
@@ -385,7 +386,7 @@ export default function LabFluxo() {
                   <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                     <button
                       onClick={() => avancarStatus(ordemSel.id, ordemSel.status === 'aguardando' ? 'em_producao' : ordemSel.status === 'em_producao' ? 'pronto' : 'entregue')}
-                      style={{ padding: '8px 16px', fontSize: '12px', fontWeight: '600', background: '#dedad2', color: '#555', border: '1px solid #b0aca4', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                      style={{ padding: '8px 16px', fontSize: '12px', fontWeight: '600', background: R.alt, color: R.dim, border: '1px solid #b0aca4', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>
                       Avançar Status
                     </button>
                     <button

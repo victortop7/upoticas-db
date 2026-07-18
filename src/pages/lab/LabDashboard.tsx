@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { R } from '../../lib/labTheme';
 import { useAuth } from '../../hooks/useAuth';
 import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
@@ -27,9 +28,9 @@ export default function LabDashboard() {
     return () => window.removeEventListener('labtheme', handler);
   }, []);
 
-  const panelBg   = dark ? '#1c1c1c' : '#d4d0c8';
-  const rowEven   = dark ? '#1c1c1c' : '#d4d0c8';
-  const rowOdd    = dark ? '#222222' : '#dedad2';
+  const panelBg   = dark ? '#1c1c1c' : R.panel;
+  const rowEven   = dark ? '#1c1c1c' : R.panel;
+  const rowOdd    = dark ? '#222222' : R.alt;
   const rowBorder = dark ? '#333333' : '#b0aca4';
   const txtMain   = dark ? '#d8d8d8' : '#000000';
   const accentTxt = dark ? '#66cc77' : '#005500';
@@ -43,7 +44,7 @@ export default function LabDashboard() {
   }
 
   return (
-    <div style={{ minHeight: '100%', background: dark ? '#111' : '#c8c4b0', padding: '16px', fontFamily: "'Montserrat', sans-serif" }}>
+    <div style={{ minHeight: '100%', background: dark ? '#111' : R.bg, padding: '16px', fontFamily: "'Montserrat', sans-serif" }}>
       <div style={{ width: '200px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
 
         {/* Logo */}
@@ -95,7 +96,7 @@ export default function LabDashboard() {
         {/* Dark mode + versão */}
         <div style={{ background: panelBg, border: `2px inset ${dark ? '#444' : '#808080'}`, padding: '8px 10px', fontSize: '10px', color: dark ? '#aaa' : '#404040', textAlign: 'center' }}>
           <button onClick={toggleDark}
-            style={{ width: '100%', padding: '4px 6px', marginBottom: '8px', background: dark ? '#333' : '#c8c4b0', border: `1px outset ${dark ? '#555' : '#a0a098'}`, fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer', color: dark ? '#ccffcc' : '#000', fontWeight: '700' }}>
+            style={{ width: '100%', padding: '4px 6px', marginBottom: '8px', background: dark ? '#333' : R.bg, border: `1px outset ${dark ? '#555' : '#a0a098'}`, fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer', color: dark ? '#ccffcc' : '#000', fontWeight: '700' }}>
             {dark ? '☀️ MODO CLARO' : '🌙 MODO NOTURNO'}
           </button>
           <div style={{ fontWeight: '700', color: accentTxt, marginBottom: '4px' }}>Connect LAB</div>

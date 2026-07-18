@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { R } from '../../lib/labTheme';
 import { useSearchParams } from 'react-router-dom';
 
 type Opcao = 'numeracao' | 'dados_lab' | 'parametros' | 'tabelas' | 'transportadoras' | 'vendedores' | null;
@@ -58,14 +59,14 @@ const S = {
   }),
   panelBody: (): React.CSSProperties => ({
     border: '2px inset #808080',
-    background: '#d4d0c8',
+    background: R.panel,
   }),
   row: (active: boolean, i: number): React.CSSProperties => ({
     display: 'flex',
     alignItems: 'center',
     padding: '5px 8px',
     cursor: 'pointer',
-    background: active ? '#005500' : (i % 2 === 0 ? '#d4d0c8' : '#dedad2'),
+    background: active ? '#005500' : (i % 2 === 0 ? R.panel : R.alt),
     color: active ? '#ffffff' : '#000000',
     borderBottom: '1px solid #b0acA4',
     userSelect: 'none' as const,
@@ -91,10 +92,10 @@ function SelectField({ label, value, onChange, options, minW = 220 }: {
   label: string; value: string; onChange: (v: string) => void;
   options: { value: string; label: string }[]; minW?: number;
 }) {
-  const inp: React.CSSProperties = { padding: '1px 2px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: '#ffffff', border: '2px inset #808080', color: '#000000' };
+  const inp: React.CSSProperties = { padding: '1px 2px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: R.inp, border: '2px inset #808080', color: R.txt };
   return (
     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '6px', gap: '4px' }}>
-      <span style={{ fontSize: '11px', color: '#000', whiteSpace: 'nowrap', fontWeight: 'bold', minWidth: `${minW}px` }}>{label}</span>
+      <span style={{ fontSize: '11px', color: R.txt, whiteSpace: 'nowrap', fontWeight: 'bold', minWidth: `${minW}px` }}>{label}</span>
       <span style={{ flex: 1, borderBottom: '1px dotted #606060', minWidth: '10px', height: '1px', margin: '0 4px 4px' }} />
       <select value={value} onChange={e => onChange(e.target.value)} style={inp}>
         {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -107,10 +108,10 @@ function LimiteField({ label, neg, pos, onNeg, onPos, minW = 220 }: {
   label: string; neg: string; pos: string;
   onNeg: (v: string) => void; onPos: (v: string) => void; minW?: number;
 }) {
-  const inp: React.CSSProperties = { width: '52px', padding: '1px 4px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: '#ffffff', border: '2px inset #808080', color: '#000', textAlign: 'right' };
+  const inp: React.CSSProperties = { width: '52px', padding: '1px 4px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: R.inp, border: '2px inset #808080', color: R.txt, textAlign: 'right' };
   return (
     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '6px', gap: '4px' }}>
-      <span style={{ fontSize: '11px', color: '#000', whiteSpace: 'nowrap', fontWeight: 'bold', minWidth: `${minW}px` }}>{label}</span>
+      <span style={{ fontSize: '11px', color: R.txt, whiteSpace: 'nowrap', fontWeight: 'bold', minWidth: `${minW}px` }}>{label}</span>
       <span style={{ flex: 1, borderBottom: '1px dotted #606060', minWidth: '10px', height: '1px', margin: '0 4px 4px' }} />
       <input type="number" value={neg} onChange={e => onNeg(e.target.value)} style={inp} />
       <input type="number" value={pos} onChange={e => onPos(e.target.value)} style={inp} />
@@ -122,7 +123,7 @@ function Secao({ title, children }: { title?: string; children: React.ReactNode 
   return (
     <div style={{ marginBottom: '12px', border: '1px solid #a0a098' }}>
       {title && <div style={{ background: '#005500', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', letterSpacing: '1px', textAlign: 'center' }}>{title}</div>}
-      <div style={{ padding: '8px 10px', background: '#d4d0c8' }}>{children}</div>
+      <div style={{ padding: '8px 10px', background: R.panel }}>{children}</div>
     </div>
   );
 }
@@ -204,10 +205,10 @@ function ParamContent({ tab, config, onChange }: { tab: TabParam; config: Config
         </div>
         {[1,2,3,4,5,6,7,8,9].map(n => (
           <div key={n} style={{ display: 'grid', gridTemplateColumns: '28px 1fr 70px 1fr', gap: '4px', marginBottom: '4px' }}>
-            <span style={{ fontSize: '11px', fontWeight: 'bold', paddingTop: '3px', color: '#005500' }}>{n}</span>
-            <input value={c[`param_setor_${n}_nome`] ?? ''} onChange={e => o(`param_setor_${n}_nome`, e.target.value)} style={{ padding: '2px 4px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: '#fff', border: '2px inset #808080' }} />
-            <input type="number" value={c[`param_setor_${n}_tempo`] ?? ''} onChange={e => o(`param_setor_${n}_tempo`, e.target.value)} style={{ padding: '2px 4px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: '#fff', border: '2px inset #808080' }} />
-            <select value={c[`param_setor_${n}_status`] ?? ''} onChange={e => o(`param_setor_${n}_status`, e.target.value)} style={{ padding: '2px 4px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: '#fff', border: '2px inset #808080' }}>
+            <span style={{ fontSize: '11px', fontWeight: 'bold', paddingTop: '3px', color: R.accent }}>{n}</span>
+            <input value={c[`param_setor_${n}_nome`] ?? ''} onChange={e => o(`param_setor_${n}_nome`, e.target.value)} style={{ padding: '2px 4px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: R.inp, border: '2px inset #808080' }} />
+            <input type="number" value={c[`param_setor_${n}_tempo`] ?? ''} onChange={e => o(`param_setor_${n}_tempo`, e.target.value)} style={{ padding: '2px 4px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: R.inp, border: '2px inset #808080' }} />
+            <select value={c[`param_setor_${n}_status`] ?? ''} onChange={e => o(`param_setor_${n}_status`, e.target.value)} style={{ padding: '2px 4px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: R.inp, border: '2px inset #808080' }}>
               <option value="">— não mudar status —</option>
               <option value="aguardando">AGUARDANDO</option>
               <option value="em_producao">EM PRODUÇÃO</option>
@@ -236,10 +237,10 @@ function ParamContent({ tab, config, onChange }: { tab: TabParam; config: Config
         <DotField label="%ISS" value={c.param_nf_pct_iss ?? '0.00'} onChange={v => o('param_nf_pct_iss', v)} type="number" />
       </Secao>
       <Secao title="OBSERVAÇÕES COMPLEMENTARES">
-        <textarea value={c.param_nf_obs_compl ?? ''} onChange={e => o('param_nf_obs_compl', e.target.value)} rows={3} style={{ width: '100%', boxSizing: 'border-box', padding: '4px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: '#fff', border: '2px inset #808080', resize: 'vertical' }} />
+        <textarea value={c.param_nf_obs_compl ?? ''} onChange={e => o('param_nf_obs_compl', e.target.value)} rows={3} style={{ width: '100%', boxSizing: 'border-box', padding: '4px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: R.inp, border: '2px inset #808080', resize: 'vertical' }} />
       </Secao>
       <Secao title="OBSERVAÇÕES/RESERVADO AO FISCO">
-        <textarea value={c.param_nf_obs_fisco ?? ''} onChange={e => o('param_nf_obs_fisco', e.target.value)} rows={3} style={{ width: '100%', boxSizing: 'border-box', padding: '4px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: '#fff', border: '2px inset #808080', resize: 'vertical' }} />
+        <textarea value={c.param_nf_obs_fisco ?? ''} onChange={e => o('param_nf_obs_fisco', e.target.value)} rows={3} style={{ width: '100%', boxSizing: 'border-box', padding: '4px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: R.inp, border: '2px inset #808080', resize: 'vertical' }} />
       </Secao>
     </div>
   );
@@ -310,7 +311,7 @@ function DotField({ label, value, onChange, type = 'text' }: {
 }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '6px', gap: '4px' }}>
-      <span style={{ fontSize: '11px', color: '#000000', whiteSpace: 'nowrap', fontWeight: 'bold', minWidth: '220px', letterSpacing: '0.3px' }}>
+      <span style={{ fontSize: '11px', color: R.txt, whiteSpace: 'nowrap', fontWeight: 'bold', minWidth: '220px', letterSpacing: '0.3px' }}>
         {label}
       </span>
       <span style={{ flex: 1, borderBottom: '1px dotted #606060', minWidth: '20px', height: '1px', margin: '0 4px 4px' }} />
@@ -323,9 +324,9 @@ function DotField({ label, value, onChange, type = 'text' }: {
           padding: '1px 4px',
           fontSize: '11px',
           fontFamily: "'Courier New', monospace",
-          background: '#ffffff',
+          background: R.inp,
           border: '2px inset #808080',
-          color: '#000000',
+          color: R.txt,
           textAlign: 'right',
         }}
       />
@@ -346,15 +347,15 @@ function NumeracaoContent({ tab, config, onChange }: {
         <DotField label="ÚLTIMA DATA DE PEDIDOS" value={config.num_ultima_data_pedidos ?? ''} onChange={v => onChange('num_ultima_data_pedidos', v)} type="date" />
         <div style={{ marginTop: '14px', border: '1px solid #a0a098' }}>
           <div style={{ background: '#005500', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', letterSpacing: '1px' }}>IMPORTAÇÃO PEDIDO ON-LINE</div>
-          <div style={{ padding: '8px 10px', background: '#d4d0c8' }}>
+          <div style={{ padding: '8px 10px', background: R.panel }}>
             <DotField label="PRÓXIMA PRÉ-VENDA" value={config.num_proximo_prevenda ?? '1'} onChange={v => onChange('num_proximo_prevenda', v)} />
             <DotField label="PRÓXIMO PRÉ-SERVIÇO" value={config.num_proximo_preservico ?? '1'} onChange={v => onChange('num_proximo_preservico', v)} />
           </div>
         </div>
         <div style={{ marginTop: '14px', border: '1px solid #a0a098' }}>
           <div style={{ background: '#005500', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', letterSpacing: '1px' }}>OBSERVAÇÕES EM PEDIDOS</div>
-          <div style={{ padding: '8px 10px', background: '#d4d0c8' }}>
-            <textarea value={config.obs_pedidos ?? ''} onChange={e => onChange('obs_pedidos', e.target.value)} rows={3} style={{ width: '100%', boxSizing: 'border-box', padding: '4px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: '#ffffff', border: '2px inset #808080', color: '#000000', resize: 'vertical' }} />
+          <div style={{ padding: '8px 10px', background: R.panel }}>
+            <textarea value={config.obs_pedidos ?? ''} onChange={e => onChange('obs_pedidos', e.target.value)} rows={3} style={{ width: '100%', boxSizing: 'border-box', padding: '4px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: R.inp, border: '2px inset #808080', color: R.txt, resize: 'vertical' }} />
           </div>
         </div>
       </div>
@@ -367,7 +368,7 @@ function NumeracaoContent({ tab, config, onChange }: {
         <DotField label="PRÓXIMO FECHAMENTO A EMITIR" value={config.num_proximo_fechamento ?? '1'} onChange={v => onChange('num_proximo_fechamento', v)} />
         <div style={{ marginTop: '14px', border: '1px solid #a0a098' }}>
           <div style={{ background: '#005500', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', letterSpacing: '1px' }}>PRÓXIMAS DATAS DE FECHAMENTO</div>
-          <div style={{ padding: '10px', background: '#d4d0c8' }}>
+          <div style={{ padding: '10px', background: R.panel }}>
             <DotField label="PRÓXIMO FECHAMENTO SEMANAL" value={config.fechamento_data_semanal ?? ''} onChange={v => onChange('fechamento_data_semanal', v)} type="date" />
             <DotField label="PRÓXIMO FECHAMENTO DECENAL" value={config.fechamento_data_decenal ?? ''} onChange={v => onChange('fechamento_data_decenal', v)} type="date" />
             <DotField label="PRÓXIMO FECHAMENTO QUINZENAL" value={config.fechamento_data_quinzenal ?? ''} onChange={v => onChange('fechamento_data_quinzenal', v)} type="date" />
@@ -420,8 +421,8 @@ function TabelaContent({ tabela, config, onChange }: {
 
   const tInp: React.CSSProperties = {
     width: '100%', boxSizing: 'border-box', padding: '1px 4px', fontSize: '11px',
-    fontFamily: "'Courier New', monospace", background: '#ffffff',
-    border: '1px solid #a0a0a0', color: '#000',
+    fontFamily: "'Courier New', monospace", background: R.inp,
+    border: '1px solid #a0a0a0', color: R.txt,
   };
   const yCell: React.CSSProperties = {
     background: '#888800', color: '#ffff00', fontSize: '10px', fontWeight: 'bold',
@@ -448,7 +449,7 @@ function TabelaContent({ tabela, config, onChange }: {
             </thead>
             <tbody>
               {Array.from({ length: 10 }, (_, i) => (
-                <tr key={i} style={{ background: i % 2 === 0 ? '#d4d0c8' : '#dedad2' }}>
+                <tr key={i} style={{ background: i % 2 === 0 ? R.panel : R.alt }}>
                   <td style={yCell}>
                     <input
                       value={config[`tab_mest_code_${i}`] ?? defCodes[i]}
@@ -479,7 +480,7 @@ function TabelaContent({ tabela, config, onChange }: {
               {Array.from({ length: 50 }, (_, i) => {
                 const code = String(i + 1).padStart(2, '0');
                 return (
-                  <tr key={code} style={{ background: i % 2 === 0 ? '#d4d0c8' : '#dedad2' }}>
+                  <tr key={code} style={{ background: i % 2 === 0 ? R.panel : R.alt }}>
                     <td style={yCell}>{code}</td>
                     <td style={{ padding: '2px 4px' }}>
                       <input value={config[`tab_fornec_${code}`] ?? ''} onChange={e => onChange(`tab_fornec_${code}`, e.target.value)} style={tInp} />
@@ -505,7 +506,7 @@ function TabelaContent({ tabela, config, onChange }: {
               {Array.from({ length: 20 }, (_, i) => {
                 const code = String(i + 1).padStart(2, '0');
                 return (
-                  <tr key={code} style={{ background: i % 2 === 0 ? '#d4d0c8' : '#dedad2' }}>
+                  <tr key={code} style={{ background: i % 2 === 0 ? R.panel : R.alt }}>
                     <td style={yCell}>{code}</td>
                     <td style={{ padding: '2px 4px' }}>
                       <input value={config[`tab_cobr_${code}`] ?? ''} onChange={e => onChange(`tab_cobr_${code}`, e.target.value)} style={tInp} />
@@ -535,7 +536,7 @@ function TabelaContent({ tabela, config, onChange }: {
                 onClick={() => setDespGrupo(i)}
                 style={{ ...S.row(despGrupo === i, i), borderBottom: i < 9 ? '1px solid #b0acA4' : 'none' }}
                 onMouseEnter={e => { if (despGrupo !== i) (e.currentTarget as HTMLElement).style.background = '#004400'; }}
-                onMouseLeave={e => { if (despGrupo !== i) (e.currentTarget as HTMLElement).style.background = i % 2 === 0 ? '#d4d0c8' : '#dedad2'; }}
+                onMouseLeave={e => { if (despGrupo !== i) (e.currentTarget as HTMLElement).style.background = i % 2 === 0 ? R.panel : R.alt; }}
               >
                 <span style={S.label()}>GRUPO {i} — {config[`tab_desp_grp_${i}`] ?? grupoNomes[i]}</span>
                 <span style={S.num(despGrupo === i)}>{i}</span>
@@ -565,7 +566,7 @@ function TabelaContent({ tabela, config, onChange }: {
                 {Array.from({ length: 10 }, (_, i) => {
                   const code = String(grupoStart + i).padStart(2, '0');
                   return (
-                    <tr key={code} style={{ background: i % 2 === 0 ? '#d4d0c8' : '#dedad2' }}>
+                    <tr key={code} style={{ background: i % 2 === 0 ? R.panel : R.alt }}>
                       <td style={yCell}>{code}</td>
                       <td style={{ padding: '2px 4px' }}>
                         <input value={config[`tab_desp_${code}`] ?? ''} onChange={e => onChange(`tab_desp_${code}`, e.target.value)} style={tInp} />
@@ -598,7 +599,7 @@ function TabelaContent({ tabela, config, onChange }: {
               {Array.from({ length: 15 }, (_, i) => {
                 const idx = String(i + 1).padStart(2, '0');
                 return (
-                  <tr key={idx} style={{ background: i % 2 === 0 ? '#d4d0c8' : '#dedad2' }}>
+                  <tr key={idx} style={{ background: i % 2 === 0 ? R.panel : R.alt }}>
                     <td style={yCell}>
                       <input value={config[`tab_movb${panel}_${idx}_m`] ?? ''} onChange={e => onChange(`tab_movb${panel}_${idx}_m`, e.target.value)} style={{ width: '22px', textAlign: 'center', fontSize: '10px', fontFamily: "'Courier New',monospace", background: 'transparent', border: 'none', color: '#ffff00', fontWeight: 'bold' }} />
                     </td>
@@ -630,7 +631,7 @@ function TabelaContent({ tabela, config, onChange }: {
               {Array.from({ length: 15 }, (_, i) => {
                 const code = String(i + 1).padStart(2, '0');
                 return (
-                  <tr key={code} style={{ background: i % 2 === 0 ? '#d4d0c8' : '#dedad2' }}>
+                  <tr key={code} style={{ background: i % 2 === 0 ? R.panel : R.alt }}>
                     <td style={yCell}>
                       <input value={config[`tab_docb_${code}_tp`] ?? ''} onChange={e => onChange(`tab_docb_${code}_tp`, e.target.value)} style={{ width: '22px', textAlign: 'center', fontSize: '10px', fontFamily: "'Courier New',monospace", background: 'transparent', border: 'none', color: '#ffff00', fontWeight: 'bold' }} />
                     </td>
@@ -667,7 +668,7 @@ function TabelaContent({ tabela, config, onChange }: {
               {Array.from({ length: pgEnd - pgStart + 1 }, (_, i) => {
                 const num = String(pgStart + i).padStart(2, '0');
                 return (
-                  <tr key={num} style={{ background: i % 2 === 0 ? '#d4d0c8' : '#dedad2' }}>
+                  <tr key={num} style={{ background: i % 2 === 0 ? R.panel : R.alt }}>
                     <td style={yCell}>{num}</td>
                     <td style={{ padding: '2px 4px' }}>
                       <input value={config[`tab_banco_${num}_nome`] ?? ''} onChange={e => onChange(`tab_banco_${num}_nome`, e.target.value)} style={tInp} />
@@ -684,12 +685,12 @@ function TabelaContent({ tabela, config, onChange }: {
             </tbody>
           </table>
         </div>
-        <div style={{ padding: '6px 8px', display: 'flex', gap: '4px', justifyContent: 'center', background: '#d4d0c8', border: '2px inset #808080', borderTop: 'none' }}>
+        <div style={{ padding: '6px 8px', display: 'flex', gap: '4px', justifyContent: 'center', background: R.panel, border: '2px inset #808080', borderTop: 'none' }}>
           {[0,1,2,3,4].map(pg => {
             const s = pg * 20 + 1;
             const e2 = Math.min(pg * 20 + 20, 99);
             return (
-              <button key={pg} onClick={() => setBancoPg(pg)} style={{ padding: '3px 10px', fontSize: '11px', fontWeight: 'bold', fontFamily: 'inherit', background: bancoPg === pg ? '#005500' : '#d4d0c8', color: bancoPg === pg ? '#fff' : '#005500', border: bancoPg === pg ? '2px inset #808080' : '2px outset #808080', cursor: 'pointer' }}>
+              <button key={pg} onClick={() => setBancoPg(pg)} style={{ padding: '3px 10px', fontSize: '11px', fontWeight: 'bold', fontFamily: 'inherit', background: bancoPg === pg ? '#005500' : R.panel, color: bancoPg === pg ? '#fff' : '#005500', border: bancoPg === pg ? '2px inset #808080' : '2px outset #808080', cursor: 'pointer' }}>
                 {String(s).padStart(2,'0')}-{String(e2).padStart(2,'0')}
               </button>
             );
@@ -709,7 +710,7 @@ function TabelaContent({ tabela, config, onChange }: {
             return (
               <div key={g} style={{ ...S.row(false, i), borderBottom: i < 8 ? '1px solid #b0acA4' : 'none', cursor: 'default' }}>
                 <span style={{ ...S.label(), marginRight: '8px' }}>GRUPO {g}</span>
-                <input value={config[`tab_quebra_grp_${g}`] ?? ''} onChange={e => onChange(`tab_quebra_grp_${g}`, e.target.value)} style={{ flex: 2, padding: '1px 4px', fontSize: '11px', fontFamily: "'Courier New',monospace", background: '#fff', border: '1px inset #808080', color: '#000' }} onClick={e => e.stopPropagation()} />
+                <input value={config[`tab_quebra_grp_${g}`] ?? ''} onChange={e => onChange(`tab_quebra_grp_${g}`, e.target.value)} style={{ flex: 2, padding: '1px 4px', fontSize: '11px', fontFamily: "'Courier New',monospace", background: R.inp, border: '1px inset #808080', color: R.txt }} onClick={e => e.stopPropagation()} />
                 <span style={S.num(false)}>{g}</span>
               </div>
             );
@@ -731,12 +732,12 @@ function TabelaContent({ tabela, config, onChange }: {
         <div style={{ ...S.panelBody(), padding: '10px 12px' }}>
           {codes.map(code => (
             <div key={code} style={{ display: 'flex', alignItems: 'center', marginBottom: '5px', gap: '6px' }}>
-              <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#005500', minWidth: '56px' }}>LISTA {code}</span>
+              <span style={{ fontSize: '11px', fontWeight: 'bold', color: R.accent, minWidth: '56px' }}>LISTA {code}</span>
               <span style={{ fontSize: '10px', color: '#808080' }}>——</span>
               <input
                 value={config[`tab_lista_${code}`] ?? ''}
                 onChange={e => onChange(`tab_lista_${code}`, e.target.value)}
-                style={{ flex: 1, padding: '1px 4px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: '#ffffff', border: '2px inset #808080', color: '#000' }}
+                style={{ flex: 1, padding: '1px 4px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: R.inp, border: '2px inset #808080', color: R.txt }}
               />
             </div>
           ))}
@@ -758,7 +759,7 @@ function TabelaContent({ tabela, config, onChange }: {
                   type="date"
                   value={config[`tab_feriado_${i}`] ?? ''}
                   onChange={e => onChange(`tab_feriado_${i}`, e.target.value)}
-                  style={{ flex: 1, padding: '1px 4px', fontSize: '11px', fontFamily: "'Courier New',monospace", background: '#fff', border: '2px inset #808080', color: '#000' }}
+                  style={{ flex: 1, padding: '1px 4px', fontSize: '11px', fontFamily: "'Courier New',monospace", background: R.inp, border: '2px inset #808080', color: R.txt }}
                 />
               </div>
             ))}
@@ -779,7 +780,7 @@ function TabelaContent({ tabela, config, onChange }: {
               {Array.from({ length: 24 }, (_, i) => {
                 const code = String(i + 1).padStart(2, '0');
                 return (
-                  <tr key={code} style={{ background: i % 2 === 0 ? '#d4d0c8' : '#dedad2' }}>
+                  <tr key={code} style={{ background: i % 2 === 0 ? R.panel : R.alt }}>
                     <td style={yCell}>{code}</td>
                     <td style={{ padding: '2px 4px' }}>
                       <input value={config[`tab_remarc_${code}`] ?? ''} onChange={e => onChange(`tab_remarc_${code}`, e.target.value)} style={tInp} />
@@ -814,9 +815,9 @@ function TabelaContent({ tabela, config, onChange }: {
             </thead>
             <tbody>
               {UFS.map((uf, i) => {
-                const inp2: React.CSSProperties = { width: '56px', padding: '1px 2px', fontSize: '10px', fontFamily: "'Courier New',monospace", background: '#fff', border: '1px solid #a0a0a0', color: '#000', textAlign: 'right' };
+                const inp2: React.CSSProperties = { width: '56px', padding: '1px 2px', fontSize: '10px', fontFamily: "'Courier New',monospace", background: R.inp, border: '1px solid #a0a0a0', color: R.txt, textAlign: 'right' };
                 return (
-                  <tr key={uf} style={{ background: i % 2 === 0 ? '#d4d0c8' : '#dedad2' }}>
+                  <tr key={uf} style={{ background: i % 2 === 0 ? R.panel : R.alt }}>
                     <td style={{ ...yCell, fontSize: '10px' }}>{uf}</td>
                     <td style={{ padding: '2px 3px' }}><input value={config[`tab_icms_${uf}_pad`] ?? ''} onChange={e => onChange(`tab_icms_${uf}_pad`, e.target.value)} style={inp2} /></td>
                     <td style={{ padding: '2px 3px' }}><input value={config[`tab_icms_${uf}_int`] ?? ''} onChange={e => onChange(`tab_icms_${uf}_int`, e.target.value)} style={inp2} /></td>
@@ -895,7 +896,7 @@ export default function LabConfiguracoes() {
       >
         {saving ? 'SALVANDO...' : 'SALVAR'}
       </button>
-      {saved && <span style={{ fontSize: '11px', color: '#006600', fontWeight: 'bold', alignSelf: 'center' }}>✔ SALVO</span>}
+      {saved && <span style={{ fontSize: '11px', color: R.accent, fontWeight: 'bold', alignSelf: 'center' }}>✔ SALVO</span>}
     </div>
   );
 
@@ -912,7 +913,7 @@ export default function LabConfiguracoes() {
           onClick={() => onSelect(t.key)}
           style={{ ...S.row(act, i), borderBottom: i < items.length - 1 ? '1px solid #b0acA4' : 'none' }}
           onMouseEnter={e => { if (!act) (e.currentTarget as HTMLElement).style.background = '#004400'; }}
-          onMouseLeave={e => { if (!act) (e.currentTarget as HTMLElement).style.background = i % 2 === 0 ? '#d4d0c8' : '#dedad2'; }}
+          onMouseLeave={e => { if (!act) (e.currentTarget as HTMLElement).style.background = i % 2 === 0 ? R.panel : R.alt; }}
         >
           <span style={S.label()}>{t.label}</span>
           <span style={S.num(act)}>{t.num}</span>
@@ -922,7 +923,7 @@ export default function LabConfiguracoes() {
   }
 
   return (
-    <div style={{ ...font, padding: '16px', minHeight: '100%', background: '#c8c4b0' }}>
+    <div style={{ ...font, padding: '16px', minHeight: '100%', background: R.bg }}>
       <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
 
         {/* ===== NUMERAÇÃO ===== */}
@@ -974,7 +975,7 @@ export default function LabConfiguracoes() {
                       onClick={() => setTabTabela(act ? null : t.key)}
                       style={{ ...S.row(act, i), borderBottom: i < CADASTRO_DESEJADO.length - 1 ? '1px solid #b0acA4' : 'none' }}
                       onMouseEnter={e => { if (!act) (e.currentTarget as HTMLElement).style.background = '#004400'; }}
-                      onMouseLeave={e => { if (!act) (e.currentTarget as HTMLElement).style.background = i % 2 === 0 ? '#d4d0c8' : '#dedad2'; }}
+                      onMouseLeave={e => { if (!act) (e.currentTarget as HTMLElement).style.background = i % 2 === 0 ? R.panel : R.alt; }}
                     >
                       <span style={S.label()}>{t.label}</span>
                       <span style={S.num(act)}>{t.num}</span>
@@ -1000,8 +1001,8 @@ export default function LabConfiguracoes() {
 
         {/* ===== DADOS DO LABORATÓRIO ===== */}
         {opcao === 'dados_lab' && (() => {
-          const lbl: React.CSSProperties = { display: 'block', fontSize: '10px', fontWeight: 'bold', color: '#444', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '2px' };
-          const inp: React.CSSProperties = { width: '100%', padding: '4px 6px', fontSize: '12px', fontFamily: "'Courier New', monospace", background: '#ffffff', border: '2px inset #808080', color: '#000', boxSizing: 'border-box' as const };
+          const lbl: React.CSSProperties = { display: 'block', fontSize: '10px', fontWeight: 'bold', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '2px' };
+          const inp: React.CSSProperties = { width: '100%', padding: '4px 6px', fontSize: '12px', fontFamily: "'Courier New', monospace", background: R.inp, border: '2px inset #808080', color: R.txt, boxSizing: 'border-box' as const };
           return (
             <div style={{ flex: 1 }}>
               <div style={S.panelHeader()}>DADOS DO LABORATÓRIO</div>

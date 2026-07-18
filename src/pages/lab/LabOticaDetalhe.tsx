@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { R } from '../../lib/labTheme';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../../lib/api';
 
@@ -13,14 +14,14 @@ interface Contato {
 }
 const CONTATO_INI: Contato = { departamento: '', contato: '', telefone: '', ramal: '', fax: '', celular: '', sms: false, email: '' };
 
-const RX = { bg:'#c8c4b0', panel:'#d4d0c8', alt:'#dedad2', bdr:'#b0aca4', hdr:'linear-gradient(90deg,#005500,#008800)', hdrTxt:'#ccffcc', hdrBdr:'#007700', txt:'#000' };
+const RX = { bg:R.bg, panel:R.panel, alt:R.alt, bdr:'#b0aca4', hdr:'linear-gradient(90deg,#005500,#008800)', hdrTxt:'#ccffcc', hdrBdr:'#007700', txt:'#000' };
 const INP: React.CSSProperties = {
-  width: '100%', padding: '5px 7px', fontSize: '12px', background: '#fff',
+  width: '100%', padding: '5px 7px', fontSize: '12px', background: R.inp,
   border: `1px solid ${RX.bdr}`, borderRadius: '0', color: RX.txt,
   outline: 'none', boxSizing: 'border-box', fontFamily: "'Courier New', monospace",
 };
 const LBL: React.CSSProperties = {
-  fontSize: '10px', fontWeight: '700', color: '#444',
+  fontSize: '10px', fontWeight: '700', color: R.dim,
   textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '3px',
 };
 const SEC: React.CSSProperties = {
@@ -28,7 +29,7 @@ const SEC: React.CSSProperties = {
   padding: '12px 14px',
 };
 const SEC_TITLE: React.CSSProperties = {
-  fontSize: '10px', fontWeight: '700', color: '#005500', textTransform: 'uppercase',
+  fontSize: '10px', fontWeight: '700', color: R.accent, textTransform: 'uppercase',
   letterSpacing: '1px', marginBottom: '10px', borderBottom: `1px solid ${RX.bdr}`, paddingBottom: '5px',
 };
 const TH: React.CSSProperties = {
@@ -38,7 +39,7 @@ const TH: React.CSSProperties = {
 };
 const TD: React.CSSProperties = { padding: '2px 3px', verticalAlign: 'middle' };
 const TINP: React.CSSProperties = {
-  width: '100%', padding: '3px 5px', fontSize: '11px', background: '#fff',
+  width: '100%', padding: '3px 5px', fontSize: '11px', background: R.inp,
   border: `1px solid ${RX.bdr}`, borderRadius: '0', color: RX.txt,
   outline: 'none', fontFamily: "'Courier New', monospace",
 };
@@ -68,10 +69,10 @@ export default function LabOticaDetalhe() {
   async function imprimirRelatorio(oticaId: string, nomeOtica: string, lista: any[]) {
     const ST: Record<string, { label: string; color: string }> = {
       aguardando:  { label:'AGUARDANDO',   color:'#886600' },
-      em_producao: { label:'EM PRODUÇÃO',  color:'#003388' },
-      pronto:      { label:'PRONTO',       color:'#006600' },
-      entregue:    { label:'ENTREGUE',     color:'#444' },
-      cancelado:   { label:'CANCELADO',    color:'#005500' },
+      em_producao: { label:'EM PRODUÇÃO',  color:R.accent2 },
+      pronto:      { label:'PRONTO',       color:R.accent },
+      entregue:    { label:'ENTREGUE',     color:R.dim },
+      cancelado:   { label:'CANCELADO',    color:R.accent },
     };
     function fd(s: string | null) { return s ? s.slice(0,10).split('-').reverse().join('/') : '—'; }
     function mb(v: number) { return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
@@ -98,7 +99,7 @@ export default function LabOticaDetalhe() {
 
     const blocos = lista.map(o => {
       const svcs = servicosPorOS[o.id] || [];
-      const st = ST[o.status] || { label: String(o.status).toUpperCase(), color:'#333' };
+      const st = ST[o.status] || { label: String(o.status).toUpperCase(), color:R.txt };
 
       const svcsHtml = svcs.length > 0
         ? svcs.map(s => `
@@ -257,7 +258,7 @@ export default function LabOticaDetalhe() {
     setSaving(false);
   }
 
-  if (loading) return <div style={{ padding: '48px', color: '#666', fontSize: '14px' }}>Carregando...</div>;
+  if (loading) return <div style={{ padding: '48px', color: R.dim, fontSize: '14px' }}>Carregando...</div>;
   if (!data) return <div style={{ padding: '48px', color: '#cc0000', fontSize: '14px' }}>Ótica não encontrada.</div>;
 
   const { otica, ordens, stats } = data;
@@ -283,12 +284,12 @@ export default function LabOticaDetalhe() {
               <input value={form.nome_reduzido ?? ''} onKeyDown={nextField} onChange={e => setF('nome_reduzido', e.target.value)} style={INP} />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-              <div style={{ fontSize: '10px', color: '#666', fontWeight: '700', textTransform: 'uppercase' }}>Data Cadastro</div>
-              <div style={{ fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#555' }}>
+              <div style={{ fontSize: '10px', color: R.dim, fontWeight: '700', textTransform: 'uppercase' }}>Data Cadastro</div>
+              <div style={{ fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim }}>
                 {otica.created_at ? new Date(otica.created_at).toLocaleDateString('pt-BR') : '—'}
               </div>
-              <div style={{ fontSize: '10px', color: '#666', fontWeight: '700', textTransform: 'uppercase', marginTop: '2px' }}>Atualização</div>
-              <div style={{ fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#555' }}>{new Date().toLocaleDateString('pt-BR')}</div>
+              <div style={{ fontSize: '10px', color: R.dim, fontWeight: '700', textTransform: 'uppercase', marginTop: '2px' }}>Atualização</div>
+              <div style={{ fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim }}>{new Date().toLocaleDateString('pt-BR')}</div>
             </div>
           </div>
         </div>
@@ -416,7 +417,7 @@ export default function LabOticaDetalhe() {
                 <option value="3">3 - Isento</option>
               </select>
             </div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '7px', cursor: 'pointer', fontSize: '12px', color: '#000', marginBottom: '12px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '7px', cursor: 'pointer', fontSize: '12px', color: R.txt, marginBottom: '12px' }}>
               <input type="checkbox" checked={!!form.banco_cobranca} onKeyDown={nextField} onChange={e => setF('banco_cobranca', e.target.checked ? 1 : 0)} />
               Banco de Cobrança
             </label>
@@ -503,8 +504,8 @@ export default function LabOticaDetalhe() {
                 </tr>
               ))}
               {contatosMfe.map((c, i) => (
-                <tr key={`mfe${i}`} style={{ borderBottom: '1px solid #b0aca4', background: '#dedad2' }}>
-                  <td style={{ ...TD, fontSize: '10px', fontWeight: '700', color: '#666', paddingLeft: '6px', whiteSpace: 'nowrap' }}>ENVIO DE MFE</td>
+                <tr key={`mfe${i}`} style={{ borderBottom: '1px solid #b0aca4', background: R.alt }}>
+                  <td style={{ ...TD, fontSize: '10px', fontWeight: '700', color: R.dim, paddingLeft: '6px', whiteSpace: 'nowrap' }}>ENVIO DE MFE</td>
                   <td style={TD}><input value={c.contato} onChange={e => setContatosMfe(setCont(contatosMfe, i, 'contato', e.target.value))} style={TINP} /></td>
                   <td style={TD}><input value={c.telefone} onChange={e => setContatosMfe(setCont(contatosMfe, i, 'telefone', e.target.value))} style={{ ...TINP, width: '110px' }} /></td>
                   <td style={TD}></td><td style={TD}></td>
@@ -555,7 +556,7 @@ export default function LabOticaDetalhe() {
                 CONFIRMAR GRAVAÇÃO
               </div>
               <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div style={{ fontSize: '13px', color: '#222' }}>
+                <div style={{ fontSize: '13px', color: R.txt }}>
                   Deseja gravar os dados da ótica?
                 </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
@@ -579,8 +580,8 @@ export default function LabOticaDetalhe() {
   }
 
   // ===== MODO VISUALIZAÇÃO — RETRO =====
-  const RV = { bg:'#c8c4b0', panel:'#d4d0c8', alt:'#dedad2', bdr:'#b0aca4', hdr:'linear-gradient(90deg,#005500,#008800)', hdrTxt:'#ccffcc', hdrBdr:'#007700', txt:'#000' };
-  const RINP: React.CSSProperties = { padding:'5px 8px', fontSize:'12px', background:'#fff', border:'1px solid #999', color:'#000', outline:'none', fontFamily:"'Courier New', monospace", boxSizing:'border-box' };
+  const RV = { bg:R.bg, panel:R.panel, alt:R.alt, bdr:'#b0aca4', hdr:'linear-gradient(90deg,#005500,#008800)', hdrTxt:'#ccffcc', hdrBdr:'#007700', txt:'#000' };
+  const RINP: React.CSSProperties = { padding:'5px 8px', fontSize:'12px', background:R.inp, border:'1px solid #999', color:R.txt, outline:'none', fontFamily:"'Courier New', monospace", boxSizing:'border-box' };
 
   const ST_BADGE: Record<string, { bg: string; color: string; label: string }> = {
     aguardando: { bg:'#fff8cc', color:'#886600', label:'AGUARDANDO' },
@@ -622,7 +623,7 @@ export default function LabOticaDetalhe() {
             {otica.nome}
             {otica.nome_reduzido && <span style={{ fontSize:'11px', opacity:0.8, marginLeft:'8px' }}>({otica.nome_reduzido})</span>}
           </div>
-          <span style={{ fontSize:'11px', color:'#555' }}>{[otica.cidade, otica.uf].filter(Boolean).join('/')}{otica.lista_preco ? ` · ${listaNomes[otica.lista_preco - 1] || `Lista ${otica.lista_preco}`}` : ''}</span>
+          <span style={{ fontSize:'11px', color:R.dim }}>{[otica.cidade, otica.uf].filter(Boolean).join('/')}{otica.lista_preco ? ` · ${listaNomes[otica.lista_preco - 1] || `Lista ${otica.lista_preco}`}` : ''}</span>
         </div>
         <div style={{ display:'flex', gap:'6px' }}>
           <button onClick={() => setEditando(true)}
@@ -639,13 +640,13 @@ export default function LabOticaDetalhe() {
       {/* Stats */}
       <div style={{ display:'flex', gap:'8px', marginBottom:'8px', flexWrap:'wrap' }}>
         {[
-          { label:'TOTAL DE OS', val: stats?.total_ordens ?? 0, color:'#000' },
+          { label:'TOTAL DE OS', val: stats?.total_ordens ?? 0, color:R.txt },
           { label:'EM ABERTO',   val: stats?.em_aberto ?? 0,   color:'#886600' },
-          { label:'PRONTOS',     val: stats?.prontos ?? 0,      color:'#006600' },
-          { label:'VALOR TOTAL', val: brl(stats?.valor_total ?? 0), color:'#005500', str:true },
+          { label:'PRONTOS',     val: stats?.prontos ?? 0,      color:R.accent },
+          { label:'VALOR TOTAL', val: brl(stats?.valor_total ?? 0), color:R.accent, str:true },
         ].map(({ label, val, color, str }) => (
           <div key={label} style={{ background:RV.panel, border:`2px outset ${RV.bdr}`, padding:'6px 16px', flexShrink:0 }}>
-            <div style={{ fontSize:'10px', fontWeight:'700', color:'#666', textTransform:'uppercase', letterSpacing:'0.5px' }}>{label}</div>
+            <div style={{ fontSize:'10px', fontWeight:'700', color:R.dim, textTransform:'uppercase', letterSpacing:'0.5px' }}>{label}</div>
             <div style={{ fontSize:str ? '16px' : '22px', fontWeight:'900', color, fontFamily:"'Courier New', monospace", lineHeight:'1.2' }}>{val}</div>
           </div>
         ))}
@@ -671,7 +672,7 @@ export default function LabOticaDetalhe() {
             ['OBSERVAÇÃO', otica.observacao],
           ].filter(([, v]) => v).map(([l, v]) => (
             <div key={String(l)} style={{ marginBottom:'6px', borderBottom:`1px solid ${RV.bdr}`, paddingBottom:'4px' }}>
-              <div style={{ fontSize:'9px', fontWeight:'700', color:'#666', textTransform:'uppercase', letterSpacing:'0.5px' }}>{l}</div>
+              <div style={{ fontSize:'9px', fontWeight:'700', color:R.dim, textTransform:'uppercase', letterSpacing:'0.5px' }}>{l}</div>
               <div style={{ fontSize:'11px', color:RV.txt, fontFamily:"'Courier New', monospace", wordBreak:'break-all' }}>{v}</div>
             </div>
           ))}
@@ -685,11 +686,11 @@ export default function LabOticaDetalhe() {
             <input value={filtroOS} onChange={e => setFiltroOS(e.target.value)}
               placeholder="Buscar Nº OS, ref., cont. int..." style={{ ...RINP, width:'190px' }} />
             <input type="date" value={filtroDataIni} onChange={e => setFiltroDataIni(e.target.value)} style={{ ...RINP, width:'120px' }} />
-            <span style={{ fontSize:'11px', color:'#555' }}>até</span>
+            <span style={{ fontSize:'11px', color:R.dim }}>até</span>
             <input type="date" value={filtroDataFim} onChange={e => setFiltroDataFim(e.target.value)} style={{ ...RINP, width:'120px' }} />
             {temFiltro && (
               <button onClick={() => { setFiltroOS(''); setFiltroDataIni(''); setFiltroDataFim(''); }}
-                style={{ padding:'4px 10px', fontSize:'11px', fontWeight:'700', background:RV.alt, color:'#005500', border:`1px outset ${RV.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>
+                style={{ padding:'4px 10px', fontSize:'11px', fontWeight:'700', background:RV.alt, color:R.accent, border:`1px outset ${RV.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>
                 ✕ LIMPAR
               </button>
             )}
@@ -705,7 +706,7 @@ export default function LabOticaDetalhe() {
           </div>
           <div style={{ flex:1, overflowY:'auto', border:`2px inset ${RV.bdr}` }}>
             {ordensFiltradas.length === 0 ? (
-              <div style={{ padding:'32px', textAlign:'center', color:'#555', fontFamily:"'Courier New', monospace" }}>
+              <div style={{ padding:'32px', textAlign:'center', color:R.dim, fontFamily:"'Courier New', monospace" }}>
                 {temFiltro ? 'Nenhuma OS encontrada com esse filtro.' : 'Nenhuma OS para esta ótica.'}
               </div>
             ) : (
@@ -720,19 +721,19 @@ export default function LabOticaDetalhe() {
                 <tbody>
                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                   {ordensFiltradas.map((o: any, i: number) => {
-                    const st = ST_BADGE[o.status] || { bg:'#eee', color:'#333', label: String(o.status).toUpperCase() };
+                    const st = ST_BADGE[o.status] || { bg:'#eee', color:R.txt, label: String(o.status).toUpperCase() };
                     return (
                       <tr key={o.id} onClick={() => navigate(`/lab/ordens/${o.id}`)}
                         style={{ background: i%2===0 ? RV.panel : RV.alt, borderBottom:`1px solid ${RV.bdr}`, cursor:'pointer' }}
                         onMouseEnter={e => (e.currentTarget.style.background='#005500')}
                         onMouseLeave={e => (e.currentTarget.style.background= i%2===0 ? RV.panel : RV.alt)}>
-                        <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'900', color:'#005500' }}>#{String(o.numero).padStart(4,'0')}</td>
-                        <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#333', whiteSpace:'nowrap' }}>{fmtD(o.created_at)}</td>
-                        <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#333' }}>{o.ref_otica||'—'}</td>
-                        <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#333' }}>{o.cont_interno||'—'}</td>
-                        <td style={{ padding:'6px 8px', fontSize:'11px', color:'#333', textAlign:'center' }}>{o.servicos_count}</td>
+                        <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'900', color:R.accent }}>#{String(o.numero).padStart(4,'0')}</td>
+                        <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt, whiteSpace:'nowrap' }}>{fmtD(o.created_at)}</td>
+                        <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt }}>{o.ref_otica||'—'}</td>
+                        <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt }}>{o.cont_interno||'—'}</td>
+                        <td style={{ padding:'6px 8px', fontSize:'11px', color:R.txt, textAlign:'center' }}>{o.servicos_count}</td>
                         <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'700', color:RV.txt, textAlign:'right', whiteSpace:'nowrap' }}>{brl(o.total)}</td>
-                        <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#333', whiteSpace:'nowrap' }}>{fmtD(o.previsao_entrega)}</td>
+                        <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt, whiteSpace:'nowrap' }}>{fmtD(o.previsao_entrega)}</td>
                         <td style={{ padding:'6px 8px' }}>
                           <span style={{ fontSize:'10px', fontWeight:'700', color:st.color, background:st.bg, padding:'2px 6px', border:`1px solid ${st.color}`, whiteSpace:'nowrap' }}>{st.label}</span>
                         </td>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { R } from '../../lib/labTheme';
 import { useParams } from 'react-router-dom';
 import { api } from '../../lib/api';
 
@@ -67,7 +68,7 @@ function OSSlip({ ordem, od, oe, armacao, servicos, tenant, via }: Props) {
     <div style={{
       width: '100%', height: '142mm', overflow: 'hidden',
       fontFamily: 'Arial, Helvetica, sans-serif', fontSize: '10px',
-      color: '#000', lineHeight: '1.3', boxSizing: 'border-box',
+      color: R.txt, lineHeight: '1.3', boxSizing: 'border-box',
       display: 'flex', flexDirection: 'column', gap: '3px',
     }}>
 
@@ -77,11 +78,11 @@ function OSSlip({ ordem, od, oe, armacao, servicos, tenant, via }: Props) {
           <div style={{ fontSize: '13px', fontWeight: '900', letterSpacing: '-0.5px' }}>
             {String(tenant?.lab_nome || tenant?.nome || 'LABORATÓRIO')}
           </div>
-          <div style={{ fontSize: '7.5px', color: '#555', textTransform: 'uppercase' }}>Laboratório Óptico</div>
-          {tenant?.lab_endereco ? <div style={{ fontSize: '7.5px', color: '#333' }}>{String(tenant.lab_endereco)}{tenant?.lab_bairro ? ` — ${String(tenant.lab_bairro)}` : ''}</div> : null}
-          {(tenant?.lab_cidade || tenant?.lab_uf) ? <div style={{ fontSize: '7.5px', color: '#333' }}>{[tenant?.lab_cidade, tenant?.lab_uf].filter(Boolean).map(String).join('/')}{tenant?.lab_cep ? ` — CEP: ${String(tenant.lab_cep)}` : ''}</div> : null}
-          {tenant?.lab_telefone ? <div style={{ fontSize: '7.5px', color: '#333' }}>Tel: {String(tenant.lab_telefone)}</div> : null}
-          {tenant?.lab_cnpj ? <div style={{ fontSize: '7.5px', color: '#555' }}>CNPJ: {String(tenant.lab_cnpj)}</div> : null}
+          <div style={{ fontSize: '7.5px', color: R.dim, textTransform: 'uppercase' }}>Laboratório Óptico</div>
+          {tenant?.lab_endereco ? <div style={{ fontSize: '7.5px', color: R.txt }}>{String(tenant.lab_endereco)}{tenant?.lab_bairro ? ` — ${String(tenant.lab_bairro)}` : ''}</div> : null}
+          {(tenant?.lab_cidade || tenant?.lab_uf) ? <div style={{ fontSize: '7.5px', color: R.txt }}>{[tenant?.lab_cidade, tenant?.lab_uf].filter(Boolean).map(String).join('/')}{tenant?.lab_cep ? ` — CEP: ${String(tenant.lab_cep)}` : ''}</div> : null}
+          {tenant?.lab_telefone ? <div style={{ fontSize: '7.5px', color: R.txt }}>Tel: {String(tenant.lab_telefone)}</div> : null}
+          {tenant?.lab_cnpj ? <div style={{ fontSize: '7.5px', color: R.dim }}>CNPJ: {String(tenant.lab_cnpj)}</div> : null}
         </div>
         <div style={{ textAlign: 'center', flex: 1, padding: '0 10px' }}>
           <div style={{ fontSize: '13px', fontWeight: '900', letterSpacing: '1px' }}>
@@ -91,10 +92,10 @@ function OSSlip({ ordem, od, oe, armacao, servicos, tenant, via }: Props) {
           <div style={{ fontSize: '9px' }}>PREVISÃO ENTREGA: {fd(String(ordem.previsao_entrega || ''))}</div>
         </div>
         <div style={{ textAlign: 'center', minWidth: '80px' }}>
-          <div style={{ fontFamily: "'Libre Barcode 128 Text'", fontSize: '38px', lineHeight: '1', letterSpacing: '0', color: '#000' }}>
+          <div style={{ fontFamily: "'Libre Barcode 128 Text'", fontSize: '38px', lineHeight: '1', letterSpacing: '0', color: R.txt }}>
             {String(Number(ordem.numero) || 0).padStart(4, '0')}
           </div>
-          <div style={{ fontSize: '8px', color: '#444', fontWeight: '700', marginTop: '1px' }}>
+          <div style={{ fontSize: '8px', color: R.dim, fontWeight: '700', marginTop: '1px' }}>
             VIA {via} — OS#{String(Number(ordem.numero) || 0).padStart(4, '0')}
           </div>
         </div>
@@ -160,7 +161,7 @@ function OSSlip({ ordem, od, oe, armacao, servicos, tenant, via }: Props) {
         <tbody>
           {svcRows.map((s, i) => (
             <tr key={i} style={{ borderBottom: '1px solid #eee', height: '16px' }}>
-              <td style={{ ...TDL, paddingLeft: '5px', fontSize: '9px', color: '#333' }}>{String(s.codigo || '')}</td>
+              <td style={{ ...TDL, paddingLeft: '5px', fontSize: '9px', color: R.txt }}>{String(s.codigo || '')}</td>
               <td style={{ ...TDL, paddingLeft: '5px' }}>{String(s.descricao || '')}</td>
               <td style={TD}>{String(s.qtd || '')}</td>
             </tr>
@@ -290,7 +291,7 @@ export default function LabImprimirOS() {
   const props = { ordem, od, oe, armacao: armacao ?? null, servicos: servicos ?? [], tenant: tenant ?? {} };
 
   return (
-    <div style={{ width: '210mm', height: '297mm', margin: '0 auto', background: '#fff', boxSizing: 'border-box', overflow: 'hidden' }}>
+    <div style={{ width: '210mm', height: '297mm', margin: '0 auto', background: R.inp, boxSizing: 'border-box', overflow: 'hidden' }}>
       {/* VIA DO LABORATÓRIO */}
       <div style={{ padding: '3mm 5mm', height: '148mm', boxSizing: 'border-box' }}>
         <OSSlip {...props} via="LAB" />
@@ -298,7 +299,7 @@ export default function LabImprimirOS() {
 
       {/* LINHA DE CORTE */}
       <div style={{ margin: '0 5mm', borderTop: '1px dashed #999', height: '1mm', position: 'relative', textAlign: 'center' }}>
-        <span style={{ position: 'absolute', top: '-5px', left: '50%', transform: 'translateX(-50%)', background: '#fff', padding: '0 8px', fontSize: '7px', color: '#aaa', fontWeight: '700', letterSpacing: '1px', whiteSpace: 'nowrap' }}>
+        <span style={{ position: 'absolute', top: '-5px', left: '50%', transform: 'translateX(-50%)', background: R.inp, padding: '0 8px', fontSize: '7px', color: '#aaa', fontWeight: '700', letterSpacing: '1px', whiteSpace: 'nowrap' }}>
           ✂ destacar aqui
         </span>
       </div>
