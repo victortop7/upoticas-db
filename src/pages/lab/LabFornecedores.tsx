@@ -8,7 +8,7 @@ interface Fornecedor {
 
 import { R } from '../../lib/labTheme';
 const INP: React.CSSProperties = { width:'100%', padding:'5px 8px', fontSize:'12px', background:R.inp, border:'1px solid #999', color:R.txt, outline:'none', boxSizing:'border-box', fontFamily:"'Courier New', monospace" };
-const LBL: React.CSSProperties = { fontSize:'10px', fontWeight:'700', color:'#444', textTransform:'uppercase', letterSpacing:'0.5px', display:'block', marginBottom:'3px' };
+const LBL: React.CSSProperties = { fontSize:'10px', fontWeight:'700', color:R.txt, textTransform:'uppercase', letterSpacing:'0.5px', display:'block', marginBottom:'3px' };
 
 const FORM_VAZIO = { nome:'', fantasia:'', cnpj:'', telefone:'', email:'', endereco:'', cidade:'', uf:'', cep:'' };
 
@@ -72,9 +72,9 @@ export default function LabFornecedores() {
       {/* Tabela */}
       <div style={{ flex:1, overflowY:'auto', border:`2px inset ${R.bdr}` }}>
         {loading ? (
-          <div style={{ padding:'40px', textAlign:'center', color:'#444', fontFamily:"'Courier New', monospace" }}>Carregando...</div>
+          <div style={{ padding:'40px', textAlign:'center', color:R.txt, fontFamily:"'Courier New', monospace" }}>Carregando...</div>
         ) : filtradas.length === 0 ? (
-          <div style={{ padding:'40px', textAlign:'center', color:'#444' }}>Nenhum fornecedor cadastrado.</div>
+          <div style={{ padding:'40px', textAlign:'center', color:R.txt }}>Nenhum fornecedor cadastrado.</div>
         ) : (
           <table style={{ width:'100%', borderCollapse:'collapse' }}>
             <thead style={{ position:'sticky', top:0 }}>
@@ -90,12 +90,12 @@ export default function LabFornecedores() {
                   style={{ background: i%2===0 ? R.panel : R.alt, cursor:'pointer', borderBottom:`1px solid ${R.bdr}` }}
                   onMouseEnter={e => (e.currentTarget.style.background = '#005500')}
                   onMouseLeave={e => (e.currentTarget.style.background = i%2===0 ? R.panel : R.alt)}>
-                  <td style={{ padding:'7px 12px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#555' }}>{f.codigo||'—'}</td>
+                  <td style={{ padding:'7px 12px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.dim }}>{f.codigo||'—'}</td>
                   <td style={{ padding:'7px 12px', fontSize:'12px', fontWeight:'700', color:R.txt }}>{f.nome}</td>
-                  <td style={{ padding:'7px 12px', fontSize:'11px', color:'#333' }}>{f.fantasia||'—'}</td>
-                  <td style={{ padding:'7px 12px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#333' }}>{f.cnpj||'—'}</td>
-                  <td style={{ padding:'7px 12px', fontSize:'11px', color:'#333' }}>{f.telefone||'—'}</td>
-                  <td style={{ padding:'7px 12px', fontSize:'11px', color:'#333' }}>{f.cidade && f.uf ? `${f.cidade}/${f.uf}` : f.cidade||'—'}</td>
+                  <td style={{ padding:'7px 12px', fontSize:'11px', color:R.txt }}>{f.fantasia||'—'}</td>
+                  <td style={{ padding:'7px 12px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt }}>{f.cnpj||'—'}</td>
+                  <td style={{ padding:'7px 12px', fontSize:'11px', color:R.txt }}>{f.telefone||'—'}</td>
+                  <td style={{ padding:'7px 12px', fontSize:'11px', color:R.txt }}>{f.cidade && f.uf ? `${f.cidade}/${f.uf}` : f.cidade||'—'}</td>
                 </tr>
               ))}
             </tbody>

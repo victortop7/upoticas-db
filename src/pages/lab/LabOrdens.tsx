@@ -39,7 +39,7 @@ function tipoLabel(t: string) { return TIPOS_OS.find(x => x.value === t)?.label 
 
 import { R } from '../../lib/labTheme';
 const INP: React.CSSProperties = { padding:'5px 8px', fontSize:'12px', background:R.inp, border:'1px solid #999', color:R.txt, outline:'none', boxSizing:'border-box', fontFamily:"'Courier New', monospace" };
-const LBL: React.CSSProperties = { fontSize:'10px', fontWeight:'700', color:'#444', textTransform:'uppercase', letterSpacing:'0.5px' };
+const LBL: React.CSSProperties = { fontSize:'10px', fontWeight:'700', color:R.txt, textTransform:'uppercase', letterSpacing:'0.5px' };
 
 export default function LabOrdens() {
   const navigate = useNavigate();
@@ -83,10 +83,10 @@ export default function LabOrdens() {
       aguardando: { bg: '#fff8cc', color: '#886600', border: '#886600' },
       em_producao: { bg: '#cce0ff', color: '#003388', border: '#003388' },
       pronto: { bg: '#ccffcc', color: '#006600', border: '#006600' },
-      entregue: { bg: '#e0e0e0', color: '#444', border: '#888' },
+      entregue: { bg: '#e0e0e0', color: R.txt, border: '#888' },
       cancelado: { bg: '#ccffcc', color: '#005500', border: '#005500' },
     };
-    const c = colors[s] ?? { bg: '#ddd', color: '#444', border: '#888' };
+    const c = colors[s] ?? { bg: '#ddd', color: R.txt, border: '#888' };
     return (
       <span style={{ fontSize:'10px', fontWeight:'700', color:c.color, background:c.bg, padding:'2px 7px', border:`1px solid ${c.border}` }}>
         {statusLabel(s).toUpperCase()}
@@ -168,7 +168,7 @@ export default function LabOrdens() {
           <div style={LBL}>Período</div>
           <div style={{ display:'flex', gap:'4px', alignItems:'center' }}>
             <input type="date" value={dataIni} onChange={e => setDataIni(e.target.value)} style={{ ...INP, width:'120px' }} />
-            <span style={{ fontSize:'11px', color:'#555' }}>até</span>
+            <span style={{ fontSize:'11px', color:R.dim }}>até</span>
             <input type="date" value={dataFim} onChange={e => setDataFim(e.target.value)} style={{ ...INP, width:'120px' }} />
           </div>
         </div>
@@ -184,9 +184,9 @@ export default function LabOrdens() {
       {/* Tabela */}
       <div style={{ flex:1, overflowY:'auto', border:`2px inset ${R.bdr}` }}>
         {loading ? (
-          <div style={{ padding:'40px', textAlign:'center', color:'#444', fontFamily:"'Courier New', monospace" }}>Carregando...</div>
+          <div style={{ padding:'40px', textAlign:'center', color:R.txt, fontFamily:"'Courier New', monospace" }}>Carregando...</div>
         ) : ordens.length === 0 ? (
-          <div style={{ padding:'40px', textAlign:'center', color:'#444' }}>
+          <div style={{ padding:'40px', textAlign:'center', color:R.txt }}>
             Nenhuma ordem encontrada.{' '}
             <button onClick={() => navigate('/lab/ordens/nova')}
               style={{ color:'#005500', background:'none', border:'none', cursor:'pointer', fontFamily:'inherit', fontSize:'13px', fontWeight:'700' }}>
@@ -211,28 +211,28 @@ export default function LabOrdens() {
                   <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'700', color:R.txt, whiteSpace:'nowrap' }}>
                     #{String(o.numero).padStart(4, '0')}
                   </td>
-                  <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#333' }}>
+                  <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt }}>
                     {tipoLabel(o.tipo)}
                   </td>
-                  <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#333', whiteSpace:'nowrap' }}>
+                  <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt, whiteSpace:'nowrap' }}>
                     {fmtDate(o.created_at)}
                   </td>
                   <td style={{ padding:'6px 10px', fontSize:'12px', fontWeight:'700', color:R.txt, maxWidth:'160px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
                     {o.otica_nome}
                   </td>
-                  <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#333' }}>
+                  <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt }}>
                     {o.ref_otica ?? '—'}
                   </td>
-                  <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#333' }}>
+                  <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt }}>
                     {o.cont_interno ?? '—'}
                   </td>
-                  <td style={{ padding:'6px 10px', fontSize:'11px', color:'#333' }}>
+                  <td style={{ padding:'6px 10px', fontSize:'11px', color:R.txt }}>
                     {o.vendedor ?? '—'}
                   </td>
                   <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', color:R.txt, fontWeight:'700', textAlign:'right', whiteSpace:'nowrap' }}>
                     {brl(o.total)}
                   </td>
-                  <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#333', whiteSpace:'nowrap' }}>
+                  <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt, whiteSpace:'nowrap' }}>
                     {fmtDate(o.previsao_entrega)}
                   </td>
                   <td style={{ padding:'6px 10px' }}>

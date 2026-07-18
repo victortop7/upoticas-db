@@ -20,7 +20,7 @@ function fmtDate(s: string | null) {
 
 import { R } from '../../lib/labTheme';
 const INP: React.CSSProperties = { padding: '5px 8px', fontSize: '12px', background: '#fff', border: `1px solid ${R.bdr}`, borderRadius: 0, color: R.txt, outline: 'none', fontFamily: "'Courier New', monospace", width: '100%', boxSizing: 'border-box' };
-const LBL: React.CSSProperties = { fontSize: '10px', fontWeight: '700', color: '#444', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '3px' };
+const LBL: React.CSSProperties = { fontSize: '10px', fontWeight: '700', color: R.txt, textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '3px' };
 
 export default function LabBancario() {
   const [lancamentos, setLancamentos] = useState<Lancamento[]>([]);
@@ -78,7 +78,7 @@ export default function LabBancario() {
           {contas.map(c => <option key={c.codigo} value={c.codigo}>{c.codigo} — {c.nome}</option>)}
         </select>
         <input type="date" value={dataIni} onChange={e => setDataIni(e.target.value)} style={{ ...INP, width: '135px' }} />
-        <span style={{ fontSize: '11px', color: '#666' }}>até</span>
+        <span style={{ fontSize: '11px', color: R.dim }}>até</span>
         <input type="date" value={dataFim} onChange={e => setDataFim(e.target.value)} style={{ ...INP, width: '135px' }} />
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
           <button onClick={() => setNovaModal(true)} style={{ padding: '7px 16px', fontSize: '12px', fontWeight: '600', background: '#005500', color: '#fff', border: 'none', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>+ Lançamento</button>
@@ -99,13 +99,13 @@ export default function LabBancario() {
 
       {/* Tabela */}
       <div style={{ flex: 1, overflowY: 'auto' }}>
-        {loading ? <div style={{ padding: '60px', textAlign: 'center', color: '#666' }}>Carregando...</div>
-          : lancamentos.length === 0 ? <div style={{ padding: '60px', textAlign: 'center', color: '#666' }}>Nenhum lançamento no período.</div>
+        {loading ? <div style={{ padding: '60px', textAlign: 'center', color: R.dim }}>Carregando...</div>
+          : lancamentos.length === 0 ? <div style={{ padding: '60px', textAlign: 'center', color: R.dim }}>Nenhum lançamento no período.</div>
           : <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead style={{ position: 'sticky', top: 0 }}>
                 <tr style={{ background: '#dedad2', borderBottom: '1px solid #b0aca4' }}>
                   {['Nº', 'Data Mov.', 'Conta', 'Descrição', 'Tipo', 'Valor', 'Saldo Parcial'].map(h => (
-                    <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: '10px', fontWeight: '600', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>{h}</th>
+                    <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: '10px', fontWeight: '600', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -114,9 +114,9 @@ export default function LabBancario() {
                   <tr key={l.id} style={{ borderBottom: '1px solid #b0aca4' }}
                     onMouseEnter={e => (e.currentTarget.style.background = '#dedad2')}
                     onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                    <td style={{ padding: '9px 12px', fontFamily: "'Courier New', monospace", fontSize: '12px', color: '#555' }}>#{String(l.numero).padStart(4,'0')}</td>
-                    <td style={{ padding: '9px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: '#555', whiteSpace: 'nowrap' }}>{fmtDate(l.data_movimento)}</td>
-                    <td style={{ padding: '9px 12px', fontSize: '12px', color: '#555' }}>{l.conta_codigo} — {l.conta_nome}</td>
+                    <td style={{ padding: '9px 12px', fontFamily: "'Courier New', monospace", fontSize: '12px', color: R.dim }}>#{String(l.numero).padStart(4,'0')}</td>
+                    <td style={{ padding: '9px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim, whiteSpace: 'nowrap' }}>{fmtDate(l.data_movimento)}</td>
+                    <td style={{ padding: '9px 12px', fontSize: '12px', color: R.dim }}>{l.conta_codigo} — {l.conta_nome}</td>
                     <td style={{ padding: '9px 12px', fontSize: '13px', color: '#000', maxWidth: '240px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.descricao}</td>
                     <td style={{ padding: '9px 12px' }}>
                       <span style={{ fontSize: '11px', fontWeight: '700', color: l.tipo === 'C' ? '#006600' : '#cc0000', background: l.tipo === 'C' ? 'rgba(0,102,0,0.15)' : 'rgba(200,0,0,0.12)', padding: '2px 8px', borderRadius: '20px' }}>
@@ -169,7 +169,7 @@ export default function LabBancario() {
               <div><label style={LBL}>Observações</label><input value={novaForm.observacoes} onChange={e => setNovaForm(f => ({ ...f, observacoes: e.target.value }))} style={INP} /></div>
             </div>
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '16px' }}>
-              <button onClick={() => setNovaModal(false)} style={{ padding: '8px 18px', fontSize: '13px', background: 'transparent', color: '#555', border: '1px solid #b0aca4', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
+              <button onClick={() => setNovaModal(false)} style={{ padding: '8px 18px', fontSize: '13px', background: 'transparent', color: R.dim, border: '1px solid #b0aca4', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
               <button onClick={lancar} disabled={salvando} style={{ padding: '8px 22px', fontSize: '13px', fontWeight: '600', background: salvando ? '#666' : '#005500', color: '#fff', border: 'none', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>{salvando ? '...' : 'Lançar'}</button>
             </div>
           </div>

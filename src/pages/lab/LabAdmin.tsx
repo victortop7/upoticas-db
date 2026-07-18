@@ -38,7 +38,7 @@ function PinScreen({ onOk }: { onOk: () => void }) {
           ACESSO RESTRITO
         </div>
         <div style={{ border: '2px inset #b0aca4', padding: '20px' }}>
-          <div style={{ textAlign: 'center', marginBottom: '16px', fontSize: '11px', color: '#444', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '16px', fontSize: '11px', color: R.txt, fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             Digite o PIN de 4 dígitos
           </div>
 
@@ -149,7 +149,7 @@ const STATUS_STYLE: Record<string, { bg: string; color: string; label: string }>
   trial_expirado: { bg: '#fff0cc', color: '#886600', label: 'TRIAL EXPIRADO' },
   expirado:       { bg: '#ccffcc', color: '#005500', label: 'EXPIRADO' },
   bloqueado:      { bg: '#ccffcc', color: '#005500', label: 'BLOQUEADO' },
-  desativado:     { bg: '#e0e0e0', color: '#444',    label: 'DESATIVADO' },
+  desativado:     { bg: '#e0e0e0', color: R.txt,    label: 'DESATIVADO' },
 };
 
 function fmtDate(s: string | null) {
@@ -161,7 +161,7 @@ const LEAD_STATUS_STYLE: Record<string, { bg: string; color: string; label: stri
   novo:       { bg: '#cce0ff', color: '#003388', label: 'NOVO' },
   contatado:  { bg: '#fff0cc', color: '#886600', label: 'CONTATADO' },
   convertido: { bg: '#ccffcc', color: '#006600', label: 'CONVERTIDO' },
-  descartado: { bg: '#e0e0e0', color: '#444',    label: 'DESCARTADO' },
+  descartado: { bg: '#e0e0e0', color: R.txt,    label: 'DESCARTADO' },
 };
 
 export default function LabAdmin() {
@@ -421,7 +421,7 @@ export default function LabAdmin() {
             PAINEL ADMINISTRATIVO
           </div>
           <div style={{ border: `2px inset ${R.bdr}`, padding: '20px' }}>
-            <div style={{ fontSize: '11px', color: '#444', fontWeight: '700', marginBottom: '8px', textTransform: 'uppercase' }}>Chave de Administrador:</div>
+            <div style={{ fontSize: '11px', color: R.txt, fontWeight: '700', marginBottom: '8px', textTransform: 'uppercase' }}>Chave de Administrador:</div>
             {erro && <div style={{ background: '#ddffee', border: '1px solid #005500', padding: '6px 10px', marginBottom: '10px', fontSize: '11px', color: '#005500', fontWeight: '700' }}>{erro}</div>}
             <input
               type="password" value={secret} autoFocus
@@ -502,15 +502,15 @@ export default function LabAdmin() {
                       >
                         {impersonando === t.id ? '⏳ Entrando...' : t.nome}
                       </div>
-                      <div style={{ fontSize: '10px', color: '#555', fontFamily: "'Courier New', monospace" }}>{t.email}</div>
+                      <div style={{ fontSize: '10px', color: R.dim, fontFamily: "'Courier New', monospace" }}>{t.email}</div>
                     </td>
-                    <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#333' }}>{t.tipo.toUpperCase()}</td>
+                    <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.txt }}>{t.tipo.toUpperCase()}</td>
                     <td style={{ padding: '7px 10px' }}>
                       <span style={{ fontSize: '10px', fontWeight: '700', color: st.color, background: st.bg, padding: '2px 7px', border: `1px solid ${st.color}` }}>{st.label}</span>
                     </td>
-                    <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#333' }}>{fmtDate(t.trial_expira)}</td>
-                    <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#333' }}>{fmtDate(t.licenca_expira)}</td>
-                    <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#555' }}>{fmtDate(t.created_at)}</td>
+                    <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.txt }}>{fmtDate(t.trial_expira)}</td>
+                    <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.txt }}>{fmtDate(t.licenca_expira)}</td>
+                    <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim }}>{fmtDate(t.created_at)}</td>
                     <td style={{ padding: '7px 10px' }}>
                       <div style={{ display: 'flex', gap: '4px' }}>
                         <button onClick={() => openEdit(t)}
@@ -551,14 +551,14 @@ export default function LabAdmin() {
                 const st = LEAD_STATUS_STYLE[l.status] || LEAD_STATUS_STYLE.novo;
                 return (
                   <tr key={l.id} style={{ background: i % 2 === 0 ? R.panel : R.alt, borderBottom: `1px solid ${R.bdr}` }}>
-                    <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#555', whiteSpace: 'nowrap' }}>{fmtDate(l.created_at)}</td>
+                    <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim, whiteSpace: 'nowrap' }}>{fmtDate(l.created_at)}</td>
                     <td style={{ padding: '7px 10px' }}>
                       <div style={{ fontSize: '12px', fontWeight: '700', color: '#000' }}>{l.laboratorio || '—'}</div>
-                      <div style={{ fontSize: '10px', color: '#555' }}>{l.nome}</div>
+                      <div style={{ fontSize: '10px', color: R.dim }}>{l.nome}</div>
                     </td>
-                    <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#333' }}>{l.email}</td>
-                    <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: '#333' }}>{l.whatsapp || '—'}</td>
-                    <td style={{ padding: '7px 10px', fontSize: '11px', color: '#555' }}>{l.cidade || '—'}</td>
+                    <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.txt }}>{l.email}</td>
+                    <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.txt }}>{l.whatsapp || '—'}</td>
+                    <td style={{ padding: '7px 10px', fontSize: '11px', color: R.dim }}>{l.cidade || '—'}</td>
                     <td style={{ padding: '7px 10px' }}>
                       <span style={{ fontSize: '10px', fontWeight: '700', color: st.color, background: st.bg, padding: '2px 7px', border: `1px solid ${st.color}` }}>{st.label}</span>
                     </td>
@@ -578,7 +578,7 @@ export default function LabAdmin() {
                         )}
                         {l.status !== 'descartado' && l.status !== 'convertido' && (
                           <button onClick={() => handleLeadStatus(l.id, 'descartado')}
-                            style={{ padding: '3px 8px', fontSize: '10px', fontWeight: '700', background: '#e0e0e0', color: '#666', border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+                            style={{ padding: '3px 8px', fontSize: '10px', fontWeight: '700', background: '#e0e0e0', color: R.dim, border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
                             DESCARTAR
                           </button>
                         )}
@@ -600,7 +600,7 @@ export default function LabAdmin() {
       {aba === 'codigos' && (
         <div>
           <div style={{ background: R.panel, border: `1px solid ${R.bdr}`, padding: '10px', marginBottom: '10px', display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '11px', fontWeight: '700', color: '#333' }}>Gerar código de 15 dias grátis:</span>
+            <span style={{ fontSize: '11px', fontWeight: '700', color: R.txt }}>Gerar código de 15 dias grátis:</span>
             <input value={novoNome} onChange={e => setNovoNome(e.target.value)} placeholder="Pra quem? (opcional)" style={{ ...INP, width: '200px' }} />
             <button onClick={gerarCodigo} disabled={gerando} style={{ padding: '6px 16px', fontSize: '11px', fontWeight: '700', background: R.hdr, color: R.hdrTxt, border: `2px outset ${R.hdrBdr}`, cursor: gerando ? 'default' : 'pointer', fontFamily: 'inherit' }}>
               {gerando ? 'GERANDO…' : '+ GERAR CÓDIGO'}
@@ -612,7 +612,7 @@ export default function LabAdmin() {
               <thead>
                 <tr style={{ background: R.alt }}>
                   {['CÓDIGO', 'STATUS', 'PRA QUEM', 'USADO POR', 'CRIADO EM', 'AÇÕES'].map(h => (
-                    <th key={h} style={{ padding: '6px 10px', textAlign: 'left', fontWeight: '700', color: '#333', borderBottom: `1px solid ${R.bdr}`, whiteSpace: 'nowrap' }}>{h}</th>
+                    <th key={h} style={{ padding: '6px 10px', textAlign: 'left', fontWeight: '700', color: R.txt, borderBottom: `1px solid ${R.bdr}`, whiteSpace: 'nowrap' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -630,7 +630,7 @@ export default function LabAdmin() {
                     </td>
                     <td style={{ padding: '6px 10px' }}>{c.nome_contato || '—'}</td>
                     <td style={{ padding: '6px 10px' }}>{c.usado_por ? `${c.usado_por}${c.usado_em ? ` (${c.usado_em.slice(0, 10)})` : ''}` : '—'}</td>
-                    <td style={{ padding: '6px 10px', color: '#666' }}>{c.criado_em ? c.criado_em.slice(0, 10) : '—'}</td>
+                    <td style={{ padding: '6px 10px', color: R.dim }}>{c.criado_em ? c.criado_em.slice(0, 10) : '—'}</td>
                     <td style={{ padding: '6px 10px', whiteSpace: 'nowrap' }}>
                       {!c.usado && (
                         <button onClick={() => copiarCodigo(c.codigo)} style={{ padding: '3px 10px', fontSize: '10px', fontWeight: '700', background: copiado === c.codigo ? '#008800' : R.alt, color: copiado === c.codigo ? '#fff' : '#000', border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit', marginRight: '4px' }}>
@@ -667,7 +667,7 @@ export default function LabAdmin() {
                     <div><b>E-mail:</b> {criarSucesso.email}</div>
                     <div><b>Senha:</b> {criarSucesso.senha}</div>
                   </div>
-                  <div style={{ fontSize: '11px', color: '#666', marginTop: '10px', marginBottom: '14px' }}>
+                  <div style={{ fontSize: '11px', color: R.dim, marginTop: '10px', marginBottom: '14px' }}>
                     Anote as credenciais acima para enviar ao cliente quando agendar a reunião.
                   </div>
                   <button onClick={() => { setCriarLead(null); setCriarSucesso(null); }}
@@ -679,23 +679,23 @@ export default function LabAdmin() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                     <div style={{ gridColumn: '1/-1' }}>
-                      <div style={{ fontSize: '10px', fontWeight: '700', color: '#444', textTransform: 'uppercase', marginBottom: '4px' }}>Nome do Laboratório</div>
+                      <div style={{ fontSize: '10px', fontWeight: '700', color: R.txt, textTransform: 'uppercase', marginBottom: '4px' }}>Nome do Laboratório</div>
                       <input value={criarForm.nome_lab} onChange={e => setCriarForm(f => ({ ...f, nome_lab: e.target.value }))} style={{ ...INP, width: '100%' }} />
                     </div>
                     <div>
-                      <div style={{ fontSize: '10px', fontWeight: '700', color: '#444', textTransform: 'uppercase', marginBottom: '4px' }}>Nome do Responsável</div>
+                      <div style={{ fontSize: '10px', fontWeight: '700', color: R.txt, textTransform: 'uppercase', marginBottom: '4px' }}>Nome do Responsável</div>
                       <input value={criarForm.nome_responsavel} onChange={e => setCriarForm(f => ({ ...f, nome_responsavel: e.target.value }))} style={{ ...INP, width: '100%' }} />
                     </div>
                     <div>
-                      <div style={{ fontSize: '10px', fontWeight: '700', color: '#444', textTransform: 'uppercase', marginBottom: '4px' }}>E-mail (login)</div>
+                      <div style={{ fontSize: '10px', fontWeight: '700', color: R.txt, textTransform: 'uppercase', marginBottom: '4px' }}>E-mail (login)</div>
                       <input value={criarForm.email} onChange={e => setCriarForm(f => ({ ...f, email: e.target.value }))} style={{ ...INP, width: '100%' }} />
                     </div>
                     <div>
-                      <div style={{ fontSize: '10px', fontWeight: '700', color: '#444', textTransform: 'uppercase', marginBottom: '4px' }}>Senha</div>
+                      <div style={{ fontSize: '10px', fontWeight: '700', color: R.txt, textTransform: 'uppercase', marginBottom: '4px' }}>Senha</div>
                       <input value={criarForm.senha} onChange={e => setCriarForm(f => ({ ...f, senha: e.target.value }))} style={{ ...INP, width: '100%' }} placeholder="Mín. 6 caracteres" />
                     </div>
                     <div>
-                      <div style={{ fontSize: '10px', fontWeight: '700', color: '#444', textTransform: 'uppercase', marginBottom: '4px' }}>Plano</div>
+                      <div style={{ fontSize: '10px', fontWeight: '700', color: R.txt, textTransform: 'uppercase', marginBottom: '4px' }}>Plano</div>
                       <select value={criarForm.plano} onChange={e => setCriarForm(f => ({ ...f, plano: e.target.value }))} style={{ ...INP, width: '100%' }}>
                         <option value="trial">Trial</option>
                         <option value="mensal">Mensal</option>
@@ -705,13 +705,13 @@ export default function LabAdmin() {
                     </div>
                     {criarForm.plano === 'trial' && (
                       <div>
-                        <div style={{ fontSize: '10px', fontWeight: '700', color: '#444', textTransform: 'uppercase', marginBottom: '4px' }}>Dias de Trial</div>
+                        <div style={{ fontSize: '10px', fontWeight: '700', color: R.txt, textTransform: 'uppercase', marginBottom: '4px' }}>Dias de Trial</div>
                         <input type="number" min="1" max="90" value={criarForm.dias_trial} onChange={e => setCriarForm(f => ({ ...f, dias_trial: e.target.value }))} style={{ ...INP, width: '100%' }} />
                       </div>
                     )}
                     {(criarForm.plano === 'mensal' || criarForm.plano === 'anual') && (
                       <div>
-                        <div style={{ fontSize: '10px', fontWeight: '700', color: '#444', textTransform: 'uppercase', marginBottom: '4px' }}>Licença expira em</div>
+                        <div style={{ fontSize: '10px', fontWeight: '700', color: R.txt, textTransform: 'uppercase', marginBottom: '4px' }}>Licença expira em</div>
                         <input type="date" value={criarForm.licenca_expira} onChange={e => setCriarForm(f => ({ ...f, licenca_expira: e.target.value }))} style={{ ...INP, width: '100%' }} />
                       </div>
                     )}
@@ -743,7 +743,7 @@ export default function LabAdmin() {
               <button onClick={() => setRestaurarTenant(null)} style={{ background: 'none', border: '1px solid #ffe', color: '#ffe', padding: '1px 6px', cursor: 'pointer', fontFamily: 'inherit' }}>✕</button>
             </div>
             <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ fontSize: '11px', color: '#444', background: '#fffbe6', border: '1px solid #ccaa44', padding: '8px 10px' }}>
+              <div style={{ fontSize: '11px', color: R.txt, background: '#fffbe6', border: '1px solid #ccaa44', padding: '8px 10px' }}>
                 Digite os nomes das listas que deseja restaurar. Deixe em branco para não alterar.
               </div>
               {[
@@ -752,7 +752,7 @@ export default function LabAdmin() {
                 { label: 'Nome da Lista 3', key: 'lista3' as const },
               ].map(({ label, key }) => (
                 <div key={key}>
-                  <div style={{ fontSize: '10px', fontWeight: '700', color: '#444', textTransform: 'uppercase', marginBottom: '4px' }}>{label}</div>
+                  <div style={{ fontSize: '10px', fontWeight: '700', color: R.txt, textTransform: 'uppercase', marginBottom: '4px' }}>{label}</div>
                   <input value={restForm[key]} onChange={e => setRestForm(f => ({ ...f, [key]: e.target.value }))}
                     style={{ ...INP, width: '100%' }} placeholder={`ex: tabela caucaia`} />
                 </div>
@@ -768,7 +768,7 @@ export default function LabAdmin() {
               )}
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button onClick={() => setRestaurarTenant(null)}
-                  style={{ flex: 1, padding: '8px', fontSize: '12px', fontWeight: '700', background: R.alt, color: '#333', border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit' }}>
+                  style={{ flex: 1, padding: '8px', fontSize: '12px', fontWeight: '700', background: R.alt, color: R.txt, border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit' }}>
                   FECHAR
                 </button>
                 <button onClick={handleRestaurar}
@@ -792,7 +792,7 @@ export default function LabAdmin() {
             <div style={{ border: `2px inset ${R.bdr}`, padding: '16px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                 <div>
-                  <div style={{ fontSize: '10px', fontWeight: '700', color: '#444', textTransform: 'uppercase', marginBottom: '4px' }}>Plano</div>
+                  <div style={{ fontSize: '10px', fontWeight: '700', color: R.txt, textTransform: 'uppercase', marginBottom: '4px' }}>Plano</div>
                   <select value={editForm.plano} onChange={e => setEditForm(f => ({ ...f, plano: e.target.value }))} style={{ ...INP, width: '100%' }}>
                     <option value="trial">Trial</option>
                     <option value="mensal">Mensal</option>
@@ -801,7 +801,7 @@ export default function LabAdmin() {
                   </select>
                 </div>
                 <div>
-                  <div style={{ fontSize: '10px', fontWeight: '700', color: '#444', textTransform: 'uppercase', marginBottom: '4px' }}>Licença expira em</div>
+                  <div style={{ fontSize: '10px', fontWeight: '700', color: R.txt, textTransform: 'uppercase', marginBottom: '4px' }}>Licença expira em</div>
                   <input type="date" value={editForm.licenca_expira} onChange={e => setEditForm(f => ({ ...f, licenca_expira: e.target.value }))} style={{ ...INP, width: '100%' }} />
                 </div>
               </div>
@@ -841,7 +841,7 @@ export default function LabAdmin() {
 
               {/* Quick extend buttons */}
               <div style={{ marginBottom: '12px' }}>
-                <div style={{ fontSize: '10px', fontWeight: '700', color: '#444', textTransform: 'uppercase', marginBottom: '6px' }}>Renovar rapidamente:</div>
+                <div style={{ fontSize: '10px', fontWeight: '700', color: R.txt, textTransform: 'uppercase', marginBottom: '6px' }}>Renovar rapidamente:</div>
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   {[1, 3, 6, 12].map(m => (
                     <button key={m} onClick={() => addMonths(m)}

@@ -76,7 +76,7 @@ const SEED_PRODUTOS = [
 
 import { R } from '../../lib/labTheme';
 const INP: React.CSSProperties = { width:'100%', padding:'5px 8px', fontSize:'12px', background:R.inp, border:'1px solid #999', color:R.txt, outline:'none', boxSizing:'border-box', fontFamily:"'Courier New', monospace" };
-const LBL: React.CSSProperties = { fontSize:'10px', fontWeight:'700', color:'#444', textTransform:'uppercase', letterSpacing:'0.5px', display:'block', marginBottom:'3px' };
+const LBL: React.CSSProperties = { fontSize:'10px', fontWeight:'700', color:R.txt, textTransform:'uppercase', letterSpacing:'0.5px', display:'block', marginBottom:'3px' };
 
 export default function LabServicos() {
   const [servicos, setServicos] = useState<Servico[]>([]);
@@ -282,7 +282,7 @@ export default function LabServicos() {
                     onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                     <span style={{ fontSize:'11px', fontWeight:'700', color:'#888', textTransform:'uppercase', letterSpacing:'0.5px' }}>LISTA {i + 1}</span>
                     <span style={{ fontSize:'16px', fontWeight:'700', color:'#003300' }}>{listaNomes[i]}</span>
-                    <span style={{ fontSize:'11px', fontFamily:"'Courier New', monospace", color:'#555' }}>
+                    <span style={{ fontSize:'11px', fontFamily:"'Courier New', monospace", color:R.dim }}>
                       {count} produto(s) com preço
                     </span>
                     <span style={{ fontSize:'10px', color:'#008800', fontWeight:'700', marginTop:'4px' }}>▶ ENTRAR NA LISTA</span>
@@ -300,7 +300,7 @@ export default function LabServicos() {
           {/* Header da lista */}
           <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'8px' }}>
             <button onClick={() => { setListaFiltro(null); setInlineEdit(null); setEditingNomeLista(false); setBusca(''); }}
-              style={{ padding:'5px 12px', fontSize:'11px', fontWeight:'700', background:R.alt, color:'#333', border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>
+              style={{ padding:'5px 12px', fontSize:'11px', fontWeight:'700', background:R.alt, color:R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>
               ← VOLTAR
             </button>
             <div style={{ background:R.hdr, color:R.hdrTxt, padding:'5px 14px', fontSize:'13px', fontWeight:'700', letterSpacing:'1px', border:`2px outset ${R.hdrBdr}`, flex:1, display:'flex', alignItems:'center', gap:'10px' }}>
@@ -354,7 +354,7 @@ export default function LabServicos() {
           {/* Tabela da lista */}
           <div style={{ flex:1, overflowY:'auto', border:`2px inset ${R.bdr}` }}>
             {loading ? (
-              <div style={{ padding:'40px', textAlign:'center', color:'#444', fontFamily:"'Courier New', monospace" }}>Carregando...</div>
+              <div style={{ padding:'40px', textAlign:'center', color:R.txt, fontFamily:"'Courier New', monospace" }}>Carregando...</div>
             ) : (
               <table style={{ width:'100%', borderCollapse:'collapse' }}>
                 <thead style={{ position:'sticky', top:0 }}>
@@ -380,7 +380,7 @@ export default function LabServicos() {
                       <tr key={s.id} style={{ background: i%2===0 ? R.panel : R.alt, borderBottom:`1px solid ${R.bdr}` }}
                         onMouseEnter={e => (e.currentTarget.style.background = '#d0f0d0')}
                         onMouseLeave={e => (e.currentTarget.style.background = i%2===0 ? R.panel : R.alt)}>
-                        <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', color:'#555' }}>{s.codigo||'—'}</td>
+                        <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', color:R.dim }}>{s.codigo||'—'}</td>
                         <td style={{ padding:'6px 10px', fontSize:'12px', fontWeight:'700', color:R.txt }}>{s.nome}</td>
                         <td style={{ padding:'4px 6px', textAlign:'right' }}>
                           {isEditing ? (
@@ -406,7 +406,7 @@ export default function LabServicos() {
                           )}
                         </td>
                         <td style={{ padding:'4px 6px', whiteSpace:'nowrap', textAlign:'center' }}>
-                          <button onClick={() => openEdit(s)} style={{ fontSize:'11px', padding:'2px 8px', background:R.alt, color:'#333', border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', marginRight:'3px' }}>✏️</button>
+                          <button onClick={() => openEdit(s)} style={{ fontSize:'11px', padding:'2px 8px', background:R.alt, color:R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', marginRight:'3px' }}>✏️</button>
                           <button onClick={() => setConfirmarDeleteProduto({ id: s.id, nome: s.nome })} style={{ fontSize:'11px', padding:'2px 6px', background:'#ffeeee', color:'#880000', border:'1px outset #cc0000', cursor:'pointer', fontFamily:'inherit' }}>✕</button>
                         </td>
                       </tr>
@@ -427,14 +427,14 @@ export default function LabServicos() {
               ⚠ EXCLUIR PRODUTO
             </div>
             <div style={{ padding:'20px 16px', display:'flex', flexDirection:'column', gap:'16px' }}>
-              <div style={{ fontSize:'13px', color:'#222', lineHeight:'1.6' }}>
+              <div style={{ fontSize:'13px', color:R.txt, lineHeight:'1.6' }}>
                 Deseja excluir o produto:<br />
                 <strong style={{ color:'#880000' }}>{confirmarDeleteProduto.nome}</strong>?<br />
-                <span style={{ fontSize:'11px', color:'#666' }}>O produto será removido do catálogo.</span>
+                <span style={{ fontSize:'11px', color:R.dim }}>O produto será removido do catálogo.</span>
               </div>
               <div style={{ display:'flex', gap:'10px' }}>
                 <button onClick={() => setConfirmarDeleteProduto(null)}
-                  style={{ flex:1, padding:'10px', fontSize:'13px', fontWeight:'700', background:R.alt, color:'#333', border:`2px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', letterSpacing:'0.5px' }}>
+                  style={{ flex:1, padding:'10px', fontSize:'13px', fontWeight:'700', background:R.alt, color:R.txt, border:`2px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', letterSpacing:'0.5px' }}>
                   NÃO
                 </button>
                 <button onClick={() => handleDelete(confirmarDeleteProduto.id)}
@@ -455,13 +455,13 @@ export default function LabServicos() {
               ⚠ EXCLUIR LISTA
             </div>
             <div style={{ padding:'20px 16px', display:'flex', flexDirection:'column', gap:'16px' }}>
-              <div style={{ fontSize:'13px', color:'#222', lineHeight:'1.6' }}>
+              <div style={{ fontSize:'13px', color:R.txt, lineHeight:'1.6' }}>
                 Deseja excluir a lista <strong>"{listaNomes[confirmarDeleteLista]}"</strong>?<br />
-                <span style={{ fontSize:'11px', color:'#666' }}>Todos os preços desta lista serão zerados. Os produtos não serão excluídos.</span>
+                <span style={{ fontSize:'11px', color:R.dim }}>Todos os preços desta lista serão zerados. Os produtos não serão excluídos.</span>
               </div>
               <div style={{ display:'flex', gap:'10px' }}>
                 <button onClick={() => setConfirmarDeleteLista(null)}
-                  style={{ flex:1, padding:'10px', fontSize:'13px', fontWeight:'700', background:R.alt, color:'#333', border:`2px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', letterSpacing:'0.5px' }}>
+                  style={{ flex:1, padding:'10px', fontSize:'13px', fontWeight:'700', background:R.alt, color:R.txt, border:`2px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', letterSpacing:'0.5px' }}>
                   NÃO
                 </button>
                 <button onClick={confirmarEExcluirLista}

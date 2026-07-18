@@ -40,9 +40,9 @@ export default function LabOticas() {
       {/* Tabela */}
       <div style={{ flex: 1, overflowY: 'auto', border: `2px inset ${R.bdr}` }}>
         {loading ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: '#444', fontFamily: "'Courier New', monospace" }}>Carregando...</div>
+          <div style={{ padding: '40px', textAlign: 'center', color: R.txt, fontFamily: "'Courier New', monospace" }}>Carregando...</div>
         ) : filtradas.length === 0 ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: '#444' }}>Nenhuma ótica cadastrada.</div>
+          <div style={{ padding: '40px', textAlign: 'center', color: R.txt }}>Nenhuma ótica cadastrada.</div>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead style={{ position: 'sticky', top: 0 }}>
@@ -58,12 +58,12 @@ export default function LabOticas() {
                   style={{ background: i % 2 === 0 ? R.panel : R.alt, cursor: 'pointer', borderBottom: `1px solid ${R.bdr}` }}
                   onMouseEnter={e => (e.currentTarget.style.background = '#d0f0d0')}
                   onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 0 ? R.panel : R.alt)}>
-                  <td style={{ padding: '7px 12px', fontFamily: "'Courier New', monospace", fontSize: '11px', color: '#555' }}>{o.codigo || '—'}</td>
+                  <td style={{ padding: '7px 12px', fontFamily: "'Courier New', monospace", fontSize: '11px', color: R.dim }}>{o.codigo || '—'}</td>
                   <td style={{ padding: '7px 12px', fontSize: '12px', fontWeight: '700', color: R.txt }}>{o.nome_reduzido || o.nome}</td>
-                  <td style={{ padding: '7px 12px', fontFamily: "'Courier New', monospace", fontSize: '11px', color: '#333' }}>{o.cnpj || '—'}</td>
-                  <td style={{ padding: '7px 12px', fontSize: '11px', color: '#333' }}>{o.telefone || '—'}</td>
-                  <td style={{ padding: '7px 12px', fontSize: '11px', color: '#333' }}>{o.email || '—'}</td>
-                  <td style={{ padding: '7px 12px', fontSize: '11px', color: '#333' }}>{o.cidade && o.uf ? `${o.cidade}/${o.uf}` : o.cidade || '—'}</td>
+                  <td style={{ padding: '7px 12px', fontFamily: "'Courier New', monospace", fontSize: '11px', color: R.txt }}>{o.cnpj || '—'}</td>
+                  <td style={{ padding: '7px 12px', fontSize: '11px', color: R.txt }}>{o.telefone || '—'}</td>
+                  <td style={{ padding: '7px 12px', fontSize: '11px', color: R.txt }}>{o.email || '—'}</td>
+                  <td style={{ padding: '7px 12px', fontSize: '11px', color: R.txt }}>{o.cidade && o.uf ? `${o.cidade}/${o.uf}` : o.cidade || '—'}</td>
                   <td style={{ padding: '7px 12px' }}>
                     <span style={{ fontSize: '10px', fontWeight: '700', color: o.ativo ? '#006600' : '#880000', background: o.ativo ? '#ccffcc' : '#ffdddd', padding: '2px 7px', border: `1px solid ${o.ativo ? '#006600' : '#880000'}` }}>
                       {o.ativo ? 'ATIVA' : 'INATIVA'}

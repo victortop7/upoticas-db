@@ -19,7 +19,7 @@ const MOV_VAZIO = { tipo: 'entrada' as 'entrada' | 'saida', quantidade: '', moti
 
 import { R } from '../../lib/labTheme';
 const INP: React.CSSProperties = { width:'100%', padding:'5px 8px', fontSize:'12px', background:R.inp, border:'1px solid #999', color:R.txt, outline:'none', boxSizing:'border-box', fontFamily:"'Courier New', monospace" };
-const LBL: React.CSSProperties = { fontSize:'10px', fontWeight:'700', color:'#444', textTransform:'uppercase', letterSpacing:'0.5px', display:'block', marginBottom:'3px' };
+const LBL: React.CSSProperties = { fontSize:'10px', fontWeight:'700', color:R.txt, textTransform:'uppercase', letterSpacing:'0.5px', display:'block', marginBottom:'3px' };
 
 export default function LabEstoque() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
@@ -131,9 +131,9 @@ export default function LabEstoque() {
       {/* Tabela */}
       <div style={{ flex:1, overflowY:'auto', border:`2px inset ${R.bdr}` }}>
         {loading ? (
-          <div style={{ padding:'40px', textAlign:'center', color:'#444', fontFamily:"'Courier New', monospace" }}>Carregando...</div>
+          <div style={{ padding:'40px', textAlign:'center', color:R.txt, fontFamily:"'Courier New', monospace" }}>Carregando...</div>
         ) : produtos.length === 0 ? (
-          <div style={{ padding:'40px', textAlign:'center', color:'#444' }}>Nenhum produto cadastrado.</div>
+          <div style={{ padding:'40px', textAlign:'center', color:R.txt }}>Nenhum produto cadastrado.</div>
         ) : (
           <table style={{ width:'100%', borderCollapse:'collapse' }}>
             <thead style={{ position:'sticky', top:0 }}>
@@ -150,16 +150,16 @@ export default function LabEstoque() {
                   <tr key={p.id} style={{ background: i % 2 === 0 ? R.panel : R.alt, borderBottom:`1px solid ${R.bdr}` }}>
                     <td style={{ padding:'6px 10px', fontSize:'12px', fontWeight:'700', color:R.txt }}>{p.marca}</td>
                     <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', color:'#003388', fontWeight:'700' }}>{p.indice}</td>
-                    <td style={{ padding:'6px 10px', fontSize:'11px', color:'#333' }}>{TIPO_LABEL[p.tipo] ?? p.tipo}</td>
-                    <td style={{ padding:'6px 10px', fontSize:'11px', color:'#333' }}>{p.tratamento}</td>
-                    <td style={{ padding:'6px 10px', fontSize:'11px', color:'#555' }}>{p.descricao ?? '—'}</td>
+                    <td style={{ padding:'6px 10px', fontSize:'11px', color:R.txt }}>{TIPO_LABEL[p.tipo] ?? p.tipo}</td>
+                    <td style={{ padding:'6px 10px', fontSize:'11px', color:R.txt }}>{p.tratamento}</td>
+                    <td style={{ padding:'6px 10px', fontSize:'11px', color:R.dim }}>{p.descricao ?? '—'}</td>
                     <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'14px', fontWeight:'900', color: baixo ? '#005500' : p.quantidade > p.quantidade_minima * 2 ? '#006600' : '#886600', textAlign:'center' }}>
                       {p.quantidade}
                     </td>
-                    <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:'#555', textAlign:'center' }}>{p.quantidade_minima}</td>
+                    <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.dim, textAlign:'center' }}>{p.quantidade_minima}</td>
                     <td style={{ padding:'6px 10px', whiteSpace:'nowrap' }}>
                       <button onClick={() => abrirMov(p)} style={{ fontSize:'11px', fontWeight:'700', padding:'2px 8px', background:'#d4d0c8', color:'#000', border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', marginRight:'4px' }}>+/−</button>
-                      <button onClick={() => abrirEditar(p)} style={{ fontSize:'11px', padding:'2px 8px', background:R.alt, color:'#333', border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>Editar</button>
+                      <button onClick={() => abrirEditar(p)} style={{ fontSize:'11px', padding:'2px 8px', background:R.alt, color:R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>Editar</button>
                     </td>
                   </tr>
                 );
@@ -226,7 +226,7 @@ export default function LabEstoque() {
             <div style={{ padding:'14px' }}>
               <div style={{ background:R.alt, border:`1px inset ${R.bdr}`, padding:'8px 12px', marginBottom:'12px' }}>
                 <div style={{ fontSize:'12px', fontWeight:'700', color:R.txt }}>{produtoMov.marca} — {produtoMov.indice}</div>
-                <div style={{ fontSize:'11px', color:'#555' }}>{produtoMov.tratamento} · {TIPO_LABEL[produtoMov.tipo]}</div>
+                <div style={{ fontSize:'11px', color:R.dim }}>{produtoMov.tratamento} · {TIPO_LABEL[produtoMov.tipo]}</div>
                 <div style={{ fontSize:'13px', fontFamily:"'Courier New', monospace", color:'#003388', marginTop:'4px', fontWeight:'700' }}>
                   Estoque atual: {produtoMov.quantidade}
                 </div>

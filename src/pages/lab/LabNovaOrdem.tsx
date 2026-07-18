@@ -488,7 +488,7 @@ export default function LabNovaOrdem() {
             <div>
               <label style={LBL}>Nome da Ótica</label>
               <div style={{ ...INP, background: '#d4d0c8', color: oticaErro ? '#cc0000' : oticaNome ? '#000' : '#666', fontFamily: "'Montserrat', sans-serif", minHeight: '32px', display: 'flex', alignItems: 'center' }}>
-                {oticaNome || <span style={{ color: '#666', fontSize: '11px' }}>Digite o código ou nome acima...</span>}
+                {oticaNome || <span style={{ color: R.dim, fontSize: '11px' }}>Digite o código ou nome acima...</span>}
               </div>
             </div>
             <div>
@@ -642,7 +642,7 @@ export default function LabNovaOrdem() {
               <tbody>
                 {(['od', 'oe'] as const).map((o, i) => (
                   <tr key={o}>
-                    <td style={{ ...TD, fontSize: '11px', fontWeight: '700', color: '#555', paddingRight: '6px', whiteSpace: 'nowrap' }}>O/{i === 0 ? 'D' : 'E'}</td>
+                    <td style={{ ...TD, fontSize: '11px', fontWeight: '700', color: R.dim, paddingRight: '6px', whiteSpace: 'nowrap' }}>O/{i === 0 ? 'D' : 'E'}</td>
                     <td style={TD}><RxInput value={o === 'od' ? od.esf_longe : oe.esf_longe} onChange={v => updateOlho(o, 'esf_longe', v)} /></td>
                     <td style={TD}><RxInput value={o === 'od' ? od.cil_longe : oe.cil_longe} onChange={v => updateOlho(o, 'cil_longe', v)} /></td>
                     <td style={TD}><RxInput value={o === 'od' ? od.eixo_longe : oe.eixo_longe} onChange={v => updateOlho(o, 'eixo_longe', v)} width={44} /></td>
@@ -677,7 +677,7 @@ export default function LabNovaOrdem() {
                 <button type="button" onClick={() => setShowShapePicker(true)}
                   style={{ ...INP, textAlign: 'left', cursor: 'pointer', color: armShape ? '#000' : '#666', fontWeight: armShape ? '700' : '400', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between' }}>
                   <span>{armShape || '— Shape'}</span>
-                  <span style={{ fontSize: '10px', color: '#666' }}>▼</span>
+                  <span style={{ fontSize: '10px', color: R.dim }}>▼</span>
                 </button>
               </div>
             </div>
@@ -799,12 +799,12 @@ export default function LabNovaOrdem() {
                         />
                       </td>
                       <td style={TD}><CobInput value={s.un} onChange={v => setCobItem(i, { un: v })} style={{ textAlign: 'center', width: '40px' }} /></td>
-                      <td style={{ ...TD, fontFamily: "'Courier New', monospace", fontSize: '11px', color: '#666', textAlign: 'center' }}>
+                      <td style={{ ...TD, fontFamily: "'Courier New', monospace", fontSize: '11px', color: R.dim, textAlign: 'center' }}>
                         {s.estoque || '—'}
                       </td>
                       <td style={TD}><CobInput value={s.qtd} onChange={v => setCobItem(i, { qtd: v })} style={{ textAlign: 'center', width: '50px' }} /></td>
                       <td style={TD}><CobInput value={s.pv_unit} onChange={v => setCobItem(i, { pv_unit: v })} style={{ textAlign: 'right', width: '75px' }} /></td>
-                      <td style={{ ...TD, fontFamily: "'Courier New', monospace", fontSize: '12px', color: '#555', textAlign: 'right', paddingRight: '8px' }}>
+                      <td style={{ ...TD, fontFamily: "'Courier New', monospace", fontSize: '12px', color: R.dim, textAlign: 'right', paddingRight: '8px' }}>
                         {bruto > 0 ? bruto.toFixed(2).replace('.', ',') : ''}
                       </td>
                       <td style={TD}><CobInput value={s.perc_desc} onChange={v => setCobItem(i, { perc_desc: v })} style={{ textAlign: 'center', width: '55px' }} /></td>
@@ -813,7 +813,7 @@ export default function LabNovaOrdem() {
                       </td>
                       <td style={{ ...TD, textAlign: 'center' }}>
                         <button type="button" onClick={() => setCobranca(c => c.length > 1 ? c.filter((_, j) => j !== i) : c)}
-                          style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer', fontSize: '14px', lineHeight: 1 }}>×</button>
+                          style={{ background: 'none', border: 'none', color: R.dim, cursor: 'pointer', fontSize: '14px', lineHeight: 1 }}>×</button>
                       </td>
                     </tr>
                   );

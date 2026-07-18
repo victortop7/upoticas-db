@@ -96,7 +96,7 @@ export default function LabFluxoScan() {
             CONFIGURAR SETOR DESTE COMPUTADOR
           </div>
           <div style={{ border: `2px inset ${R.bdr}`, padding: '12px' }}>
-            <div style={{ fontSize: '11px', color: '#444', fontWeight: '700', marginBottom: '8px', textTransform: 'uppercase', fontFamily: "'Courier New', monospace" }}>
+            <div style={{ fontSize: '11px', color: R.txt, fontWeight: '700', marginBottom: '8px', textTransform: 'uppercase', fontFamily: "'Courier New', monospace" }}>
               Selecione o setor:
             </div>
             {Array.from({ length: 9 }, (_, i) => i + 1).map((n, i) => (
@@ -154,7 +154,7 @@ export default function LabFluxoScan() {
                     <div style={{ fontFamily: "'Courier New', monospace", fontSize: '36px', fontWeight: '900', color: '#000', marginBottom: '4px', letterSpacing: '2px' }}>
                       OS #{String(result.ordem.numero).padStart(4, '0')}
                     </div>
-                    <div style={{ fontSize: '14px', fontWeight: '700', color: '#333', marginBottom: '14px' }}>
+                    <div style={{ fontSize: '14px', fontWeight: '700', color: R.txt, marginBottom: '14px' }}>
                       {result.ordem.otica_nome}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
@@ -168,7 +168,7 @@ export default function LabFluxoScan() {
                         <span style={{ fontSize: '11px', color: '#888', fontStyle: 'italic' }}>status mantido</span>
                       )}
                     </div>
-                    <div style={{ marginTop: '10px', fontSize: '11px', color: '#555', fontFamily: "'Courier New', monospace" }}>
+                    <div style={{ marginTop: '10px', fontSize: '11px', color: R.dim, fontFamily: "'Courier New', monospace" }}>
                       Setor registrado: {result.ordem.setor_nome}
                     </div>
                   </>
@@ -230,7 +230,7 @@ export default function LabFluxoScan() {
                   <div style={{ fontFamily: "'Courier New', monospace", fontSize: '12px', fontWeight: '700', color: '#005500' }}>
                     OS #{String(h.numero).padStart(4, '0')}
                   </div>
-                  <div style={{ fontSize: '10px', color: '#333', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <div style={{ fontSize: '10px', color: R.txt, marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {h.otica_nome}
                   </div>
                   <div style={{ fontSize: '10px', fontWeight: '700', fontFamily: "'Courier New', monospace", color: h.mudou ? '#006600' : '#888' }}>
