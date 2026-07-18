@@ -29,8 +29,8 @@ function diasAtras(n: number) {
 const STATUS_STYLE: Record<string, { bg: string; color: string; label: string }> = {
   aguardando: { bg:'#fff8cc', color:'#886600', label:'AGUARDANDO' },
   em_producao:{ bg:'#cce0ff', color:'#003388', label:'EM PRODUÇÃO' },
-  pronto:     { bg:'#ccffcc', color:'#006600', label:'PRONTO' },
-  entregue:   { bg:'#e0e0e0', color:R.txt,    label:'ENTREGUE' },
+  pronto:     { bg:'#ccffcc', color:'#005500', label:'PRONTO' },
+  entregue:   { bg:'#e0e0e0', color:'#555555',    label:'ENTREGUE' },
   cancelado:  { bg:'#ccffcc', color:'#005500', label:'CANCELADO' },
 };
 
@@ -246,7 +246,7 @@ export default function LabRelatorios() {
             ].map(({ label, val, mono }) => (
               <div key={label}>
                 <div style={{ fontSize:'10px', fontWeight:'700', color:R.dim, textTransform:'uppercase', letterSpacing:'0.5px' }}>{label}</div>
-                <div style={{ fontSize:'18px', fontWeight:'900', color:'#005500', fontFamily: mono ? "'Courier New', monospace" : 'inherit' }}>{val}</div>
+                <div style={{ fontSize:'18px', fontWeight:'900', color:R.accent, fontFamily: mono ? "'Courier New', monospace" : 'inherit' }}>{val}</div>
               </div>
             ))}
           </div>
@@ -269,12 +269,12 @@ export default function LabRelatorios() {
               </thead>
               <tbody>
                 {ordens.map((o, i) => {
-                  const st = STATUS_STYLE[o.status] || { bg:'#eee', color:R.txt, label: o.status };
+                  const st = STATUS_STYLE[o.status] || { bg:'#eee', color:'#555555', label: o.status };
                   return (
                     <tr key={o.id} style={{ background: i%2===0 ? R.panel : R.alt, borderBottom:`1px solid ${R.bdr}`, cursor:'pointer' }}
                       onMouseEnter={e => (e.currentTarget.style.background='#005500')}
                       onMouseLeave={e => (e.currentTarget.style.background= i%2===0 ? R.panel : R.alt)}>
-                      <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'900', color:'#005500' }}
+                      <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'900', color:R.accent }}
                         onClick={() => navigate(`/lab/ordens/${o.id}`)}>
                         #{String(o.numero).padStart(4,'0')}
                       </td>
@@ -349,7 +349,7 @@ export default function LabRelatorios() {
           {buscandoOS ? 'BUSCANDO...' : '🔍 IR PARA OS'}
         </button>
         {erroBuscaOS && (
-          <span style={{ fontSize:'11px', color:'#005500', fontWeight:'700', fontFamily:"'Courier New', monospace" }}>
+          <span style={{ fontSize:'11px', color:R.accent, fontWeight:'700', fontFamily:"'Courier New', monospace" }}>
             ✕ {erroBuscaOS}
           </span>
         )}
@@ -403,7 +403,7 @@ export default function LabRelatorios() {
           ].map(({ label, val, sub }) => (
             <div key={label} style={{ background:R.panel, border:`2px outset ${R.bdr}`, padding:'8px 16px', flexShrink:0 }}>
               <div style={{ fontSize:'10px', fontWeight:'700', color:R.dim, textTransform:'uppercase', letterSpacing:'0.5px' }}>{label}</div>
-              <div style={{ fontSize:'20px', fontWeight:'900', color:'#005500', fontFamily:"'Courier New', monospace", lineHeight:'1.2' }}>{val}</div>
+              <div style={{ fontSize:'20px', fontWeight:'900', color:R.accent, fontFamily:"'Courier New', monospace", lineHeight:'1.2' }}>{val}</div>
               <div style={{ fontSize:'10px', color:'#888', marginTop:'2px' }}>{sub}</div>
             </div>
           ))}
@@ -439,9 +439,9 @@ export default function LabRelatorios() {
                     <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.dim }}>{o.otica_codigo||'—'}</td>
                     <td style={{ padding:'7px 10px', fontSize:'13px', fontWeight:'700', color:R.txt }}>{o.otica_nome}</td>
                     <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'14px', fontWeight:'900', color:'#000' }}>{o.total_os}</td>
-                    <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'700', color:'#006600' }}>{o.entregues}</td>
-                    <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'700', color:'#003388' }}>{o.em_aberto}</td>
-                    <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', color:'#005500' }}>{o.canceladas}</td>
+                    <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'700', color:R.accent }}>{o.entregues}</td>
+                    <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'700', color:R.accent2 }}>{o.em_aberto}</td>
+                    <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', color:R.accent }}>{o.canceladas}</td>
                     <td style={{ padding:'7px 10px', textAlign:'right' }}>
                       <div style={{ fontFamily:"'Courier New', monospace", fontSize:'13px', fontWeight:'700', color:R.txt, marginBottom:'3px' }}>{brl(o.valor_total)}</div>
                       <div style={{ display:'flex', alignItems:'center', gap:'4px', justifyContent:'flex-end' }}>

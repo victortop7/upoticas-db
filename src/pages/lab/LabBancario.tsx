@@ -19,7 +19,7 @@ function fmtDate(s: string | null) {
 }
 
 import { R } from '../../lib/labTheme';
-const INP: React.CSSProperties = { padding: '5px 8px', fontSize: '12px', background: '#fff', border: `1px solid ${R.bdr}`, borderRadius: 0, color: R.txt, outline: 'none', fontFamily: "'Courier New', monospace", width: '100%', boxSizing: 'border-box' };
+const INP: React.CSSProperties = { padding: '5px 8px', fontSize: '12px', background: '#fff', border: `1px solid ${R.bdr}`, borderRadius: 0, color: '#555555', outline: 'none', fontFamily: "'Courier New', monospace", width: '100%', boxSizing: 'border-box' };
 const LBL: React.CSSProperties = { fontSize: '10px', fontWeight: '700', color: R.txt, textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '3px' };
 
 export default function LabBancario() {

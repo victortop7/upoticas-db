@@ -83,10 +83,10 @@ export default function LabOrdens() {
       aguardando: { bg: '#fff8cc', color: '#886600', border: '#886600' },
       em_producao: { bg: '#cce0ff', color: '#003388', border: '#003388' },
       pronto: { bg: '#ccffcc', color: '#006600', border: '#006600' },
-      entregue: { bg: '#e0e0e0', color: R.txt, border: '#888' },
+      entregue: { bg: '#e0e0e0', color: '#555555', border: '#888' },
       cancelado: { bg: '#ccffcc', color: '#005500', border: '#005500' },
     };
-    const c = colors[s] ?? { bg: '#ddd', color: R.txt, border: '#888' };
+    const c = colors[s] ?? { bg: '#ddd', color: '#555555', border: '#888' };
     return (
       <span style={{ fontSize:'10px', fontWeight:'700', color:c.color, background:c.bg, padding:'2px 7px', border:`1px solid ${c.border}` }}>
         {statusLabel(s).toUpperCase()}
@@ -189,7 +189,7 @@ export default function LabOrdens() {
           <div style={{ padding:'40px', textAlign:'center', color:R.txt }}>
             Nenhuma ordem encontrada.{' '}
             <button onClick={() => navigate('/lab/ordens/nova')}
-              style={{ color:'#005500', background:'none', border:'none', cursor:'pointer', fontFamily:'inherit', fontSize:'13px', fontWeight:'700' }}>
+              style={{ color:R.accent, background:'none', border:'none', cursor:'pointer', fontFamily:'inherit', fontSize:'13px', fontWeight:'700' }}>
               Criar OS →
             </button>
           </div>

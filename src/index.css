@@ -84,6 +84,7 @@ input, select, textarea, button { font-family: var(--sans); }
   --lab-hdr-bdr: #007700;
   --lab-txt: #000000;
   --lab-accent: #005500;
+  --lab-accent2: #003388;
   --lab-dim: #444444;
   --lab-inp: #ffffff;
   --lab-inp-bdr: #999999;
@@ -98,6 +99,7 @@ input, select, textarea, button { font-family: var(--sans); }
   --lab-hdr-bdr: #1a4a1a;
   --lab-txt: #dcdcdc;
   --lab-accent: #33cc55;
+  --lab-accent2: #6aa3ff;
   --lab-dim: #999999;
   --lab-inp: #262626;
   --lab-inp-bdr: #444444;

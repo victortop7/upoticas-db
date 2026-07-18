@@ -281,11 +281,11 @@ export default function LabServicos() {
                     onMouseEnter={e => (e.currentTarget.style.background = '#e8e4d8')}
                     onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                     <span style={{ fontSize:'11px', fontWeight:'700', color:'#888', textTransform:'uppercase', letterSpacing:'0.5px' }}>LISTA {i + 1}</span>
-                    <span style={{ fontSize:'16px', fontWeight:'700', color:'#003300' }}>{listaNomes[i]}</span>
+                    <span style={{ fontSize:'16px', fontWeight:'700', color:R.accent }}>{listaNomes[i]}</span>
                     <span style={{ fontSize:'11px', fontFamily:"'Courier New', monospace", color:R.dim }}>
                       {count} produto(s) com preço
                     </span>
-                    <span style={{ fontSize:'10px', color:'#008800', fontWeight:'700', marginTop:'4px' }}>▶ ENTRAR NA LISTA</span>
+                    <span style={{ fontSize:'10px', color:R.accent, fontWeight:'700', marginTop:'4px' }}>▶ ENTRAR NA LISTA</span>
                   </button>
                 </div>
               );
@@ -338,7 +338,7 @@ export default function LabServicos() {
                       </button>
                     )}
                     <button onClick={openNovo}
-                      style={{ padding:'2px 10px', fontSize:'11px', fontWeight:'700', background:'#ccffcc', color:'#003300', border:'1px outset #005500', cursor:'pointer', fontFamily:'inherit' }}>
+                      style={{ padding:'2px 10px', fontSize:'11px', fontWeight:'700', background:'#ccffcc', color:'#005500', border:'1px outset #005500', cursor:'pointer', fontFamily:'inherit' }}>
                       + NOVO PRODUTO
                     </button>
                   </div>

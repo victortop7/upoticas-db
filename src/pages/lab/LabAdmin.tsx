@@ -149,7 +149,7 @@ const STATUS_STYLE: Record<string, { bg: string; color: string; label: string }>
   trial_expirado: { bg: '#fff0cc', color: '#886600', label: 'TRIAL EXPIRADO' },
   expirado:       { bg: '#ccffcc', color: '#005500', label: 'EXPIRADO' },
   bloqueado:      { bg: '#ccffcc', color: '#005500', label: 'BLOQUEADO' },
-  desativado:     { bg: '#e0e0e0', color: R.txt,    label: 'DESATIVADO' },
+  desativado:     { bg: '#e0e0e0', color: '#555555',    label: 'DESATIVADO' },
 };
 
 function fmtDate(s: string | null) {
@@ -161,7 +161,7 @@ const LEAD_STATUS_STYLE: Record<string, { bg: string; color: string; label: stri
   novo:       { bg: '#cce0ff', color: '#003388', label: 'NOVO' },
   contatado:  { bg: '#fff0cc', color: '#886600', label: 'CONTATADO' },
   convertido: { bg: '#ccffcc', color: '#006600', label: 'CONVERTIDO' },
-  descartado: { bg: '#e0e0e0', color: R.txt,    label: 'DESCARTADO' },
+  descartado: { bg: '#e0e0e0', color: '#555555',    label: 'DESCARTADO' },
 };
 
 export default function LabAdmin() {
@@ -578,7 +578,7 @@ export default function LabAdmin() {
                         )}
                         {l.status !== 'descartado' && l.status !== 'convertido' && (
                           <button onClick={() => handleLeadStatus(l.id, 'descartado')}
-                            style={{ padding: '3px 8px', fontSize: '10px', fontWeight: '700', background: '#e0e0e0', color: R.dim, border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+                            style={{ padding: '3px 8px', fontSize: '10px', fontWeight: '700', background: '#e0e0e0', color: '#555555', border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
                             DESCARTAR
                           </button>
                         )}
@@ -743,7 +743,7 @@ export default function LabAdmin() {
               <button onClick={() => setRestaurarTenant(null)} style={{ background: 'none', border: '1px solid #ffe', color: '#ffe', padding: '1px 6px', cursor: 'pointer', fontFamily: 'inherit' }}>✕</button>
             </div>
             <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ fontSize: '11px', color: R.txt, background: '#fffbe6', border: '1px solid #ccaa44', padding: '8px 10px' }}>
+              <div style={{ fontSize: '11px', color: '#555555', background: '#fffbe6', border: '1px solid #ccaa44', padding: '8px 10px' }}>
                 Digite os nomes das listas que deseja restaurar. Deixe em branco para não alterar.
               </div>
               {[

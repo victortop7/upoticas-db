@@ -122,7 +122,7 @@ export default function LabEstoque() {
         ))}
         {(filtroMarca || filtroIndice || filtroTipo) && (
           <button onClick={() => { setFiltroMarca(''); setFiltroIndice(''); setFiltroTipo(''); }}
-            style={{ padding:'4px 10px', fontSize:'11px', fontWeight:'700', background:R.alt, color:'#005500', border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>
+            style={{ padding:'4px 10px', fontSize:'11px', fontWeight:'700', background:R.alt, color:R.accent, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>
             ✕ LIMPAR
           </button>
         )}
@@ -149,7 +149,7 @@ export default function LabEstoque() {
                 return (
                   <tr key={p.id} style={{ background: i % 2 === 0 ? R.panel : R.alt, borderBottom:`1px solid ${R.bdr}` }}>
                     <td style={{ padding:'6px 10px', fontSize:'12px', fontWeight:'700', color:R.txt }}>{p.marca}</td>
-                    <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', color:'#003388', fontWeight:'700' }}>{p.indice}</td>
+                    <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', color:R.accent2, fontWeight:'700' }}>{p.indice}</td>
                     <td style={{ padding:'6px 10px', fontSize:'11px', color:R.txt }}>{TIPO_LABEL[p.tipo] ?? p.tipo}</td>
                     <td style={{ padding:'6px 10px', fontSize:'11px', color:R.txt }}>{p.tratamento}</td>
                     <td style={{ padding:'6px 10px', fontSize:'11px', color:R.dim }}>{p.descricao ?? '—'}</td>
@@ -227,7 +227,7 @@ export default function LabEstoque() {
               <div style={{ background:R.alt, border:`1px inset ${R.bdr}`, padding:'8px 12px', marginBottom:'12px' }}>
                 <div style={{ fontSize:'12px', fontWeight:'700', color:R.txt }}>{produtoMov.marca} — {produtoMov.indice}</div>
                 <div style={{ fontSize:'11px', color:R.dim }}>{produtoMov.tratamento} · {TIPO_LABEL[produtoMov.tipo]}</div>
-                <div style={{ fontSize:'13px', fontFamily:"'Courier New', monospace", color:'#003388', marginTop:'4px', fontWeight:'700' }}>
+                <div style={{ fontSize:'13px', fontFamily:"'Courier New', monospace", color:R.accent2, marginTop:'4px', fontWeight:'700' }}>
                   Estoque atual: {produtoMov.quantidade}
                 </div>
               </div>

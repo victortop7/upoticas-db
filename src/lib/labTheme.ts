@@ -18,6 +18,7 @@ export const R = {
   hdrBorder: 'var(--lab-hdr-bdr)',
   txt:       'var(--lab-txt)',
   accent:    'var(--lab-accent)',
+  accent2:   'var(--lab-accent2)',
   dim:       'var(--lab-dim)',
   inp:       'var(--lab-inp)',
   inpBg:     'var(--lab-inp)',
