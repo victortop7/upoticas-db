@@ -1,6 +1,7 @@
 ﻿import { useEffect, useState, useCallback } from 'react';
 import { api } from '../../lib/api';
 import { R } from '../../lib/labTheme';
+import { FLUXOS, flowOf, cardStage } from '../../lib/labFluxo';
 
 interface OrdemFluxo {
   id: string; numero: number; status: string; tipo: string;
@@ -9,39 +10,6 @@ interface OrdemFluxo {
   previsao_entrega: string | null; created_at: string;
   tipo_lente: string | null; marca_material: string | null;
   setor_atual: string | null; setor_desde?: string | null;
-}
-
-// ─── Funil (Kanban): etapas por tipo de lente ──────────────────────────────────
-type Etapa = { key: string; label: string; icon: string; color: string };
-const FLUXOS: Record<'simples' | 'progressiva', Etapa[]> = {
-  simples: [
-    { key: 'digitacao', label: 'Digitação', icon: '⌨️', color: '#a07500' },
-    { key: 'estoque', label: 'Estoque', icon: '📦', color: '#1069c0' },
-    { key: 'montagem', label: 'Montagem', icon: '🔧', color: '#7a3fb5' },
-    { key: 'pronto', label: 'Pronto', icon: '✅', color: '#0a8a2a' },
-    { key: 'entregue', label: 'Entregue', icon: '🚚', color: '#6b7280' },
-  ],
-  progressiva: [
-    { key: 'digitacao', label: 'Digitação', icon: '⌨️', color: '#a07500' },
-    { key: 'estoque', label: 'Estoque', icon: '📦', color: '#1069c0' },
-    { key: 'surfacagem', label: 'Surfaçagem', icon: '🪚', color: '#c05a1a' },
-    { key: 'antirrisco', label: 'Antirrisco', icon: '🛡️', color: '#0e9488' },
-    { key: 'antirreflexo', label: 'Antirreflexo', icon: '💠', color: '#2563c7' },
-    { key: 'montagem', label: 'Montagem', icon: '🔧', color: '#7a3fb5' },
-    { key: 'pronto', label: 'Pronto', icon: '✅', color: '#0a8a2a' },
-    { key: 'entregue', label: 'Entregue', icon: '🚚', color: '#6b7280' },
-  ],
-};
-function flowOf(o: OrdemFluxo): 'simples' | 'progressiva' {
-  const t = (o.tipo_lente || '').toUpperCase().trim();
-  return (t.includes('PROGRESS') || t === '02' || t.startsWith('02 ')) ? 'progressiva' : 'simples';
-}
-function cardStage(o: OrdemFluxo, etapas: Etapa[]): string {
-  if (o.status === 'entregue') return 'entregue';
-  if (o.status === 'pronto') return 'pronto';
-  const s = o.setor_atual;
-  if (s && etapas.some(e => e.key === s)) return s;
-  return etapas[0].key; // default: primeira etapa (digitação)
 }
 
 interface FluxoRecord {

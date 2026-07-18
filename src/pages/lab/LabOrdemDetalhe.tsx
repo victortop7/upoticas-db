@@ -2,6 +2,7 @@
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { R } from '../../lib/labTheme';
+import { FLUXOS, flowOf, cardStage } from '../../lib/labFluxo';
 
 const STATUS_FLOW = [
   { value: 'aguardando', label: 'Aguardando', color: '#886600' },
@@ -25,6 +26,8 @@ export default function LabOrdemDetalhe() {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [confirmarExcluir, setConfirmarExcluir] = useState(false);
   const [excluindo, setExcluindo] = useState(false);
+  const [emailOpen, setEmailOpen] = useState(false);
+  const [emailTo, setEmailTo] = useState('');
 
   async function handleExcluir() {
     setExcluindo(true);
@@ -53,6 +56,33 @@ export default function LabOrdemDetalhe() {
     setUpdatingStatus(false);
   }
 
+  // move a OS pela esteira (registra entrada/saída) e recarrega os dados
+  async function moverEtapa(setorKey: string) {
+    setUpdatingStatus(true);
+    const novoStatus = setorKey === 'entregue' ? 'entregue' : setorKey === 'pronto' ? 'pronto' : 'em_producao';
+    setData((d: any) => ({ ...d, ordem: { ...d.ordem, setor_atual: setorKey, status: novoStatus } }));
+    try { await api.post('/lab/fluxo/mover', { ordem_id: id, setor: setorKey }); } catch {}
+    setUpdatingStatus(false);
+  }
+
+  function enviarEmail() {
+    if (!data) return;
+    const { ordem } = data;
+    const num = String(ordem.numero).padStart(4, '0');
+    const assunto = `Ordem de Serviço #${num} - ${ordem.otica_nome ?? ''}`;
+    const corpo = [
+      `Ordem de Serviço #${num}`,
+      `Ótica: ${ordem.otica_nome ?? '—'}`,
+      `Status: ${STATUS_FLOW.find(s => s.value === ordem.status)?.label ?? ordem.status}`,
+      `Previsão: ${ordem.previsao_entrega ?? '—'}`,
+      `Total: R$ ${Number(ordem.total ?? 0).toFixed(2).replace('.', ',')}`,
+      '',
+      'PDF da OS em anexo (baixe pelo botão "Baixar PDF" e anexe a este e-mail).',
+    ].join('\n');
+    window.location.href = `mailto:${encodeURIComponent(emailTo)}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+    setEmailOpen(false);
+  }
+
   if (loading) return <div style={{ padding: '48px', color: R.dim, fontSize: '14px' }}>Carregando...</div>;
   if (!data) return <div style={{ padding: '48px', color: '#cc0000', fontSize: '14px' }}>Ordem não encontrada.</div>;
 
@@ -60,6 +90,9 @@ export default function LabOrdemDetalhe() {
   const od = receita?.find((r: any) => r.olho === 'D');
   const oe = receita?.find((r: any) => r.olho === 'E');
   const statusAtual = STATUS_FLOW.find(s => s.value === ordem.status);
+  const ordemFlow = { ...ordem, tipo_lente: armacao?.tipo_lente ?? ordem.tipo_lente };
+  const etapas = FLUXOS[flowOf(ordemFlow)];
+  const etapaAtual = cardStage(ordemFlow, etapas);
 
   function RxRow({ label, od: d, oe: e }: { label: string; od: string; oe: string }) {
     return (
@@ -91,20 +124,54 @@ export default function LabOrdemDetalhe() {
             <div style={{ fontSize: '13px', color: R.dim, marginTop: '2px' }}>{ordem.otica_nome}</div>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', position: 'relative' }}>
           <Link
             to={`/lab/ordens/${id}/imprimir`}
             target="_blank"
-            style={{ padding: '9px 18px', fontSize: '13px', fontWeight: '600', background: 'transparent', color: R.dim, border: '1px solid #b0aca4', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'none', display: 'inline-block' }}
+            style={{ padding: '9px 16px', fontSize: '13px', fontWeight: '600', background: 'transparent', color: R.dim, border: '1px solid #b0aca4', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'none', display: 'inline-block' }}
           >
-            Imprimir OS
+            🖨️ Imprimir
+          </Link>
+          <Link
+            to={`/lab/ordens/${id}/imprimir`}
+            target="_blank"
+            style={{ padding: '9px 16px', fontSize: '13px', fontWeight: '600', background: R.accent2, color: '#fff', border: `1px solid ${R.accent2}`, borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'none', display: 'inline-block' }}
+            title="Abre a visualização de impressão — escolha 'Salvar como PDF' no destino"
+          >
+            ⬇ Baixar PDF
           </Link>
           <button
-            onClick={() => setConfirmarExcluir(true)}
-            style={{ padding: '9px 18px', fontSize: '13px', fontWeight: '600', background: 'rgba(200,0,0,0.12)', color: '#cc0000', border: '1px solid #cc0000', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}
+            onClick={() => setEmailOpen(o => !o)}
+            style={{ padding: '9px 16px', fontSize: '13px', fontWeight: '600', background: emailOpen ? R.alt : 'transparent', color: R.txt, border: '1px solid #b0aca4', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}
           >
-            Excluir OS
+            ✉ E-mail
           </button>
+          <button
+            onClick={() => setConfirmarExcluir(true)}
+            style={{ padding: '9px 16px', fontSize: '13px', fontWeight: '600', background: 'rgba(200,0,0,0.12)', color: '#cc0000', border: '1px solid #cc0000', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}
+          >
+            Excluir
+          </button>
+
+          {/* Popover de e-mail */}
+          {emailOpen && (
+            <div style={{ position: 'absolute', top: '48px', right: 0, width: '300px', background: R.panel, border: '1px solid #b0aca4', borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', padding: '14px', zIndex: 50 }}>
+              <div style={{ fontSize: '11px', fontWeight: '700', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Enviar OS por e-mail</div>
+              <input
+                type="email"
+                value={emailTo}
+                onChange={e => setEmailTo(e.target.value)}
+                placeholder="destinatario@email.com"
+                onKeyDown={e => { if (e.key === 'Enter' && emailTo) enviarEmail(); }}
+                style={{ width: '100%', boxSizing: 'border-box', padding: '8px 10px', fontSize: '13px', background: R.inp, border: '1px solid #b0aca4', borderRadius: '7px', color: R.txt, outline: 'none', fontFamily: "'Courier New', monospace", marginBottom: '10px' }}
+              />
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button onClick={() => setEmailOpen(false)} style={{ flex: 1, padding: '8px', fontSize: '12px', fontWeight: '600', background: 'transparent', color: R.dim, border: '1px solid #b0aca4', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
+                <button onClick={enviarEmail} disabled={!emailTo} style={{ flex: 1, padding: '8px', fontSize: '12px', fontWeight: '700', background: emailTo ? R.accent : R.dim, color: '#fff', border: 'none', borderRadius: '7px', cursor: emailTo ? 'pointer' : 'not-allowed', fontFamily: 'inherit' }}>Enviar</button>
+              </div>
+              <div style={{ fontSize: '10.5px', color: R.dim, marginTop: '8px', lineHeight: 1.4 }}>Abre seu e-mail com o resumo da OS. Baixe o PDF e anexe antes de enviar.</div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -140,26 +207,37 @@ export default function LabOrdemDetalhe() {
         </div>
       )}
 
-      {/* Alterar Status */}
+      {/* Mover pela esteira — etapas do funil */}
       <div style={{ background: R.panel, border: '1px solid #b0aca4', borderRadius: '12px', padding: '16px 20px', marginBottom: '16px' }}>
-        <div style={{ fontSize: '12px', color: R.dim, marginBottom: '10px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Alterar Status</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+          <span style={{ fontSize: '12px', color: R.dim, fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            Mover para Etapa — {flowOf(ordemFlow) === 'progressiva' ? 'Progressiva' : 'Visão Simples'}
+          </span>
+          {ordem.status !== 'cancelado'
+            ? <button disabled={updatingStatus} onClick={() => changeStatus('cancelado')} style={{ background: 'none', border: 'none', color: '#cc0000', fontSize: '12px', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit', opacity: updatingStatus ? 0.5 : 1 }}>Cancelar OS</button>
+            : <span style={{ fontSize: '12px', fontWeight: '700', color: '#cc0000' }}>CANCELADA</span>}
+        </div>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {STATUS_FLOW.map(s => (
-            <button
-              key={s.value}
-              disabled={updatingStatus || ordem.status === s.value}
-              onClick={() => changeStatus(s.value)}
-              style={{
-                padding: '7px 16px', fontSize: '12px', fontWeight: '600', borderRadius: '20px', cursor: ordem.status === s.value ? 'default' : 'pointer', fontFamily: 'inherit',
-                background: ordem.status === s.value ? `${s.color}20` : 'transparent',
-                color: ordem.status === s.value ? s.color : R.dim,
-                border: `1px solid ${ordem.status === s.value ? s.color : '#b0aca4'}`,
-                opacity: updatingStatus ? 0.5 : 1,
-              }}
-            >
-              {s.label}
-            </button>
-          ))}
+          {etapas.map(et => {
+            const ativo = etapaAtual === et.key && ordem.status !== 'cancelado';
+            return (
+              <button
+                key={et.key}
+                disabled={updatingStatus || ativo}
+                onClick={() => moverEtapa(et.key)}
+                style={{
+                  padding: '7px 16px', fontSize: '12px', fontWeight: '600', borderRadius: '20px', cursor: ativo ? 'default' : 'pointer', fontFamily: 'inherit',
+                  display: 'inline-flex', alignItems: 'center', gap: '6px',
+                  background: ativo ? et.color : 'transparent',
+                  color: ativo ? '#fff' : R.dim,
+                  border: `1px solid ${ativo ? et.color : '#b0aca4'}`,
+                  opacity: updatingStatus ? 0.5 : 1,
+                }}
+              >
+                <span style={{ fontSize: '12px' }}>{et.icon}</span>{et.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
