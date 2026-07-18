@@ -63,7 +63,7 @@ export default function LabFornecedores() {
         <div style={{ display:'flex', gap:'6px', alignItems:'center' }}>
           <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar por nome ou CNPJ..." style={{ ...INP, width:'220px' }} />
           <button onClick={abrirNovo}
-            style={{ padding:'5px 16px', fontSize:'12px', fontWeight:'700', background:'#005500', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+            style={{ padding:'5px 16px', fontSize:'12px', fontWeight:'700', background:R.accent, color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
             + NOVO FORNECEDOR
           </button>
         </div>
@@ -88,7 +88,7 @@ export default function LabFornecedores() {
               {filtradas.map((f, i) => (
                 <tr key={f.id} onClick={() => abrirEditar(f)}
                   style={{ background: i%2===0 ? R.panel : R.alt, cursor:'pointer', borderBottom:`1px solid ${R.bdr}` }}
-                  onMouseEnter={e => (e.currentTarget.style.background = '#005500')}
+                  onMouseEnter={e => (e.currentTarget.style.background = R.accent)}
                   onMouseLeave={e => (e.currentTarget.style.background = i%2===0 ? R.panel : R.alt)}>
                   <td style={{ padding:'7px 12px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.dim }}>{f.codigo||'—'}</td>
                   <td style={{ padding:'7px 12px', fontSize:'12px', fontWeight:'700', color:R.txt }}>{f.nome}</td>
@@ -129,7 +129,7 @@ export default function LabFornecedores() {
                 </div>
                 <div style={{ display:'flex', gap:'8px', marginTop:'4px' }}>
                   <button type="button" onClick={() => setModal(false)} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:R.alt, color:R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>CANCELAR</button>
-                  <button type="submit" disabled={saving} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:'#005500', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:saving?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+                  <button type="submit" disabled={saving} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:R.accent, color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:saving?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
                     {saving ? 'SALVANDO...' : 'GRAVAR'}
                   </button>
                 </div>

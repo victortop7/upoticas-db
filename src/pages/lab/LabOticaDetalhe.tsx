@@ -14,7 +14,7 @@ interface Contato {
 }
 const CONTATO_INI: Contato = { departamento: '', contato: '', telefone: '', ramal: '', fax: '', celular: '', sms: false, email: '' };
 
-const RX = { bg:R.bg, panel:R.panel, alt:R.alt, bdr:'#b0aca4', hdr:'linear-gradient(90deg,#005500,#008800)', hdrTxt:'#ccffcc', hdrBdr:'#007700', txt:'#000' };
+const RX = { bg:R.bg, panel:R.panel, alt:R.alt, bdr:'#b0aca4', hdr:'linear-gradient(90deg,#005500,#008800)', hdrTxt:'#ccffcc', hdrBdr:R.accent, txt:R.txt };
 const INP: React.CSSProperties = {
   width: '100%', padding: '5px 7px', fontSize: '12px', background: R.inp,
   border: `1px solid ${RX.bdr}`, borderRadius: '0', color: RX.txt,
@@ -34,7 +34,7 @@ const SEC_TITLE: React.CSSProperties = {
 };
 const TH: React.CSSProperties = {
   padding: '5px 6px', fontSize: '10px', fontWeight: '700', color: RX.hdrTxt,
-  textTransform: 'uppercase', background: '#005500', borderBottom: `1px solid ${RX.hdrBdr}`,
+  textTransform: 'uppercase', background: R.accent, borderBottom: `1px solid ${RX.hdrBdr}`,
   whiteSpace: 'nowrap', textAlign: 'center',
 };
 const TD: React.CSSProperties = { padding: '2px 3px', verticalAlign: 'middle' };
@@ -543,7 +543,7 @@ export default function LabOticaDetalhe() {
             onClick={() => setConfirmarGravar(true)}
             disabled={saving}
             onKeyDown={e => e.key === 'Enter' && e.preventDefault()}
-            style={{ padding: '7px 28px', fontSize: '12px', fontWeight: '700', background: '#005500', color: RX.hdrTxt, border: `1px outset ${RX.hdrBdr}`, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
+            style={{ padding: '7px 28px', fontSize: '12px', fontWeight: '700', background: R.accent, color: RX.hdrTxt, border: `1px outset ${RX.hdrBdr}`, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
             GRAVAR
           </button>
         </div>
@@ -567,7 +567,7 @@ export default function LabOticaDetalhe() {
                   </button>
                   <button
                     onClick={() => { setConfirmarGravar(false); handleSave(); }}
-                    style={{ flex: 1, padding: '10px', fontSize: '13px', fontWeight: '700', background: '#005500', color: RX.hdrTxt, border: `2px outset ${RX.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit' }}>
+                    style={{ flex: 1, padding: '10px', fontSize: '13px', fontWeight: '700', background: R.accent, color: RX.hdrTxt, border: `2px outset ${RX.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit' }}>
                     SIM, GRAVAR
                   </button>
                 </div>
@@ -580,7 +580,7 @@ export default function LabOticaDetalhe() {
   }
 
   // ===== MODO VISUALIZAÇÃO — RETRO =====
-  const RV = { bg:R.bg, panel:R.panel, alt:R.alt, bdr:'#b0aca4', hdr:'linear-gradient(90deg,#005500,#008800)', hdrTxt:'#ccffcc', hdrBdr:'#007700', txt:'#000' };
+  const RV = { bg:R.bg, panel:R.panel, alt:R.alt, bdr:'#b0aca4', hdr:'linear-gradient(90deg,#005500,#008800)', hdrTxt:'#ccffcc', hdrBdr:R.accent, txt:R.txt };
   const RINP: React.CSSProperties = { padding:'5px 8px', fontSize:'12px', background:R.inp, border:'1px solid #999', color:R.txt, outline:'none', fontFamily:"'Courier New', monospace", boxSizing:'border-box' };
 
   const ST_BADGE: Record<string, { bg: string; color: string; label: string }> = {
@@ -631,7 +631,7 @@ export default function LabOticaDetalhe() {
             Editar
           </button>
           <button onClick={() => navigate(`/lab/ordens/nova?otica=${id}`)}
-            style={{ padding:'5px 14px', fontSize:'12px', fontWeight:'700', background:'#005500', color:RV.hdrTxt, border:`1px outset ${RV.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+            style={{ padding:'5px 14px', fontSize:'12px', fontWeight:'700', background:R.accent, color:RV.hdrTxt, border:`1px outset ${RV.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
             + NOVA OS
           </button>
         </div>
@@ -695,7 +695,7 @@ export default function LabOticaDetalhe() {
               </button>
             )}
             <button onClick={() => imprimirRelatorio(id!, otica.nome, ordensFiltradas)}
-              style={{ padding:'4px 12px', fontSize:'11px', fontWeight:'700', background:'#003388', color:'#fff', border:'1px outset #003388', cursor:'pointer', fontFamily:'inherit', marginLeft:'auto' }}>
+              style={{ padding:'4px 12px', fontSize:'11px', fontWeight:'700', background:R.accent2, color:'#fff', border:'1px outset #003388', cursor:'pointer', fontFamily:'inherit', marginLeft:'auto' }}>
               🖨️ IMPRIMIR RELATÓRIO
             </button>
           </div>
@@ -725,7 +725,7 @@ export default function LabOticaDetalhe() {
                     return (
                       <tr key={o.id} onClick={() => navigate(`/lab/ordens/${o.id}`)}
                         style={{ background: i%2===0 ? RV.panel : RV.alt, borderBottom:`1px solid ${RV.bdr}`, cursor:'pointer' }}
-                        onMouseEnter={e => (e.currentTarget.style.background='#005500')}
+                        onMouseEnter={e => (e.currentTarget.style.background=R.accent)}
                         onMouseLeave={e => (e.currentTarget.style.background= i%2===0 ? RV.panel : RV.alt)}>
                         <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'900', color:R.accent }}>#{String(o.numero).padStart(4,'0')}</td>
                         <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt, whiteSpace:'nowrap' }}>{fmtD(o.created_at)}</td>

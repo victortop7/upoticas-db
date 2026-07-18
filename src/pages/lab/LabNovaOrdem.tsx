@@ -90,7 +90,7 @@ const LBL: React.CSSProperties = {
 const TH: React.CSSProperties = {
   padding: '4px 6px', fontSize: '10px', fontWeight: '700', color: R.hdrTxt,
   textTransform: 'uppercase', textAlign: 'center',
-  background: '#005500', whiteSpace: 'nowrap', border: '1px solid #1a4a1a',
+  background: R.accent, whiteSpace: 'nowrap', border: '1px solid #1a4a1a',
 };
 const TD: React.CSSProperties = { padding: '2px 3px', verticalAlign: 'middle' };
 const RX_INP: React.CSSProperties = {
@@ -434,11 +434,11 @@ export default function LabNovaOrdem() {
         <div style={{ border: `2px inset ${R.border}` }}>
           {TIPOS.map((t, i) => {
             const isActive = tipo === t.key;
-            const rowBg = isActive ? '#005500' : (i % 2 === 0 ? R.panel : R.panelAlt);
+            const rowBg = isActive ? R.accent : (i % 2 === 0 ? R.panel : R.panelAlt);
             return (
               <div key={t.key} onClick={() => setTipo(t.key)}
                 style={{ padding: '6px 10px', cursor: 'pointer', fontSize: '11px', fontWeight: '700', color: isActive ? R.hdrTxt : R.txt, background: rowBg, borderBottom: `1px solid ${R.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'background 0.08s', userSelect: 'none' }}
-                onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = '#004400'; (e.currentTarget as HTMLElement).style.color = R.hdrTxt; } }}
+                onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = R.accent; (e.currentTarget as HTMLElement).style.color = R.hdrTxt; } }}
                 onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = rowBg; (e.currentTarget as HTMLElement).style.color = R.txt; } }}>
                 <span style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t.label}</span>
                 <span style={{ fontFamily: "'Courier New', monospace", fontWeight: '700', color: isActive ? '#aaffbb' : R.accent }}>{t.key}</span>
@@ -450,7 +450,7 @@ export default function LabNovaOrdem() {
         <div style={{ padding: '8px 10px', borderTop: `2px solid ${R.border}`, display: 'flex', flexDirection: 'column', gap: '5px' }}>
           <div style={{ display: 'flex', gap: '3px' }}>
             {[1, 2].map(s => (
-              <div key={s} style={{ flex: 1, height: '5px', background: step >= s ? '#005500' : R.border, border: `1px inset ${R.border}` }} />
+              <div key={s} style={{ flex: 1, height: '5px', background: step >= s ? R.accent : R.border, border: `1px inset ${R.border}` }} />
             ))}
           </div>
           <div style={{ fontSize: '9px', color: R.dim, textAlign: 'center', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
@@ -581,11 +581,11 @@ export default function LabNovaOrdem() {
               <label style={LBL}>Caixa</label>
               <input value={caixa} onChange={e => setCaixa(e.target.value)} style={INP} />
             </div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', fontSize: '12px', color: '#000', paddingBottom: '2px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', fontSize: '12px', color: R.txt, paddingBottom: '2px' }}>
               <input type="checkbox" checked={fluxoLab} onChange={e => setFluxoLab(e.target.checked)} />
               Fluxo LAB
             </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', fontSize: '12px', color: '#000', paddingBottom: '2px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', fontSize: '12px', color: R.txt, paddingBottom: '2px' }}>
               <input type="checkbox" checked={etiqGarantia} onChange={e => setEtiqGarantia(e.target.checked)} />
               Etiq. Garantia
             </label>
@@ -604,7 +604,7 @@ export default function LabNovaOrdem() {
               setErro(''); setStep(2);
               setTimeout(() => window.scrollTo({ top: 0 }), 50);
             }}
-              style={{ padding: '6px 28px', fontSize: '12px', fontWeight: '700', background: '#005500', color: R.hdrTxt, border: `1px outset ${R.hdrBorder}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '1px' }}>
+              style={{ padding: '6px 28px', fontSize: '12px', fontWeight: '700', background: R.accent, color: R.hdrTxt, border: `1px outset ${R.hdrBorder}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '1px' }}>
               PRÓXIMO →
             </button>
           </div>
@@ -675,7 +675,7 @@ export default function LabNovaOrdem() {
               <div>
                 <label style={LBL}>Shape</label>
                 <button type="button" onClick={() => setShowShapePicker(true)}
-                  style={{ ...INP, textAlign: 'left', cursor: 'pointer', color: armShape ? '#000' : '#666', fontWeight: armShape ? '700' : '400', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between' }}>
+                  style={{ ...INP, textAlign: 'left', cursor: 'pointer', color: armShape ? R.txt : R.dim, fontWeight: armShape ? '700' : '400', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between' }}>
                   <span>{armShape || '— Shape'}</span>
                   <span style={{ fontSize: '10px', color: R.dim }}>▼</span>
                 </button>
@@ -704,7 +704,7 @@ export default function LabNovaOrdem() {
                 </select>
                 <button type="button" onClick={() => { setNovoTipoLabel(''); setNovoTipoOpen(true); }}
                   title="Adicionar novo tipo"
-                  style={{ padding: '5px 10px', fontSize: '14px', fontWeight: '700', background: '#005500', color: '#ccffcc', border: '1px outset #007700', cursor: 'pointer', flexShrink: 0 }}>
+                  style={{ padding: '5px 10px', fontSize: '14px', fontWeight: '700', background: R.accent, color: '#ccffcc', border: '1px outset #007700', cursor: 'pointer', flexShrink: 0 }}>
                   +
                 </button>
               </div>
@@ -725,7 +725,7 @@ export default function LabNovaOrdem() {
                     placeholder="Ex: PROGRESSIVA DIGITAL" />
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button type="button" onClick={() => setNovoTipoOpen(false)} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: '#c8c4b0', border: '1px outset #b0aca4', cursor: 'pointer' }}>CANCELAR</button>
-                    <button type="button" onClick={salvarNovoTipo} disabled={!novoTipoLabel.trim()} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: '#005500', color: '#ccffcc', border: '1px outset #007700', cursor: novoTipoLabel.trim() ? 'pointer' : 'not-allowed' }}>ADICIONAR</button>
+                    <button type="button" onClick={salvarNovoTipo} disabled={!novoTipoLabel.trim()} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: R.accent, color: '#ccffcc', border: '1px outset #007700', cursor: novoTipoLabel.trim() ? 'pointer' : 'not-allowed' }}>ADICIONAR</button>
                   </div>
                 </div>
               </div>
@@ -743,7 +743,7 @@ export default function LabNovaOrdem() {
                 <label style={LBL}>Caixa</label>
                 <input value={caixa} onChange={e => setCaixa(e.target.value)} style={INP} />
               </div>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', fontSize: '12px', color: '#000', paddingTop: '14px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', fontSize: '12px', color: R.txt, paddingTop: '14px' }}>
                 <input type="checkbox" checked={etiqGarantia} onChange={e => setEtiqGarantia(e.target.checked)} />
                 Etiq. Garantia
               </label>
@@ -808,7 +808,7 @@ export default function LabNovaOrdem() {
                         {bruto > 0 ? bruto.toFixed(2).replace('.', ',') : ''}
                       </td>
                       <td style={TD}><CobInput value={s.perc_desc} onChange={v => setCobItem(i, { perc_desc: v })} style={{ textAlign: 'center', width: '55px' }} /></td>
-                      <td style={{ ...TD, fontFamily: "'Courier New', monospace", fontSize: '12px', fontWeight: liq > 0 ? '700' : '400', color: liq > 0 ? '#000' : '#666', textAlign: 'right', paddingRight: '8px' }}>
+                      <td style={{ ...TD, fontFamily: "'Courier New', monospace", fontSize: '12px', fontWeight: liq > 0 ? '700' : '400', color: liq > 0 ? R.txt : R.dim, textAlign: 'right', paddingRight: '8px' }}>
                         {liq > 0 ? liq.toFixed(2).replace('.', ',') : ''}
                       </td>
                       <td style={{ ...TD, textAlign: 'center' }}>
@@ -823,13 +823,13 @@ export default function LabNovaOrdem() {
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px', alignItems: 'center' }}>
             <button type="button" onClick={() => setCobranca(c => [...c, { ...ITEM_COB_INI }])}
-              style={{ fontSize: '11px', color: '#003388', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '600' }}>
+              style={{ fontSize: '11px', color: R.accent2, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '600' }}>
               + Adicionar linha
             </button>
             <div style={{ display: 'flex', gap: '20px', fontFamily: "'Courier New', monospace", fontSize: '13px' }}>
               {totalDesc > 0 && <span style={{ color: '#cc0000' }}>Desc: R$ {totalDesc.toFixed(2).replace('.', ',')}</span>}
-              {totalFrete > 0 && <span style={{ color: '#003388' }}>Frete: R$ {totalFrete.toFixed(2).replace('.', ',')}</span>}
-              <span style={{ fontWeight: '700', color: '#000', fontSize: '15px' }}>
+              {totalFrete > 0 && <span style={{ color: R.accent2 }}>Frete: R$ {totalFrete.toFixed(2).replace('.', ',')}</span>}
+              <span style={{ fontWeight: '700', color: R.txt, fontSize: '15px' }}>
                 Total: R$ {totalFinal.toFixed(2).replace('.', ',')}
               </span>
             </div>
@@ -858,7 +858,7 @@ export default function LabNovaOrdem() {
             GRAVAR
           </button>
           <button type="button" disabled={saving} onClick={handleSubmit as unknown as React.MouseEventHandler}
-            style={{ padding: '6px 24px', fontSize: '11px', fontWeight: '700', background: '#005500', color: R.hdrTxt, border: `1px outset ${R.hdrBorder}`, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            style={{ padding: '6px 24px', fontSize: '11px', fontWeight: '700', background: R.accent, color: R.hdrTxt, border: `1px outset ${R.hdrBorder}`, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             {saving ? 'SALVANDO...' : 'GRAVAR + IMPRIMIR'}
           </button>
         </div>

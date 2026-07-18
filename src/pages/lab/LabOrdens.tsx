@@ -86,7 +86,7 @@ export default function LabOrdens() {
       entregue: { bg: '#e0e0e0', color: '#555555', border: '#888' },
       cancelado: { bg: '#ccffcc', color: '#005500', border: '#005500' },
     };
-    const c = colors[s] ?? { bg: '#ddd', color: '#555555', border: '#888' };
+    const c = colors[s] ?? { bg: '#ddd', color: R.dim, border: R.dim };
     return (
       <span style={{ fontSize:'10px', fontWeight:'700', color:c.color, background:c.bg, padding:'2px 7px', border:`1px solid ${c.border}` }}>
         {statusLabel(s).toUpperCase()}
@@ -105,7 +105,7 @@ export default function LabOrdens() {
         <div style={{ display:'flex', gap:'6px', alignItems:'center', flexWrap:'wrap' }}>
           <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar OS#, ref., cont. interno..." style={{ ...INP, width:'220px' }} />
           <button onClick={() => navigate('/lab/ordens/nova')}
-            style={{ padding:'5px 16px', fontSize:'12px', fontWeight:'700', background:'#005500', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+            style={{ padding:'5px 16px', fontSize:'12px', fontWeight:'700', background:R.accent, color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
             + NOVA OS
           </button>
         </div>
@@ -120,7 +120,7 @@ export default function LabOrdens() {
             {STATUS_FLOW.map(s => (
               <button key={s.value} onClick={() => setStatus(s.value)}
                 style={{ padding:'3px 9px', fontSize:'11px', fontWeight:'700', cursor:'pointer', fontFamily:'inherit',
-                  background: status === s.value ? '#005500' : R.alt,
+                  background: status === s.value ? R.accent : R.alt,
                   color: status === s.value ? R.hdrTxt : R.txt,
                   border: status === s.value ? `1px inset ${R.hdrBdr}` : `1px outset ${R.bdr}` }}>
                 {s.label}
@@ -206,7 +206,7 @@ export default function LabOrdens() {
               {ordens.map((o, i) => (
                 <tr key={o.id} onClick={() => navigate(`/lab/ordens/${o.id}`)}
                   style={{ background: i % 2 === 0 ? R.panel : R.alt, cursor:'pointer', borderBottom:`1px solid ${R.bdr}` }}
-                  onMouseEnter={e => (e.currentTarget.style.background = '#005500')}
+                  onMouseEnter={e => (e.currentTarget.style.background = R.accent)}
                   onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 0 ? R.panel : R.alt)}>
                   <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'700', color:R.txt, whiteSpace:'nowrap' }}>
                     #{String(o.numero).padStart(4, '0')}

@@ -49,10 +49,10 @@ function PinScreen({ onOk }: { onOk: () => void }) {
           }}>
             {[0,1,2,3].map(i => (
               <div key={i} style={{
-                width: '36px', height: '44px', border: `2px inset ${erro ? '#005500' : '#808080'}`,
+                width: '36px', height: '44px', border: `2px inset ${erro ? R.accent : R.dim}`,
                 background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '22px', fontFamily: "'Courier New', monospace", fontWeight: '900',
-                color: erro ? '#005500' : '#000',
+                color: erro ? R.accent : R.txt,
               }}>
                 {pin[i] ? '●' : ''}
               </div>
@@ -60,7 +60,7 @@ function PinScreen({ onOk }: { onOk: () => void }) {
           </div>
 
           {erro && (
-            <div style={{ textAlign: 'center', color: '#005500', fontSize: '11px', fontWeight: '700', marginBottom: '10px', fontFamily: "'Courier New', monospace" }}>
+            <div style={{ textAlign: 'center', color: R.accent, fontSize: '11px', fontWeight: '700', marginBottom: '10px', fontFamily: "'Courier New', monospace" }}>
               PIN INCORRETO
             </div>
           )}
@@ -73,7 +73,7 @@ function PinScreen({ onOk }: { onOk: () => void }) {
                   padding: '12px', fontSize: d === '←' || d === '✓' ? '16px' : '18px',
                   fontWeight: '700', fontFamily: "'Courier New', monospace",
                   background: d === '←' ? '#dedad2' : '#d4d0c8',
-                  color: d === '✓' ? '#888' : '#000',
+                  color: d === '✓' ? R.dim : R.txt,
                   border: '2px outset #b0aca4', cursor: 'pointer',
                   lineHeight: '1',
                 }}>
@@ -139,7 +139,7 @@ interface Codigo {
 import { R } from '../../lib/labTheme';
 const INP: React.CSSProperties = {
   padding: '5px 8px', fontSize: '12px', background: '#fff',
-  border: '1px solid #999', color: '#000', outline: 'none',
+  border: '1px solid #999', color: R.txt, outline: 'none',
   fontFamily: "'Courier New', monospace", boxSizing: 'border-box',
 };
 
@@ -431,7 +431,7 @@ export default function LabAdmin() {
               placeholder="ADMIN_SECRET..."
             />
             <button onClick={() => load(secret)} disabled={loading}
-              style={{ width: '100%', padding: '7px', fontSize: '12px', fontWeight: '700', background: '#005500', color: R.hdrTxt, border: `1px outset ${R.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
+              style={{ width: '100%', padding: '7px', fontSize: '12px', fontWeight: '700', background: R.accent, color: R.hdrTxt, border: `1px outset ${R.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
               {loading ? 'VERIFICANDO...' : 'ENTRAR'}
             </button>
           </div>
@@ -450,7 +450,7 @@ export default function LabAdmin() {
         <div style={{ display: 'flex', gap: '4px' }}>
           {(['licencas', 'leads', 'codigos'] as const).map(a => (
             <button key={a} onClick={() => setAba(a)}
-              style={{ padding: '5px 14px', fontSize: '12px', fontWeight: '700', letterSpacing: '0.5px', cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase', border: `2px outset ${R.hdrBdr}`, background: aba === a ? R.hdr : R.alt, color: aba === a ? R.hdrTxt : '#000' }}>
+              style={{ padding: '5px 14px', fontSize: '12px', fontWeight: '700', letterSpacing: '0.5px', cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase', border: `2px outset ${R.hdrBdr}`, background: aba === a ? R.hdr : R.alt, color: aba === a ? R.hdrTxt : R.txt }}>
               {a === 'licencas' ? `LICENÇAS (${tenants.length})`
                 : a === 'leads' ? `LEADS${novosLeads > 0 ? ` ★${novosLeads} NOVOS` : ` (${leads.length})`}`
                 : `TESTE GRÁTIS (${codigos.filter(c => !c.usado).length})`}
@@ -459,7 +459,7 @@ export default function LabAdmin() {
         </div>
         <div style={{ display: 'flex', gap: '6px' }}>
           {aba === 'licencas' && <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar..." style={{ ...INP, width: '180px' }} />}
-          <button onClick={() => load(secret)} style={{ padding: '5px 14px', fontSize: '11px', fontWeight: '700', background: R.alt, color: '#000', border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit' }}>
+          <button onClick={() => load(secret)} style={{ padding: '5px 14px', fontSize: '11px', fontWeight: '700', background: R.alt, color: R.txt, border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit' }}>
             ↺ ATUALIZAR
           </button>
         </div>
@@ -498,7 +498,7 @@ export default function LabAdmin() {
                       <div
                         onClick={() => handleImpersonate(t.id, t.tipo)}
                         title="Clique para entrar no sistema deste cliente"
-                        style={{ fontSize: '12px', fontWeight: '700', color: '#005500', cursor: 'pointer', textDecoration: 'underline', display: 'inline-block' }}
+                        style={{ fontSize: '12px', fontWeight: '700', color: R.accent, cursor: 'pointer', textDecoration: 'underline', display: 'inline-block' }}
                       >
                         {impersonando === t.id ? '⏳ Entrando...' : t.nome}
                       </div>
@@ -514,7 +514,7 @@ export default function LabAdmin() {
                     <td style={{ padding: '7px 10px' }}>
                       <div style={{ display: 'flex', gap: '4px' }}>
                         <button onClick={() => openEdit(t)}
-                          style={{ padding: '3px 10px', fontSize: '11px', fontWeight: '700', background: '#005500', color: '#fff', border: `1px outset ${R.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit' }}>
+                          style={{ padding: '3px 10px', fontSize: '11px', fontWeight: '700', background: R.accent, color: '#fff', border: `1px outset ${R.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit' }}>
                           EDITAR
                         </button>
                         <button onClick={() => { if (confirm(`Excluir laboratório "${t.nome}" e todos os usuários? Esta ação não pode ser desfeita.`)) handleExcluirTenant(t.id); }}
@@ -553,7 +553,7 @@ export default function LabAdmin() {
                   <tr key={l.id} style={{ background: i % 2 === 0 ? R.panel : R.alt, borderBottom: `1px solid ${R.bdr}` }}>
                     <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim, whiteSpace: 'nowrap' }}>{fmtDate(l.created_at)}</td>
                     <td style={{ padding: '7px 10px' }}>
-                      <div style={{ fontSize: '12px', fontWeight: '700', color: '#000' }}>{l.laboratorio || '—'}</div>
+                      <div style={{ fontSize: '12px', fontWeight: '700', color: R.txt }}>{l.laboratorio || '—'}</div>
                       <div style={{ fontSize: '10px', color: R.dim }}>{l.nome}</div>
                     </td>
                     <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.txt }}>{l.email}</td>
@@ -566,7 +566,7 @@ export default function LabAdmin() {
                       <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                         {l.status !== 'convertido' && (
                           <button onClick={() => abrirCriarConta(l)}
-                            style={{ padding: '3px 8px', fontSize: '10px', fontWeight: '700', background: '#004400', color: '#ccffcc', border: '1px outset #006600', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+                            style={{ padding: '3px 8px', fontSize: '10px', fontWeight: '700', background: R.accent, color: '#ccffcc', border: '1px outset #006600', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
                             CRIAR CONTA
                           </button>
                         )}
@@ -618,22 +618,22 @@ export default function LabAdmin() {
               </thead>
               <tbody>
                 {codigos.length === 0 && (
-                  <tr><td colSpan={6} style={{ padding: '16px', textAlign: 'center', color: '#888' }}>Nenhum código gerado ainda.</td></tr>
+                  <tr><td colSpan={6} style={{ padding: '16px', textAlign: 'center', color: R.dim }}>Nenhum código gerado ainda.</td></tr>
                 )}
                 {codigos.map(c => (
                   <tr key={c.id} style={{ borderBottom: '1px solid #eee', opacity: c.usado ? 0.6 : 1 }}>
                     <td style={{ padding: '6px 10px', fontFamily: 'monospace', fontWeight: '700', fontSize: '13px', letterSpacing: '0.5px' }}>{c.codigo}</td>
                     <td style={{ padding: '6px 10px' }}>
                       {c.usado
-                        ? <span style={{ color: '#999', fontWeight: '700' }}>⚫ USADO</span>
-                        : <span style={{ color: '#008800', fontWeight: '700' }}>🟢 DISPONÍVEL</span>}
+                        ? <span style={{ color: R.dim, fontWeight: '700' }}>⚫ USADO</span>
+                        : <span style={{ color: R.accent, fontWeight: '700' }}>🟢 DISPONÍVEL</span>}
                     </td>
                     <td style={{ padding: '6px 10px' }}>{c.nome_contato || '—'}</td>
                     <td style={{ padding: '6px 10px' }}>{c.usado_por ? `${c.usado_por}${c.usado_em ? ` (${c.usado_em.slice(0, 10)})` : ''}` : '—'}</td>
                     <td style={{ padding: '6px 10px', color: R.dim }}>{c.criado_em ? c.criado_em.slice(0, 10) : '—'}</td>
                     <td style={{ padding: '6px 10px', whiteSpace: 'nowrap' }}>
                       {!c.usado && (
-                        <button onClick={() => copiarCodigo(c.codigo)} style={{ padding: '3px 10px', fontSize: '10px', fontWeight: '700', background: copiado === c.codigo ? '#008800' : R.alt, color: copiado === c.codigo ? '#fff' : '#000', border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit', marginRight: '4px' }}>
+                        <button onClick={() => copiarCodigo(c.codigo)} style={{ padding: '3px 10px', fontSize: '10px', fontWeight: '700', background: copiado === c.codigo ? R.accent : R.alt, color: copiado === c.codigo ? '#fff' : R.txt, border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit', marginRight: '4px' }}>
                           {copiado === c.codigo ? '✓ COPIADO' : 'COPIAR'}
                         </button>
                       )}
@@ -661,7 +661,7 @@ export default function LabAdmin() {
               {criarSucesso ? (
                 <div>
                   <div style={{ textAlign: 'center', fontSize: '28px', marginBottom: '10px' }}>✅</div>
-                  <div style={{ fontWeight: '700', fontSize: '13px', textAlign: 'center', marginBottom: '14px', color: '#006600' }}>CONTA CRIADA COM SUCESSO!</div>
+                  <div style={{ fontWeight: '700', fontSize: '13px', textAlign: 'center', marginBottom: '14px', color: R.accent }}>CONTA CRIADA COM SUCESSO!</div>
                   <div style={{ background: '#f0fff0', border: '1px solid #006600', padding: '14px', fontFamily: "'Courier New', monospace", fontSize: '12px', lineHeight: '2' }}>
                     <div><b>Laboratório:</b> {criarSucesso.nome_lab}</div>
                     <div><b>E-mail:</b> {criarSucesso.email}</div>
@@ -671,7 +671,7 @@ export default function LabAdmin() {
                     Anote as credenciais acima para enviar ao cliente quando agendar a reunião.
                   </div>
                   <button onClick={() => { setCriarLead(null); setCriarSucesso(null); }}
-                    style={{ width: '100%', padding: '7px', fontSize: '12px', fontWeight: '700', background: '#005500', color: R.hdrTxt, border: `1px outset ${R.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
+                    style={{ width: '100%', padding: '7px', fontSize: '12px', fontWeight: '700', background: R.accent, color: R.hdrTxt, border: `1px outset ${R.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
                     FECHAR
                   </button>
                 </div>
@@ -720,10 +720,10 @@ export default function LabAdmin() {
                   {criarErro && <div style={{ background: '#ddffee', border: '1px solid #005500', padding: '6px 10px', fontSize: '11px', color: '#005500', fontWeight: '700' }}>{criarErro}</div>}
 
                   <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-                    <button onClick={() => setCriarLead(null)} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: R.alt, color: '#000', border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
+                    <button onClick={() => setCriarLead(null)} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: R.alt, color: R.txt, border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
                       CANCELAR
                     </button>
-                    <button onClick={handleCriarConta} disabled={saving} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: '#004400', color: '#ccffcc', border: '1px outset #006600', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
+                    <button onClick={handleCriarConta} disabled={saving} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: R.accent, color: '#ccffcc', border: '1px outset #006600', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
                       {saving ? 'CRIANDO...' : 'CRIAR CONTA'}
                     </button>
                   </div>
@@ -845,7 +845,7 @@ export default function LabAdmin() {
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   {[1, 3, 6, 12].map(m => (
                     <button key={m} onClick={() => addMonths(m)}
-                      style={{ padding: '4px 12px', fontSize: '11px', fontWeight: '700', background: R.alt, color: '#000', border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit' }}>
+                      style={{ padding: '4px 12px', fontSize: '11px', fontWeight: '700', background: R.alt, color: R.txt, border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit' }}>
                       +{m} {m === 1 ? 'mês' : 'meses'}
                     </button>
                   ))}
@@ -862,17 +862,17 @@ export default function LabAdmin() {
                   <input type="checkbox" checked={editForm.ativo} onChange={e => setEditForm(f => ({ ...f, ativo: e.target.checked }))} />
                   Conta ativa
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', color: '#005500' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', color: R.accent }}>
                   <input type="checkbox" checked={editForm.bloqueado} onChange={e => setEditForm(f => ({ ...f, bloqueado: e.target.checked }))} />
                   Bloqueado
                 </label>
               </div>
 
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button onClick={() => setEditId(null)} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: R.alt, color: '#000', border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
+                <button onClick={() => setEditId(null)} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: R.alt, color: R.txt, border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
                   CANCELAR
                 </button>
-                <button onClick={handleSave} disabled={saving} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: '#005500', color: '#fff', border: `1px outset ${R.hdrBdr}`, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
+                <button onClick={handleSave} disabled={saving} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: R.accent, color: '#fff', border: `1px outset ${R.hdrBdr}`, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
                   {saving ? 'SALVANDO...' : 'SALVAR'}
                 </button>
               </div>

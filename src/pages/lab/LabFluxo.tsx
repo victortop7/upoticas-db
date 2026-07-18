@@ -25,8 +25,8 @@ const MODO_OPTS = [
 ];
 
 const STATUS_COLOR: Record<string, string> = {
-  aguardando: '#886600', em_producao: '#003388',
-  pronto: '#006600', entregue: '#555', cancelado: '#cc0000',
+  aguardando: '#886600', em_producao: R.accent2,
+  pronto: R.accent, entregue: R.dim, cancelado: '#cc0000',
 };
 
 function fmtDate(s: string | null) {
@@ -158,7 +158,7 @@ export default function LabFluxo() {
             style={{
               padding: '10px 14px', cursor: 'pointer', fontSize: '12px', borderBottom: '1px solid #b0aca4',
               fontWeight: modo === m.key ? '700' : '400',
-              color: modo === m.key ? '#000' : '#555',
+              color: modo === m.key ? R.txt : R.dim,
               background: modo === m.key ? R.alt : 'transparent',
               display: 'flex', justifyContent: 'space-between',
             }}
@@ -193,7 +193,7 @@ export default function LabFluxo() {
                 const labels = ['Aguardando', 'Em Produção', 'Pronto', 'Todos'];
                 return (
                   <button key={i} onClick={() => setFiltroStatus(s)}
-                    style={{ padding: '5px 12px', fontSize: '11px', fontWeight: '600', borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${filtroStatus === s ? (STATUS_COLOR[s] || '#b8b4ac') : '#b0aca4'}`, background: filtroStatus === s ? `${STATUS_COLOR[s] || '#555'}18` : 'transparent', color: filtroStatus === s ? (STATUS_COLOR[s] || '#000') : '#666' }}>
+                    style={{ padding: '5px 12px', fontSize: '11px', fontWeight: '600', borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${filtroStatus === s ? (STATUS_COLOR[s] || '#b8b4ac') : '#b0aca4'}`, background: filtroStatus === s ? `${STATUS_COLOR[s] || R.dim}18` : 'transparent', color: filtroStatus === s ? (STATUS_COLOR[s] || R.txt) : R.dim }}>
                     {labels[i]} ({ordens.filter(o => !s || o.status === s).length})
                   </button>
                 );
@@ -229,7 +229,7 @@ export default function LabFluxo() {
                         <td style={{ padding: '8px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim, whiteSpace: 'nowrap' }}>{fmtDate(o.previsao_entrega)}</td>
                         <td style={{ padding: '8px 10px', fontSize: '11px', color: R.dim }}>{o.tipo_lente ?? o.marca_material ?? '—'}</td>
                         <td style={{ padding: '8px 10px' }}>
-                          <span style={{ fontSize: '10px', fontWeight: '600', color: STATUS_COLOR[o.status] ?? '#555', background: `${STATUS_COLOR[o.status] ?? '#555'}18`, padding: '2px 7px', borderRadius: '20px', whiteSpace: 'nowrap' }}>
+                          <span style={{ fontSize: '10px', fontWeight: '600', color: STATUS_COLOR[o.status] ?? R.dim, background: `${STATUS_COLOR[o.status] ?? R.dim}18`, padding: '2px 7px', borderRadius: '20px', whiteSpace: 'nowrap' }}>
                             {o.status.replace('_', ' ')}
                           </span>
                         </td>
@@ -275,7 +275,7 @@ export default function LabFluxo() {
                 <label style={LBL}>Buscar OS (número, ref, cont. interno)</label>
                 <div style={{ display: 'flex', gap: '6px' }}>
                   <input value={buscaOS} onChange={e => setBuscaOS(e.target.value)} onKeyDown={e => e.key === 'Enter' && buscarOS()} style={INP} placeholder="Ex: 321 / JOSE / 000324" />
-                  <button onClick={buscarOS} style={{ padding: '6px 12px', fontSize: '12px', fontWeight: '600', background: '#005500', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+                  <button onClick={buscarOS} style={{ padding: '6px 12px', fontSize: '12px', fontWeight: '600', background: R.accent, color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
                     {loadingOS ? '...' : 'Buscar'}
                   </button>
                 </div>
@@ -340,7 +340,7 @@ export default function LabFluxo() {
                   </div>
 
                   {msg && (
-                    <div style={{ padding: '8px 12px', borderRadius: '6px', marginBottom: '12px', fontSize: '12px', fontWeight: '600', background: msg.includes('sucesso') ? 'rgba(0,102,0,0.15)' : 'rgba(200,0,0,0.12)', color: msg.includes('sucesso') ? '#006600' : '#cc0000', border: `1px solid ${msg.includes('sucesso') ? '#006600' : '#cc0000'}` }}>
+                    <div style={{ padding: '8px 12px', borderRadius: '6px', marginBottom: '12px', fontSize: '12px', fontWeight: '600', background: msg.includes('sucesso') ? 'rgba(0,102,0,0.15)' : 'rgba(200,0,0,0.12)', color: msg.includes('sucesso') ? R.accent : '#cc0000', border: `1px solid ${msg.includes('sucesso') ? R.accent : '#cc0000'}` }}>
                       {msg}
                     </div>
                   )}
@@ -392,7 +392,7 @@ export default function LabFluxo() {
                     <button
                       onClick={lancarFluxo}
                       disabled={!setor || salvando}
-                      style={{ padding: '8px 22px', fontSize: '12px', fontWeight: '600', background: salvando ? '#666' : '#005500', color: '#fff', border: 'none', borderRadius: '7px', cursor: salvando ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
+                      style={{ padding: '8px 22px', fontSize: '12px', fontWeight: '600', background: salvando ? R.dim : R.accent, color: '#fff', border: 'none', borderRadius: '7px', cursor: salvando ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
                       {salvando ? 'Salvando...' : 'Lançar Fluxo'}
                     </button>
                   </div>

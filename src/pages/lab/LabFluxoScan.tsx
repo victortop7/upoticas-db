@@ -25,7 +25,7 @@ const STATUS_BG: Record<string, string> = {
   aguardando: '#fff8cc', em_producao: '#cce0ff', pronto: '#ccffcc', entregue: '#e0e0e0', cancelado: '#ccffcc',
 };
 const STATUS_COLOR: Record<string, string> = {
-  aguardando: '#886600', em_producao: '#003388', pronto: '#006600', entregue: '#444', cancelado: '#005500',
+  aguardando: '#886600', em_producao: R.accent2, pronto: R.accent, entregue: R.dim, cancelado: R.accent,
 };
 
 import { R } from '../../lib/labTheme';
@@ -34,7 +34,7 @@ function statusBadge(s: string) {
   return (
     <span style={{
       fontWeight: '700', fontSize: '11px', fontFamily: "'Courier New', monospace",
-      color: STATUS_COLOR[s] || '#333', background: STATUS_BG[s] || '#eee',
+      color: STATUS_COLOR[s] || R.txt, background: STATUS_BG[s] || '#eee',
       padding: '3px 10px', border: `1px solid ${STATUS_COLOR[s] || '#ccc'}`,
     }}>
       {STATUS_LABELS[s] || s.toUpperCase()}
@@ -103,9 +103,9 @@ export default function LabFluxoScan() {
               <div key={n}
                 onClick={() => { localStorage.setItem('lab_scan_setor', String(n)); setSetor(n); setSetupMode(false); }}
                 style={{ display: 'flex', alignItems: 'center', padding: '7px 10px', cursor: 'pointer', background: i % 2 === 0 ? R.panel : R.alt, borderBottom: `1px solid ${R.bdr}`, fontFamily: "'Courier New', monospace", fontSize: '12px', fontWeight: '700' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#005500'; (e.currentTarget as HTMLElement).style.color = '#fff'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = i % 2 === 0 ? R.panel : R.alt; (e.currentTarget as HTMLElement).style.color = '#000'; }}>
-                <span style={{ color: '#005500', width: '22px', flexShrink: 0 }}>{n}</span>
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = R.accent; (e.currentTarget as HTMLElement).style.color = '#fff'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = i % 2 === 0 ? R.panel : R.alt; (e.currentTarget as HTMLElement).style.color = R.txt; }}>
+                <span style={{ color: R.accent, width: '22px', flexShrink: 0 }}>{n}</span>
                 <span>SETOR {n}</span>
               </div>
             ))}
@@ -144,14 +144,14 @@ export default function LabFluxoScan() {
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px' }}>
 
           {result ? (
-            <div style={{ width: '100%', maxWidth: '480px', border: `3px outset ${result.ok ? '#006600' : '#005500'}` }}>
-              <div style={{ background: result.ok ? '#006600' : '#005500', color: '#fff', padding: '6px 14px', fontWeight: '700', fontSize: '12px', letterSpacing: '1px', textTransform: 'uppercase' }}>
+            <div style={{ width: '100%', maxWidth: '480px', border: `3px outset ${result.ok ? R.accent : R.accent}` }}>
+              <div style={{ background: result.ok ? R.accent : R.accent, color: '#fff', padding: '6px 14px', fontWeight: '700', fontSize: '12px', letterSpacing: '1px', textTransform: 'uppercase' }}>
                 {result.ok ? '✓ LEITURA REALIZADA COM SUCESSO' : '✕ ERRO NA LEITURA'}
               </div>
               <div style={{ padding: '16px 20px', background: result.ok ? '#f0fff0' : '#fff0f0' }}>
                 {result.ok && result.ordem ? (
                   <>
-                    <div style={{ fontFamily: "'Courier New', monospace", fontSize: '36px', fontWeight: '900', color: '#000', marginBottom: '4px', letterSpacing: '2px' }}>
+                    <div style={{ fontFamily: "'Courier New', monospace", fontSize: '36px', fontWeight: '900', color: R.txt, marginBottom: '4px', letterSpacing: '2px' }}>
                       OS #{String(result.ordem.numero).padStart(4, '0')}
                     </div>
                     <div style={{ fontSize: '14px', fontWeight: '700', color: R.txt, marginBottom: '14px' }}>
@@ -161,11 +161,11 @@ export default function LabFluxoScan() {
                       {statusBadge(result.ordem.status_anterior)}
                       {result.ordem.mudou ? (
                         <>
-                          <span style={{ fontSize: '20px', color: '#006600', fontWeight: '900' }}>→</span>
+                          <span style={{ fontSize: '20px', color: R.accent, fontWeight: '900' }}>→</span>
                           {statusBadge(result.ordem.status_novo)}
                         </>
                       ) : (
-                        <span style={{ fontSize: '11px', color: '#888', fontStyle: 'italic' }}>status mantido</span>
+                        <span style={{ fontSize: '11px', color: R.dim, fontStyle: 'italic' }}>status mantido</span>
                       )}
                     </div>
                     <div style={{ marginTop: '10px', fontSize: '11px', color: R.dim, fontFamily: "'Courier New', monospace" }}>
@@ -173,7 +173,7 @@ export default function LabFluxoScan() {
                     </div>
                   </>
                 ) : (
-                  <div style={{ fontSize: '13px', color: '#005500', fontWeight: '700', fontFamily: "'Courier New', monospace" }}>
+                  <div style={{ fontSize: '13px', color: R.accent, fontWeight: '700', fontFamily: "'Courier New', monospace" }}>
                     {result.error}
                   </div>
                 )}
@@ -184,11 +184,11 @@ export default function LabFluxoScan() {
               <div style={{ fontSize: '48px', marginBottom: '12px', opacity: scanning ? 1 : 0.35, letterSpacing: '-4px', fontFamily: 'monospace' }}>
                 {scanning ? '⟳' : '▌▌ ▌▌▌ ▌ ▌▌▌'}
               </div>
-              <div style={{ fontSize: '15px', fontWeight: '700', color: scanning ? '#005500' : '#555', letterSpacing: '2px', fontFamily: "'Courier New', monospace", textTransform: 'uppercase' }}>
+              <div style={{ fontSize: '15px', fontWeight: '700', color: scanning ? R.accent : R.dim, letterSpacing: '2px', fontFamily: "'Courier New', monospace", textTransform: 'uppercase' }}>
                 {scanning ? 'PROCESSANDO...' : 'AGUARDANDO LEITURA'}
               </div>
               {!scanning && (
-                <div style={{ fontSize: '11px', color: '#999', marginTop: '8px' }}>
+                <div style={{ fontSize: '11px', color: R.dim, marginTop: '8px' }}>
                   Passe o leitor no código de barras da OS impressa
                 </div>
               )}
@@ -196,7 +196,7 @@ export default function LabFluxoScan() {
           )}
 
           {buffer && (
-            <div style={{ fontFamily: "'Courier New', monospace", fontSize: '12px', color: '#005500', fontWeight: '700', padding: '3px 12px', background: '#fff', border: `1px solid ${R.bdr}` }}>
+            <div style={{ fontFamily: "'Courier New', monospace", fontSize: '12px', color: R.accent, fontWeight: '700', padding: '3px 12px', background: '#fff', border: `1px solid ${R.bdr}` }}>
               ► {buffer}_
             </div>
           )}
@@ -227,13 +227,13 @@ export default function LabFluxoScan() {
             <div style={{ border: `2px inset ${R.bdr}`, overflowY: 'auto', flex: 1 }}>
               {historia.map((h, i) => (
                 <div key={i} style={{ padding: '6px 10px', borderBottom: `1px solid ${R.bdr}`, background: i % 2 === 0 ? R.panel : R.alt }}>
-                  <div style={{ fontFamily: "'Courier New', monospace", fontSize: '12px', fontWeight: '700', color: '#005500' }}>
+                  <div style={{ fontFamily: "'Courier New', monospace", fontSize: '12px', fontWeight: '700', color: R.accent }}>
                     OS #{String(h.numero).padStart(4, '0')}
                   </div>
                   <div style={{ fontSize: '10px', color: R.txt, marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {h.otica_nome}
                   </div>
-                  <div style={{ fontSize: '10px', fontWeight: '700', fontFamily: "'Courier New', monospace", color: h.mudou ? '#006600' : '#888' }}>
+                  <div style={{ fontSize: '10px', fontWeight: '700', fontFamily: "'Courier New', monospace", color: h.mudou ? R.accent : R.dim }}>
                     {h.mudou ? `→ ${STATUS_LABELS[h.status_novo] || h.status_novo}` : '— sem mudança'}
                   </div>
                 </div>

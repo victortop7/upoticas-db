@@ -30,12 +30,12 @@ export default function LabDashboard() {
 
   const panelBg   = dark ? '#1c1c1c' : R.panel;
   const rowEven   = dark ? '#1c1c1c' : R.panel;
-  const rowOdd    = dark ? '#222222' : R.alt;
-  const rowBorder = dark ? '#333333' : '#b0aca4';
-  const txtMain   = dark ? '#d8d8d8' : '#000000';
-  const accentTxt = dark ? '#66cc77' : '#005500';
+  const rowOdd    = dark ? R.txt : R.alt;
+  const rowBorder = dark ? R.txt : '#b0aca4';
+  const txtMain   = dark ? '#d8d8d8' : R.txt;
+  const accentTxt = dark ? '#66cc77' : R.accent;
   const hdrBg     = 'linear-gradient(90deg, #005500, #008800)';
-  const hdrBorder = '#007700';
+  const hdrBorder = R.accent;
 
   function toggleDark() {
     const next = dark ? '0' : '1';
@@ -56,8 +56,8 @@ export default function LabDashboard() {
         </div>
 
         {/* Stats Produção */}
-        <div style={{ background: panelBg, border: `2px inset ${dark ? '#444' : '#808080'}`, padding: '8px 10px' }}>
-          <div style={{ background: '#005500', color: '#ccffcc', fontSize: '10px', fontWeight: '700', padding: '3px 6px', marginBottom: '8px', letterSpacing: '1px' }}>PRODUÇÃO</div>
+        <div style={{ background: panelBg, border: `2px inset ${dark ? R.dim : R.dim}`, padding: '8px 10px' }}>
+          <div style={{ background: R.accent, color: '#ccffcc', fontSize: '10px', fontWeight: '700', padding: '3px 6px', marginBottom: '8px', letterSpacing: '1px' }}>PRODUÇÃO</div>
           {[
             { label: 'Hoje',        val: stats.hoje,        color: '#60a5fa' },
             { label: 'Aguardando',  val: stats.aguardando,  color: '#f59e0b' },
@@ -66,17 +66,17 @@ export default function LabDashboard() {
           ].map(({ label, val, color }) => (
             <div key={label} onClick={() => navigate('/lab/ordens')}
               style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 6px', marginBottom: '2px', cursor: 'pointer', borderRadius: '2px' }}
-              onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#005500'}
+              onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = R.accent}
               onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
-              <span style={{ fontSize: '10px', color: dark ? '#aaa' : '#444', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</span>
+              <span style={{ fontSize: '10px', color: dark ? '#aaa' : R.dim, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</span>
               <span style={{ fontSize: '14px', fontWeight: '900', color, fontFamily: 'monospace' }}>{val}</span>
             </div>
           ))}
         </div>
 
         {/* Acesso Rápido */}
-        <div style={{ background: panelBg, border: `2px outset ${dark ? '#555' : '#808080'}`, padding: '8px 10px' }}>
-          <div style={{ background: '#005500', color: '#ccffcc', fontSize: '10px', fontWeight: '700', padding: '3px 6px', marginBottom: '8px', letterSpacing: '1px' }}>ACESSO RÁPIDO</div>
+        <div style={{ background: panelBg, border: `2px outset ${dark ? R.dim : R.dim}`, padding: '8px 10px' }}>
+          <div style={{ background: R.accent, color: '#ccffcc', fontSize: '10px', fontWeight: '700', padding: '3px 6px', marginBottom: '8px', letterSpacing: '1px' }}>ACESSO RÁPIDO</div>
           {[
             { label: 'Nova OS',       to: '/lab/ordens/nova', icon: '➕' },
             { label: 'Fila Produção', to: '/lab/fluxo',       icon: '⚡' },
@@ -84,8 +84,8 @@ export default function LabDashboard() {
             { label: 'Óticas',        to: '/lab/oticas',      icon: '🏪' },
           ].map((item, i) => (
             <button key={item.to} onClick={() => navigate(item.to)}
-              style={{ display: 'flex', alignItems: 'center', gap: '6px', width: '100%', padding: '4px 6px', marginBottom: '4px', background: i % 2 === 0 ? rowEven : rowOdd, border: `1px outset ${dark ? '#555' : '#a0a098'}`, fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer', color: txtMain, textAlign: 'left', fontWeight: '700', borderBottom: `1px solid ${rowBorder}` }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#005500'; (e.currentTarget as HTMLElement).style.color = '#ccffcc'; }}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px', width: '100%', padding: '4px 6px', marginBottom: '4px', background: i % 2 === 0 ? rowEven : rowOdd, border: `1px outset ${dark ? R.dim : '#a0a098'}`, fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer', color: txtMain, textAlign: 'left', fontWeight: '700', borderBottom: `1px solid ${rowBorder}` }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = R.accent; (e.currentTarget as HTMLElement).style.color = '#ccffcc'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = i % 2 === 0 ? rowEven : rowOdd; (e.currentTarget as HTMLElement).style.color = txtMain; }}>
               <span>{item.icon}</span>
               <span style={{ textTransform: 'uppercase', letterSpacing: '0.3px' }}>{item.label}</span>
@@ -94,14 +94,14 @@ export default function LabDashboard() {
         </div>
 
         {/* Dark mode + versão */}
-        <div style={{ background: panelBg, border: `2px inset ${dark ? '#444' : '#808080'}`, padding: '8px 10px', fontSize: '10px', color: dark ? '#aaa' : '#404040', textAlign: 'center' }}>
+        <div style={{ background: panelBg, border: `2px inset ${dark ? R.dim : R.dim}`, padding: '8px 10px', fontSize: '10px', color: dark ? '#aaa' : '#404040', textAlign: 'center' }}>
           <button onClick={toggleDark}
-            style={{ width: '100%', padding: '4px 6px', marginBottom: '8px', background: dark ? '#333' : R.bg, border: `1px outset ${dark ? '#555' : '#a0a098'}`, fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer', color: dark ? '#ccffcc' : '#000', fontWeight: '700' }}>
+            style={{ width: '100%', padding: '4px 6px', marginBottom: '8px', background: dark ? R.txt : R.bg, border: `1px outset ${dark ? R.dim : '#a0a098'}`, fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer', color: dark ? '#ccffcc' : R.txt, fontWeight: '700' }}>
             {dark ? '☀️ MODO CLARO' : '🌙 MODO NOTURNO'}
           </button>
           <div style={{ fontWeight: '700', color: accentTxt, marginBottom: '4px' }}>Connect LAB</div>
           <div>Versão 1.0</div>
-          <div style={{ marginTop: '4px', color: dark ? '#666' : '#606060' }}>Soluções Ópticas</div>
+          <div style={{ marginTop: '4px', color: dark ? R.dim : R.dim }}>Soluções Ópticas</div>
         </div>
 
       </div>

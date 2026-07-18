@@ -152,7 +152,7 @@ export default function LabTransportadoras() {
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
             {modo === 'editar' && <button type="button" onClick={() => excluir(sel!.id)} style={{ padding: '9px 18px', fontSize: '13px', background: 'rgba(200,0,0,0.12)', color: '#cc0000', border: '1px solid #cc0000', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>Excluir</button>}
             <button type="button" onClick={() => setModo('lista')} style={{ padding: '9px 22px', fontSize: '13px', background: 'transparent', color: R.dim, border: '1px solid #b0aca4', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
-            <button onClick={salvar} disabled={saving} style={{ padding: '9px 28px', fontSize: '13px', fontWeight: '600', background: saving ? '#666' : '#005500', color: '#fff', border: 'none', borderRadius: '8px', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
+            <button onClick={salvar} disabled={saving} style={{ padding: '9px 28px', fontSize: '13px', fontWeight: '600', background: saving ? R.dim : R.accent, color: '#fff', border: 'none', borderRadius: '8px', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
               {saving ? 'Salvando...' : 'Salvar'}
             </button>
           </div>
@@ -165,7 +165,7 @@ export default function LabTransportadoras() {
     <div style={{ padding: '28px', maxWidth: '900px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: R.txt }}>Transportadoras</h1>
-        <button onClick={openNovo} style={{ padding: '9px 20px', fontSize: '13px', fontWeight: '600', background: '#005500', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
+        <button onClick={openNovo} style={{ padding: '9px 20px', fontSize: '13px', fontWeight: '600', background: R.accent, color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
           + Nova Transportadora
         </button>
       </div>

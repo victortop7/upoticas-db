@@ -9,7 +9,7 @@ interface Conta {
   forma_pgto: string | null; categoria: string | null; observacoes: string | null;
 }
 
-const STATUS_COLOR = { aberto: '#886600', pago: '#006600', vencido: '#cc0000' };
+const STATUS_COLOR = { aberto: '#886600', pago: R.accent, vencido: '#cc0000' };
 const STATUS_LABEL = { aberto: 'Em Aberto', pago: 'Pago', vencido: 'Vencido' };
 
 function brl(v: number) { return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
@@ -93,13 +93,13 @@ export default function LabContasPagar() {
         <input type="date" value={dataIni} onChange={e => setDataIni(e.target.value)} style={{ ...INP, width: '135px' }} />
         <input type="date" value={dataFim} onChange={e => setDataFim(e.target.value)} style={{ ...INP, width: '135px' }} />
         <div style={{ marginLeft: 'auto' }}>
-          <button onClick={() => setNovaModal(true)} style={{ padding: '7px 16px', fontSize: '12px', fontWeight: '600', background: '#005500', color: '#fff', border: 'none', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>+ Lançar</button>
+          <button onClick={() => setNovaModal(true)} style={{ padding: '7px 16px', fontSize: '12px', fontWeight: '600', background: R.accent, color: '#fff', border: 'none', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>+ Lançar</button>
         </div>
       </div>
 
       <div style={{ padding: '8px 20px', borderBottom: '1px solid #b0aca4', display: 'flex', gap: '8px', alignItems: 'center' }}>
         {[['', 'Todos'], ['aberto', 'Em Aberto'], ['vencido', 'Vencidos'], ['pago', 'Pagos']].map(([v, l]) => (
-          <button key={v} onClick={() => setStatusFiltro(v)} style={{ padding: '4px 12px', fontSize: '11px', fontWeight: '600', borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${statusFiltro === v ? '#b8b4ac' : '#b0aca4'}`, background: statusFiltro === v ? R.alt : 'transparent', color: statusFiltro === v ? '#000' : '#666' }}>{l}</button>
+          <button key={v} onClick={() => setStatusFiltro(v)} style={{ padding: '4px 12px', fontSize: '11px', fontWeight: '600', borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${statusFiltro === v ? '#b8b4ac' : '#b0aca4'}`, background: statusFiltro === v ? R.alt : 'transparent', color: statusFiltro === v ? R.txt : R.dim }}>{l}</button>
         ))}
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '16px', fontSize: '12px', fontFamily: "'Courier New', monospace" }}>
           <span style={{ color: '#886600' }}>Aberto: <b>{brl(totais.aberto)}</b></span>
@@ -129,7 +129,7 @@ export default function LabContasPagar() {
                     <td style={{ padding: '9px 12px', fontSize: '12px', color: R.dim, maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.descricao}</td>
                     <td style={{ padding: '9px 12px', fontSize: '11px', color: R.dim }}>{c.categoria ?? '—'}</td>
                     <td style={{ padding: '9px 12px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim, whiteSpace: 'nowrap' }}>{fmtDate(c.data_emissao)}</td>
-                    <td style={{ padding: '9px 12px', fontSize: '11px', fontFamily: "'Courier New', monospace", whiteSpace: 'nowrap', color: c.status === 'vencido' ? '#cc0000' : '#555', fontWeight: c.status === 'vencido' ? '700' : '400' }}>{fmtDate(c.data_vencimento)}</td>
+                    <td style={{ padding: '9px 12px', fontSize: '11px', fontFamily: "'Courier New', monospace", whiteSpace: 'nowrap', color: c.status === 'vencido' ? '#cc0000' : R.dim, fontWeight: c.status === 'vencido' ? '700' : '400' }}>{fmtDate(c.data_vencimento)}</td>
                     <td style={{ padding: '9px 12px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.accent, whiteSpace: 'nowrap' }}>{fmtDate(c.data_pagamento)}</td>
                     <td style={{ padding: '9px 12px', fontSize: '13px', fontFamily: "'Courier New', monospace", fontWeight: '700', color: R.txt, textAlign: 'right' }}>{brl(c.valor)}</td>
                     <td style={{ padding: '9px 12px' }}>
@@ -165,7 +165,7 @@ export default function LabContasPagar() {
             </div>
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
               <button onClick={() => setBaixando(null)} style={{ padding: '8px 18px', fontSize: '13px', background: 'transparent', color: R.dim, border: '1px solid #b0aca4', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
-              <button onClick={darBaixa} disabled={salvando || !dataPgto} style={{ padding: '8px 22px', fontSize: '13px', fontWeight: '600', background: salvando || !dataPgto ? '#666' : '#005500', color: '#fff', border: 'none', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>{salvando ? '...' : '✓ Confirmar'}</button>
+              <button onClick={darBaixa} disabled={salvando || !dataPgto} style={{ padding: '8px 22px', fontSize: '13px', fontWeight: '600', background: salvando || !dataPgto ? R.dim : R.accent, color: '#fff', border: 'none', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>{salvando ? '...' : '✓ Confirmar'}</button>
             </div>
           </div>
         </div>
@@ -197,7 +197,7 @@ export default function LabContasPagar() {
             </div>
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '16px' }}>
               <button onClick={() => setNovaModal(false)} style={{ padding: '8px 18px', fontSize: '13px', background: 'transparent', color: R.dim, border: '1px solid #b0aca4', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
-              <button onClick={criarConta} disabled={salvando} style={{ padding: '8px 22px', fontSize: '13px', fontWeight: '600', background: salvando ? '#666' : '#005500', color: '#fff', border: 'none', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>{salvando ? '...' : 'Lançar'}</button>
+              <button onClick={criarConta} disabled={salvando} style={{ padding: '8px 22px', fontSize: '13px', fontWeight: '600', background: salvando ? R.dim : R.accent, color: '#fff', border: 'none', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>{salvando ? '...' : 'Lançar'}</button>
             </div>
           </div>
         </div>

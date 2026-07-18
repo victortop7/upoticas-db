@@ -58,7 +58,7 @@ export default function LabOperadores() {
         </div>
         <button
           onClick={() => { setShowForm(f => !f); setErro(''); setSucesso(''); }}
-          style={{ padding: '9px 20px', fontSize: '13px', fontWeight: '600', background: '#005500', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}
+          style={{ padding: '9px 20px', fontSize: '13px', fontWeight: '600', background: R.accent, color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}
         >
           {showForm ? 'Cancelar' : '+ Novo Operador'}
         </button>
@@ -96,7 +96,7 @@ export default function LabOperadores() {
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <button type="submit" disabled={saving} style={{ padding: '9px 24px', fontSize: '13px', fontWeight: '600', background: saving ? '#666' : '#005500', color: '#fff', border: 'none', borderRadius: '8px', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
+            <button type="submit" disabled={saving} style={{ padding: '9px 24px', fontSize: '13px', fontWeight: '600', background: saving ? R.dim : R.accent, color: '#fff', border: 'none', borderRadius: '8px', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
               {saving ? 'Salvando...' : 'Criar Operador'}
             </button>
           </div>
@@ -130,7 +130,7 @@ export default function LabOperadores() {
                     <span style={{
                       fontSize: '11px', fontWeight: '600', padding: '2px 8px', borderRadius: '20px',
                       background: op.ativo ? 'rgba(0,102,0,0.15)' : 'rgba(200,0,0,0.12)',
-                      color: op.ativo ? '#006600' : '#cc0000',
+                      color: op.ativo ? R.accent : '#cc0000',
                     }}>
                       {op.ativo ? 'Ativo' : 'Inativo'}
                     </span>

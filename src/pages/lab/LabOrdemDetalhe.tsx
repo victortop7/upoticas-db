@@ -152,7 +152,7 @@ export default function LabOrdemDetalhe() {
               style={{
                 padding: '7px 16px', fontSize: '12px', fontWeight: '600', borderRadius: '20px', cursor: ordem.status === s.value ? 'default' : 'pointer', fontFamily: 'inherit',
                 background: ordem.status === s.value ? `${s.color}20` : 'transparent',
-                color: ordem.status === s.value ? s.color : '#666',
+                color: ordem.status === s.value ? s.color : R.dim,
                 border: `1px solid ${ordem.status === s.value ? s.color : '#b0aca4'}`,
                 opacity: updatingStatus ? 0.5 : 1,
               }}

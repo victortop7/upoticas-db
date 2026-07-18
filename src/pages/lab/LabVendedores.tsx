@@ -99,7 +99,7 @@ export default function LabVendedores() {
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
           {modo === 'editar' && <button onClick={() => excluir(sel!.id)} style={{ padding: '9px 18px', fontSize: '13px', background: 'rgba(200,0,0,0.12)', color: '#cc0000', border: '1px solid #cc0000', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>Excluir</button>}
           <button onClick={() => setModo('lista')} style={{ padding: '9px 22px', fontSize: '13px', background: 'transparent', color: R.dim, border: '1px solid #b0aca4', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
-          <button onClick={salvar} disabled={saving} style={{ padding: '9px 28px', fontSize: '13px', fontWeight: '600', background: saving ? '#666' : '#005500', color: '#fff', border: 'none', borderRadius: '8px', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>{saving ? 'Salvando...' : 'Salvar'}</button>
+          <button onClick={salvar} disabled={saving} style={{ padding: '9px 28px', fontSize: '13px', fontWeight: '600', background: saving ? R.dim : R.accent, color: '#fff', border: 'none', borderRadius: '8px', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>{saving ? 'Salvando...' : 'Salvar'}</button>
         </div>
       </div>
     </div>
@@ -109,7 +109,7 @@ export default function LabVendedores() {
     <div style={{ padding: '28px', maxWidth: '860px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: R.txt }}>Vendedores / Operadores</h1>
-        <button onClick={openNovo} style={{ padding: '9px 20px', fontSize: '13px', fontWeight: '600', background: '#005500', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>+ Novo</button>
+        <button onClick={openNovo} style={{ padding: '9px 20px', fontSize: '13px', fontWeight: '600', background: R.accent, color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>+ Novo</button>
       </div>
       <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar..." style={{ ...INP, marginBottom: '16px', background: R.panel, width: '300px' }} />
       <div style={{ background: R.panel, border: '1px solid #b0aca4', borderRadius: '10px' }}>

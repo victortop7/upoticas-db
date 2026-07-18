@@ -95,7 +95,7 @@ export default function LabEstoque() {
         <div style={{ background:R.hdr, color:R.hdrTxt, padding:'5px 14px', fontSize:'13px', fontWeight:'700', letterSpacing:'1px', border:`2px outset ${R.hdrBdr}` }}>
           ESTOQUE DE LENTES — {produtos.length} produto(s)
         </div>
-        <button onClick={abrirNovo} style={{ padding:'5px 16px', fontSize:'12px', fontWeight:'700', background:'#005500', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+        <button onClick={abrirNovo} style={{ padding:'5px 16px', fontSize:'12px', fontWeight:'700', background:R.accent, color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
           + NOVO PRODUTO
         </button>
       </div>
@@ -153,7 +153,7 @@ export default function LabEstoque() {
                     <td style={{ padding:'6px 10px', fontSize:'11px', color:R.txt }}>{TIPO_LABEL[p.tipo] ?? p.tipo}</td>
                     <td style={{ padding:'6px 10px', fontSize:'11px', color:R.txt }}>{p.tratamento}</td>
                     <td style={{ padding:'6px 10px', fontSize:'11px', color:R.dim }}>{p.descricao ?? '—'}</td>
-                    <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'14px', fontWeight:'900', color: baixo ? '#005500' : p.quantidade > p.quantidade_minima * 2 ? '#006600' : '#886600', textAlign:'center' }}>
+                    <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'14px', fontWeight:'900', color: baixo ? R.accent : p.quantidade > p.quantidade_minima * 2 ? R.accent : '#886600', textAlign:'center' }}>
                       {p.quantidade}
                     </td>
                     <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.dim, textAlign:'center' }}>{p.quantidade_minima}</td>
@@ -205,7 +205,7 @@ export default function LabEstoque() {
                 </div>
                 <div style={{ display:'flex', gap:'8px', marginTop:'4px' }}>
                   <button type="button" onClick={() => setModalProd(false)} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:R.alt, color:R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>CANCELAR</button>
-                  <button type="submit" disabled={saving} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:'#005500', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:saving?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+                  <button type="submit" disabled={saving} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:R.accent, color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:saving?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
                     {saving ? 'SALVANDO...' : 'GRAVAR'}
                   </button>
                 </div>
@@ -240,8 +240,8 @@ export default function LabEstoque() {
                       <button key={t} type="button" onClick={() => setMov(m => ({ ...m, tipo: t }))}
                         style={{ flex:1, padding:'6px', fontSize:'12px', fontWeight:'700', cursor:'pointer', fontFamily:'inherit',
                           background: mov.tipo === t ? (t==='entrada' ? '#ccffcc' : '#ccffcc') : R.alt,
-                          color: mov.tipo === t ? (t==='entrada' ? '#006600' : '#005500') : '#333',
-                          border: mov.tipo === t ? `2px inset ${t==='entrada' ? '#006600' : '#005500'}` : `1px outset ${R.bdr}` }}>
+                          color: mov.tipo === t ? (t==='entrada' ? R.accent : R.accent) : R.txt,
+                          border: mov.tipo === t ? `2px inset ${t==='entrada' ? R.accent : R.accent}` : `1px outset ${R.bdr}` }}>
                         {t === 'entrada' ? '+ ENTRADA' : '− SAÍDA'}
                       </button>
                     ))}
@@ -251,7 +251,7 @@ export default function LabEstoque() {
                 <div><label style={LBL}>Motivo</label><input value={mov.motivo} onChange={e => setMov(m => ({ ...m, motivo: e.target.value }))} style={INP} placeholder={mov.tipo === 'entrada' ? 'Ex: Compra fornecedor' : 'Ex: Uso em OS #0001'} /></div>
                 <div style={{ display:'flex', gap:'8px', marginTop:'4px' }}>
                   <button type="button" onClick={() => setModalMov(false)} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:R.alt, color:R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>CANCELAR</button>
-                  <button type="submit" disabled={savingMov} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background: mov.tipo==='entrada' ? '#006600' : '#005500', color:'#fff', border:`1px outset ${mov.tipo==='entrada' ? '#006600' : R.hdrBdr}`, cursor:savingMov?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+                  <button type="submit" disabled={savingMov} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background: mov.tipo==='entrada' ? R.accent : R.accent, color:'#fff', border:`1px outset ${mov.tipo==='entrada' ? R.accent : R.hdrBdr}`, cursor:savingMov?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
                     {savingMov ? 'SALVANDO...' : mov.tipo === 'entrada' ? 'REGISTRAR ENTRADA' : 'REGISTRAR SAÍDA'}
                   </button>
                 </div>

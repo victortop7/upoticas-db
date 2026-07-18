@@ -221,7 +221,7 @@ export default function LabRelatorios() {
               {fmtDate(dataIni)} até {fmtDate(dataFim)}
             </div>
             <button onClick={() => imprimirRelatorio(ordens, servicosPorOS, oticaSel!, `${fmtDate(dataIni)} até ${fmtDate(dataFim)}`)}
-              style={{ padding:'5px 14px', fontSize:'11px', fontWeight:'700', background:'#003388', color:'#fff', border:'1px outset #003388', cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+              style={{ padding:'5px 14px', fontSize:'11px', fontWeight:'700', background:R.accent2, color:'#fff', border:'1px outset #003388', cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
               🖨️ IMPRIMIR RELATÓRIO
             </button>
           </div>
@@ -269,10 +269,10 @@ export default function LabRelatorios() {
               </thead>
               <tbody>
                 {ordens.map((o, i) => {
-                  const st = STATUS_STYLE[o.status] || { bg:'#eee', color:'#555555', label: o.status };
+                  const st = STATUS_STYLE[o.status] || { bg:'#eee', color:R.dim, label: o.status };
                   return (
                     <tr key={o.id} style={{ background: i%2===0 ? R.panel : R.alt, borderBottom:`1px solid ${R.bdr}`, cursor:'pointer' }}
-                      onMouseEnter={e => (e.currentTarget.style.background='#005500')}
+                      onMouseEnter={e => (e.currentTarget.style.background=R.accent)}
                       onMouseLeave={e => (e.currentTarget.style.background= i%2===0 ? R.panel : R.alt)}>
                       <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'900', color:R.accent }}
                         onClick={() => navigate(`/lab/ordens/${o.id}`)}>
@@ -292,7 +292,7 @@ export default function LabRelatorios() {
                       <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt, whiteSpace:'nowrap' }}>{fmtDate(o.previsao_entrega)}</td>
                       <td style={{ padding:'6px 10px' }}>
                         <button onClick={() => navigate(`/lab/ordens/${o.id}`)}
-                          style={{ padding:'2px 8px', fontSize:'11px', fontWeight:'700', background:'#005500', color:'#fff', border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}>
+                          style={{ padding:'2px 8px', fontSize:'11px', fontWeight:'700', background:R.accent, color:'#fff', border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}>
                           VER OS →
                         </button>
                       </td>
@@ -328,7 +328,7 @@ export default function LabRelatorios() {
         </div>
         {buscado && (
           <button onClick={() => window.print()} className="no-print"
-            style={{ padding:'5px 14px', fontSize:'11px', fontWeight:'700', background:'#003388', color:'#fff', border:'1px outset #003388', cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+            style={{ padding:'5px 14px', fontSize:'11px', fontWeight:'700', background:R.accent2, color:'#fff', border:'1px outset #003388', cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
             🖨️ IMPRIMIR RELATÓRIO
           </button>
         )}
@@ -345,7 +345,7 @@ export default function LabRelatorios() {
           style={{ ...INP, width:'180px' }}
         />
         <button onClick={buscarPorNumero} disabled={buscandoOS}
-          style={{ padding:'5px 14px', fontSize:'11px', fontWeight:'700', background:'#005500', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+          style={{ padding:'5px 14px', fontSize:'11px', fontWeight:'700', background:R.accent, color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
           {buscandoOS ? 'BUSCANDO...' : '🔍 IR PARA OS'}
         </button>
         {erroBuscaOS && (
@@ -368,7 +368,7 @@ export default function LabRelatorios() {
           </div>
 
           <button onClick={buscarResumo} disabled={loading}
-            style={{ padding:'5px 18px', fontSize:'12px', fontWeight:'700', background:'#005500', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:loading?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase', alignSelf:'flex-end' }}>
+            style={{ padding:'5px 18px', fontSize:'12px', fontWeight:'700', background:R.accent, color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:loading?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase', alignSelf:'flex-end' }}>
             {loading ? 'BUSCANDO...' : '🔍 GERAR RELATÓRIO'}
           </button>
         </div>
@@ -377,7 +377,7 @@ export default function LabRelatorios() {
         <div style={{ display:'flex', gap:'4px', marginTop:'8px', flexWrap:'wrap' }}>
           {PRESETS.map(p => (
             <button key={p.label} onClick={() => { setDataIni(p.ini); setDataFim(p.fim); }}
-              style={{ padding:'3px 10px', fontSize:'11px', fontWeight:'700', background: dataIni===p.ini && dataFim===p.fim ? '#005500' : R.alt, color: dataIni===p.ini && dataFim===p.fim ? R.hdrTxt : R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>
+              style={{ padding:'3px 10px', fontSize:'11px', fontWeight:'700', background: dataIni===p.ini && dataFim===p.fim ? R.accent : R.alt, color: dataIni===p.ini && dataFim===p.fim ? R.hdrTxt : R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>
               {p.label}
             </button>
           ))}
@@ -404,7 +404,7 @@ export default function LabRelatorios() {
             <div key={label} style={{ background:R.panel, border:`2px outset ${R.bdr}`, padding:'8px 16px', flexShrink:0 }}>
               <div style={{ fontSize:'10px', fontWeight:'700', color:R.dim, textTransform:'uppercase', letterSpacing:'0.5px' }}>{label}</div>
               <div style={{ fontSize:'20px', fontWeight:'900', color:R.accent, fontFamily:"'Courier New', monospace", lineHeight:'1.2' }}>{val}</div>
-              <div style={{ fontSize:'10px', color:'#888', marginTop:'2px' }}>{sub}</div>
+              <div style={{ fontSize:'10px', color:R.dim, marginTop:'2px' }}>{sub}</div>
             </div>
           ))}
         </div>
@@ -434,11 +434,11 @@ export default function LabRelatorios() {
                 const pct = Math.round((o.valor_total / maiorValor) * 100);
                 return (
                   <tr key={o.otica_id} style={{ background: i%2===0 ? R.panel : R.alt, borderBottom:`1px solid ${R.bdr}`, cursor:'pointer' }}
-                    onMouseEnter={e => (e.currentTarget.style.background='#005500')}
+                    onMouseEnter={e => (e.currentTarget.style.background=R.accent)}
                     onMouseLeave={e => (e.currentTarget.style.background= i%2===0 ? R.panel : R.alt)}>
                     <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.dim }}>{o.otica_codigo||'—'}</td>
                     <td style={{ padding:'7px 10px', fontSize:'13px', fontWeight:'700', color:R.txt }}>{o.otica_nome}</td>
-                    <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'14px', fontWeight:'900', color:'#000' }}>{o.total_os}</td>
+                    <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'14px', fontWeight:'900', color:R.txt }}>{o.total_os}</td>
                     <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'700', color:R.accent }}>{o.entregues}</td>
                     <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'700', color:R.accent2 }}>{o.em_aberto}</td>
                     <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', color:R.accent }}>{o.canceladas}</td>
@@ -446,14 +446,14 @@ export default function LabRelatorios() {
                       <div style={{ fontFamily:"'Courier New', monospace", fontSize:'13px', fontWeight:'700', color:R.txt, marginBottom:'3px' }}>{brl(o.valor_total)}</div>
                       <div style={{ display:'flex', alignItems:'center', gap:'4px', justifyContent:'flex-end' }}>
                         <div style={{ width:'60px', height:'5px', background:'#b0aca4', borderRadius:'2px', overflow:'hidden' }}>
-                          <div style={{ width:`${pct}%`, height:'100%', background:'#005500' }} />
+                          <div style={{ width:`${pct}%`, height:'100%', background:R.accent }} />
                         </div>
                         <span style={{ fontSize:'10px', color:R.dim, fontFamily:"'Courier New', monospace" }}>{pct}%</span>
                       </div>
                     </td>
                     <td style={{ padding:'7px 10px' }}>
                       <button onClick={() => verOtica(o)}
-                        style={{ padding:'3px 10px', fontSize:'11px', fontWeight:'700', background:'#005500', color:'#fff', border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}>
+                        style={{ padding:'3px 10px', fontSize:'11px', fontWeight:'700', background:R.accent, color:'#fff', border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}>
                         VER OS →
                       </button>
                     </td>

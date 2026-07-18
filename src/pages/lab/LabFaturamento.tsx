@@ -28,7 +28,7 @@ function mesAtual() {
 
 const INP: React.CSSProperties = { padding: '7px 10px', fontSize: '13px', background: R.inp, border: '1px solid #b0aca4', borderRadius:  0, color: R.txt, outline: 'none', fontFamily: "'Courier New', monospace", width: '100%', boxSizing: 'border-box' };
 const LBL: React.CSSProperties = { fontSize: '11px', fontWeight: '600', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '4px' };
-const STATUS_COLOR: Record<string, string> = { aberto: '#886600', emitido: '#003388', pago: '#006600' };
+const STATUS_COLOR: Record<string, string> = { aberto: '#886600', emitido: R.accent2, pago: R.accent };
 
 export default function LabFaturamento() {
   const navigate = useNavigate();
@@ -112,7 +112,7 @@ export default function LabFaturamento() {
         <div style={{ display: 'flex', gap: '4px' }}>
           {[['fechamentos', 'Fechamentos'], ['gerar', 'Gerar Fechamento']].map(([v, l]) => (
             <button key={v} onClick={() => setAba(v as 'fechamentos' | 'gerar')}
-              style={{ padding: '5px 14px', fontSize: '12px', fontWeight: '600', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${aba === v ? '#005500' : '#b0aca4'}`, background: aba === v ? '#005500' : 'transparent', color: aba === v ? '#fff' : '#666' }}>
+              style={{ padding: '5px 14px', fontSize: '12px', fontWeight: '600', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${aba === v ? R.accent : '#b0aca4'}`, background: aba === v ? R.accent : 'transparent', color: aba === v ? '#fff' : R.dim }}>
               {l}
             </button>
           ))}
@@ -128,7 +128,7 @@ export default function LabFaturamento() {
         <>
           <div style={{ padding: '8px 20px', borderBottom: '1px solid #b0aca4', display: 'flex', gap: '8px' }}>
             {[['', 'Todos'], ['aberto', 'Em Aberto'], ['emitido', 'Emitidos'], ['pago', 'Pagos']].map(([v, l]) => (
-              <button key={v} onClick={() => setStatusFiltro(v)} style={{ padding: '4px 12px', fontSize: '11px', fontWeight: '600', borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${statusFiltro === v ? '#b8b4ac' : '#b0aca4'}`, background: statusFiltro === v ? R.alt : 'transparent', color: statusFiltro === v ? '#000' : '#666' }}>{l}</button>
+              <button key={v} onClick={() => setStatusFiltro(v)} style={{ padding: '4px 12px', fontSize: '11px', fontWeight: '600', borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${statusFiltro === v ? '#b8b4ac' : '#b0aca4'}`, background: statusFiltro === v ? R.alt : 'transparent', color: statusFiltro === v ? R.txt : R.dim }}>{l}</button>
             ))}
           </div>
           <div style={{ flex: 1, overflowY: 'auto' }}>
@@ -197,7 +197,7 @@ export default function LabFaturamento() {
               <label style={LBL}>Vencimento</label>
               <input type="date" value={vencimento} onChange={e => setVencimento(e.target.value)} style={{ ...INP, width: '140px' }} />
             </div>
-            <button onClick={carregarResumo} disabled={loadingResumo} style={{ padding: '8px 20px', fontSize: '13px', fontWeight: '600', background: '#005500', color: '#fff', border: 'none', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <button onClick={carregarResumo} disabled={loadingResumo} style={{ padding: '8px 20px', fontSize: '13px', fontWeight: '600', background: R.accent, color: '#fff', border: 'none', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>
               {loadingResumo ? 'Carregando...' : 'Calcular'}
             </button>
           </div>
@@ -229,7 +229,7 @@ export default function LabFaturamento() {
                           <button
                             onClick={() => gerarFechamento(r.otica_id, r.qtd_os, r.valor_total)}
                             disabled={gerandoId === r.otica_id}
-                            style={{ padding: '6px 16px', fontSize: '12px', fontWeight: '600', background: gerandoId === r.otica_id ? '#666' : '#005500', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                            style={{ padding: '6px 16px', fontSize: '12px', fontWeight: '600', background: gerandoId === r.otica_id ? R.dim : R.accent, color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit' }}>
                             {gerandoId === r.otica_id ? 'Gerando...' : 'Gerar Fechamento'}
                           </button>
                         </td>
