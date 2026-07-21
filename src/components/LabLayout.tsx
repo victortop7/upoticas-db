@@ -10,10 +10,9 @@ type Opcao = { num: number; label: string; to?: string; disabled?: boolean };
 
 const MODULOS: { letra: ModuleKey; nome: string; icon: IconName; ativo: boolean }[] = [
   { letra: 'B', nome: 'ÓTICAS CLIENTES',           icon: 'store',     ativo: true  },
-  { letra: 'C', nome: 'FORNECEDORES/OFTALMOS',     icon: 'factory',   ativo: true  },
+  { letra: 'C', nome: 'FORNECEDORES',              icon: 'factory',   ativo: true  },
   { letra: 'D', nome: 'CADASTRO DE PRODUTOS',      icon: 'box',       ativo: true  },
-  { letra: 'E', nome: 'CADASTRO DE ESTOQUE',       icon: 'layers',    ativo: true  },
-  { letra: 'F', nome: 'MOVIMENTAÇÃO DE ESTOQUE',   icon: 'transfer',  ativo: true  },
+  { letra: 'E', nome: 'ESTOQUE',                   icon: 'layers',    ativo: true  },
   { letra: 'G', nome: 'VENDAS/ORDENS DE SERVIÇOS', icon: 'clipboard', ativo: true  },
   { letra: 'H', nome: 'CONTROLE DE FLUXO',         icon: 'flow',      ativo: true  },
   { letra: 'I', nome: 'NOTAS FISCAIS/FECHAMENTOS', icon: 'invoice',   ativo: false },
@@ -166,7 +165,6 @@ export default function LabLayout() {
     C: '/lab/fornecedores',
     D: '/lab/servicos',
     E: '/lab/estoque',
-    F: '/lab/estoque',
   };
 
   function clickModule(letra: ModuleKey, ativo: boolean) {
