@@ -165,7 +165,7 @@ export default function LabTransportadoras() {
     <div style={{ padding: '28px', maxWidth: '900px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: R.txt }}>Transportadoras</h1>
-        <button onClick={openNovo} style={{ padding: '9px 20px', fontSize: '13px', fontWeight: '600', background: R.accent, color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
+        <button onClick={openNovo} style={{ padding: '9px 20px', fontSize: '13px', fontWeight: '600', background: R.accent, color: 'var(--lab-on-accent)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
           + Nova Transportadora
         </button>
       </div>

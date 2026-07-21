@@ -122,7 +122,7 @@ function LimiteField({ label, neg, pos, onNeg, onPos, minW = 220 }: {
 function Secao({ title, children }: { title?: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: '12px', border: '1px solid #a0a098' }}>
-      {title && <div style={{ background: R.accent, color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', letterSpacing: '1px', textAlign: 'center' }}>{title}</div>}
+      {title && <div style={{ background: R.accent, color: 'var(--lab-on-accent)', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', letterSpacing: '1px', textAlign: 'center' }}>{title}</div>}
       <div style={{ padding: '8px 10px', background: R.panel }}>{children}</div>
     </div>
   );
@@ -346,14 +346,14 @@ function NumeracaoContent({ tab, config, onChange }: {
         <DotField label="PRÓXIMO ENCOMENDA/ROMANEIO A EMITIR" value={config.num_proximo_encomenda ?? '1'} onChange={v => onChange('num_proximo_encomenda', v)} />
         <DotField label="ÚLTIMA DATA DE PEDIDOS" value={config.num_ultima_data_pedidos ?? ''} onChange={v => onChange('num_ultima_data_pedidos', v)} type="date" />
         <div style={{ marginTop: '14px', border: '1px solid #a0a098' }}>
-          <div style={{ background: R.accent, color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', letterSpacing: '1px' }}>IMPORTAÇÃO PEDIDO ON-LINE</div>
+          <div style={{ background: R.accent, color: 'var(--lab-on-accent)', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', letterSpacing: '1px' }}>IMPORTAÇÃO PEDIDO ON-LINE</div>
           <div style={{ padding: '8px 10px', background: R.panel }}>
             <DotField label="PRÓXIMA PRÉ-VENDA" value={config.num_proximo_prevenda ?? '1'} onChange={v => onChange('num_proximo_prevenda', v)} />
             <DotField label="PRÓXIMO PRÉ-SERVIÇO" value={config.num_proximo_preservico ?? '1'} onChange={v => onChange('num_proximo_preservico', v)} />
           </div>
         </div>
         <div style={{ marginTop: '14px', border: '1px solid #a0a098' }}>
-          <div style={{ background: R.accent, color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', letterSpacing: '1px' }}>OBSERVAÇÕES EM PEDIDOS</div>
+          <div style={{ background: R.accent, color: 'var(--lab-on-accent)', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', letterSpacing: '1px' }}>OBSERVAÇÕES EM PEDIDOS</div>
           <div style={{ padding: '8px 10px', background: R.panel }}>
             <textarea value={config.obs_pedidos ?? ''} onChange={e => onChange('obs_pedidos', e.target.value)} rows={3} style={{ width: '100%', boxSizing: 'border-box', padding: '4px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: R.inp, border: '2px inset #808080', color: R.txt, resize: 'vertical' }} />
           </div>
@@ -367,7 +367,7 @@ function NumeracaoContent({ tab, config, onChange }: {
       <div>
         <DotField label="PRÓXIMO FECHAMENTO A EMITIR" value={config.num_proximo_fechamento ?? '1'} onChange={v => onChange('num_proximo_fechamento', v)} />
         <div style={{ marginTop: '14px', border: '1px solid #a0a098' }}>
-          <div style={{ background: R.accent, color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', letterSpacing: '1px' }}>PRÓXIMAS DATAS DE FECHAMENTO</div>
+          <div style={{ background: R.accent, color: 'var(--lab-on-accent)', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', letterSpacing: '1px' }}>PRÓXIMAS DATAS DE FECHAMENTO</div>
           <div style={{ padding: '10px', background: R.panel }}>
             <DotField label="PRÓXIMO FECHAMENTO SEMANAL" value={config.fechamento_data_semanal ?? ''} onChange={v => onChange('fechamento_data_semanal', v)} type="date" />
             <DotField label="PRÓXIMO FECHAMENTO DECENAL" value={config.fechamento_data_decenal ?? ''} onChange={v => onChange('fechamento_data_decenal', v)} type="date" />
@@ -429,7 +429,7 @@ function TabelaContent({ tabela, config, onChange }: {
     padding: '2px 4px', textAlign: 'center' as const, border: '1px solid #606000', whiteSpace: 'nowrap',
   };
   const th: React.CSSProperties = {
-    background: R.accent, color: '#fff', padding: '4px 6px', fontSize: '11px', fontWeight: 'bold',
+    background: R.accent, color: 'var(--lab-on-accent)', padding: '4px 6px', fontSize: '11px', fontWeight: 'bold',
   };
   const scrl: React.CSSProperties = { overflowY: 'auto', maxHeight: '500px' };
 
@@ -803,7 +803,7 @@ function TabelaContent({ tabela, config, onChange }: {
         <div style={S.panelBody()}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px' }}>
             <thead>
-              <tr style={{ background: R.accent, color: '#fff' }}>
+              <tr style={{ background: R.accent, color: 'var(--lab-on-accent)' }}>
                 <th style={{ padding: '3px 4px', textAlign: 'center', width: '30px' }}>UF</th>
                 <th style={{ padding: '3px 4px', textAlign: 'center' }}>%ICMS</th>
                 <th style={{ padding: '3px 4px', textAlign: 'center' }}>%ICMS DEST</th>

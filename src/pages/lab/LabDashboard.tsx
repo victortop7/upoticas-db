@@ -57,7 +57,7 @@ export default function LabDashboard() {
 
         {/* Stats Produção */}
         <div style={{ background: panelBg, border: `2px inset ${dark ? R.dim : R.dim}`, padding: '8px 10px' }}>
-          <div style={{ background: R.accent, color: 'var(--lab-hdr-txt)', fontSize: '10px', fontWeight: '700', padding: '3px 6px', marginBottom: '8px', letterSpacing: '1px' }}>PRODUÇÃO</div>
+          <div style={{ background: R.accent, color: 'var(--lab-on-accent)', fontSize: '10px', fontWeight: '700', padding: '3px 6px', marginBottom: '8px', letterSpacing: '1px' }}>PRODUÇÃO</div>
           {[
             { label: 'Hoje',        val: stats.hoje,        color: '#60a5fa' },
             { label: 'Aguardando',  val: stats.aguardando,  color: '#f59e0b' },
@@ -76,7 +76,7 @@ export default function LabDashboard() {
 
         {/* Acesso Rápido */}
         <div style={{ background: panelBg, border: `2px outset ${dark ? R.dim : R.dim}`, padding: '8px 10px' }}>
-          <div style={{ background: R.accent, color: 'var(--lab-hdr-txt)', fontSize: '10px', fontWeight: '700', padding: '3px 6px', marginBottom: '8px', letterSpacing: '1px' }}>ACESSO RÁPIDO</div>
+          <div style={{ background: R.accent, color: 'var(--lab-on-accent)', fontSize: '10px', fontWeight: '700', padding: '3px 6px', marginBottom: '8px', letterSpacing: '1px' }}>ACESSO RÁPIDO</div>
           {[
             { label: 'Nova OS',       to: '/lab/ordens/nova', icon: '➕' },
             { label: 'Fila Produção', to: '/lab/fluxo',       icon: '⚡' },
@@ -85,7 +85,7 @@ export default function LabDashboard() {
           ].map((item, i) => (
             <button key={item.to} onClick={() => navigate(item.to)}
               style={{ display: 'flex', alignItems: 'center', gap: '6px', width: '100%', padding: '4px 6px', marginBottom: '4px', background: i % 2 === 0 ? rowEven : rowOdd, border: `1px outset ${dark ? R.dim : '#a0a098'}`, fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer', color: txtMain, textAlign: 'left', fontWeight: '700', borderBottom: `1px solid ${rowBorder}` }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = R.accent; (e.currentTarget as HTMLElement).style.color = 'var(--lab-hdr-txt)'; }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = R.accent; (e.currentTarget as HTMLElement).style.color = 'var(--lab-on-accent)'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = i % 2 === 0 ? rowEven : rowOdd; (e.currentTarget as HTMLElement).style.color = txtMain; }}>
               <span>{item.icon}</span>
               <span style={{ textTransform: 'uppercase', letterSpacing: '0.3px' }}>{item.label}</span>

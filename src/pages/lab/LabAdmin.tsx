@@ -431,7 +431,7 @@ export default function LabAdmin() {
               placeholder="ADMIN_SECRET..."
             />
             <button onClick={() => load(secret)} disabled={loading}
-              style={{ width: '100%', padding: '7px', fontSize: '12px', fontWeight: '700', background: R.accent, color: R.hdrTxt, border: `1px outset ${R.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
+              style={{ width: '100%', padding: '7px', fontSize: '12px', fontWeight: '700', background: R.accent, color: 'var(--lab-on-accent)', border: `1px outset ${R.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
               {loading ? 'VERIFICANDO...' : 'ENTRAR'}
             </button>
           </div>
@@ -514,7 +514,7 @@ export default function LabAdmin() {
                     <td style={{ padding: '7px 10px' }}>
                       <div style={{ display: 'flex', gap: '4px' }}>
                         <button onClick={() => openEdit(t)}
-                          style={{ padding: '3px 10px', fontSize: '11px', fontWeight: '700', background: R.accent, color: '#fff', border: `1px outset ${R.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit' }}>
+                          style={{ padding: '3px 10px', fontSize: '11px', fontWeight: '700', background: R.accent, color: 'var(--lab-on-accent)', border: `1px outset ${R.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit' }}>
                           EDITAR
                         </button>
                         <button onClick={() => { if (confirm(`Excluir laboratório "${t.nome}" e todos os usuários? Esta ação não pode ser desfeita.`)) handleExcluirTenant(t.id); }}
@@ -566,7 +566,7 @@ export default function LabAdmin() {
                       <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                         {l.status !== 'convertido' && (
                           <button onClick={() => abrirCriarConta(l)}
-                            style={{ padding: '3px 8px', fontSize: '10px', fontWeight: '700', background: R.accent, color: 'var(--lab-hdr-txt)', border: '1px outset #006600', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+                            style={{ padding: '3px 8px', fontSize: '10px', fontWeight: '700', background: R.accent, color: 'var(--lab-on-accent)', border: '1px outset #006600', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
                             CRIAR CONTA
                           </button>
                         )}
@@ -671,7 +671,7 @@ export default function LabAdmin() {
                     Anote as credenciais acima para enviar ao cliente quando agendar a reunião.
                   </div>
                   <button onClick={() => { setCriarLead(null); setCriarSucesso(null); }}
-                    style={{ width: '100%', padding: '7px', fontSize: '12px', fontWeight: '700', background: R.accent, color: R.hdrTxt, border: `1px outset ${R.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
+                    style={{ width: '100%', padding: '7px', fontSize: '12px', fontWeight: '700', background: R.accent, color: 'var(--lab-on-accent)', border: `1px outset ${R.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
                     FECHAR
                   </button>
                 </div>
@@ -723,7 +723,7 @@ export default function LabAdmin() {
                     <button onClick={() => setCriarLead(null)} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: R.alt, color: R.txt, border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
                       CANCELAR
                     </button>
-                    <button onClick={handleCriarConta} disabled={saving} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: R.accent, color: 'var(--lab-hdr-txt)', border: '1px outset #006600', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
+                    <button onClick={handleCriarConta} disabled={saving} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: R.accent, color: 'var(--lab-on-accent)', border: '1px outset #006600', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
                       {saving ? 'CRIANDO...' : 'CRIAR CONTA'}
                     </button>
                   </div>
@@ -872,7 +872,7 @@ export default function LabAdmin() {
                 <button onClick={() => setEditId(null)} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: R.alt, color: R.txt, border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
                   CANCELAR
                 </button>
-                <button onClick={handleSave} disabled={saving} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: R.accent, color: '#fff', border: `1px outset ${R.hdrBdr}`, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
+                <button onClick={handleSave} disabled={saving} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: R.accent, color: 'var(--lab-on-accent)', border: `1px outset ${R.hdrBdr}`, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
                   {saving ? 'SALVANDO...' : 'SALVAR'}
                 </button>
               </div>

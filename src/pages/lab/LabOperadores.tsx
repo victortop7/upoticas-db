@@ -58,7 +58,7 @@ export default function LabOperadores() {
         </div>
         <button
           onClick={() => { setShowForm(f => !f); setErro(''); setSucesso(''); }}
-          style={{ padding: '9px 20px', fontSize: '13px', fontWeight: '600', background: R.accent, color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}
+          style={{ padding: '9px 20px', fontSize: '13px', fontWeight: '600', background: R.accent, color: 'var(--lab-on-accent)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}
         >
           {showForm ? 'Cancelar' : '+ Novo Operador'}
         </button>

@@ -95,7 +95,7 @@ export default function LabEstoque() {
         <div style={{ background:R.hdr, color:R.hdrTxt, padding:'5px 14px', fontSize:'13px', fontWeight:'700', letterSpacing:'1px', border:`2px outset ${R.hdrBdr}` }}>
           ESTOQUE DE LENTES — {produtos.length} produto(s)
         </div>
-        <button onClick={abrirNovo} style={{ padding:'5px 16px', fontSize:'12px', fontWeight:'700', background:R.accent, color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+        <button onClick={abrirNovo} style={{ padding:'5px 16px', fontSize:'12px', fontWeight:'700', background:R.accent, color:'var(--lab-on-accent)', border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
           + NOVO PRODUTO
         </button>
       </div>
@@ -205,7 +205,7 @@ export default function LabEstoque() {
                 </div>
                 <div style={{ display:'flex', gap:'8px', marginTop:'4px' }}>
                   <button type="button" onClick={() => setModalProd(false)} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:R.alt, color:R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>CANCELAR</button>
-                  <button type="submit" disabled={saving} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:R.accent, color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:saving?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+                  <button type="submit" disabled={saving} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:R.accent, color:'var(--lab-on-accent)', border:`1px outset ${R.hdrBdr}`, cursor:saving?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
                     {saving ? 'SALVANDO...' : 'GRAVAR'}
                   </button>
                 </div>

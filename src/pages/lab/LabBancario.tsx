@@ -81,7 +81,7 @@ export default function LabBancario() {
         <span style={{ fontSize: '11px', color: R.dim }}>até</span>
         <input type="date" value={dataFim} onChange={e => setDataFim(e.target.value)} style={{ ...INP, width: '135px' }} />
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
-          <button onClick={() => setNovaModal(true)} style={{ padding: '7px 16px', fontSize: '12px', fontWeight: '600', background: R.accent, color: '#fff', border: 'none', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>+ Lançamento</button>
+          <button onClick={() => setNovaModal(true)} style={{ padding: '7px 16px', fontSize: '12px', fontWeight: '600', background: R.accent, color: 'var(--lab-on-accent)', border: 'none', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>+ Lançamento</button>
         </div>
       </div>
 

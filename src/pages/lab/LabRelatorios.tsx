@@ -292,7 +292,7 @@ export default function LabRelatorios() {
                       <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt, whiteSpace:'nowrap' }}>{fmtDate(o.previsao_entrega)}</td>
                       <td style={{ padding:'6px 10px' }}>
                         <button onClick={() => navigate(`/lab/ordens/${o.id}`)}
-                          style={{ padding:'2px 8px', fontSize:'11px', fontWeight:'700', background:R.accent, color:'#fff', border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}>
+                          style={{ padding:'2px 8px', fontSize:'11px', fontWeight:'700', background:R.accent, color: 'var(--lab-on-accent)', border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}>
                           VER OS →
                         </button>
                       </td>
@@ -345,7 +345,7 @@ export default function LabRelatorios() {
           style={{ ...INP, width:'180px' }}
         />
         <button onClick={buscarPorNumero} disabled={buscandoOS}
-          style={{ padding:'5px 14px', fontSize:'11px', fontWeight:'700', background:R.accent, color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+          style={{ padding:'5px 14px', fontSize:'11px', fontWeight:'700', background:R.accent, color:'var(--lab-on-accent)', border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
           {buscandoOS ? 'BUSCANDO...' : '🔍 IR PARA OS'}
         </button>
         {erroBuscaOS && (
@@ -368,7 +368,7 @@ export default function LabRelatorios() {
           </div>
 
           <button onClick={buscarResumo} disabled={loading}
-            style={{ padding:'5px 18px', fontSize:'12px', fontWeight:'700', background:R.accent, color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:loading?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase', alignSelf:'flex-end' }}>
+            style={{ padding:'5px 18px', fontSize:'12px', fontWeight:'700', background:R.accent, color:'var(--lab-on-accent)', border:`1px outset ${R.hdrBdr}`, cursor:loading?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase', alignSelf:'flex-end' }}>
             {loading ? 'BUSCANDO...' : '🔍 GERAR RELATÓRIO'}
           </button>
         </div>
@@ -377,7 +377,7 @@ export default function LabRelatorios() {
         <div style={{ display:'flex', gap:'4px', marginTop:'8px', flexWrap:'wrap' }}>
           {PRESETS.map(p => (
             <button key={p.label} onClick={() => { setDataIni(p.ini); setDataFim(p.fim); }}
-              style={{ padding:'3px 10px', fontSize:'11px', fontWeight:'700', background: dataIni===p.ini && dataFim===p.fim ? R.accent : R.alt, color: dataIni===p.ini && dataFim===p.fim ? R.hdrTxt : R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>
+              style={{ padding:'3px 10px', fontSize:'11px', fontWeight:'700', background: dataIni===p.ini && dataFim===p.fim ? R.accent : R.alt, color: dataIni===p.ini && dataFim===p.fim ? 'var(--lab-on-accent)' : R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>
               {p.label}
             </button>
           ))}
@@ -453,7 +453,7 @@ export default function LabRelatorios() {
                     </td>
                     <td style={{ padding:'7px 10px' }}>
                       <button onClick={() => verOtica(o)}
-                        style={{ padding:'3px 10px', fontSize:'11px', fontWeight:'700', background:R.accent, color:'#fff', border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}>
+                        style={{ padding:'3px 10px', fontSize:'11px', fontWeight:'700', background:R.accent, color: 'var(--lab-on-accent)', border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}>
                         VER OS →
                       </button>
                     </td>

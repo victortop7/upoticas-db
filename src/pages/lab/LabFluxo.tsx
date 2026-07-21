@@ -332,7 +332,7 @@ export default function LabFluxo() {
                 <label style={LBL}>Buscar OS (número, ref, cont. interno)</label>
                 <div style={{ display: 'flex', gap: '6px' }}>
                   <input value={buscaOS} onChange={e => setBuscaOS(e.target.value)} onKeyDown={e => e.key === 'Enter' && buscarOS()} style={INP} placeholder="Ex: 321 / JOSE / 000324" />
-                  <button onClick={buscarOS} style={{ padding: '6px 12px', fontSize: '12px', fontWeight: '600', background: R.accent, color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+                  <button onClick={buscarOS} style={{ padding: '6px 12px', fontSize: '12px', fontWeight: '600', background: R.accent, color: 'var(--lab-on-accent)', border: 'none', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
                     {loadingOS ? '...' : 'Buscar'}
                   </button>
                 </div>

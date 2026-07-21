@@ -437,11 +437,11 @@ export default function LabNovaOrdem() {
             const rowBg = isActive ? R.accent : (i % 2 === 0 ? R.panel : R.panelAlt);
             return (
               <div key={t.key} onClick={() => setTipo(t.key)}
-                style={{ padding: '6px 10px', cursor: 'pointer', fontSize: '11px', fontWeight: '700', color: isActive ? R.hdrTxt : R.txt, background: rowBg, borderBottom: `1px solid ${R.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'background 0.08s', userSelect: 'none' }}
-                onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = R.accent; (e.currentTarget as HTMLElement).style.color = R.hdrTxt; } }}
+                style={{ padding: '6px 10px', cursor: 'pointer', fontSize: '11px', fontWeight: '700', color: isActive ? 'var(--lab-on-accent)' : R.txt, background: rowBg, borderBottom: `1px solid ${R.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'background 0.08s', userSelect: 'none' }}
+                onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = R.accent; (e.currentTarget as HTMLElement).style.color = 'var(--lab-on-accent)'; } }}
                 onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = rowBg; (e.currentTarget as HTMLElement).style.color = R.txt; } }}>
                 <span style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t.label}</span>
-                <span style={{ fontFamily: "'Courier New', monospace", fontWeight: '700', color: isActive ? 'var(--lab-hdr-txt)' : R.accent }}>{t.key}</span>
+                <span style={{ fontFamily: "'Courier New', monospace", fontWeight: '700', color: isActive ? 'var(--lab-on-accent)' : R.accent }}>{t.key}</span>
               </div>
             );
           })}
@@ -609,7 +609,7 @@ export default function LabNovaOrdem() {
               setErro(''); setStep(2);
               setTimeout(() => window.scrollTo({ top: 0 }), 50);
             }}
-              style={{ padding: '6px 28px', fontSize: '12px', fontWeight: '700', background: R.accent, color: R.hdrTxt, border: `1px outset ${R.hdrBorder}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '1px' }}>
+              style={{ padding: '6px 28px', fontSize: '12px', fontWeight: '700', background: R.accent, color: 'var(--lab-on-accent)', border: `1px outset ${R.hdrBorder}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '1px' }}>
               PRÓXIMO →
             </button>
           </div>
@@ -709,7 +709,7 @@ export default function LabNovaOrdem() {
                 </select>
                 <button type="button" onClick={() => { setNovoTipoLabel(''); setNovoTipoOpen(true); }}
                   title="Adicionar novo tipo"
-                  style={{ padding: '5px 10px', fontSize: '14px', fontWeight: '700', background: R.accent, color: 'var(--lab-hdr-txt)', border: '1px outset var(--lab-hdr-bdr)', cursor: 'pointer', flexShrink: 0 }}>
+                  style={{ padding: '5px 10px', fontSize: '14px', fontWeight: '700', background: R.accent, color: 'var(--lab-on-accent)', border: '1px outset var(--lab-hdr-bdr)', cursor: 'pointer', flexShrink: 0 }}>
                   +
                 </button>
               </div>
@@ -730,7 +730,7 @@ export default function LabNovaOrdem() {
                     placeholder="Ex: PROGRESSIVA DIGITAL" />
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button type="button" onClick={() => setNovoTipoOpen(false)} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: 'var(--lab-bg)', border: '1px outset var(--lab-bdr)', cursor: 'pointer' }}>CANCELAR</button>
-                    <button type="button" onClick={salvarNovoTipo} disabled={!novoTipoLabel.trim()} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: R.accent, color: 'var(--lab-hdr-txt)', border: '1px outset var(--lab-hdr-bdr)', cursor: novoTipoLabel.trim() ? 'pointer' : 'not-allowed' }}>ADICIONAR</button>
+                    <button type="button" onClick={salvarNovoTipo} disabled={!novoTipoLabel.trim()} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: R.accent, color: 'var(--lab-on-accent)', border: '1px outset var(--lab-hdr-bdr)', cursor: novoTipoLabel.trim() ? 'pointer' : 'not-allowed' }}>ADICIONAR</button>
                   </div>
                 </div>
               </div>
@@ -863,7 +863,7 @@ export default function LabNovaOrdem() {
             GRAVAR
           </button>
           <button type="button" disabled={saving} onClick={handleSubmit as unknown as React.MouseEventHandler}
-            style={{ padding: '6px 24px', fontSize: '11px', fontWeight: '700', background: R.accent, color: R.hdrTxt, border: `1px outset ${R.hdrBorder}`, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            style={{ padding: '6px 24px', fontSize: '11px', fontWeight: '700', background: R.accent, color: 'var(--lab-on-accent)', border: `1px outset ${R.hdrBorder}`, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             {saving ? 'SALVANDO...' : 'GRAVAR + IMPRIMIR'}
           </button>
         </div>

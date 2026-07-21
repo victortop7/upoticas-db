@@ -31,7 +31,7 @@ export default function LabOticas() {
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
           <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar por nome ou código..." style={{ ...INP, width: '220px' }} />
           <button onClick={() => navigate('/lab/oticas/new')}
-            style={{ padding: '5px 16px', fontSize: '12px', fontWeight: '700', background: R.accent, color: R.hdrTxt, border: `1px outset ${R.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
+            style={{ padding: '5px 16px', fontSize: '12px', fontWeight: '700', background: R.accent, color: 'var(--lab-on-accent)', border: `1px outset ${R.hdrBdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
             + NOVA ÓTICA
           </button>
         </div>

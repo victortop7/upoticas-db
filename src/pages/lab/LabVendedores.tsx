@@ -109,7 +109,7 @@ export default function LabVendedores() {
     <div style={{ padding: '28px', maxWidth: '860px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: R.txt }}>Vendedores / Operadores</h1>
-        <button onClick={openNovo} style={{ padding: '9px 20px', fontSize: '13px', fontWeight: '600', background: R.accent, color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>+ Novo</button>
+        <button onClick={openNovo} style={{ padding: '9px 20px', fontSize: '13px', fontWeight: '600', background: R.accent, color: 'var(--lab-on-accent)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>+ Novo</button>
       </div>
       <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar..." style={{ ...INP, marginBottom: '16px', background: R.panel, width: '300px' }} />
       <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '10px' }}>

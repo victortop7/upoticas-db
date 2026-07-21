@@ -209,7 +209,7 @@ export default function LabLayout() {
           </button>
           <span style={{ fontSize: '11px', color: 'var(--lab-hdr-txt)' }}>{usuario?.nome}</span>
           <button onClick={handleLogout}
-            style={{ padding: '2px 10px', fontSize: '11px', background: 'var(--lab-accent)', color: '#ffffff', border: '1px solid var(--lab-hdr-bdr)', borderRadius: '2px', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 'bold' }}>
+            style={{ padding: '2px 10px', fontSize: '11px', background: 'var(--lab-accent)', color: 'var(--lab-on-accent)', border: '1px solid var(--lab-hdr-bdr)', borderRadius: '2px', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 'bold' }}>
             SAIR
           </button>
         </div>
@@ -241,8 +241,8 @@ export default function LabLayout() {
           <div style={{ border: '1px solid var(--lab-bdr)', boxShadow: 'var(--lab-sh-sm)' }}>
             {/* Painel Principal */}
             <div onClick={() => { setActiveModule(null); navigate('/lab/dashboard'); }}
-              style={{ display: 'flex', alignItems: 'center', padding: '6px 10px', borderBottom: `1px solid ${'var(--lab-bdr)'}`, background: isDashboard ? 'var(--lab-accent)' : ('var(--lab-alt)'), color: isDashboard ? 'var(--lab-hdr-txt)' : ('var(--lab-txt)'), cursor: 'pointer', userSelect: 'none' }}
-              onMouseEnter={e => { if (!isDashboard) (e.currentTarget as HTMLElement).style.background = 'var(--lab-hover)'; (e.currentTarget as HTMLElement).style.color = 'var(--lab-hdr-txt)'; }}
+              style={{ display: 'flex', alignItems: 'center', padding: '6px 10px', borderBottom: `1px solid ${'var(--lab-bdr)'}`, background: isDashboard ? 'var(--lab-accent)' : ('var(--lab-alt)'), color: isDashboard ? 'var(--lab-on-accent)' : ('var(--lab-txt)'), cursor: 'pointer', userSelect: 'none' }}
+              onMouseEnter={e => { if (!isDashboard) (e.currentTarget as HTMLElement).style.background = 'var(--lab-hover)'; (e.currentTarget as HTMLElement).style.color = 'var(--lab-accent)'; }}
               onMouseLeave={e => { if (!isDashboard) { (e.currentTarget as HTMLElement).style.background = 'var(--lab-alt)'; (e.currentTarget as HTMLElement).style.color = 'var(--lab-txt)'; } }}>
               <span style={{ fontSize: '15px', width: '26px', textAlign: 'center', flexShrink: 0 }}>🏠</span>
               <span style={{ flex: 1, fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', textTransform: 'uppercase' }}>PAINEL PRINCIPAL</span>
@@ -252,12 +252,12 @@ export default function LabLayout() {
               const rowBg = isActive ? 'var(--lab-accent)' : (i % 2 === 0 ? ('var(--lab-alt)') : ('var(--lab-panel)'));
               return (
                 <div key={m.letra} onClick={() => clickModule(m.letra, m.ativo)}
-                  style={{ display: 'flex', alignItems: 'center', padding: '6px 10px', borderBottom: `1px solid ${'var(--lab-bdr)'}`, background: rowBg, color: isActive ? 'var(--lab-hdr-txt)' : (m.ativo ? ('var(--lab-txt)') : ('var(--lab-dim)')), cursor: m.ativo ? 'pointer' : 'default', opacity: m.ativo ? 1 : 0.5, userSelect: 'none', transition: 'background 0.08s' }}
-                  onMouseEnter={e => { if (m.ativo && !isActive) { (e.currentTarget as HTMLElement).style.background = 'var(--lab-hover)'; (e.currentTarget as HTMLElement).style.color = 'var(--lab-hdr-txt)'; } }}
-                  onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = rowBg; (e.currentTarget as HTMLElement).style.color = isActive ? 'var(--lab-hdr-txt)' : (m.ativo ? ('var(--lab-txt)') : ('var(--lab-dim)')); } }}>
+                  style={{ display: 'flex', alignItems: 'center', padding: '6px 10px', borderBottom: `1px solid ${'var(--lab-bdr)'}`, background: rowBg, color: isActive ? 'var(--lab-on-accent)' : (m.ativo ? ('var(--lab-txt)') : ('var(--lab-dim)')), cursor: m.ativo ? 'pointer' : 'default', opacity: m.ativo ? 1 : 0.5, userSelect: 'none', transition: 'background 0.08s' }}
+                  onMouseEnter={e => { if (m.ativo && !isActive) { (e.currentTarget as HTMLElement).style.background = 'var(--lab-hover)'; (e.currentTarget as HTMLElement).style.color = 'var(--lab-accent)'; } }}
+                  onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = rowBg; (e.currentTarget as HTMLElement).style.color = isActive ? 'var(--lab-on-accent)' : (m.ativo ? ('var(--lab-txt)') : ('var(--lab-dim)')); } }}>
                   <span style={{ fontSize: '15px', width: '26px', textAlign: 'center', flexShrink: 0 }}>{m.icon}</span>
                   <span style={{ flex: 1, fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', textTransform: 'uppercase' }}>{m.nome}</span>
-                  <span style={{ fontSize: '12px', fontWeight: '700', color: isActive ? 'var(--lab-hdr-txt)' : ('var(--lab-accent)'), width: '18px', textAlign: 'right', flexShrink: 0 }}>{m.letra}</span>
+                  <span style={{ fontSize: '12px', fontWeight: '700', color: isActive ? 'var(--lab-on-accent)' : ('var(--lab-accent)'), width: '18px', textAlign: 'right', flexShrink: 0 }}>{m.letra}</span>
                 </div>
               );
             })}
@@ -281,8 +281,8 @@ export default function LabLayout() {
                 const rowBg = isCurrentRoute ? 'var(--lab-accent)' : (i % 2 === 0 ? ('var(--lab-alt)') : ('var(--lab-panel)'));
                 return (
                   <div key={op.num} onClick={() => clickOpcao(op)}
-                    style={{ display: 'flex', alignItems: 'center', padding: '6px 10px', borderBottom: `1px solid ${'var(--lab-bdr)'}`, background: rowBg, color: isCurrentRoute ? 'var(--lab-hdr-txt)' : (op.disabled ? ('var(--lab-dim)') : ('var(--lab-txt)')), cursor: op.disabled ? 'default' : 'pointer', userSelect: 'none', transition: 'background 0.08s' }}
-                    onMouseEnter={e => { if (!op.disabled && !isCurrentRoute) { (e.currentTarget as HTMLElement).style.background = 'var(--lab-hover)'; (e.currentTarget as HTMLElement).style.color = 'var(--lab-hdr-txt)'; } }}
+                    style={{ display: 'flex', alignItems: 'center', padding: '6px 10px', borderBottom: `1px solid ${'var(--lab-bdr)'}`, background: rowBg, color: isCurrentRoute ? 'var(--lab-on-accent)' : (op.disabled ? ('var(--lab-dim)') : ('var(--lab-txt)')), cursor: op.disabled ? 'default' : 'pointer', userSelect: 'none', transition: 'background 0.08s' }}
+                    onMouseEnter={e => { if (!op.disabled && !isCurrentRoute) { (e.currentTarget as HTMLElement).style.background = 'var(--lab-hover)'; (e.currentTarget as HTMLElement).style.color = 'var(--lab-accent)'; } }}
                     onMouseLeave={e => { if (!isCurrentRoute) { (e.currentTarget as HTMLElement).style.background = rowBg; (e.currentTarget as HTMLElement).style.color = op.disabled ? ('var(--lab-dim)') : ('var(--lab-txt)'); } }}>
                     <span style={{ fontFamily: "'Courier New', monospace", fontWeight: '700', fontSize: '12px', color: isCurrentRoute ? 'var(--lab-hdr-txt)' : ('var(--lab-accent)'), width: '20px', flexShrink: 0 }}>{op.num}</span>
                     <span style={{ flex: 1, fontSize: '11px', fontWeight: '700', letterSpacing: '0.5px', textTransform: 'uppercase' }}>{op.label}</span>
@@ -322,7 +322,7 @@ export default function LabLayout() {
               Entre em contato com o suporte para regularizar o acesso ao sistema.
             </div>
             <button onClick={handleLogout}
-              style={{ padding: '8px 24px', fontSize: '12px', fontWeight: 'bold', background: 'var(--lab-accent)', color: 'var(--lab-hdr-txt)', border: '2px outset var(--lab-hdr-bdr)', borderRadius: '2px', cursor: 'pointer', letterSpacing: '1px', textTransform: 'uppercase' }}>
+              style={{ padding: '8px 24px', fontSize: '12px', fontWeight: 'bold', background: 'var(--lab-accent)', color: 'var(--lab-on-accent)', border: '2px outset var(--lab-hdr-bdr)', borderRadius: '2px', cursor: 'pointer', letterSpacing: '1px', textTransform: 'uppercase' }}>
               SAIR DO SISTEMA
             </button>
           </div>

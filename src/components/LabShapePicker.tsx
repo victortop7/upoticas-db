@@ -96,7 +96,7 @@ export default function LabShapePicker({ value, onChange, onClose }: Props) {
     >
       <div style={{ background:'#f0eeee', border:'2px solid #888', borderRadius:'4px', width:'700px', maxHeight:'92vh', display:'flex', flexDirection:'column', overflow:'hidden', boxShadow:'0 10px 40px rgba(0,0,0,0.6)' }}>
 
-        <div style={{ background:'var(--lab-accent)', color:'#fff', padding:'7px 16px', display:'flex', justifyContent:'space-between', alignItems:'center', flexShrink:0 }}>
+        <div style={{ background:'var(--lab-accent)', color: 'var(--lab-on-accent)', padding:'7px 16px', display:'flex', justifyContent:'space-between', alignItems:'center', flexShrink:0 }}>
           <span style={{ fontWeight:'700', fontSize:'12px', letterSpacing:'2px', fontFamily:"'Courier New', monospace" }}>SHAPES</span>
           <button onClick={onClose} style={{ background:'none', border:'1px solid #99ffaa', color: 'var(--lab-hdr-txt)', padding:'1px 8px', cursor:'pointer', fontSize:'11px' }}>✕</button>
         </div>
@@ -128,7 +128,7 @@ export default function LabShapePicker({ value, onChange, onClose }: Props) {
           <span style={{ fontSize:'11px', color:'#555', fontFamily:"'Courier New', monospace" }}>
             {value?`Selecionado: ${value}`:'Clique em um shape para selecionar'}
           </span>
-          <button onClick={onClose} style={{ padding:'3px 16px', fontSize:'11px', background:'var(--lab-accent)', color:'#fff', border:'none', borderRadius:'2px', cursor:'pointer', fontWeight:'700' }}>OK</button>
+          <button onClick={onClose} style={{ padding:'3px 16px', fontSize:'11px', background:'var(--lab-accent)', color: 'var(--lab-on-accent)', border:'none', borderRadius:'2px', cursor:'pointer', fontWeight:'700' }}>OK</button>
         </div>
       </div>
     </div>

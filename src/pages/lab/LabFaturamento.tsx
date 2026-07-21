@@ -197,7 +197,7 @@ export default function LabFaturamento() {
               <label style={LBL}>Vencimento</label>
               <input type="date" value={vencimento} onChange={e => setVencimento(e.target.value)} style={{ ...INP, width: '140px' }} />
             </div>
-            <button onClick={carregarResumo} disabled={loadingResumo} style={{ padding: '8px 20px', fontSize: '13px', fontWeight: '600', background: R.accent, color: '#fff', border: 'none', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <button onClick={carregarResumo} disabled={loadingResumo} style={{ padding: '8px 20px', fontSize: '13px', fontWeight: '600', background: R.accent, color: 'var(--lab-on-accent)', border: 'none', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>
               {loadingResumo ? 'Carregando...' : 'Calcular'}
             </button>
           </div>

@@ -263,7 +263,7 @@ export default function LabServicos() {
               </button>
               {listasAtivas < 5 && (
                 <button onClick={() => { setNovaListaNome(''); setNovaListaModal(true); }}
-                  style={{ padding:'5px 16px', fontSize:'12px', fontWeight:'700', background:R.accent, color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+                  style={{ padding:'5px 16px', fontSize:'12px', fontWeight:'700', background:R.accent, color:'var(--lab-on-accent)', border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
                   + NOVA LISTA
                 </button>
               )}
@@ -361,7 +361,7 @@ export default function LabServicos() {
                   <tr style={{ background:R.hdr }}>
                     <th style={{ padding:'6px 10px', textAlign:'left', fontSize:'10px', fontWeight:'700', color:R.hdrTxt, letterSpacing:'0.5px', border:`1px solid ${R.hdrBdr}` }}>CÓDIGO</th>
                     <th style={{ padding:'6px 10px', textAlign:'left', fontSize:'10px', fontWeight:'700', color:R.hdrTxt, letterSpacing:'0.5px', border:`1px solid ${R.hdrBdr}` }}>DESCRIÇÃO</th>
-                    <th style={{ padding:'6px 10px', textAlign:'right', fontSize:'10px', fontWeight:'700', color: 'var(--lab-hdr-txt)', letterSpacing:'0.5px', border:`1px solid ${R.hdrBdr}`, background:R.accent, minWidth:'150px' }}>
+                    <th style={{ padding:'6px 10px', textAlign:'right', fontSize:'10px', fontWeight:'700', color: 'var(--lab-on-accent)', letterSpacing:'0.5px', border:`1px solid ${R.hdrBdr}`, background:R.accent, minWidth:'150px' }}>
                       {listaNomes[listaFiltro]} — clique para editar
                     </th>
                     <th style={{ padding:'6px 10px', border:`1px solid ${R.hdrBdr}`, width:'80px' }}></th>
@@ -491,7 +491,7 @@ export default function LabServicos() {
               </div>
               <div style={{ display:'flex', gap:'8px' }}>
                 <button onClick={() => setNovaListaModal(false)} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:R.alt, color:R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>CANCELAR</button>
-                <button onClick={criarNovaLista} disabled={!novaListaNome.trim()} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background: novaListaNome.trim() ? R.accent : '#aaa', color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor: novaListaNome.trim() ? 'pointer' : 'not-allowed', fontFamily:'inherit', textTransform:'uppercase' }}>
+                <button onClick={criarNovaLista} disabled={!novaListaNome.trim()} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background: novaListaNome.trim() ? R.accent : '#aaa', color:'var(--lab-on-accent)', border:`1px outset ${R.hdrBdr}`, cursor: novaListaNome.trim() ? 'pointer' : 'not-allowed', fontFamily:'inherit', textTransform:'uppercase' }}>
                   CRIAR LISTA
                 </button>
               </div>
@@ -528,7 +528,7 @@ export default function LabServicos() {
                 </div>
                 <div style={{ display:'flex', gap:'8px', marginTop:'4px' }}>
                   <button type="button" onClick={() => setModal(false)} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:R.alt, color:R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>CANCELAR</button>
-                  <button type="submit" disabled={saving} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:R.accent, color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:saving?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+                  <button type="submit" disabled={saving} style={{ flex:1, padding:'7px', fontSize:'11px', fontWeight:'700', background:R.accent, color:'var(--lab-on-accent)', border:`1px outset ${R.hdrBdr}`, cursor:saving?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
                     {saving ? 'SALVANDO...' : 'GRAVAR'}
                   </button>
                 </div>

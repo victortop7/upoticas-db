@@ -105,7 +105,7 @@ export default function LabOrdens() {
         <div style={{ display:'flex', gap:'6px', alignItems:'center', flexWrap:'wrap' }}>
           <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar OS#, ref., cont. interno..." style={{ ...INP, width:'220px' }} />
           <button onClick={() => navigate('/lab/ordens/nova')}
-            style={{ padding:'5px 16px', fontSize:'12px', fontWeight:'700', background:R.accent, color:R.hdrTxt, border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
+            style={{ padding:'5px 16px', fontSize:'12px', fontWeight:'700', background:R.accent, color:'var(--lab-on-accent)', border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
             + NOVA OS
           </button>
         </div>
