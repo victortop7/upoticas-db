@@ -205,19 +205,18 @@ export default function LabLayout() {
       {/* ── BODY ── */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
 
-        {/* ── MENU LATERAL (faixa verde que expande ao encostar o mouse) ── */}
-        <div style={{ position: 'relative', width: '52px', flexShrink: 0 }}>
-          <div
-            onMouseEnter={() => setRailOpen(true)}
-            onMouseLeave={() => setRailOpen(false)}
-            style={{
-              position: 'absolute', left: 0, top: 0, bottom: 0,
-              width: railOpen ? '252px' : '52px',
-              background: modBg, borderRight: `1px solid ${modBorder}`,
-              boxShadow: railOpen ? 'var(--lab-sh-lg)' : 'none',
-              display: 'flex', flexDirection: 'column', overflow: 'hidden', zIndex: 60,
-              transition: 'width .18s ease, box-shadow .18s ease',
-            }}>
+        {/* ── MENU LATERAL (faixa verde que expande ao encostar o mouse, empurrando o conteúdo) ── */}
+        <div
+          onMouseEnter={() => setRailOpen(true)}
+          onMouseLeave={() => setRailOpen(false)}
+          style={{
+            width: railOpen ? '252px' : '52px',
+            flexShrink: 0,
+            background: modBg, borderRight: `1px solid ${modBorder}`,
+            boxShadow: railOpen ? 'var(--lab-sh)' : 'none',
+            display: 'flex', flexDirection: 'column', overflow: 'hidden',
+            transition: 'width .18s ease, box-shadow .18s ease',
+          }}>
 
             {/* topo — logo / nome do laboratório */}
             <div onClick={() => { setRailOpen(false); setActiveModule(null); navigate('/lab/dashboard'); }}
@@ -274,7 +273,6 @@ export default function LabLayout() {
                   Sair — {usuario?.nome}
                 </span>
               </div>
-            </div>
           </div>
         </div>
 
