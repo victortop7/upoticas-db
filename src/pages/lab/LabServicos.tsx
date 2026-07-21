@@ -320,7 +320,7 @@ export default function LabServicos() {
                     await api.put('/lab/configuracoes', { [`tab_lista_${listaFiltro + 1}`]: nomeLista });
                     setListaNomes(n => n.map((v, i) => i === listaFiltro ? nomeLista : v));
                     setEditingNomeLista(false);
-                  }} style={{ padding:'2px 8px', fontSize:'11px', fontWeight:'700', background:'#ccffcc', color:'#005500', border:'1px outset #005500', cursor:'pointer', fontFamily:'inherit' }}>✓ SALVAR</button>
+                  }} style={{ padding:'2px 8px', fontSize:'11px', fontWeight:'700', background:'var(--lab-chip-bg)', color:'var(--lab-accent)', border:'1px outset var(--lab-accent)', cursor:'pointer', fontFamily:'inherit' }}>✓ SALVAR</button>
                   <button onClick={() => setEditingNomeLista(false)} style={{ padding:'2px 8px', fontSize:'11px', background:'#ffcccc', color:'#880000', border:'1px outset #880000', cursor:'pointer', fontFamily:'inherit' }}>✕</button>
                 </>
               ) : (
@@ -338,7 +338,7 @@ export default function LabServicos() {
                       </button>
                     )}
                     <button onClick={openNovo}
-                      style={{ padding:'2px 10px', fontSize:'11px', fontWeight:'700', background:'#ccffcc', color:'#005500', border:'1px outset #005500', cursor:'pointer', fontFamily:'inherit' }}>
+                      style={{ padding:'2px 10px', fontSize:'11px', fontWeight:'700', background:'var(--lab-chip-bg)', color:'var(--lab-accent)', border:'1px outset var(--lab-accent)', cursor:'pointer', fontFamily:'inherit' }}>
                       + NOVO PRODUTO
                     </button>
                   </div>
@@ -361,7 +361,7 @@ export default function LabServicos() {
                   <tr style={{ background:R.hdr }}>
                     <th style={{ padding:'6px 10px', textAlign:'left', fontSize:'10px', fontWeight:'700', color:R.hdrTxt, letterSpacing:'0.5px', border:`1px solid ${R.hdrBdr}` }}>CÓDIGO</th>
                     <th style={{ padding:'6px 10px', textAlign:'left', fontSize:'10px', fontWeight:'700', color:R.hdrTxt, letterSpacing:'0.5px', border:`1px solid ${R.hdrBdr}` }}>DESCRIÇÃO</th>
-                    <th style={{ padding:'6px 10px', textAlign:'right', fontSize:'10px', fontWeight:'700', color:'#ccffcc', letterSpacing:'0.5px', border:`1px solid ${R.hdrBdr}`, background:R.accent, minWidth:'150px' }}>
+                    <th style={{ padding:'6px 10px', textAlign:'right', fontSize:'10px', fontWeight:'700', color: 'var(--lab-hdr-txt)', letterSpacing:'0.5px', border:`1px solid ${R.hdrBdr}`, background:R.accent, minWidth:'150px' }}>
                       {listaNomes[listaFiltro]} — clique para editar
                     </th>
                     <th style={{ padding:'6px 10px', border:`1px solid ${R.hdrBdr}`, width:'80px' }}></th>
@@ -395,12 +395,12 @@ export default function LabServicos() {
                             />
                           ) : (s.brinde && val === 0) ? (
                             <button onClick={() => setInlineEdit({ id: s.id, field, value: '0' })}
-                              style={{ width:'100%', textAlign:'right', padding:'4px 8px', fontFamily:"'Courier New', monospace", fontSize:'13px', fontWeight:'700', background:'#efffef', color:'#005500', border:'1px solid #aaddaa', cursor:'pointer', borderRadius:'2px' }}>
+                              style={{ width:'100%', textAlign:'right', padding:'4px 8px', fontFamily:"'Courier New', monospace", fontSize:'13px', fontWeight:'700', background:'#efffef', color:'var(--lab-accent)', border:'1px solid #aaddaa', cursor:'pointer', borderRadius:'2px' }}>
                               R$ 0,00
                             </button>
                           ) : (
                             <button onClick={() => setInlineEdit({ id: s.id, field, value: val > 0 ? String(val) : '' })}
-                              style={{ width:'100%', textAlign:'right', padding:'4px 8px', fontFamily:"'Courier New', monospace", fontSize:'13px', fontWeight:'700', background: val > 0 ? '#efffef' : '#fff8f8', color: val > 0 ? '#005500' : '#cc0000', border:`1px solid ${val > 0 ? '#aaddaa' : '#ddaaaa'}`, cursor:'pointer', borderRadius:'2px' }}>
+                              style={{ width:'100%', textAlign:'right', padding:'4px 8px', fontFamily:"'Courier New', monospace", fontSize:'13px', fontWeight:'700', background: val > 0 ? '#efffef' : '#fff8f8', color: val > 0 ? 'var(--lab-accent)' : '#cc0000', border:`1px solid ${val > 0 ? '#aaddaa' : '#ddaaaa'}`, cursor:'pointer', borderRadius:'2px' }}>
                               {val > 0 ? `R$ ${val.toFixed(2).replace('.',',')}` : '— definir preço'}
                             </button>
                           )}
@@ -509,7 +509,7 @@ export default function LabServicos() {
               <button onClick={() => setModal(false)} style={{ background:'none', border:'1px solid #99ffaa', color:'#99ffaa', padding:'1px 6px', cursor:'pointer', fontFamily:'inherit', fontWeight:'700' }}>✕</button>
             </div>
             <div style={{ padding:'16px' }}>
-              {erro && <div style={{ background:'#ddffee', border:'1px solid #005500', padding:'6px 10px', marginBottom:'10px', fontSize:'11px', color:'#005500', fontWeight:'700' }}>{erro}</div>}
+              {erro && <div style={{ background:'var(--lab-chip-bg)', border:'1px solid var(--lab-chip-bdr)', padding:'6px 10px', marginBottom:'10px', fontSize:'11px', color:'var(--lab-chip-txt)', fontWeight:'700' }}>{erro}</div>}
               <form onSubmit={handleSave} style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
                 <div style={{ display:'grid', gridTemplateColumns:'100px 1fr 70px', gap:'8px' }}>
                   <div><label style={LBL}>Código</label><input value={form.codigo} onChange={e => setForm(f=>({...f,codigo:e.target.value}))} style={INP} placeholder="0001" /></div>

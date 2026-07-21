@@ -96,9 +96,9 @@ export default function LabShapePicker({ value, onChange, onClose }: Props) {
     >
       <div style={{ background:'#f0eeee', border:'2px solid #888', borderRadius:'4px', width:'700px', maxHeight:'92vh', display:'flex', flexDirection:'column', overflow:'hidden', boxShadow:'0 10px 40px rgba(0,0,0,0.6)' }}>
 
-        <div style={{ background:'#005500', color:'#fff', padding:'7px 16px', display:'flex', justifyContent:'space-between', alignItems:'center', flexShrink:0 }}>
+        <div style={{ background:'var(--lab-accent)', color:'#fff', padding:'7px 16px', display:'flex', justifyContent:'space-between', alignItems:'center', flexShrink:0 }}>
           <span style={{ fontWeight:'700', fontSize:'12px', letterSpacing:'2px', fontFamily:"'Courier New', monospace" }}>SHAPES</span>
-          <button onClick={onClose} style={{ background:'none', border:'1px solid #99ffaa', color:'#ccffcc', padding:'1px 8px', cursor:'pointer', fontSize:'11px' }}>✕</button>
+          <button onClick={onClose} style={{ background:'none', border:'1px solid #99ffaa', color: 'var(--lab-hdr-txt)', padding:'1px 8px', cursor:'pointer', fontSize:'11px' }}>✕</button>
         </div>
 
         <div style={{ overflowY:'auto', padding:'10px', display:'grid', gridTemplateColumns:'repeat(5, 1fr)', gap:'7px', background:'#e0ddd8' }}>
@@ -106,17 +106,17 @@ export default function LabShapePicker({ value, onChange, onClose }: Props) {
             const sel = value === s.name;
             return (
               <div key={s.name} onClick={() => { onChange(s.name); onClose(); }}
-                style={{ background:sel?'#eeffee':'#fff', border:sel?'2px solid #005500':'1px solid #ccc', borderRadius:'4px', cursor:'pointer', padding:'4px 2px', display:'flex', flexDirection:'column', alignItems:'center', boxShadow:sel?'0 0 0 2px #005500':'0 1px 2px rgba(0,0,0,0.12)' }}
+                style={{ background:sel?'#eeffee':'#fff', border:sel?'2px solid var(--lab-accent)':'1px solid #ccc', borderRadius:'4px', cursor:'pointer', padding:'4px 2px', display:'flex', flexDirection:'column', alignItems:'center', boxShadow:sel?'0 0 0 2px var(--lab-accent)':'0 1px 2px rgba(0,0,0,0.12)' }}
                 onMouseEnter={e=>{ if(!sel)(e.currentTarget as HTMLDivElement).style.background='#f4f4f4'; }}
                 onMouseLeave={e=>{ if(!sel)(e.currentTarget as HTMLDivElement).style.background='#fff'; }}
               >
                 <svg viewBox="0 0 90 65" width="100%" style={{ maxHeight:'66px' }}>
                   <line x1="45" y1="1"  x2="45" y2="64" stroke="#ddd" strokeWidth="0.8"/>
                   <line x1="1"  y1="33" x2="89" y2="33" stroke="#ddd" strokeWidth="0.8"/>
-                  <path d={s.d} fill="rgba(0,0,0,0.04)" stroke={sel?'#005500':'#111'} strokeWidth={sel?'2':'1.5'}/>
-                  <polygon points="72,9 80,13 72,17" fill={sel?'#005500':'#555'}/>
+                  <path d={s.d} fill="rgba(0,0,0,0.04)" stroke={sel?'var(--lab-accent)':'#111'} strokeWidth={sel?'2':'1.5'}/>
+                  <polygon points="72,9 80,13 72,17" fill={sel?'var(--lab-accent)':'#555'}/>
                 </svg>
-                <div style={{ fontSize:'9px', fontWeight:sel?'700':'400', color:sel?'#005500':'#555', fontFamily:"'Courier New', monospace", marginTop:'1px' }}>
+                <div style={{ fontSize:'9px', fontWeight:sel?'700':'400', color:sel?'var(--lab-accent)':'#555', fontFamily:"'Courier New', monospace", marginTop:'1px' }}>
                   {s.name}
                 </div>
               </div>
@@ -124,11 +124,11 @@ export default function LabShapePicker({ value, onChange, onClose }: Props) {
           })}
         </div>
 
-        <div style={{ padding:'6px 12px', background:'#d4d0c8', borderTop:'1px solid #bbb', display:'flex', justifyContent:'space-between', alignItems:'center', flexShrink:0 }}>
+        <div style={{ padding:'6px 12px', background:'var(--lab-alt)', borderTop:'1px solid #bbb', display:'flex', justifyContent:'space-between', alignItems:'center', flexShrink:0 }}>
           <span style={{ fontSize:'11px', color:'#555', fontFamily:"'Courier New', monospace" }}>
             {value?`Selecionado: ${value}`:'Clique em um shape para selecionar'}
           </span>
-          <button onClick={onClose} style={{ padding:'3px 16px', fontSize:'11px', background:'#005500', color:'#fff', border:'none', borderRadius:'2px', cursor:'pointer', fontWeight:'700' }}>OK</button>
+          <button onClick={onClose} style={{ padding:'3px 16px', fontSize:'11px', background:'var(--lab-accent)', color:'#fff', border:'none', borderRadius:'2px', cursor:'pointer', fontWeight:'700' }}>OK</button>
         </div>
       </div>
     </div>

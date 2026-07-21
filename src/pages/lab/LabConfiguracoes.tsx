@@ -54,7 +54,7 @@ const S = {
     fontSize: '11px',
     fontWeight: 'bold',
     letterSpacing: '1.5px',
-    border: '2px outset #007700',
+    border: '2px outset var(--lab-hdr-bdr)',
     borderBottom: 'none',
   }),
   panelBody: (): React.CSSProperties => ({
@@ -892,7 +892,7 @@ export default function LabConfiguracoes() {
       <button
         onClick={handleSave}
         disabled={saving}
-        style={{ padding: '3px 18px', fontSize: '11px', fontWeight: 'bold', background: saving ? R.dim : R.accent, color: '#ffffff', border: '1px outset #007700', cursor: saving ? 'default' : 'pointer', fontFamily: 'inherit', letterSpacing: '0.5px' }}
+        style={{ padding: '3px 18px', fontSize: '11px', fontWeight: 'bold', background: saving ? R.dim : R.accent, color: '#ffffff', border: '1px outset var(--lab-hdr-bdr)', cursor: saving ? 'default' : 'pointer', fontFamily: 'inherit', letterSpacing: '0.5px' }}
       >
         {saving ? 'SALVANDO...' : 'SALVAR'}
       </button>

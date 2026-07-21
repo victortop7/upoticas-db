@@ -112,7 +112,7 @@ export default function LabFornecedores() {
               <button onClick={() => setModal(false)} style={{ background:'none', border:'1px solid #99ffaa', color:'#99ffaa', padding:'1px 6px', cursor:'pointer', fontFamily:'inherit', fontWeight:'700' }}>✕</button>
             </div>
             <div style={{ padding:'16px' }}>
-              {erro && <div style={{ background:'#ddffee', border:'1px solid #005500', padding:'6px 10px', marginBottom:'10px', fontSize:'11px', color:'#005500', fontWeight:'700' }}>{erro}</div>}
+              {erro && <div style={{ background:'var(--lab-chip-bg)', border:'1px solid var(--lab-chip-bdr)', padding:'6px 10px', marginBottom:'10px', fontSize:'11px', color:'var(--lab-chip-txt)', fontWeight:'700' }}>{erro}</div>}
               <form onSubmit={handleSave} style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
                 <div><label style={LBL}>Nome / Razão Social *</label><input required value={form.nome} onChange={e => setForm(f=>({...f,nome:e.target.value}))} style={{ ...INP, fontFamily:"'Montserrat', sans-serif" }} /></div>
                 <div><label style={LBL}>Fantasia</label><input value={form.fantasia} onChange={e => setForm(f=>({...f,fantasia:e.target.value}))} style={{ ...INP, fontFamily:"'Montserrat', sans-serif" }} /></div>

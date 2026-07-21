@@ -14,7 +14,7 @@ interface Contato {
 }
 const CONTATO_INI: Contato = { departamento: '', contato: '', telefone: '', ramal: '', fax: '', celular: '', sms: false, email: '' };
 
-const RX = { bg:R.bg, panel:R.panel, alt:R.alt, bdr:'#b0aca4', hdr:'linear-gradient(90deg,#005500,#008800)', hdrTxt:'#ccffcc', hdrBdr:R.accent, txt:R.txt };
+const RX = { bg:R.bg, panel:R.panel, alt:R.alt, bdr:'var(--lab-bdr)', hdr:'var(--lab-hdr)', hdrTxt:'#ccffcc', hdrBdr:R.accent, txt:R.txt };
 const INP: React.CSSProperties = {
   width: '100%', padding: '5px 7px', fontSize: '12px', background: R.inp,
   border: `1px solid ${RX.bdr}`, borderRadius: '0', color: RX.txt,
@@ -114,7 +114,7 @@ export default function LabOticaDetalhe() {
         : `<tr style="background:#f0ede8"><td colspan="7" style="padding:3px 28px;font-size:10px;color:#aaa;font-style:italic">Sem serviços registrados</td></tr>`;
 
       return `
-        <tr style="background:#005500;page-break-inside:avoid">
+        <tr style="background:var(--lab-accent);page-break-inside:avoid">
           <td style="padding:5px 8px;font-family:monospace;font-weight:900;color:#fff;font-size:12px">#${String(o.numero).padStart(4,'0')}</td>
           <td style="padding:5px 8px;font-family:monospace;color:#ccffcc;font-size:10px">${fd(o.created_at)}</td>
           <td style="padding:5px 8px;font-family:monospace;color:#ccffcc;font-size:10px">Ref: ${o.ref_otica||'—'}</td>
@@ -123,7 +123,7 @@ export default function LabOticaDetalhe() {
           <td style="padding:5px 8px;font-family:monospace;font-weight:900;color:#fff;text-align:right">${mb(o.total||0)}</td>
         </tr>
         ${svcsHtml}
-        <tr><td colspan="7" style="height:4px;background:#c8c4b0"></td></tr>`;
+        <tr><td colspan="7" style="height:4px;background:var(--lab-bg)"></td></tr>`;
     }).join('');
 
     const totalGeral = lista.reduce((a, o) => a + (o.total||0), 0);
@@ -134,14 +134,14 @@ export default function LabOticaDetalhe() {
         *{box-sizing:border-box}
         body{margin:12px;font-family:Arial,sans-serif;font-size:11px;color:#000;background:#fff}
         table{width:100%;border-collapse:collapse}
-        .hdr th{background:#005500;color:#fff;padding:5px 8px;text-align:left;font-size:10px;letter-spacing:0.5px;white-space:nowrap}
+        .hdr th{background:var(--lab-accent);color:#fff;padding:5px 8px;text-align:left;font-size:10px;letter-spacing:0.5px;white-space:nowrap}
         .hdr th.r{text-align:right}
         @page{margin:8mm}
         @media print{body{margin:0}}
       </style>
     </head><body>
-      <div style="text-align:center;margin-bottom:12px;border-bottom:2px solid #005500;padding-bottom:8px">
-        <div style="font-size:16px;font-weight:900;text-transform:uppercase;color:#005500">${nomeOtica}</div>
+      <div style="text-align:center;margin-bottom:12px;border-bottom:2px solid var(--lab-accent);padding-bottom:8px">
+        <div style="font-size:16px;font-weight:900;text-transform:uppercase;color:var(--lab-accent)">${nomeOtica}</div>
         <div style="font-size:11px;color:#333;margin-top:2px">RELATÓRIO DETALHADO DE ORDENS DE SERVIÇO</div>
         <div style="font-size:10px;color:#666">Período: ${periodo} &nbsp;|&nbsp; ${lista.length} OS &nbsp;|&nbsp; Total: ${mb(totalGeral)}</div>
         <div style="font-size:9px;color:#aaa">Emitido em ${new Date().toLocaleString('pt-BR')} — Connect LAB</div>
@@ -153,7 +153,7 @@ export default function LabOticaDetalhe() {
         </tr></thead>
         <tbody>${blocos}</tbody>
         <tfoot>
-          <tr style="background:#005500">
+          <tr style="background:var(--lab-accent)">
             <td colspan="9" style="padding:6px 8px;font-weight:900;color:#fff;font-size:12px">TOTAL GERAL — ${lista.length} OS</td>
             <td style="padding:6px 8px;font-family:monospace;font-weight:900;color:#fff;text-align:right;font-size:13px">${mb(totalGeral)}</td>
           </tr>
@@ -422,7 +422,7 @@ export default function LabOticaDetalhe() {
               Banco de Cobrança
             </label>
 
-            <div style={{ borderTop: '1px solid #b0aca4', paddingTop: '10px' }}>
+            <div style={{ borderTop: '1px solid var(--lab-bdr)', paddingTop: '10px' }}>
               <div style={SEC_TITLE}>Crédito / Situação</div>
               <div style={{ marginBottom: '6px' }}>
                 <label style={LBL}>Limite de Crédito (R$)</label>
@@ -492,7 +492,7 @@ export default function LabOticaDetalhe() {
             </thead>
             <tbody>
               {contatos.map((c, i) => (
-                <tr key={i} style={{ borderBottom: '1px solid #b0aca4' }}>
+                <tr key={i} style={{ borderBottom: '1px solid var(--lab-bdr)' }}>
                   <td style={TD}><input value={c.departamento} onChange={e => setContatos(setCont(contatos, i, 'departamento', e.target.value))} style={TINP} /></td>
                   <td style={TD}><input value={c.contato} onChange={e => setContatos(setCont(contatos, i, 'contato', e.target.value))} style={TINP} /></td>
                   <td style={TD}><input value={c.telefone} onChange={e => setContatos(setCont(contatos, i, 'telefone', e.target.value))} style={{ ...TINP, width: '110px' }} /></td>
@@ -504,7 +504,7 @@ export default function LabOticaDetalhe() {
                 </tr>
               ))}
               {contatosMfe.map((c, i) => (
-                <tr key={`mfe${i}`} style={{ borderBottom: '1px solid #b0aca4', background: R.alt }}>
+                <tr key={`mfe${i}`} style={{ borderBottom: '1px solid var(--lab-bdr)', background: R.alt }}>
                   <td style={{ ...TD, fontSize: '10px', fontWeight: '700', color: R.dim, paddingLeft: '6px', whiteSpace: 'nowrap' }}>ENVIO DE MFE</td>
                   <td style={TD}><input value={c.contato} onChange={e => setContatosMfe(setCont(contatosMfe, i, 'contato', e.target.value))} style={TINP} /></td>
                   <td style={TD}><input value={c.telefone} onChange={e => setContatosMfe(setCont(contatosMfe, i, 'telefone', e.target.value))} style={{ ...TINP, width: '110px' }} /></td>
@@ -580,7 +580,7 @@ export default function LabOticaDetalhe() {
   }
 
   // ===== MODO VISUALIZAÇÃO — RETRO =====
-  const RV = { bg:R.bg, panel:R.panel, alt:R.alt, bdr:'#b0aca4', hdr:'linear-gradient(90deg,#005500,#008800)', hdrTxt:'#ccffcc', hdrBdr:R.accent, txt:R.txt };
+  const RV = { bg:R.bg, panel:R.panel, alt:R.alt, bdr:'var(--lab-bdr)', hdr:'var(--lab-hdr)', hdrTxt:'#ccffcc', hdrBdr:R.accent, txt:R.txt };
   const RINP: React.CSSProperties = { padding:'5px 8px', fontSize:'12px', background:R.inp, border:'1px solid #999', color:R.txt, outline:'none', fontFamily:"'Courier New', monospace", boxSizing:'border-box' };
 
   const ST_BADGE: Record<string, { bg: string; color: string; label: string }> = {
@@ -588,7 +588,7 @@ export default function LabOticaDetalhe() {
     em_producao:{ bg:'#cce0ff', color:'#003388', label:'EM PRODUÇÃO' },
     pronto:     { bg:'#ccffcc', color:'#006600', label:'PRONTO' },
     entregue:   { bg:'#e0e0e0', color:'#444',    label:'ENTREGUE' },
-    cancelado:  { bg:'#ccffcc', color:'#005500', label:'CANCELADO' },
+    cancelado:  { bg:'#ccffcc', color:'var(--lab-accent)', label:'CANCELADO' },
   };
 
   function fmtD(s: string | null) {

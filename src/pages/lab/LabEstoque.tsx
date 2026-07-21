@@ -102,7 +102,7 @@ export default function LabEstoque() {
 
       {/* Alerta baixo estoque */}
       {baixoEstoque.length > 0 && (
-        <div style={{ background:'#ddffee', border:'1px solid #005500', padding:'6px 12px', marginBottom:'8px', fontSize:'11px', color:'#005500', fontWeight:'700', fontFamily:"'Courier New', monospace" }}>
+        <div style={{ background:'var(--lab-chip-bg)', border:'1px solid var(--lab-chip-bdr)', padding:'6px 12px', marginBottom:'8px', fontSize:'11px', color:'var(--lab-chip-txt)', fontWeight:'700', fontFamily:"'Courier New', monospace" }}>
           ⚠ {baixoEstoque.length} produto(s) abaixo do mínimo: {baixoEstoque.map(p => `${p.marca} ${p.indice}`).join(', ')}
         </div>
       )}
@@ -158,7 +158,7 @@ export default function LabEstoque() {
                     </td>
                     <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.dim, textAlign:'center' }}>{p.quantidade_minima}</td>
                     <td style={{ padding:'6px 10px', whiteSpace:'nowrap' }}>
-                      <button onClick={() => abrirMov(p)} style={{ fontSize:'11px', fontWeight:'700', padding:'2px 8px', background:'#d4d0c8', color:'#000', border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', marginRight:'4px' }}>+/−</button>
+                      <button onClick={() => abrirMov(p)} style={{ fontSize:'11px', fontWeight:'700', padding:'2px 8px', background:'var(--lab-alt)', color:'var(--lab-txt)', border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', marginRight:'4px' }}>+/−</button>
                       <button onClick={() => abrirEditar(p)} style={{ fontSize:'11px', padding:'2px 8px', background:R.alt, color:R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>Editar</button>
                     </td>
                   </tr>
@@ -178,7 +178,7 @@ export default function LabEstoque() {
               <button onClick={() => setModalProd(false)} style={{ background:'none', border:'1px solid #99ffaa', color:'#99ffaa', padding:'1px 6px', cursor:'pointer', fontFamily:'inherit', fontWeight:'700' }}>✕</button>
             </div>
             <div style={{ padding:'16px' }}>
-              {erroProd && <div style={{ background:'#ddffee', border:'1px solid #005500', padding:'6px 10px', marginBottom:'10px', fontSize:'11px', color:'#005500', fontWeight:'700' }}>{erroProd}</div>}
+              {erroProd && <div style={{ background:'var(--lab-chip-bg)', border:'1px solid var(--lab-chip-bdr)', padding:'6px 10px', marginBottom:'10px', fontSize:'11px', color:'var(--lab-chip-txt)', fontWeight:'700' }}>{erroProd}</div>}
               <form onSubmit={salvarProduto} style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
                 <div><label style={LBL}>Marca *</label><input required value={form.marca} onChange={e => setForm(f => ({ ...f, marca: e.target.value }))} style={INP} placeholder="Ex: Zeiss, Essilor, Hoya..." /></div>
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px' }}>
@@ -231,7 +231,7 @@ export default function LabEstoque() {
                   Estoque atual: {produtoMov.quantidade}
                 </div>
               </div>
-              {erroMov && <div style={{ background:'#ddffee', border:'1px solid #005500', padding:'6px 10px', marginBottom:'10px', fontSize:'11px', color:'#005500', fontWeight:'700' }}>{erroMov}</div>}
+              {erroMov && <div style={{ background:'var(--lab-chip-bg)', border:'1px solid var(--lab-chip-bdr)', padding:'6px 10px', marginBottom:'10px', fontSize:'11px', color:'var(--lab-chip-txt)', fontWeight:'700' }}>{erroMov}</div>}
               <form onSubmit={salvarMovimentacao} style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
                 <div>
                   <label style={LBL}>Tipo de movimentação</label>
@@ -239,7 +239,7 @@ export default function LabEstoque() {
                     {(['entrada','saida'] as const).map(t => (
                       <button key={t} type="button" onClick={() => setMov(m => ({ ...m, tipo: t }))}
                         style={{ flex:1, padding:'6px', fontSize:'12px', fontWeight:'700', cursor:'pointer', fontFamily:'inherit',
-                          background: mov.tipo === t ? (t==='entrada' ? '#ccffcc' : '#ccffcc') : R.alt,
+                          background: mov.tipo === t ? (t==='entrada' ? 'var(--lab-chip-bg)' : 'var(--lab-chip-bg)') : R.alt,
                           color: mov.tipo === t ? (t==='entrada' ? R.accent : R.accent) : R.txt,
                           border: mov.tipo === t ? `2px inset ${t==='entrada' ? R.accent : R.accent}` : `1px outset ${R.bdr}` }}>
                         {t === 'entrada' ? '+ ENTRADA' : '− SAÍDA'}

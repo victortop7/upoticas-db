@@ -15,7 +15,7 @@ const ESTADOS_BR = ['AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS',
 
 const INP: React.CSSProperties = {
   width: '100%', padding: '7px 10px', fontSize: '13px', boxSizing: 'border-box',
-  background: R.alt, border: '1px solid #b0aca4',
+  background: R.alt, border: '1px solid var(--lab-bdr)',
   borderRadius: '7px', color: R.txt, outline: 'none', fontFamily: "'Courier New', monospace",
 };
 const LBL: React.CSSProperties = {
@@ -23,7 +23,7 @@ const LBL: React.CSSProperties = {
   textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '4px',
 };
 const CARD: React.CSSProperties = {
-  background: R.panel, border: '1px solid #b0aca4', borderRadius: '10px', padding: '16px',
+  background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '10px', padding: '16px',
 };
 
 const EMPTY: Omit<Transportadora, 'id' | 'codigo' | 'created_at'> = {
@@ -151,7 +151,7 @@ export default function LabTransportadoras() {
           {/* Ações */}
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
             {modo === 'editar' && <button type="button" onClick={() => excluir(sel!.id)} style={{ padding: '9px 18px', fontSize: '13px', background: 'rgba(200,0,0,0.12)', color: '#cc0000', border: '1px solid #cc0000', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>Excluir</button>}
-            <button type="button" onClick={() => setModo('lista')} style={{ padding: '9px 22px', fontSize: '13px', background: 'transparent', color: R.dim, border: '1px solid #b0aca4', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
+            <button type="button" onClick={() => setModo('lista')} style={{ padding: '9px 22px', fontSize: '13px', background: 'transparent', color: R.dim, border: '1px solid var(--lab-bdr)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
             <button onClick={salvar} disabled={saving} style={{ padding: '9px 28px', fontSize: '13px', fontWeight: '600', background: saving ? R.dim : R.accent, color: '#fff', border: 'none', borderRadius: '8px', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
               {saving ? 'Salvando...' : 'Salvar'}
             </button>
@@ -173,7 +173,7 @@ export default function LabTransportadoras() {
       <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar por nome, reduzido ou código..."
         style={{ ...INP, marginBottom: '16px', background: R.panel, width: '340px' }} />
 
-      <div style={{ background: R.panel, border: '1px solid #b0aca4', borderRadius: '10px' }}>
+      <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '10px' }}>
         {loading ? (
           <div style={{ padding: '48px', textAlign: 'center', color: R.dim, fontSize: '14px' }}>Carregando...</div>
         ) : filtradas.length === 0 ? (
@@ -183,7 +183,7 @@ export default function LabTransportadoras() {
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr style={{ background: R.alt, borderBottom: '1px solid #b0aca4' }}>
+              <tr style={{ background: R.alt, borderBottom: '1px solid var(--lab-bdr)' }}>
                 {['Cód', 'Nome', 'Nome Reduzido', 'Cidade/UF', 'CNPJ', 'Telefone', ''].map(h => (
                   <th key={h} style={{ padding: '9px 12px', textAlign: 'left', fontSize: '10px', fontWeight: '600', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
                 ))}
@@ -191,7 +191,7 @@ export default function LabTransportadoras() {
             </thead>
             <tbody>
               {filtradas.map(t => (
-                <tr key={t.id} style={{ borderBottom: '1px solid #b0aca4', cursor: 'pointer' }}
+                <tr key={t.id} style={{ borderBottom: '1px solid var(--lab-bdr)', cursor: 'pointer' }}
                   onClick={() => openEditar(t)}
                   onMouseEnter={e => (e.currentTarget.style.background = R.alt)}
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>

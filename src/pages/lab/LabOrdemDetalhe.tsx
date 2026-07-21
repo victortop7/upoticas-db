@@ -96,7 +96,7 @@ export default function LabOrdemDetalhe() {
 
   function RxRow({ label, od: d, oe: e }: { label: string; od: string; oe: string }) {
     return (
-      <tr style={{ borderBottom: '1px solid #b0aca4' }}>
+      <tr style={{ borderBottom: '1px solid var(--lab-bdr)' }}>
         <td style={{ padding: '8px 12px', fontSize: '11px', fontWeight: '600', color: R.dim, textTransform: 'uppercase' }}>{label}</td>
         <td style={{ padding: '8px 12px', fontSize: '13px', fontFamily: "'Courier New', monospace", color: R.txt, textAlign: 'center' }}>{d || '—'}</td>
         <td style={{ padding: '8px 12px', fontSize: '13px', fontFamily: "'Courier New', monospace", color: R.txt, textAlign: 'center' }}>{e || '—'}</td>
@@ -128,7 +128,7 @@ export default function LabOrdemDetalhe() {
           <Link
             to={`/lab/ordens/${id}/imprimir`}
             target="_blank"
-            style={{ padding: '9px 16px', fontSize: '13px', fontWeight: '600', background: 'transparent', color: R.dim, border: '1px solid #b0aca4', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'none', display: 'inline-block' }}
+            style={{ padding: '9px 16px', fontSize: '13px', fontWeight: '600', background: 'transparent', color: R.dim, border: '1px solid var(--lab-bdr)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'none', display: 'inline-block' }}
           >
             🖨️ Imprimir
           </Link>
@@ -142,7 +142,7 @@ export default function LabOrdemDetalhe() {
           </Link>
           <button
             onClick={() => setEmailOpen(o => !o)}
-            style={{ padding: '9px 16px', fontSize: '13px', fontWeight: '600', background: emailOpen ? R.alt : 'transparent', color: R.txt, border: '1px solid #b0aca4', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}
+            style={{ padding: '9px 16px', fontSize: '13px', fontWeight: '600', background: emailOpen ? R.alt : 'transparent', color: R.txt, border: '1px solid var(--lab-bdr)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}
           >
             ✉ E-mail
           </button>
@@ -155,7 +155,7 @@ export default function LabOrdemDetalhe() {
 
           {/* Popover de e-mail */}
           {emailOpen && (
-            <div style={{ position: 'absolute', top: '48px', right: 0, width: '300px', background: R.panel, border: '1px solid #b0aca4', borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', padding: '14px', zIndex: 50 }}>
+            <div style={{ position: 'absolute', top: '48px', right: 0, width: '300px', background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', padding: '14px', zIndex: 50 }}>
               <div style={{ fontSize: '11px', fontWeight: '700', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Enviar OS por e-mail</div>
               <input
                 type="email"
@@ -163,10 +163,10 @@ export default function LabOrdemDetalhe() {
                 onChange={e => setEmailTo(e.target.value)}
                 placeholder="destinatario@email.com"
                 onKeyDown={e => { if (e.key === 'Enter' && emailTo) enviarEmail(); }}
-                style={{ width: '100%', boxSizing: 'border-box', padding: '8px 10px', fontSize: '13px', background: R.inp, border: '1px solid #b0aca4', borderRadius: '7px', color: R.txt, outline: 'none', fontFamily: "'Courier New', monospace", marginBottom: '10px' }}
+                style={{ width: '100%', boxSizing: 'border-box', padding: '8px 10px', fontSize: '13px', background: R.inp, border: '1px solid var(--lab-bdr)', borderRadius: '7px', color: R.txt, outline: 'none', fontFamily: "'Courier New', monospace", marginBottom: '10px' }}
               />
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button onClick={() => setEmailOpen(false)} style={{ flex: 1, padding: '8px', fontSize: '12px', fontWeight: '600', background: 'transparent', color: R.dim, border: '1px solid #b0aca4', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
+                <button onClick={() => setEmailOpen(false)} style={{ flex: 1, padding: '8px', fontSize: '12px', fontWeight: '600', background: 'transparent', color: R.dim, border: '1px solid var(--lab-bdr)', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
                 <button onClick={enviarEmail} disabled={!emailTo} style={{ flex: 1, padding: '8px', fontSize: '12px', fontWeight: '700', background: emailTo ? R.accent : R.dim, color: '#fff', border: 'none', borderRadius: '7px', cursor: emailTo ? 'pointer' : 'not-allowed', fontFamily: 'inherit' }}>Enviar</button>
               </div>
               <div style={{ fontSize: '10.5px', color: R.dim, marginTop: '8px', lineHeight: 1.4 }}>Abre seu e-mail com o resumo da OS. Baixe o PDF e anexe antes de enviar.</div>
@@ -178,7 +178,7 @@ export default function LabOrdemDetalhe() {
       {/* Modal confirmar exclusão */}
       {confirmarExcluir && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: R.panel, border: '1px solid #b0aca4', borderRadius: '12px', width: '360px', overflow: 'hidden' }}>
+          <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '12px', width: '360px', overflow: 'hidden' }}>
             <div style={{ background: 'rgba(200,0,0,0.12)', borderBottom: '1px solid #cc0000', padding: '14px 18px' }}>
               <div style={{ fontSize: '14px', fontWeight: '700', color: '#cc0000' }}>⚠ Excluir Ordem de Serviço</div>
             </div>
@@ -190,7 +190,7 @@ export default function LabOrdemDetalhe() {
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button
                   onClick={() => setConfirmarExcluir(false)}
-                  style={{ flex: 1, padding: '10px', fontSize: '13px', fontWeight: '700', background: 'transparent', color: R.txt, border: '1px solid #b0aca4', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}
+                  style={{ flex: 1, padding: '10px', fontSize: '13px', fontWeight: '700', background: 'transparent', color: R.txt, border: '1px solid var(--lab-bdr)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}
                 >
                   NÃO
                 </button>
@@ -208,7 +208,7 @@ export default function LabOrdemDetalhe() {
       )}
 
       {/* Mover pela esteira — etapas do funil */}
-      <div style={{ background: R.panel, border: '1px solid #b0aca4', borderRadius: '12px', padding: '16px 20px', marginBottom: '16px' }}>
+      <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '12px', padding: '16px 20px', marginBottom: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
           <span style={{ fontSize: '12px', color: R.dim, fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             Mover para Etapa — {flowOf(ordemFlow) === 'progressiva' ? 'Progressiva' : 'Visão Simples'}
@@ -230,7 +230,7 @@ export default function LabOrdemDetalhe() {
                   display: 'inline-flex', alignItems: 'center', gap: '6px',
                   background: ativo ? et.color : 'transparent',
                   color: ativo ? '#fff' : R.dim,
-                  border: `1px solid ${ativo ? et.color : '#b0aca4'}`,
+                  border: `1px solid ${ativo ? et.color : 'var(--lab-bdr)'}`,
                   opacity: updatingStatus ? 0.5 : 1,
                 }}
               >
@@ -243,7 +243,7 @@ export default function LabOrdemDetalhe() {
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
         {/* Info OS */}
-        <div style={{ background: R.panel, border: '1px solid #b0aca4', borderRadius: '12px', padding: '20px' }}>
+        <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '12px', padding: '20px' }}>
           <div style={{ fontSize: '13px', fontWeight: '700', color: R.txt, marginBottom: '12px' }}>Informações</div>
           {[
             { label: 'Tipo', value: ordem.tipo ?? '—' },
@@ -267,7 +267,7 @@ export default function LabOrdemDetalhe() {
         </div>
 
         {/* Armação */}
-        <div style={{ background: R.panel, border: '1px solid #b0aca4', borderRadius: '12px', padding: '20px' }}>
+        <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '12px', padding: '20px' }}>
           <div style={{ fontSize: '13px', fontWeight: '700', color: R.txt, marginBottom: '12px' }}>Armação</div>
           {armacao ? [
             { label: 'Tipo', value: armacao.tipo_material ?? armacao.material ?? '—' },
@@ -293,11 +293,11 @@ export default function LabOrdemDetalhe() {
       </div>
 
       {/* Receita */}
-      <div style={{ background: R.panel, border: '1px solid #b0aca4', borderRadius: '12px', marginBottom: '16px' }}>
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid #b0aca4', fontSize: '13px', fontWeight: '700', color: R.txt }}>Receita das Lentes</div>
+      <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '12px', marginBottom: '16px' }}>
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--lab-bdr)', fontSize: '13px', fontWeight: '700', color: R.txt }}>Receita das Lentes</div>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
-            <tr style={{ borderBottom: '1px solid #b0aca4', background: R.alt }}>
+            <tr style={{ borderBottom: '1px solid var(--lab-bdr)', background: R.alt }}>
               <th style={{ padding: '8px 12px', textAlign: 'left', fontSize: '11px', color: R.dim, fontWeight: '600' }}></th>
               <th style={{ padding: '8px 12px', textAlign: 'center', fontSize: '11px', color: R.dim, fontWeight: '700' }}>OD</th>
               <th style={{ padding: '8px 12px', textAlign: 'center', fontSize: '11px', color: R.dim, fontWeight: '700' }}>OE</th>
@@ -317,15 +317,15 @@ export default function LabOrdemDetalhe() {
       </div>
 
       {/* Serviços */}
-      <div style={{ background: R.panel, border: '1px solid #b0aca4', borderRadius: '12px' }}>
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid #b0aca4', fontSize: '13px', fontWeight: '700', color: R.txt }}>Serviços</div>
+      <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '12px' }}>
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--lab-bdr)', fontSize: '13px', fontWeight: '700', color: R.txt }}>Serviços</div>
         {servicos?.length === 0 ? (
           <div style={{ padding: '24px', color: R.dim, fontSize: '13px' }}>Nenhum serviço registrado.</div>
         ) : (
           <>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid #b0aca4' }}>
+                <tr style={{ borderBottom: '1px solid var(--lab-bdr)' }}>
                   {['Descrição', 'Qtd', 'Valor Unit.', 'Desconto', 'Total'].map(h => (
                     <th key={h} style={{ padding: '9px 16px', textAlign: h === 'Descrição' ? 'left' : 'right', fontSize: '11px', color: R.dim, fontWeight: '600', textTransform: 'uppercase' }}>{h}</th>
                   ))}
@@ -333,7 +333,7 @@ export default function LabOrdemDetalhe() {
               </thead>
               <tbody>
                 {servicos.map((s: any, i: number) => (
-                  <tr key={i} style={{ borderBottom: '1px solid #b0aca4' }}>
+                  <tr key={i} style={{ borderBottom: '1px solid var(--lab-bdr)' }}>
                     <td style={{ padding: '10px 16px', fontSize: '13px', color: R.txt }}>{s.descricao}</td>
                     <td style={{ padding: '10px 16px', fontSize: '13px', fontFamily: "'Courier New', monospace", textAlign: 'right', color: R.dim }}>{s.qtd}</td>
                     <td style={{ padding: '10px 16px', fontSize: '13px', fontFamily: "'Courier New', monospace", textAlign: 'right', color: R.dim }}>R$ {Number(s.valor_unit).toFixed(2).replace('.', ',')}</td>
@@ -343,7 +343,7 @@ export default function LabOrdemDetalhe() {
                 ))}
               </tbody>
             </table>
-            <div style={{ padding: '14px 16px', display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid #b0aca4' }}>
+            <div style={{ padding: '14px 16px', display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid var(--lab-bdr)' }}>
               <div style={{ fontSize: '16px', fontWeight: '800', color: R.txt, fontFamily: "'Courier New', monospace" }}>
                 Total: R$ {Number(ordem.total).toFixed(2).replace('.', ',')}
               </div>
@@ -353,7 +353,7 @@ export default function LabOrdemDetalhe() {
       </div>
 
       {ordem.observacoes && (
-        <div style={{ background: R.panel, border: '1px solid #b0aca4', borderRadius: '12px', padding: '16px 20px', marginTop: '16px' }}>
+        <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '12px', padding: '16px 20px', marginTop: '16px' }}>
           <div style={{ fontSize: '12px', color: R.dim, fontWeight: '600', marginBottom: '6px', textTransform: 'uppercase' }}>Observações</div>
           <div style={{ fontSize: '13px', color: R.txt, lineHeight: '1.5' }}>{ordem.observacoes}</div>
         </div>

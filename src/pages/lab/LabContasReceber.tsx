@@ -25,7 +25,7 @@ function isVencido(venc: string, status: string) {
 
 const INP: React.CSSProperties = {
   padding: '7px 10px', fontSize: '13px', background: R.inp,
-  border: '1px solid #b0aca4', borderRadius:  0, color: R.txt,
+  border: '1px solid var(--lab-bdr)', borderRadius:  0, color: R.txt,
   outline: 'none', fontFamily: "'Courier New', monospace", width: '100%', boxSizing: 'border-box',
 };
 const LBL: React.CSSProperties = { fontSize: '11px', fontWeight: '600', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '4px' };
@@ -103,7 +103,7 @@ export default function LabContasReceber() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
 
       {/* Header */}
-      <div style={{ padding: '14px 20px', borderBottom: '1px solid #b0aca4', background: R.panel, display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+      <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--lab-bdr)', background: R.panel, display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
         <h2 style={{ margin: 0, fontSize: '17px', fontWeight: '700', color: R.txt, marginRight: '8px' }}>Contas a Receber</h2>
         <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar..." style={{ ...INP, width: '180px' }} />
         <select value={oticaFiltro} onChange={e => setOticaFiltro(e.target.value)} style={{ ...INP, width: '180px', fontFamily: "'Montserrat', sans-serif" }}>
@@ -118,10 +118,10 @@ export default function LabContasReceber() {
       </div>
 
       {/* Status tabs */}
-      <div style={{ padding: '8px 20px', borderBottom: '1px solid #b0aca4', display: 'flex', gap: '8px', alignItems: 'center' }}>
+      <div style={{ padding: '8px 20px', borderBottom: '1px solid var(--lab-bdr)', display: 'flex', gap: '8px', alignItems: 'center' }}>
         {[['', 'Todos'], ['aberto', 'Em Aberto'], ['vencido', 'Vencidos'], ['pago', 'Pagos']].map(([v, l]) => (
           <button key={v} onClick={() => setStatusFiltro(v)}
-            style={{ padding: '4px 12px', fontSize: '11px', fontWeight: '600', borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${statusFiltro === v ? '#b8b4ac' : '#b0aca4'}`, background: statusFiltro === v ? R.alt : 'transparent', color: statusFiltro === v ? R.txt : R.dim }}>
+            style={{ padding: '4px 12px', fontSize: '11px', fontWeight: '600', borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${statusFiltro === v ? '#b8b4ac' : 'var(--lab-bdr)'}`, background: statusFiltro === v ? R.alt : 'transparent', color: statusFiltro === v ? R.txt : R.dim }}>
             {l}
           </button>
         ))}
@@ -138,7 +138,7 @@ export default function LabContasReceber() {
           : filtradas.length === 0 ? <div style={{ padding: '60px', textAlign: 'center', color: R.dim }}>Nenhum lançamento encontrado.</div>
           : <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead style={{ position: 'sticky', top: 0 }}>
-                <tr style={{ background: R.alt, borderBottom: '1px solid #b0aca4' }}>
+                <tr style={{ background: R.alt, borderBottom: '1px solid var(--lab-bdr)' }}>
                   {['Nº', 'Ótica', 'Descrição', 'OS', 'Emissão', 'Vencimento', 'Pgto', 'Valor', 'Status', ''].map(h => (
                     <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: '10px', fontWeight: '600', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>{h}</th>
                   ))}
@@ -146,7 +146,7 @@ export default function LabContasReceber() {
               </thead>
               <tbody>
                 {filtradas.map(c => (
-                  <tr key={c.id} style={{ borderBottom: '1px solid #b0aca4' }}
+                  <tr key={c.id} style={{ borderBottom: '1px solid var(--lab-bdr)' }}
                     onMouseEnter={e => (e.currentTarget.style.background = R.alt)}
                     onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                     <td style={{ padding: '9px 12px', fontFamily: "'Courier New', monospace", fontSize: '12px', color: R.dim }}>#{String(c.numero).padStart(4, '0')}</td>
@@ -179,7 +179,7 @@ export default function LabContasReceber() {
       {/* Modal Baixa */}
       {baixando && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div style={{ background: R.panel, border: '1px solid #b0aca4', borderRadius: '12px', padding: '24px', width: '380px' }}>
+          <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '12px', padding: '24px', width: '380px' }}>
             <h3 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: '700', color: R.txt }}>Dar Baixa — #{String(baixando.numero).padStart(4,'0')}</h3>
             <div style={{ fontSize: '13px', color: R.dim, marginBottom: '14px' }}>
               <b style={{ color: R.txt }}>{baixando.otica_nome}</b> — {brl(baixando.valor)}
@@ -193,7 +193,7 @@ export default function LabContasReceber() {
               </select>
             </div>
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-              <button onClick={() => setBaixando(null)} style={{ padding: '8px 18px', fontSize: '13px', background: 'transparent', color: R.dim, border: '1px solid #b0aca4', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
+              <button onClick={() => setBaixando(null)} style={{ padding: '8px 18px', fontSize: '13px', background: 'transparent', color: R.dim, border: '1px solid var(--lab-bdr)', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
               <button onClick={darBaixa} disabled={salvando || !dataPgto} style={{ padding: '8px 22px', fontSize: '13px', fontWeight: '600', background: !dataPgto || salvando ? R.dim : R.accent, color: '#fff', border: 'none', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>{salvando ? '...' : '✓ Confirmar'}</button>
             </div>
           </div>
@@ -203,7 +203,7 @@ export default function LabContasReceber() {
       {/* Modal Nova Conta */}
       {novaModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div style={{ background: R.panel, border: '1px solid #b0aca4', borderRadius: '12px', padding: '24px', width: '440px' }}>
+          <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '12px', padding: '24px', width: '440px' }}>
             <h3 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: '700', color: R.txt }}>Novo Lançamento — Contas a Receber</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div>
@@ -222,7 +222,7 @@ export default function LabContasReceber() {
               <div><label style={LBL}>Observações</label><input value={novaForm.observacoes} onChange={e => setNovaForm(f => ({ ...f, observacoes: e.target.value }))} style={INP} /></div>
             </div>
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '16px' }}>
-              <button onClick={() => setNovaModal(false)} style={{ padding: '8px 18px', fontSize: '13px', background: 'transparent', color: R.dim, border: '1px solid #b0aca4', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
+              <button onClick={() => setNovaModal(false)} style={{ padding: '8px 18px', fontSize: '13px', background: 'transparent', color: R.dim, border: '1px solid var(--lab-bdr)', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
               <button onClick={criarConta} disabled={salvando} style={{ padding: '8px 22px', fontSize: '13px', fontWeight: '600', background: salvando ? R.dim : R.accent, color: '#fff', border: 'none', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>{salvando ? '...' : 'Lançar'}</button>
             </div>
           </div>

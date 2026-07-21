@@ -29,9 +29,9 @@ function diasAtras(n: number) {
 const STATUS_STYLE: Record<string, { bg: string; color: string; label: string }> = {
   aguardando: { bg:'#fff8cc', color:'#886600', label:'AGUARDANDO' },
   em_producao:{ bg:'#cce0ff', color:'#003388', label:'EM PRODUÇÃO' },
-  pronto:     { bg:'#ccffcc', color:'#005500', label:'PRONTO' },
+  pronto:     { bg:'#ccffcc', color:'var(--lab-accent)', label:'PRONTO' },
   entregue:   { bg:'#e0e0e0', color:'#555555',    label:'ENTREGUE' },
-  cancelado:  { bg:'#ccffcc', color:'#005500', label:'CANCELADO' },
+  cancelado:  { bg:'#ccffcc', color:'var(--lab-accent)', label:'CANCELADO' },
 };
 
 const TIPOS: Record<string, string> = {
@@ -445,7 +445,7 @@ export default function LabRelatorios() {
                     <td style={{ padding:'7px 10px', textAlign:'right' }}>
                       <div style={{ fontFamily:"'Courier New', monospace", fontSize:'13px', fontWeight:'700', color:R.txt, marginBottom:'3px' }}>{brl(o.valor_total)}</div>
                       <div style={{ display:'flex', alignItems:'center', gap:'4px', justifyContent:'flex-end' }}>
-                        <div style={{ width:'60px', height:'5px', background:'#b0aca4', borderRadius:'2px', overflow:'hidden' }}>
+                        <div style={{ width:'60px', height:'5px', background:'var(--lab-bdr)', borderRadius:'2px', overflow:'hidden' }}>
                           <div style={{ width:`${pct}%`, height:'100%', background:R.accent }} />
                         </div>
                         <span style={{ fontSize:'10px', color:R.dim, fontFamily:"'Courier New', monospace" }}>{pct}%</span>
@@ -465,9 +465,9 @@ export default function LabRelatorios() {
               <tr style={{ background:R.hdr }}>
                 <td colSpan={2} style={{ padding:'7px 10px', fontSize:'12px', fontWeight:'700', color:R.hdrTxt }}>TOTAL GERAL</td>
                 <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'14px', fontWeight:'900', color:R.hdrTxt }}>{totais?.total_os}</td>
-                <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'13px', fontWeight:'700', color:'#ccffcc' }}>{oticas.reduce((a,o)=>a+o.entregues,0)}</td>
+                <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'13px', fontWeight:'700', color: 'var(--lab-hdr-txt)' }}>{oticas.reduce((a,o)=>a+o.entregues,0)}</td>
                 <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'13px', color:'#cce0ff' }}>{oticas.reduce((a,o)=>a+o.em_aberto,0)}</td>
-                <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'13px', color:'#ccffcc' }}>{oticas.reduce((a,o)=>a+o.canceladas,0)}</td>
+                <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'13px', color: 'var(--lab-hdr-txt)' }}>{oticas.reduce((a,o)=>a+o.canceladas,0)}</td>
                 <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'14px', fontWeight:'900', color:R.hdrTxt, textAlign:'right' }}>{brl(totais?.valor_total||0)}</td>
                 <td />
               </tr>

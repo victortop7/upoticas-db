@@ -84,7 +84,7 @@ export default function LabOrdens() {
       em_producao: { bg: '#cce0ff', color: '#003388', border: '#003388' },
       pronto: { bg: '#ccffcc', color: '#006600', border: '#006600' },
       entregue: { bg: '#e0e0e0', color: '#555555', border: '#888' },
-      cancelado: { bg: '#ccffcc', color: '#005500', border: '#005500' },
+      cancelado: { bg: '#ccffcc', color: 'var(--lab-accent)', border: 'var(--lab-accent)' },
     };
     const c = colors[s] ?? { bg: '#ddd', color: R.dim, border: R.dim };
     return (

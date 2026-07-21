@@ -138,7 +138,7 @@ export default function LabAltF1({ onClose }: Props) {
     }
   }
 
-  const bg = '#1a1a2e'; const panel = '#16213e'; const accent = '#005500';
+  const bg = '#1a1a2e'; const panel = '#16213e'; const accent = 'var(--lab-accent)';
   const colCat: React.CSSProperties = { padding: '6px 12px', cursor: 'pointer', fontSize: '11px', fontFamily: "'Courier New', monospace", fontWeight: '700', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #2a2a3e', whiteSpace: 'nowrap' };
 
   return (
@@ -181,7 +181,7 @@ export default function LabAltF1({ onClose }: Props) {
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '14px', color: '#ccffcc', fontWeight: '700' }}>{String(selected.nome || '—')}</div>
+                  <div style={{ fontSize: '14px', color: 'var(--lab-hdr-txt)', fontWeight: '700' }}>{String(selected.nome || '—')}</div>
                   {selected.nome_reduzido ? <div style={{ fontSize: '11px', color: '#88aa88' }}>{String(selected.nome_reduzido)}</div> : null}
                 </div>
                 <div style={{ marginLeft: 'auto', fontSize: '11px', color: copiado ? '#44ff44' : '#88aa88', fontFamily: "'Courier New', monospace" }}>
@@ -199,7 +199,7 @@ export default function LabAltF1({ onClose }: Props) {
                   <thead style={{ position: 'sticky', top: 0 }}>
                     <tr style={{ background: accent }}>
                       {cat.colunas.map(col => (
-                        <th key={col.field} style={{ padding: '6px 10px', textAlign: 'left', fontSize: '10px', fontWeight: '700', color: '#ccffcc', fontFamily: "'Courier New', monospace", letterSpacing: '0.5px', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+                        <th key={col.field} style={{ padding: '6px 10px', textAlign: 'left', fontSize: '10px', fontWeight: '700', color: 'var(--lab-hdr-txt)', fontFamily: "'Courier New', monospace", letterSpacing: '0.5px', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
                           {col.label}
                         </th>
                       ))}
@@ -211,7 +211,7 @@ export default function LabAltF1({ onClose }: Props) {
                     ) : rows.map((row, i) => (
                       <tr key={i}
                         onClick={() => { selectRow(row); setRowIdx(i); }}
-                        style={{ background: i === rowIdx ? '#005500' : i % 2 === 0 ? '#0e0e1e' : '#131325', cursor: 'pointer', borderBottom: '1px solid #1a1a2e' }}>
+                        style={{ background: i === rowIdx ? 'var(--lab-accent)' : i % 2 === 0 ? '#0e0e1e' : '#131325', cursor: 'pointer', borderBottom: '1px solid #1a1a2e' }}>
                         {cat.colunas.map(col => {
                           const val = row[col.field];
                           let display = '';

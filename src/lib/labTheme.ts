@@ -23,6 +23,19 @@ export const R = {
   inp:       'var(--lab-inp)',
   inpBg:     'var(--lab-inp)',
   inpBdr:    '1px solid var(--lab-inp-bdr)',
+  // texto sobre fundo de acento
+  onAccent:  'var(--lab-on-accent)',
+  // chips / caixas de informação
+  chipBg:    'var(--lab-chip-bg)',
+  chipBdr:   'var(--lab-chip-bdr)',
+  chipTxt:   'var(--lab-chip-txt)',
+  // profundidade (3D)
+  shSm:      'var(--lab-sh-sm)',
+  sh:        'var(--lab-sh)',
+  shLg:      'var(--lab-sh-lg)',
+  inset:     'var(--lab-inset)',
+  glow:      'var(--lab-glow)',
+  panelGrad: 'var(--lab-panel-grad)',
 } as const;
 
 // Aplica o tema (claro/escuro) globalmente via atributo no <html>.

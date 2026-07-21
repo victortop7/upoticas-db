@@ -31,10 +31,10 @@ export default function LabDashboard() {
   const panelBg   = dark ? '#1c1c1c' : R.panel;
   const rowEven   = dark ? '#1c1c1c' : R.panel;
   const rowOdd    = dark ? R.txt : R.alt;
-  const rowBorder = dark ? R.txt : '#b0aca4';
+  const rowBorder = dark ? R.txt : 'var(--lab-bdr)';
   const txtMain   = dark ? '#d8d8d8' : R.txt;
   const accentTxt = dark ? '#66cc77' : R.accent;
-  const hdrBg     = 'linear-gradient(90deg, #005500, #008800)';
+  const hdrBg     = 'var(--lab-hdr)';
   const hdrBorder = R.accent;
 
   function toggleDark() {
@@ -50,14 +50,14 @@ export default function LabDashboard() {
         {/* Logo */}
         <div style={{ background: hdrBg, border: `2px outset ${hdrBorder}`, padding: '16px 12px', textAlign: 'center' }}>
           <img src="/logo-lab.svg" alt="Connect LAB" style={{ width: '130px', marginBottom: '8px' }} />
-          <div style={{ borderTop: '1px solid #1a4a1a', marginTop: '8px', paddingTop: '8px', color: '#a0d0a8', fontSize: '10px', lineHeight: '1.6' }}>
+          <div style={{ borderTop: '1px solid var(--lab-hdr-bdr)', marginTop: '8px', paddingTop: '8px', color: '#a0d0a8', fontSize: '10px', lineHeight: '1.6' }}>
             {tenant?.nome}
           </div>
         </div>
 
         {/* Stats Produção */}
         <div style={{ background: panelBg, border: `2px inset ${dark ? R.dim : R.dim}`, padding: '8px 10px' }}>
-          <div style={{ background: R.accent, color: '#ccffcc', fontSize: '10px', fontWeight: '700', padding: '3px 6px', marginBottom: '8px', letterSpacing: '1px' }}>PRODUÇÃO</div>
+          <div style={{ background: R.accent, color: 'var(--lab-hdr-txt)', fontSize: '10px', fontWeight: '700', padding: '3px 6px', marginBottom: '8px', letterSpacing: '1px' }}>PRODUÇÃO</div>
           {[
             { label: 'Hoje',        val: stats.hoje,        color: '#60a5fa' },
             { label: 'Aguardando',  val: stats.aguardando,  color: '#f59e0b' },
@@ -76,7 +76,7 @@ export default function LabDashboard() {
 
         {/* Acesso Rápido */}
         <div style={{ background: panelBg, border: `2px outset ${dark ? R.dim : R.dim}`, padding: '8px 10px' }}>
-          <div style={{ background: R.accent, color: '#ccffcc', fontSize: '10px', fontWeight: '700', padding: '3px 6px', marginBottom: '8px', letterSpacing: '1px' }}>ACESSO RÁPIDO</div>
+          <div style={{ background: R.accent, color: 'var(--lab-hdr-txt)', fontSize: '10px', fontWeight: '700', padding: '3px 6px', marginBottom: '8px', letterSpacing: '1px' }}>ACESSO RÁPIDO</div>
           {[
             { label: 'Nova OS',       to: '/lab/ordens/nova', icon: '➕' },
             { label: 'Fila Produção', to: '/lab/fluxo',       icon: '⚡' },
@@ -85,7 +85,7 @@ export default function LabDashboard() {
           ].map((item, i) => (
             <button key={item.to} onClick={() => navigate(item.to)}
               style={{ display: 'flex', alignItems: 'center', gap: '6px', width: '100%', padding: '4px 6px', marginBottom: '4px', background: i % 2 === 0 ? rowEven : rowOdd, border: `1px outset ${dark ? R.dim : '#a0a098'}`, fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer', color: txtMain, textAlign: 'left', fontWeight: '700', borderBottom: `1px solid ${rowBorder}` }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = R.accent; (e.currentTarget as HTMLElement).style.color = '#ccffcc'; }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = R.accent; (e.currentTarget as HTMLElement).style.color = 'var(--lab-hdr-txt)'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = i % 2 === 0 ? rowEven : rowOdd; (e.currentTarget as HTMLElement).style.color = txtMain; }}>
               <span>{item.icon}</span>
               <span style={{ textTransform: 'uppercase', letterSpacing: '0.3px' }}>{item.label}</span>
@@ -96,7 +96,7 @@ export default function LabDashboard() {
         {/* Dark mode + versão */}
         <div style={{ background: panelBg, border: `2px inset ${dark ? R.dim : R.dim}`, padding: '8px 10px', fontSize: '10px', color: dark ? '#aaa' : '#404040', textAlign: 'center' }}>
           <button onClick={toggleDark}
-            style={{ width: '100%', padding: '4px 6px', marginBottom: '8px', background: dark ? R.txt : R.bg, border: `1px outset ${dark ? R.dim : '#a0a098'}`, fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer', color: dark ? '#ccffcc' : R.txt, fontWeight: '700' }}>
+            style={{ width: '100%', padding: '4px 6px', marginBottom: '8px', background: dark ? R.txt : R.bg, border: `1px outset ${dark ? R.dim : '#a0a098'}`, fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer', color: dark ? 'var(--lab-hdr-txt)' : R.txt, fontWeight: '700' }}>
             {dark ? '☀️ MODO CLARO' : '🌙 MODO NOTURNO'}
           </button>
           <div style={{ fontWeight: '700', color: accentTxt, marginBottom: '4px' }}>Connect LAB</div>

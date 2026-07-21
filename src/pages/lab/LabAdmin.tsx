@@ -32,12 +32,12 @@ function PinScreen({ onOk }: { onOk: () => void }) {
   const digits = [['1','2','3'],['4','5','6'],['7','8','9'],['←','0','✓']];
 
   return (
-    <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#c8c4b0' }}>
-      <div style={{ background: '#d4d0c8', border: '2px outset #b0aca4', width: '280px' }}>
-        <div style={{ background: 'linear-gradient(90deg,#005500,#008800)', color: '#ccffcc', padding: '8px 14px', fontWeight: '700', fontSize: '13px', letterSpacing: '1px', border: '2px outset #007700', borderBottom: 'none', textAlign: 'center' }}>
+    <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--lab-bg)' }}>
+      <div style={{ background: 'var(--lab-alt)', border: '2px outset var(--lab-bdr)', width: '280px' }}>
+        <div style={{ background: 'var(--lab-hdr)', color: 'var(--lab-hdr-txt)', padding: '8px 14px', fontWeight: '700', fontSize: '13px', letterSpacing: '1px', border: '2px outset var(--lab-hdr-bdr)', borderBottom: 'none', textAlign: 'center' }}>
           ACESSO RESTRITO
         </div>
-        <div style={{ border: '2px inset #b0aca4', padding: '20px' }}>
+        <div style={{ border: '2px inset var(--lab-bdr)', padding: '20px' }}>
           <div style={{ textAlign: 'center', marginBottom: '16px', fontSize: '11px', color: R.txt, fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             Digite o PIN de 4 dígitos
           </div>
@@ -72,9 +72,9 @@ function PinScreen({ onOk }: { onOk: () => void }) {
                 style={{
                   padding: '12px', fontSize: d === '←' || d === '✓' ? '16px' : '18px',
                   fontWeight: '700', fontFamily: "'Courier New', monospace",
-                  background: d === '←' ? '#dedad2' : '#d4d0c8',
+                  background: d === '←' ? 'var(--lab-alt)' : 'var(--lab-alt)',
                   color: d === '✓' ? R.dim : R.txt,
-                  border: '2px outset #b0aca4', cursor: 'pointer',
+                  border: '2px outset var(--lab-bdr)', cursor: 'pointer',
                   lineHeight: '1',
                 }}>
                 {d}
@@ -147,8 +147,8 @@ const STATUS_STYLE: Record<string, { bg: string; color: string; label: string }>
   ativo:          { bg: '#ccffcc', color: '#006600', label: 'ATIVO' },
   trial:          { bg: '#cce0ff', color: '#003388', label: 'TRIAL' },
   trial_expirado: { bg: '#fff0cc', color: '#886600', label: 'TRIAL EXPIRADO' },
-  expirado:       { bg: '#ccffcc', color: '#005500', label: 'EXPIRADO' },
-  bloqueado:      { bg: '#ccffcc', color: '#005500', label: 'BLOQUEADO' },
+  expirado:       { bg: '#ccffcc', color: 'var(--lab-accent)', label: 'EXPIRADO' },
+  bloqueado:      { bg: '#ccffcc', color: 'var(--lab-accent)', label: 'BLOQUEADO' },
   desativado:     { bg: '#e0e0e0', color: '#555555',    label: 'DESATIVADO' },
 };
 
@@ -422,7 +422,7 @@ export default function LabAdmin() {
           </div>
           <div style={{ border: `2px inset ${R.bdr}`, padding: '20px' }}>
             <div style={{ fontSize: '11px', color: R.txt, fontWeight: '700', marginBottom: '8px', textTransform: 'uppercase' }}>Chave de Administrador:</div>
-            {erro && <div style={{ background: '#ddffee', border: '1px solid #005500', padding: '6px 10px', marginBottom: '10px', fontSize: '11px', color: '#005500', fontWeight: '700' }}>{erro}</div>}
+            {erro && <div style={{ background: 'var(--lab-chip-bg)', border: '1px solid var(--lab-chip-bdr)', padding: '6px 10px', marginBottom: '10px', fontSize: '11px', color: 'var(--lab-chip-txt)', fontWeight: '700' }}>{erro}</div>}
             <input
               type="password" value={secret} autoFocus
               onChange={e => setSecret(e.target.value)}
@@ -465,7 +465,7 @@ export default function LabAdmin() {
         </div>
       </div>
 
-      {erro && <div style={{ background: '#ddffee', border: '1px solid #005500', padding: '7px 10px', marginBottom: '8px', fontSize: '11px', color: '#005500', fontWeight: '700' }}>{erro}</div>}
+      {erro && <div style={{ background: 'var(--lab-chip-bg)', border: '1px solid var(--lab-chip-bdr)', padding: '7px 10px', marginBottom: '8px', fontSize: '11px', color: 'var(--lab-chip-txt)', fontWeight: '700' }}>{erro}</div>}
 
       {/* ── ABA LICENÇAS ── */}
       {aba === 'licencas' && (<>
@@ -518,7 +518,7 @@ export default function LabAdmin() {
                           EDITAR
                         </button>
                         <button onClick={() => { if (confirm(`Excluir laboratório "${t.nome}" e todos os usuários? Esta ação não pode ser desfeita.`)) handleExcluirTenant(t.id); }}
-                          style={{ padding: '3px 10px', fontSize: '11px', fontWeight: '700', background: '#ddffee', color: '#005500', border: '1px outset #88ccaa', cursor: 'pointer', fontFamily: 'inherit' }}>
+                          style={{ padding: '3px 10px', fontSize: '11px', fontWeight: '700', background: 'var(--lab-chip-bg)', color: 'var(--lab-chip-txt)', border: '1px outset #88ccaa', cursor: 'pointer', fontFamily: 'inherit' }}>
                           EXCLUIR
                         </button>
                         <button onClick={() => { setRestaurarTenant(t); setRestForm({ lista1: '', lista2: '', lista3: '', restore_precos: true }); setRestMsg(''); }}
@@ -566,7 +566,7 @@ export default function LabAdmin() {
                       <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                         {l.status !== 'convertido' && (
                           <button onClick={() => abrirCriarConta(l)}
-                            style={{ padding: '3px 8px', fontSize: '10px', fontWeight: '700', background: R.accent, color: '#ccffcc', border: '1px outset #006600', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+                            style={{ padding: '3px 8px', fontSize: '10px', fontWeight: '700', background: R.accent, color: 'var(--lab-hdr-txt)', border: '1px outset #006600', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
                             CRIAR CONTA
                           </button>
                         )}
@@ -583,7 +583,7 @@ export default function LabAdmin() {
                           </button>
                         )}
                         <button onClick={() => { if (confirm(`Excluir lead de ${l.nome}?`)) handleExcluirLead(l.id); }}
-                          style={{ padding: '3px 8px', fontSize: '10px', fontWeight: '700', background: '#ddffee', color: '#005500', border: '1px outset #88ccaa', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+                          style={{ padding: '3px 8px', fontSize: '10px', fontWeight: '700', background: 'var(--lab-chip-bg)', color: 'var(--lab-chip-txt)', border: '1px outset #88ccaa', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
                           EXCLUIR
                         </button>
                       </div>
@@ -717,13 +717,13 @@ export default function LabAdmin() {
                     )}
                   </div>
 
-                  {criarErro && <div style={{ background: '#ddffee', border: '1px solid #005500', padding: '6px 10px', fontSize: '11px', color: '#005500', fontWeight: '700' }}>{criarErro}</div>}
+                  {criarErro && <div style={{ background: 'var(--lab-chip-bg)', border: '1px solid var(--lab-chip-bdr)', padding: '6px 10px', fontSize: '11px', color: 'var(--lab-chip-txt)', fontWeight: '700' }}>{criarErro}</div>}
 
                   <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
                     <button onClick={() => setCriarLead(null)} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: R.alt, color: R.txt, border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
                       CANCELAR
                     </button>
-                    <button onClick={handleCriarConta} disabled={saving} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: R.accent, color: '#ccffcc', border: '1px outset #006600', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
+                    <button onClick={handleCriarConta} disabled={saving} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: R.accent, color: 'var(--lab-hdr-txt)', border: '1px outset #006600', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
                       {saving ? 'CRIANDO...' : 'CRIAR CONTA'}
                     </button>
                   </div>
@@ -762,7 +762,7 @@ export default function LabAdmin() {
                 Restaurar preços do catálogo padrão
               </label>
               {restMsg && (
-                <div style={{ fontSize: '12px', fontWeight: '700', padding: '8px 10px', background: restMsg.startsWith('✅') ? '#ccffcc' : '#ffcccc', color: restMsg.startsWith('✅') ? '#005500' : '#880000', border: `1px solid ${restMsg.startsWith('✅') ? '#005500' : '#880000'}` }}>
+                <div style={{ fontSize: '12px', fontWeight: '700', padding: '8px 10px', background: restMsg.startsWith('✅') ? 'var(--lab-chip-bg)' : '#ffcccc', color: restMsg.startsWith('✅') ? 'var(--lab-accent)' : '#880000', border: `1px solid ${restMsg.startsWith('✅') ? 'var(--lab-accent)' : '#880000'}` }}>
                   {restMsg}
                 </div>
               )}
@@ -850,7 +850,7 @@ export default function LabAdmin() {
                     </button>
                   ))}
                   <button onClick={() => setEditForm(f => ({ ...f, licenca_expira: '', plano: 'vitalicio' }))}
-                    style={{ padding: '4px 12px', fontSize: '11px', fontWeight: '700', background: '#ccffcc', color: '#006600', border: '1px outset #006600', cursor: 'pointer', fontFamily: 'inherit' }}>
+                    style={{ padding: '4px 12px', fontSize: '11px', fontWeight: '700', background: 'var(--lab-chip-bg)', color: 'var(--lab-chip-txt)', border: '1px outset #006600', cursor: 'pointer', fontFamily: 'inherit' }}>
                     Vitalício
                   </button>
                 </div>

@@ -90,7 +90,7 @@ const LBL: React.CSSProperties = {
 const TH: React.CSSProperties = {
   padding: '4px 6px', fontSize: '10px', fontWeight: '700', color: R.hdrTxt,
   textTransform: 'uppercase', textAlign: 'center',
-  background: R.accent, whiteSpace: 'nowrap', border: '1px solid #1a4a1a',
+  background: R.accent, whiteSpace: 'nowrap', border: '1px solid var(--lab-hdr-bdr)',
 };
 const TD: React.CSSProperties = { padding: '2px 3px', verticalAlign: 'middle' };
 const RX_INP: React.CSSProperties = {
@@ -441,7 +441,7 @@ export default function LabNovaOrdem() {
                 onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = R.accent; (e.currentTarget as HTMLElement).style.color = R.hdrTxt; } }}
                 onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = rowBg; (e.currentTarget as HTMLElement).style.color = R.txt; } }}>
                 <span style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t.label}</span>
-                <span style={{ fontFamily: "'Courier New', monospace", fontWeight: '700', color: isActive ? '#aaffbb' : R.accent }}>{t.key}</span>
+                <span style={{ fontFamily: "'Courier New', monospace", fontWeight: '700', color: isActive ? 'var(--lab-hdr-txt)' : R.accent }}>{t.key}</span>
               </div>
             );
           })}
@@ -466,7 +466,7 @@ export default function LabNovaOrdem() {
       {/* ===== MAIN FORM ===== */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px', display: 'flex', flexDirection: 'column', gap: '0', background: R.bg }}>
 
-        {erro && <div style={{ background: '#ddffee', border: '1px solid #008800', padding: '8px 12px', fontSize: '12px', color: '#005500', marginBottom: '8px', fontWeight: '700' }}>{erro}</div>}
+        {erro && <div style={{ background: 'var(--lab-chip-bg)', border: '1px solid var(--lab-accent)', padding: '8px 12px', fontSize: '12px', color: 'var(--lab-chip-txt)', marginBottom: '8px', fontWeight: '700' }}>{erro}</div>}
 
         {/* ===== CABEÇALHO ===== */}
         <div style={card}>
@@ -488,7 +488,7 @@ export default function LabNovaOrdem() {
             </div>
             <div style={{ gridColumn: 'span 6' }}>
               <label style={LBL}>Nome da Ótica</label>
-              <div style={{ ...INP, background: '#d4d0c8', color: oticaErro ? '#cc0000' : oticaNome ? '#000' : '#666', fontFamily: "'Montserrat', sans-serif", minHeight: '32px', display: 'flex', alignItems: 'center' }}>
+              <div style={{ ...INP, background: 'var(--lab-alt)', color: oticaErro ? '#cc0000' : oticaNome ? 'var(--lab-txt)' : 'var(--lab-dim)', fontFamily: "'Montserrat', sans-serif", minHeight: '32px', display: 'flex', alignItems: 'center' }}>
                 {oticaNome || <span style={{ color: R.dim, fontSize: '11px' }}>Digite o código ou nome acima...</span>}
               </div>
             </div>
@@ -630,7 +630,7 @@ export default function LabNovaOrdem() {
                   <th style={TH}>EIXO</th>
                   <th style={TH}>ADIC</th>
                   <th style={{ ...TH, padding: '3px 8px' }} colSpan={2}>GRAU PERTO</th>
-                  <th style={{ ...TH, borderLeft: '2px solid #007700' }}>DNP</th>
+                  <th style={{ ...TH, borderLeft: '2px solid var(--lab-hdr-bdr)' }}>DNP</th>
                   <th style={TH}>ALT</th>
                   <th style={TH}>FLUXO</th>
                 </tr>
@@ -639,7 +639,7 @@ export default function LabNovaOrdem() {
                   <th style={TH}>ESF</th><th style={TH}>CIL</th>
                   <th style={TH}></th><th style={TH}></th>
                   <th style={TH}>ESF</th><th style={TH}>CIL</th>
-                  <th style={{ ...TH, borderLeft: '2px solid #007700' }}></th>
+                  <th style={{ ...TH, borderLeft: '2px solid var(--lab-hdr-bdr)' }}></th>
                   <th style={TH}></th>
                   <th style={TH}>LAB</th>
                 </tr>
@@ -654,7 +654,7 @@ export default function LabNovaOrdem() {
                     <td style={TD}><RxInput value={o === 'od' ? od.adicao : oe.adicao} onChange={v => updateOlho(o, 'adicao', v)} /></td>
                     <td style={TD}><RxInput value={o === 'od' ? od.esf_perto : oe.esf_perto} onChange={v => updateOlho(o, 'esf_perto', v)} /></td>
                     <td style={TD}><RxInput value={o === 'od' ? od.cil_perto : oe.cil_perto} onChange={v => updateOlho(o, 'cil_perto', v)} /></td>
-                    <td style={{ ...TD, borderLeft: '2px solid #007700' }}><RxInput value={o === 'od' ? od.dnp_longe : oe.dnp_longe} onChange={v => updateOlho(o, 'dnp_longe', v)} width={44} /></td>
+                    <td style={{ ...TD, borderLeft: '2px solid var(--lab-hdr-bdr)' }}><RxInput value={o === 'od' ? od.dnp_longe : oe.dnp_longe} onChange={v => updateOlho(o, 'dnp_longe', v)} width={44} /></td>
                     <td style={TD}><RxInput value={o === 'od' ? od.alt : oe.alt} onChange={v => updateOlho(o, 'alt', v)} width={44} /></td>
                     <td style={{ ...TD, textAlign: 'center' }}>
                       {i === 0 && <input type="checkbox" checked={fluxoLab} onChange={e => setFluxoLab(e.target.checked)} />}
@@ -709,7 +709,7 @@ export default function LabNovaOrdem() {
                 </select>
                 <button type="button" onClick={() => { setNovoTipoLabel(''); setNovoTipoOpen(true); }}
                   title="Adicionar novo tipo"
-                  style={{ padding: '5px 10px', fontSize: '14px', fontWeight: '700', background: R.accent, color: '#ccffcc', border: '1px outset #007700', cursor: 'pointer', flexShrink: 0 }}>
+                  style={{ padding: '5px 10px', fontSize: '14px', fontWeight: '700', background: R.accent, color: 'var(--lab-hdr-txt)', border: '1px outset var(--lab-hdr-bdr)', cursor: 'pointer', flexShrink: 0 }}>
                   +
                 </button>
               </div>
@@ -719,8 +719,8 @@ export default function LabNovaOrdem() {
             {novoTipoOpen && (
               <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 onClick={e => e.target === e.currentTarget && setNovoTipoOpen(false)}>
-                <div style={{ background: '#d4d0c8', border: '2px outset #b0aca4', width: '320px', padding: '16px' }}>
-                  <div style={{ background: 'linear-gradient(90deg,#005500,#008800)', color: '#ccffcc', padding: '6px 12px', fontWeight: '700', fontSize: '12px', letterSpacing: '1px', marginBottom: '14px' }}>
+                <div style={{ background: 'var(--lab-alt)', border: '2px outset var(--lab-bdr)', width: '320px', padding: '16px' }}>
+                  <div style={{ background: 'var(--lab-hdr)', color: 'var(--lab-hdr-txt)', padding: '6px 12px', fontWeight: '700', fontSize: '12px', letterSpacing: '1px', marginBottom: '14px' }}>
                     NOVO TIPO DE LENTE
                   </div>
                   <label style={LBL}>Nome do tipo</label>
@@ -729,8 +729,8 @@ export default function LabNovaOrdem() {
                     style={{ ...INP, marginBottom: '12px', fontFamily: "'Montserrat', sans-serif" }}
                     placeholder="Ex: PROGRESSIVA DIGITAL" />
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    <button type="button" onClick={() => setNovoTipoOpen(false)} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: '#c8c4b0', border: '1px outset #b0aca4', cursor: 'pointer' }}>CANCELAR</button>
-                    <button type="button" onClick={salvarNovoTipo} disabled={!novoTipoLabel.trim()} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: R.accent, color: '#ccffcc', border: '1px outset #007700', cursor: novoTipoLabel.trim() ? 'pointer' : 'not-allowed' }}>ADICIONAR</button>
+                    <button type="button" onClick={() => setNovoTipoOpen(false)} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: 'var(--lab-bg)', border: '1px outset var(--lab-bdr)', cursor: 'pointer' }}>CANCELAR</button>
+                    <button type="button" onClick={salvarNovoTipo} disabled={!novoTipoLabel.trim()} style={{ flex: 1, padding: '7px', fontSize: '11px', fontWeight: '700', background: R.accent, color: 'var(--lab-hdr-txt)', border: '1px outset var(--lab-hdr-bdr)', cursor: novoTipoLabel.trim() ? 'pointer' : 'not-allowed' }}>ADICIONAR</button>
                   </div>
                 </div>
               </div>
@@ -743,7 +743,7 @@ export default function LabNovaOrdem() {
               <div><label style={LBL}>O/D</label><input value={lenteOd} onChange={e => setLenteOd(e.target.value)} style={INP} /></div>
               <div><label style={LBL}>O/E</label><input value={lenteOe} onChange={e => setLenteOe(e.target.value)} style={INP} /></div>
             </div>
-            <div style={{ borderTop: '1px solid #b0aca4', paddingTop: '10px', display: 'grid', gridTemplateColumns: '100px auto', gap: '8px', alignItems: 'center' }}>
+            <div style={{ borderTop: '1px solid var(--lab-bdr)', paddingTop: '10px', display: 'grid', gridTemplateColumns: '100px auto', gap: '8px', alignItems: 'center' }}>
               <div>
                 <label style={LBL}>Caixa</label>
                 <input value={caixa} onChange={e => setCaixa(e.target.value)} style={INP} />
@@ -762,7 +762,7 @@ export default function LabNovaOrdem() {
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '800px' }}>
               <thead>
-                <tr style={{ background: '#dedad2', borderBottom: '1px solid #b0aca4' }}>
+                <tr style={{ background: 'var(--lab-alt)', borderBottom: '1px solid var(--lab-bdr)' }}>
                   {[
                     { label: 'CÓDIGO', w: '80px', align: 'center' },
                     { label: 'DESCRIÇÃO', w: 'auto', align: 'left' },
@@ -783,7 +783,7 @@ export default function LabNovaOrdem() {
                 {cobranca.map((s, i) => {
                   const { bruto, liq } = calcItem(s);
                   return (
-                    <tr key={i} style={{ borderBottom: '1px solid #b0aca4' }}>
+                    <tr key={i} style={{ borderBottom: '1px solid var(--lab-bdr)' }}>
                       <td style={TD}>
                         <input
                           value={s.codigo}

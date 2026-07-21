@@ -6,7 +6,7 @@ interface Operador { id: string; nome: string; email: string; perfil: string; at
 
 const INP: React.CSSProperties = {
   width: '100%', padding: '8px 12px', fontSize: '13px',
-  background: R.alt, border: '1px solid #b0aca4',
+  background: R.alt, border: '1px solid var(--lab-bdr)',
   borderRadius: '8px', color: R.txt, outline: 'none',
   boxSizing: 'border-box', fontFamily: "'Montserrat', sans-serif",
 };
@@ -71,7 +71,7 @@ export default function LabOperadores() {
       )}
 
       {showForm && (
-        <form onSubmit={handleSalvar} style={{ background: R.panel, border: '1px solid #b0aca4', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
+        <form onSubmit={handleSalvar} style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
           <div style={{ fontSize: '13px', fontWeight: '700', color: R.txt, marginBottom: '16px' }}>Novo Operador</div>
 
           {erro && (
@@ -106,10 +106,10 @@ export default function LabOperadores() {
       {loading ? (
         <div style={{ color: R.dim, fontSize: '13px' }}>Carregando...</div>
       ) : (
-        <div style={{ background: R.panel, border: '1px solid #b0aca4', borderRadius: '12px', overflow: 'hidden' }}>
+        <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '12px', overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid #b0aca4', background: R.alt }}>
+              <tr style={{ borderBottom: '1px solid var(--lab-bdr)', background: R.alt }}>
                 {['Nome', 'E-mail', 'Situação'].map(h => (
                   <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
                 ))}
@@ -123,7 +123,7 @@ export default function LabOperadores() {
                   </td>
                 </tr>
               ) : operadores.map((op, i) => (
-                <tr key={op.id} style={{ borderBottom: i < operadores.length - 1 ? '1px solid #b0aca4' : 'none' }}>
+                <tr key={op.id} style={{ borderBottom: i < operadores.length - 1 ? '1px solid var(--lab-bdr)' : 'none' }}>
                   <td style={{ padding: '12px 16px', fontSize: '13px', color: R.txt, fontWeight: '600' }}>{op.nome}</td>
                   <td style={{ padding: '12px 16px', fontSize: '13px', color: R.dim, fontFamily: "'Courier New', monospace" }}>{op.email}</td>
                   <td style={{ padding: '12px 16px' }}>

@@ -74,33 +74,60 @@ input, select, textarea, button { font-family: var(--sans); }
 
 /* ─── Connect Lab — tema (claro/escuro) via variáveis ───
    Trocadas de uma vez pelo atributo data-lab-theme no <html>. */
+/* Claro — "clean tech" esverdeado (mesma identidade verde, sem o bege) */
 :root {
-  --lab-bg: #c8c4b0;
-  --lab-panel: #d4d0c8;
-  --lab-alt: #dedad2;
-  --lab-bdr: #b0aca4;
-  --lab-hdr: linear-gradient(90deg, #005500, #008800);
-  --lab-hdr-txt: #ccffcc;
-  --lab-hdr-bdr: #007700;
-  --lab-txt: #000000;
-  --lab-accent: #005500;
-  --lab-accent2: #003388;
-  --lab-dim: #444444;
+  --lab-bg: #e7ecea;
+  --lab-panel: #f5f8f7;
+  --lab-alt: #edf2f0;
+  --lab-bdr: #c6d3cd;
+  --lab-hdr: linear-gradient(90deg, #0a5c2a, #12a04a);
+  --lab-hdr-txt: #eaffef;
+  --lab-hdr-bdr: #0d7a38;
+  --lab-txt: #0d1712;
+  --lab-accent: #0f7a35;
+  --lab-accent2: #0d6b7d;
+  --lab-dim: #4a5a52;
   --lab-inp: #ffffff;
-  --lab-inp-bdr: #999999;
+  --lab-inp-bdr: #b6c6be;
+  /* texto sobre fundo de acento */
+  --lab-on-accent: #ffffff;
+  /* chips/caixas de informação */
+  --lab-chip-bg: #dcf3e5;
+  --lab-chip-bdr: #0f7a35;
+  --lab-chip-txt: #0b5c28;
+  /* profundidade (3D) */
+  --lab-sh-sm: 0 1px 2px rgba(13,23,18,0.10), 0 1px 1px rgba(13,23,18,0.06);
+  --lab-sh: 0 2px 6px rgba(13,23,18,0.10), 0 1px 2px rgba(13,23,18,0.08);
+  --lab-sh-lg: 0 10px 24px rgba(13,23,18,0.14), 0 2px 6px rgba(13,23,18,0.10);
+  --lab-inset: inset 0 1px 0 rgba(255,255,255,0.85);
+  --lab-glow: 0 0 0 1px rgba(15,122,53,0.25);
+  --lab-panel-grad: linear-gradient(180deg, #ffffff, #eef3f1);
+  --lab-hover: rgba(15,122,53,0.12);
 }
+/* Escuro — HUD / painel de instrumento, grafite esverdeado + verde neon */
 :root[data-lab-theme="dark"] {
-  --lab-bg: #141414;
-  --lab-panel: #1c1c1c;
-  --lab-alt: #232323;
-  --lab-bdr: #333333;
-  --lab-hdr: linear-gradient(90deg, #003300, #005500);
-  --lab-hdr-txt: #aaffbb;
-  --lab-hdr-bdr: #1a4a1a;
-  --lab-txt: #f0f0f0;
-  --lab-accent: #45d967;
-  --lab-accent2: #7db0ff;
-  --lab-dim: #b6b6b6;
-  --lab-inp: #262626;
-  --lab-inp-bdr: #444444;
+  --lab-bg: #0a110e;
+  --lab-panel: #111a16;
+  --lab-alt: #17231d;
+  --lab-bdr: #26372e;
+  --lab-hdr: linear-gradient(90deg, #06331a, #0e7d3a);
+  --lab-hdr-txt: #b6ffd0;
+  --lab-hdr-bdr: #145a2e;
+  --lab-txt: #e8f5ec;
+  --lab-accent: #3ddc7f;
+  --lab-accent2: #5eead4;
+  --lab-dim: #9fb3a8;
+  --lab-inp: #0e1714;
+  --lab-inp-bdr: #2c4036;
+  --lab-on-accent: #04180d;
+  --lab-chip-bg: rgba(61,220,127,0.12);
+  --lab-chip-bdr: #2f8f56;
+  --lab-chip-txt: #7cf0a8;
+  --lab-sh-sm: 0 1px 2px rgba(0,0,0,0.55);
+  --lab-sh: 0 3px 10px rgba(0,0,0,0.55), 0 1px 3px rgba(0,0,0,0.45);
+  --lab-sh-lg: 0 14px 34px rgba(0,0,0,0.65), 0 3px 10px rgba(0,0,0,0.5);
+  --lab-inset: inset 0 1px 0 rgba(255,255,255,0.05);
+  --lab-glow: 0 0 0 1px rgba(61,220,127,0.22), 0 0 14px rgba(61,220,127,0.14);
+  --lab-panel-grad: linear-gradient(180deg, #16211c, #101a16);
+  --lab-hover: rgba(61,220,127,0.16);
 }

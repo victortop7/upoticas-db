@@ -186,7 +186,7 @@ export default function LabFluxo() {
 
   const INP: React.CSSProperties = {
     padding: '6px 9px', fontSize: '12px',
-    background: R.inp, border: '1px solid #b0aca4',
+    background: R.inp, border: '1px solid var(--lab-bdr)',
     borderRadius:  0, color: R.txt, outline: 'none', width: '100%', boxSizing: 'border-box',
     fontFamily: "'Courier New', monospace",
   };
@@ -202,8 +202,8 @@ export default function LabFluxo() {
     <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
 
       {/* ===== MENU ESQUERDO ===== */}
-      <div style={{ width: '200px', flexShrink: 0, background: R.panel, borderRight: '1px solid #b0aca4', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ padding: '12px 14px', borderBottom: '1px solid #b0aca4', fontSize: '10px', fontWeight: '700', color: R.dim, textTransform: 'uppercase', letterSpacing: '1px' }}>
+      <div style={{ width: '200px', flexShrink: 0, background: R.panel, borderRight: '1px solid var(--lab-bdr)', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--lab-bdr)', fontSize: '10px', fontWeight: '700', color: R.dim, textTransform: 'uppercase', letterSpacing: '1px' }}>
           Controle de Fluxo
         </div>
         {MODO_OPTS.map(m => (
@@ -211,7 +211,7 @@ export default function LabFluxo() {
             key={m.key}
             onClick={() => setModo(m.key as 'consulta' | 'individual')}
             style={{
-              padding: '10px 14px', cursor: 'pointer', fontSize: '12px', borderBottom: '1px solid #b0aca4',
+              padding: '10px 14px', cursor: 'pointer', fontSize: '12px', borderBottom: '1px solid var(--lab-bdr)',
               fontWeight: modo === m.key ? '700' : '400',
               color: modo === m.key ? R.txt : R.dim,
               background: modo === m.key ? R.alt : 'transparent',
@@ -224,7 +224,7 @@ export default function LabFluxo() {
         ))}
 
         {/* Legenda status */}
-        <div style={{ padding: '14px', marginTop: 'auto', borderTop: '1px solid #b0aca4' }}>
+        <div style={{ padding: '14px', marginTop: 'auto', borderTop: '1px solid var(--lab-bdr)' }}>
           <div style={{ fontSize: '10px', fontWeight: '700', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Legenda</div>
           {[['aguardando', 'Aguardando'], ['em_producao', 'Em Produção'], ['pronto', 'Pronto']].map(([k, l]) => (
             <div key={k} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
@@ -244,10 +244,10 @@ export default function LabFluxo() {
           const cards = filtrados.filter(o => flowOf(o) === fluxoTipo);
           return (
           <>
-            <div style={{ padding: '12px 20px', borderBottom: '1px solid #b0aca4', background: R.panel, display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--lab-bdr)', background: R.panel, display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
               <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: R.txt, marginRight: '4px' }}>Funil de Produção</h2>
               {/* Toggle tipo de fluxo */}
-              <div style={{ display: 'flex', border: '1px solid #b0aca4', borderRadius: '8px', overflow: 'hidden' }}>
+              <div style={{ display: 'flex', border: '1px solid var(--lab-bdr)', borderRadius: '8px', overflow: 'hidden' }}>
                 {(['simples', 'progressiva'] as const).map(t => (
                   <button key={t} onClick={() => setFluxoTipo(t)}
                     style={{ padding: '6px 14px', fontSize: '12px', fontWeight: '700', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
@@ -258,7 +258,7 @@ export default function LabFluxo() {
               </div>
               <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar OS, ótica, ref..." style={{ ...INP, width: '200px' }} />
               <span style={{ fontSize: '11px', color: R.dim }}>{cards.length} OS · arraste os cards entre as etapas</span>
-              <button onClick={loadOrdens} style={{ marginLeft: 'auto', padding: '6px 12px', fontSize: '13px', background: R.alt, color: R.dim, border: '1px solid #b0aca4', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>↺</button>
+              <button onClick={loadOrdens} style={{ marginLeft: 'auto', padding: '6px 12px', fontSize: '13px', background: R.alt, color: R.dim, border: '1px solid var(--lab-bdr)', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>↺</button>
             </div>
 
             {loadingOrdens ? (
@@ -273,9 +273,12 @@ export default function LabFluxo() {
                       onDragOver={e => { e.preventDefault(); if (dragOver !== et.key) setDragOver(et.key); }}
                       onDrop={() => { if (dragging) mover(dragging, et.key); setDragging(null); setDragOver(null); }}
                       style={{ width: '224px', flexShrink: 0, display: 'flex', flexDirection: 'column', maxHeight: '100%',
-                        background: isOver ? `${et.color}22` : R.panel, border: `1px solid ${isOver ? et.color : '#b0aca4'}`, borderRadius: '10px', transition: 'background .12s, border-color .12s' }}>
+                        background: isOver ? `${et.color}22` : R.panelGrad, border: `1px solid ${isOver ? et.color : 'var(--lab-bdr)'}`, borderRadius: '10px',
+                        boxShadow: isOver ? `${R.shLg}, 0 0 0 1px ${et.color}66` : `${R.sh}, ${R.inset}`,
+                        transform: isOver ? 'translateY(-2px)' : 'none',
+                        transition: 'background .15s, border-color .15s, box-shadow .15s, transform .15s' }}>
                       {/* topo da coluna */}
-                      <div style={{ padding: '9px 12px', borderBottom: `2px solid ${et.color}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+                      <div style={{ padding: '9px 12px', borderBottom: `2px solid ${et.color}`, boxShadow: `0 1px 8px ${et.color}44`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '700', color: R.txt, textTransform: 'uppercase', letterSpacing: '0.3px' }}>
                           <span style={{ fontSize: '13px' }}>{et.icon}</span>{et.label}
                         </span>
@@ -284,7 +287,7 @@ export default function LabFluxo() {
                       {/* cards */}
                       <div style={{ flex: 1, overflowY: 'auto', padding: '8px', display: 'flex', flexDirection: 'column', gap: '7px' }}>
                         {col.length === 0 ? (
-                          <div style={{ padding: '18px 8px', textAlign: 'center', fontSize: '11px', color: R.dim, border: '1px dashed #b0aca4', borderRadius: '7px' }}>
+                          <div style={{ padding: '18px 8px', textAlign: 'center', fontSize: '11px', color: R.dim, border: '1px dashed var(--lab-bdr)', borderRadius: '7px' }}>
                             {isOver ? 'Soltar aqui' : '—'}
                           </div>
                         ) : col.map(o => (
@@ -293,7 +296,10 @@ export default function LabFluxo() {
                             onDragEnd={() => { setDragging(null); setDragOver(null); }}
                             onClick={() => abrirDetalhe(o)}
                             title="Clique para ver detalhes"
-                            style={{ opacity: dragging === o.id ? 0.4 : 1, cursor: 'pointer', background: R.alt, border: `1px solid #b0aca4`, borderLeft: `3px solid ${et.color}`, borderRadius: '7px', padding: '8px 10px' }}>
+                            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `${R.sh}, 0 0 0 1px ${et.color}55`; }}
+                            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = R.shSm; }}
+                            style={{ opacity: dragging === o.id ? 0.4 : 1, cursor: 'pointer', background: R.alt, border: `1px solid var(--lab-bdr)`, borderLeft: `3px solid ${et.color}`, borderRadius: '7px', padding: '8px 10px',
+                              boxShadow: R.shSm, transition: 'transform .12s, box-shadow .12s' }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', marginBottom: '3px' }}>
                               <span style={{ fontFamily: "'Courier New', monospace", fontSize: '13px', fontWeight: '700', color: R.txt }}>#{String(o.numero).padStart(4, '0')}</span>
                               <span style={{ fontSize: '9.5px', color: R.dim, fontFamily: "'Courier New', monospace", whiteSpace: 'nowrap' }}>{o.ref_otica || o.cont_interno || ''}</span>
@@ -322,7 +328,7 @@ export default function LabFluxo() {
             {/* LEFT: busca + dados OS */}
             <div style={{ width: '300px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {/* Busca OS */}
-              <div style={{ background: R.panel, border: '1px solid #b0aca4', borderRadius: '10px', padding: '14px' }}>
+              <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '10px', padding: '14px' }}>
                 <label style={LBL}>Buscar OS (número, ref, cont. interno)</label>
                 <div style={{ display: 'flex', gap: '6px' }}>
                   <input value={buscaOS} onChange={e => setBuscaOS(e.target.value)} onKeyDown={e => e.key === 'Enter' && buscarOS()} style={INP} placeholder="Ex: 321 / JOSE / 000324" />
@@ -334,7 +340,7 @@ export default function LabFluxo() {
 
               {/* Dados da OS */}
               {ordemSel && (
-                <div style={{ background: R.panel, border: '1px solid #b0aca4', borderRadius: '10px', padding: '14px' }}>
+                <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '10px', padding: '14px' }}>
                   <div style={{ fontSize: '11px', fontWeight: '700', color: R.txt, marginBottom: '10px' }}>
                     OS #{String(ordemSel.numero).padStart(4, '0')} — {ordemSel.otica_nome}
                   </div>
@@ -360,10 +366,10 @@ export default function LabFluxo() {
 
               {/* Histórico de fluxo */}
               {fluxoRecords.length > 0 && (
-                <div style={{ background: R.panel, border: '1px solid #b0aca4', borderRadius: '10px', padding: '14px' }}>
+                <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '10px', padding: '14px' }}>
                   <div style={{ fontSize: '11px', fontWeight: '700', color: R.txt, marginBottom: '10px' }}>Histórico de Setores</div>
                   {fluxoRecords.map(f => (
-                    <div key={f.id} style={{ padding: '7px 0', borderBottom: '1px solid #b0aca4', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div key={f.id} style={{ padding: '7px 0', borderBottom: '1px solid var(--lab-bdr)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>
                         <div style={{ fontSize: '12px', fontWeight: '600', color: R.txt }}>{f.setor}</div>
                         <div style={{ fontSize: '10px', color: R.dim }}>{f.operador ?? '—'} · {f.maquina ?? '—'}</div>
@@ -385,7 +391,7 @@ export default function LabFluxo() {
                   Busque uma OS pelo número, referência ou controle interno
                 </div>
               ) : (
-                <div style={{ background: R.panel, border: '1px solid #b0aca4', borderRadius: '10px', padding: '18px' }}>
+                <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '10px', padding: '18px' }}>
                   <div style={{ fontSize: '12px', fontWeight: '700', color: R.txt, marginBottom: '14px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                     Lançar Entrada/Saída de Setor
                   </div>
@@ -437,7 +443,7 @@ export default function LabFluxo() {
                   <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                     <button
                       onClick={() => avancarStatus(ordemSel.id, ordemSel.status === 'aguardando' ? 'em_producao' : ordemSel.status === 'em_producao' ? 'pronto' : 'entregue')}
-                      style={{ padding: '8px 16px', fontSize: '12px', fontWeight: '600', background: R.alt, color: R.dim, border: '1px solid #b0aca4', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                      style={{ padding: '8px 16px', fontSize: '12px', fontWeight: '600', background: R.alt, color: R.dim, border: '1px solid var(--lab-bdr)', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>
                       Avançar Status
                     </button>
                     <button
@@ -481,9 +487,9 @@ export default function LabFluxo() {
         );
         return (
           <div onClick={fecharDetalhe} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', justifyContent: 'flex-end' }}>
-            <div onClick={e => e.stopPropagation()} style={{ width: '520px', maxWidth: '94vw', height: '100%', background: R.panel, borderLeft: '1px solid #b0aca4', display: 'flex', flexDirection: 'column', boxShadow: '-8px 0 24px rgba(0,0,0,0.35)' }}>
+            <div onClick={e => e.stopPropagation()} style={{ width: '520px', maxWidth: '94vw', height: '100%', background: R.panel, borderLeft: '1px solid var(--lab-bdr)', display: 'flex', flexDirection: 'column', boxShadow: R.shLg }}>
               {/* header */}
-              <div style={{ padding: '14px 18px', borderBottom: '1px solid #b0aca4', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+              <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--lab-bdr)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontFamily: "'Courier New', monospace", fontSize: '18px', fontWeight: '700', color: R.txt }}>OS #{String(ord.numero).padStart(4, '0')}</span>
@@ -509,7 +515,7 @@ export default function LabFluxo() {
                       return (
                         <button key={et.key} disabled={ativo} onClick={() => moverDetalhe(et.key)}
                           style={{ padding: '5px 11px', fontSize: '11px', fontWeight: '600', borderRadius: '20px', cursor: ativo ? 'default' : 'pointer', fontFamily: 'inherit', display: 'inline-flex', alignItems: 'center', gap: '5px',
-                            background: ativo ? et.color : 'transparent', color: ativo ? '#fff' : R.dim, border: `1px solid ${ativo ? et.color : '#b0aca4'}` }}>
+                            background: ativo ? et.color : 'transparent', color: ativo ? '#fff' : R.dim, border: `1px solid ${ativo ? et.color : 'var(--lab-bdr)'}` }}>
                           <span style={{ fontSize: '11px' }}>{et.icon}</span>{et.label}
                         </button>
                       );
@@ -523,13 +529,13 @@ export default function LabFluxo() {
                   {detLoading ? (
                     <div style={{ fontSize: '12px', color: R.dim, padding: '8px 0' }}>Carregando...</div>
                   ) : detHist.length === 0 ? (
-                    <div style={{ fontSize: '12px', color: R.dim, padding: '10px 12px', border: '1px dashed #b0aca4', borderRadius: '8px' }}>Nenhuma etapa registrada ainda.</div>
+                    <div style={{ fontSize: '12px', color: R.dim, padding: '10px 12px', border: '1px dashed var(--lab-bdr)', borderRadius: '8px' }}>Nenhuma etapa registrada ainda.</div>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       {detHist.map((f, i) => {
                         const aberto = !f.termino_data;
                         return (
-                          <div key={f.id ?? i} style={{ display: 'flex', gap: '10px', padding: '8px 10px', background: R.alt, border: `1px solid ${aberto ? R.accent : '#b0aca4'}`, borderLeft: `3px solid ${aberto ? R.accent : R.dim}`, borderRadius: '7px' }}>
+                          <div key={f.id ?? i} style={{ display: 'flex', gap: '10px', padding: '8px 10px', background: R.alt, border: `1px solid ${aberto ? R.accent : 'var(--lab-bdr)'}`, borderLeft: `3px solid ${aberto ? R.accent : R.dim}`, borderRadius: '7px' }}>
                             <div style={{ flex: 1 }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                 <span style={{ fontSize: '12px', fontWeight: '700', color: R.txt, textTransform: 'capitalize' }}>{String(f.setor).replace('_', ' ')}</span>
@@ -557,7 +563,7 @@ export default function LabFluxo() {
 
                 {/* informações + armação */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                  <div style={{ background: R.alt, border: '1px solid #b0aca4', borderRadius: '8px', padding: '10px' }}>
+                  <div style={{ background: R.alt, border: '1px solid var(--lab-bdr)', borderRadius: '8px', padding: '10px' }}>
                     <div style={{ fontSize: '10px', fontWeight: '700', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '5px' }}>Informações</div>
                     <Row k="Ref. Ótica" v={ord.ref_otica} />
                     <Row k="Cont. Int." v={ord.cont_interno} />
@@ -567,7 +573,7 @@ export default function LabFluxo() {
                     <Row k="Previsão" v={fmtDate(ord.previsao_entrega)} />
                     <Row k="Tipo Lente" v={arm?.tipo_lente ?? ord.tipo_lente} />
                   </div>
-                  <div style={{ background: R.alt, border: '1px solid #b0aca4', borderRadius: '8px', padding: '10px' }}>
+                  <div style={{ background: R.alt, border: '1px solid var(--lab-bdr)', borderRadius: '8px', padding: '10px' }}>
                     <div style={{ fontSize: '10px', fontWeight: '700', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '5px' }}>Armação</div>
                     {arm ? (<>
                       <Row k="Tipo" v={arm.tipo_material ?? arm.material} />
@@ -582,11 +588,11 @@ export default function LabFluxo() {
 
                 {/* receita */}
                 {(od || oe) && (
-                  <div style={{ background: R.alt, border: '1px solid #b0aca4', borderRadius: '8px', overflow: 'hidden' }}>
-                    <div style={{ padding: '7px 12px', borderBottom: '1px solid #b0aca4', fontSize: '10px', fontWeight: '700', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Receita das Lentes</div>
+                  <div style={{ background: R.alt, border: '1px solid var(--lab-bdr)', borderRadius: '8px', overflow: 'hidden' }}>
+                    <div style={{ padding: '7px 12px', borderBottom: '1px solid var(--lab-bdr)', fontSize: '10px', fontWeight: '700', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Receita das Lentes</div>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                       <thead>
-                        <tr style={{ borderBottom: '1px solid #b0aca4', background: R.panel }}>
+                        <tr style={{ borderBottom: '1px solid var(--lab-bdr)', background: R.panel }}>
                           <th style={{ width: '38%' }}></th>
                           <th style={{ padding: '4px', fontSize: '10px', color: R.dim, fontWeight: '700' }}>OD</th>
                           <th style={{ padding: '4px', fontSize: '10px', color: R.dim, fontWeight: '700' }}>OE</th>
@@ -603,7 +609,7 @@ export default function LabFluxo() {
                           ['ALT', od?.alt ?? '—', oe?.alt ?? '—'],
                           ['Prisma', od?.prisma ?? '—', oe?.prisma ?? '—'],
                         ].map(([l, d, e]) => (
-                          <tr key={l as string} style={{ borderBottom: '1px solid #b0aca4' }}>
+                          <tr key={l as string} style={{ borderBottom: '1px solid var(--lab-bdr)' }}>
                             <td style={{ padding: '3px 12px', fontSize: '11px', color: R.dim, fontWeight: '600' }}>{l}</td>
                             <td style={{ padding: '3px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.txt, textAlign: 'center' }}>{d}</td>
                             <td style={{ padding: '3px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.txt, textAlign: 'center' }}>{e}</td>
@@ -616,10 +622,10 @@ export default function LabFluxo() {
 
                 {/* serviços */}
                 {svc.length > 0 && (
-                  <div style={{ background: R.alt, border: '1px solid #b0aca4', borderRadius: '8px', overflow: 'hidden' }}>
-                    <div style={{ padding: '7px 12px', borderBottom: '1px solid #b0aca4', fontSize: '10px', fontWeight: '700', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Serviços</div>
+                  <div style={{ background: R.alt, border: '1px solid var(--lab-bdr)', borderRadius: '8px', overflow: 'hidden' }}>
+                    <div style={{ padding: '7px 12px', borderBottom: '1px solid var(--lab-bdr)', fontSize: '10px', fontWeight: '700', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Serviços</div>
                     {svc.map((s: any, i: number) => (
-                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', padding: '5px 12px', borderBottom: '1px solid #b0aca4' }}>
+                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', padding: '5px 12px', borderBottom: '1px solid var(--lab-bdr)' }}>
                         <span style={{ fontSize: '12px', color: R.txt }}>{s.descricao}</span>
                         <span style={{ fontSize: '12px', color: R.dim, fontFamily: "'Courier New', monospace", whiteSpace: 'nowrap' }}>R$ {Number(s.total).toFixed(2).replace('.', ',')}</span>
                       </div>

@@ -65,7 +65,7 @@ export default function LabOticas() {
                   <td style={{ padding: '7px 12px', fontSize: '11px', color: R.txt }}>{o.email || '—'}</td>
                   <td style={{ padding: '7px 12px', fontSize: '11px', color: R.txt }}>{o.cidade && o.uf ? `${o.cidade}/${o.uf}` : o.cidade || '—'}</td>
                   <td style={{ padding: '7px 12px' }}>
-                    <span style={{ fontSize: '10px', fontWeight: '700', color: o.ativo ? '#006600' : '#880000', background: o.ativo ? '#ccffcc' : '#ffdddd', padding: '2px 7px', border: `1px solid ${o.ativo ? '#006600' : '#880000'}` }}>
+                    <span style={{ fontSize: '10px', fontWeight: '700', color: o.ativo ? 'var(--lab-chip-txt)' : '#880000', background: o.ativo ? 'var(--lab-chip-bg)' : '#ffdddd', padding: '2px 7px', border: `1px solid ${o.ativo ? 'var(--lab-chip-txt)' : '#880000'}` }}>
                       {o.ativo ? 'ATIVA' : 'INATIVA'}
                     </span>
                   </td>
