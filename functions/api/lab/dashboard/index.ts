@@ -18,7 +18,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
 
     const ativos = `tenant_id = ? AND status != 'cancelado'`;
 
-    const [totais, hoje, ultimoCli, ultimaEnt, lentes, serie] = await env.DB.batch([
+    const [totais, hoje, ultimoCli, ultimaEnt, lentes, serie, prazosRows] = await env.DB.batch([
       // contadores gerais
       env.DB.prepare(
         `SELECT COUNT(*) as total,
@@ -72,6 +72,19 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
          WHERE ${ativos} AND date(created_at, '${TZ}') >= date('now','${TZ}','-13 days')
          GROUP BY dia ORDER BY dia ASC`
       ).bind(tenant_id),
+
+      // prazos: atrasadas, entrega hoje e entrega amanhã (ainda não entregues)
+      env.DB.prepare(
+        `SELECT o.id, o.numero, o.previsao_entrega, o.status, o.setor_atual,
+                ot.nome as otica_nome, a.tipo_lente
+         FROM lab_ordens o
+         LEFT JOIN lab_oticas ot ON ot.id = o.otica_id
+         LEFT JOIN lab_armacao a ON a.ordem_id = o.id
+         WHERE o.tenant_id = ? AND o.status NOT IN ('entregue','cancelado')
+           AND o.previsao_entrega IS NOT NULL AND TRIM(o.previsao_entrega) != ''
+           AND date(o.previsao_entrega) <= date('now','${TZ}','+1 day')
+         ORDER BY o.previsao_entrega ASC LIMIT 150`
+      ).bind(tenant_id),
     ]);
 
     const t = (totais.results?.[0] ?? {}) as Row;
@@ -92,7 +105,20 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
       dias.push({ dia: key, qtd: mapa.get(key) ?? 0 });
     }
 
+    // separa os prazos em atrasados / hoje / amanhã (referência: dia atual em SP)
+    const hojeStr = base.toISOString().slice(0, 10);
+    const amanha = new Date(base); amanha.setDate(amanha.getDate() + 1);
+    const amanhaStr = amanha.toISOString().slice(0, 10);
+    const prazos = { atrasados: [] as Row[], hoje: [] as Row[], amanha: [] as Row[] };
+    for (const r of (prazosRows.results ?? []) as Row[]) {
+      const p = String(r.previsao_entrega ?? '').slice(0, 10);
+      if (p < hojeStr) prazos.atrasados.push(r);
+      else if (p === hojeStr) prazos.hoje.push(r);
+      else if (p === amanhaStr) prazos.amanha.push(r);
+    }
+
     return json({
+      prazos,
       total: num(t.total),
       entregues: num(t.entregues),
       emProducao: num(t.em_producao),

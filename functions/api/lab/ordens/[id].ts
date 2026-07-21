@@ -72,21 +72,38 @@ export const onRequestPatch = async ({ request, env, params }: { request: Reques
     const { tenant_id } = auth;
     const { id } = params;
 
-    const body = await request.json() as { status?: string };
+    const body = await request.json() as { status?: string; previsao_entrega?: string };
     const VALID = ['aguardando', 'em_producao', 'pronto', 'entregue', 'cancelado'];
 
-    if (!body.status || !VALID.includes(body.status)) {
+    if (body.status !== undefined && !VALID.includes(body.status)) {
       return json({ error: 'Status inválido' }, 400);
+    }
+    if (body.previsao_entrega !== undefined && body.previsao_entrega !== null
+        && !/^\d{4}-\d{2}-\d{2}$/.test(body.previsao_entrega)) {
+      return json({ error: 'Data de entrega inválida (use AAAA-MM-DD)' }, 400);
+    }
+    if (body.status === undefined && body.previsao_entrega === undefined) {
+      return json({ error: 'Informe status e/ou previsao_entrega' }, 400);
     }
 
     // garante a coluna de data de entrega
     try { await env.DB.prepare('ALTER TABLE lab_ordens ADD COLUMN entregue_em TEXT').run(); } catch {}
 
+    // monta o UPDATE só com os campos enviados
+    const sets: string[] = [`updated_at = datetime('now')`];
+    const vals: unknown[] = [];
+    if (body.status !== undefined) {
+      sets.push('status = ?', `entregue_em = CASE WHEN ? = 'entregue' THEN datetime('now') ELSE entregue_em END`);
+      vals.push(body.status, body.status);
+    }
+    if (body.previsao_entrega !== undefined) {
+      sets.push('previsao_entrega = ?');
+      vals.push(body.previsao_entrega);
+    }
+
     const result = await env.DB.prepare(
-      `UPDATE lab_ordens SET status = ?, updated_at = datetime('now'),
-         entregue_em = CASE WHEN ? = 'entregue' THEN datetime('now') ELSE entregue_em END
-       WHERE id = ? AND tenant_id = ?`
-    ).bind(body.status, body.status, id, tenant_id).run();
+      `UPDATE lab_ordens SET ${sets.join(', ')} WHERE id = ? AND tenant_id = ?`
+    ).bind(...vals, id, tenant_id).run();
 
     if (!result.success) return json({ error: 'Ordem não encontrada' }, 404);
 

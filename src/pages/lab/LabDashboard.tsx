@@ -1,22 +1,29 @@
 import { useNavigate } from 'react-router-dom';
 import { R } from '../../lib/labTheme';
 import { useAuth } from '../../hooks/useAuth';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { api } from '../../lib/api';
+import { FLUXOS, flowOf, cardStage } from '../../lib/labFluxo';
 
 interface OrdemRef { numero?: number; otica_nome?: string | null; created_at?: string; data?: string }
+interface Prazo {
+  id: string; numero: number; previsao_entrega: string; status: string;
+  setor_atual: string | null; otica_nome: string | null; tipo_lente: string | null;
+}
 interface Dash {
   total: number; entregues: number; emProducao: number; aguardando: number; pronto: number;
   abertasHoje: number; entreguesHoje: number;
   ultimoCliente: OrdemRef | null; ultimaEntrega: OrdemRef | null;
   lentes: { simples: number; progressiva: number; semTipo: number };
   serie: { dia: string; qtd: number }[];
+  prazos: { atrasados: Prazo[]; hoje: Prazo[]; amanha: Prazo[] };
 }
 
 const VAZIO: Dash = {
   total: 0, entregues: 0, emProducao: 0, aguardando: 0, pronto: 0,
   abertasHoje: 0, entreguesHoje: 0, ultimoCliente: null, ultimaEntrega: null,
   lentes: { simples: 0, progressiva: 0, semTipo: 0 }, serie: [],
+  prazos: { atrasados: [], hoje: [], amanha: [] },
 };
 
 function fmtDataHora(s?: string | null) {
@@ -37,13 +44,43 @@ export default function LabDashboard() {
   const [dark, setDark] = useState(() => localStorage.getItem('lab_dark') === '1');
   const [d, setD] = useState<Dash>(VAZIO);
   const [carregando, setCarregando] = useState(true);
+  const [sel, setSel] = useState<Prazo | null>(null);   // OS aberta no painel de ação
+  const [novaData, setNovaData] = useState('');
+  const [salvando, setSalvando] = useState(false);
 
-  useEffect(() => {
-    api.get<Dash>('/lab/dashboard')
+  const carregar = useCallback(() => {
+    return api.get<Dash>('/lab/dashboard')
       .then(r => setD({ ...VAZIO, ...r }))
       .catch(() => {})
       .finally(() => setCarregando(false));
   }, []);
+
+  useEffect(() => { carregar(); }, [carregar]);
+
+  function abrir(p: Prazo) { setSel(p); setNovaData(p.previsao_entrega?.slice(0, 10) ?? ''); }
+
+  // move a OS de etapa (mesma esteira do funil)
+  async function moverEtapa(setorKey: string) {
+    if (!sel) return;
+    setSalvando(true);
+    try { await api.post('/lab/fluxo/mover', { ordem_id: sel.id, setor: setorKey }); } catch {}
+    const novoStatus = setorKey === 'entregue' ? 'entregue' : setorKey === 'pronto' ? 'pronto' : 'em_producao';
+    setSel({ ...sel, setor_atual: setorKey, status: novoStatus });
+    await carregar();
+    setSalvando(false);
+  }
+
+  // salva a nova data de entrega
+  async function salvarData() {
+    if (!sel || !novaData) return;
+    setSalvando(true);
+    try {
+      await api.patch(`/lab/ordens/${sel.id}`, { previsao_entrega: novaData });
+      setSel({ ...sel, previsao_entrega: novaData });
+      await carregar();
+    } catch {}
+    setSalvando(false);
+  }
 
   useEffect(() => {
     const handler = () => setDark(localStorage.getItem('lab_dark') === '1');
@@ -201,6 +238,44 @@ export default function LabDashboard() {
           </div>
         </div>
 
+        {/* prazos de entrega */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px', marginBottom: '12px' }}>
+          {[
+            { titulo: 'Atrasados',        itens: d.prazos.atrasados, cor: '#cc0000', icone: '⚠' },
+            { titulo: 'Entrega hoje',     itens: d.prazos.hoje,      cor: '#a07500', icone: '📅' },
+            { titulo: 'Entrega amanhã',   itens: d.prazos.amanha,    cor: '#1069c0', icone: '⏳' },
+          ].map(g => (
+            <div key={g.titulo} style={{ ...card, borderTop: `3px solid ${g.cor}` }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span style={{ ...rotulo, marginBottom: 0, color: g.cor }}>{g.icone} {g.titulo}</span>
+                <span style={{ fontSize: '13px', fontWeight: 800, color: g.itens.length ? g.cor : R.dim, fontFamily: "'Courier New', monospace" }}>{g.itens.length}</span>
+              </div>
+              {g.itens.length === 0 ? (
+                <div style={{ fontSize: '11px', color: R.dim, padding: '10px 0' }}>Nenhum pedido</div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '210px', overflowY: 'auto' }}>
+                  {g.itens.map(p => (
+                    <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '7px 9px', background: R.alt, border: '1px solid var(--lab-bdr)', borderLeft: `3px solid ${g.cor}`, borderRadius: '6px' }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '12px', fontWeight: 700, color: R.txt, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          <span style={{ fontFamily: "'Courier New', monospace" }}>#{String(p.numero).padStart(4, '0')}</span> · {p.otica_nome ?? '—'}
+                        </div>
+                        <div style={{ fontSize: '10px', color: R.dim, fontFamily: "'Courier New', monospace", marginTop: '2px' }}>
+                          {p.previsao_entrega?.slice(0, 10).split('-').reverse().join('/')} · {(p.setor_atual ?? p.status).replace('_', ' ')}
+                        </div>
+                      </div>
+                      <button onClick={() => abrir(p)}
+                        style={{ padding: '5px 10px', fontSize: '11px', fontWeight: 700, background: g.cor, color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>
+                        Abrir
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
         {/* situação da produção */}
         <div style={card}>
           <div style={rotulo}>Situação da produção</div>
@@ -218,6 +293,68 @@ export default function LabDashboard() {
         </div>
       </>
       )}
+
+      {/* painel de ação da OS — mover etapa e alterar data de entrega */}
+      {sel && (() => {
+        const etapas = FLUXOS[flowOf(sel)];
+        const atual = cardStage(sel, etapas);
+        return (
+          <div onClick={() => setSel(null)}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+            <div onClick={e => e.stopPropagation()}
+              style={{ width: '520px', maxWidth: '100%', background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '12px', boxShadow: R.shLg, overflow: 'hidden' }}>
+
+              <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--lab-bdr)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ fontFamily: "'Courier New', monospace", fontSize: '17px', fontWeight: 800, color: R.txt }}>
+                    OS #{String(sel.numero).padStart(4, '0')}
+                  </div>
+                  <div style={{ fontSize: '12px', color: R.dim, marginTop: '2px' }}>{sel.otica_nome ?? '—'}</div>
+                </div>
+                <button onClick={() => setSel(null)} style={{ background: 'none', border: 'none', color: R.dim, fontSize: '21px', cursor: 'pointer', lineHeight: 1 }}>✕</button>
+              </div>
+
+              <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {/* mover etapa */}
+                <div>
+                  <div style={{ ...rotulo, marginBottom: '7px' }}>
+                    Mover para etapa — {flowOf(sel) === 'progressiva' ? 'Progressiva' : 'Visão Simples'}
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                    {etapas.map(et => {
+                      const ativo = atual === et.key;
+                      return (
+                        <button key={et.key} disabled={ativo || salvando} onClick={() => moverEtapa(et.key)}
+                          style={{ padding: '6px 12px', fontSize: '11px', fontWeight: 600, borderRadius: '20px', cursor: ativo ? 'default' : 'pointer', fontFamily: 'inherit',
+                            display: 'inline-flex', alignItems: 'center', gap: '5px', opacity: salvando ? 0.6 : 1,
+                            background: ativo ? et.color : 'transparent', color: ativo ? '#fff' : R.dim,
+                            border: `1px solid ${ativo ? et.color : 'var(--lab-bdr)'}` }}>
+                          <span>{et.icon}</span>{et.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* data de entrega */}
+                <div>
+                  <div style={{ ...rotulo, marginBottom: '7px' }}>Data de entrega</div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input type="date" value={novaData} onChange={e => setNovaData(e.target.value)}
+                      style={{ flex: 1, padding: '8px 10px', fontSize: '13px', background: R.inp, border: '1px solid var(--lab-bdr)', borderRadius: '8px', color: R.txt, outline: 'none', fontFamily: "'Courier New', monospace" }} />
+                    <button onClick={salvarData} disabled={salvando || !novaData || novaData === sel.previsao_entrega?.slice(0, 10)}
+                      style={{ padding: '8px 18px', fontSize: '12px', fontWeight: 700, background: R.accent, color: R.onAccent, border: 'none', borderRadius: '8px', cursor: salvando ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: (salvando || !novaData || novaData === sel.previsao_entrega?.slice(0, 10)) ? 0.5 : 1 }}>
+                      {salvando ? '...' : 'Salvar'}
+                    </button>
+                  </div>
+                </div>
+
+                <a href={`/lab/ordens/${sel.id}`} style={{ fontSize: '12px', color: R.accent2, textDecoration: 'none', textAlign: 'center' }}>Abrir OS completa →</a>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
