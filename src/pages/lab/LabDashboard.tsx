@@ -15,9 +15,27 @@ interface Dash {
   abertasHoje: number; entreguesHoje: number;
   ultimoCliente: OrdemRef | null; ultimaEntrega: OrdemRef | null;
   lentes: { simples: number; progressiva: number; semTipo: number };
-  serie: { dia: string; qtd: number }[];
+  serie: { dia: string; qtd: number; rotulo: string }[];
   prazos: { atrasados: Prazo[]; hoje: Prazo[]; amanha: Prazo[] };
+  periodo?: { de: string | null; ate: string | null; agrupamento: 'dia' | 'mes' };
 }
+
+// atalhos de período (retornam de/ate em AAAA-MM-DD, no fuso de SP)
+function ymd(d: Date) { return d.toISOString().slice(0, 10); }
+function hojeSP() { const d = new Date(); d.setHours(d.getHours() - 3); return d; }
+const PERIODOS: { key: string; label: string; calc: () => { de: string | null; ate: string | null } }[] = [
+  { key: 'hoje',    label: 'Hoje',        calc: () => { const h = hojeSP(); return { de: ymd(h), ate: ymd(h) }; } },
+  { key: '7d',      label: '7 dias',      calc: () => { const a = hojeSP(); const d = new Date(a); d.setDate(d.getDate() - 6); return { de: ymd(d), ate: ymd(a) }; } },
+  { key: '30d',     label: '30 dias',     calc: () => { const a = hojeSP(); const d = new Date(a); d.setDate(d.getDate() - 29); return { de: ymd(d), ate: ymd(a) }; } },
+  { key: 'mes',     label: 'Este mês',    calc: () => { const a = hojeSP(); const d = new Date(a); d.setDate(1); return { de: ymd(d), ate: ymd(a) }; } },
+  { key: 'mespass', label: 'Mês passado', calc: () => {
+      const a = hojeSP();
+      const ini = new Date(a.getFullYear(), a.getMonth() - 1, 1);
+      const fim = new Date(a.getFullYear(), a.getMonth(), 0);
+      return { de: ymd(ini), ate: ymd(fim) };
+    } },
+  { key: 'tudo',    label: 'Tudo',        calc: () => ({ de: null, ate: null }) },
+];
 
 const VAZIO: Dash = {
   total: 0, entregues: 0, emProducao: 0, aguardando: 0, pronto: 0,
@@ -33,10 +51,6 @@ function fmtDataHora(s?: string | null) {
   if (isNaN(d.getTime())) return s.slice(0, 16).replace('T', ' ');
   return d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
 }
-function diaCurto(s: string) {
-  const [, m, d] = s.split('-');
-  return `${d}/${m}`;
-}
 
 export default function LabDashboard() {
   const navigate = useNavigate();
@@ -48,12 +62,25 @@ export default function LabDashboard() {
   const [novaData, setNovaData] = useState('');
   const [salvando, setSalvando] = useState(false);
 
+  const [periodo, setPeriodo] = useState('30d');
+  const [de, setDe] = useState('');
+  const [ate, setAte] = useState('');
+
+  // intervalo efetivo: 'custom' usa os campos; senão usa o atalho escolhido
+  const range = periodo === 'custom'
+    ? { de: de || null, ate: ate || null }
+    : (PERIODOS.find(p => p.key === periodo) ?? PERIODOS[2]).calc();
+
   const carregar = useCallback(() => {
-    return api.get<Dash>('/lab/dashboard')
+    const qs = new URLSearchParams();
+    if (range.de) qs.set('de', range.de);
+    if (range.ate) qs.set('ate', range.ate);
+    const q = qs.toString();
+    return api.get<Dash>(`/lab/dashboard${q ? `?${q}` : ''}`)
       .then(r => setD({ ...VAZIO, ...r }))
       .catch(() => {})
       .finally(() => setCarregando(false));
-  }, []);
+  }, [range.de, range.ate]);
 
   useEffect(() => { carregar(); }, [carregar]);
 
@@ -139,6 +166,42 @@ export default function LabDashboard() {
         </div>
       </div>
 
+      {/* filtro de período */}
+      <div style={{ ...card, padding: '10px 14px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+        <span style={{ ...rotulo, marginBottom: 0, marginRight: '2px' }}>Período</span>
+        {PERIODOS.map(p => {
+          const ativo = periodo === p.key;
+          return (
+            <button key={p.key} onClick={() => setPeriodo(p.key)}
+              style={{ padding: '5px 12px', fontSize: '11px', fontWeight: 700, borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit',
+                background: ativo ? R.accent : 'transparent', color: ativo ? R.onAccent : R.dim,
+                border: `1px solid ${ativo ? R.accent : 'var(--lab-bdr)'}` }}>
+              {p.label}
+            </button>
+          );
+        })}
+        <button onClick={() => setPeriodo('custom')}
+          style={{ padding: '5px 12px', fontSize: '11px', fontWeight: 700, borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit',
+            background: periodo === 'custom' ? R.accent : 'transparent', color: periodo === 'custom' ? R.onAccent : R.dim,
+            border: `1px solid ${periodo === 'custom' ? R.accent : 'var(--lab-bdr)'}` }}>
+          Personalizado
+        </button>
+        {periodo === 'custom' && (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginLeft: '4px' }}>
+            <input type="date" value={de} onChange={e => setDe(e.target.value)}
+              style={{ padding: '5px 8px', fontSize: '12px', background: R.inp, border: '1px solid var(--lab-bdr)', borderRadius: '7px', color: R.txt, outline: 'none', fontFamily: "'Courier New', monospace" }} />
+            <span style={{ fontSize: '11px', color: R.dim }}>até</span>
+            <input type="date" value={ate} onChange={e => setAte(e.target.value)}
+              style={{ padding: '5px 8px', fontSize: '12px', background: R.inp, border: '1px solid var(--lab-bdr)', borderRadius: '7px', color: R.txt, outline: 'none', fontFamily: "'Courier New', monospace" }} />
+          </span>
+        )}
+        <span style={{ marginLeft: 'auto', fontSize: '11px', color: R.dim, fontFamily: "'Courier New', monospace" }}>
+          {range.de || range.ate
+            ? `${range.de ? range.de.split('-').reverse().join('/') : '…'} — ${range.ate ? range.ate.split('-').reverse().join('/') : '…'}`
+            : 'todo o histórico'}
+        </span>
+      </div>
+
       {carregando ? (
         <div style={{ ...card, textAlign: 'center', color: R.dim, fontSize: '13px' }}>Carregando métricas...</div>
       ) : (
@@ -148,7 +211,9 @@ export default function LabDashboard() {
           <div style={card}>
             <div style={rotulo}>Clientes atendidos</div>
             <div style={{ fontSize: '30px', fontWeight: 800, color: R.txt, fontFamily: "'Courier New', monospace", lineHeight: 1 }}>{d.total}</div>
-            <div style={{ fontSize: '11px', color: R.dim, marginTop: '5px' }}>Total de OS (sem canceladas)</div>
+            <div style={{ fontSize: '11px', color: R.dim, marginTop: '5px' }}>
+              OS {range.de || range.ate ? 'no período' : 'no total'} (sem canceladas)
+            </div>
           </div>
           <div style={card}>
             <div style={rotulo}>Atendidos hoje</div>
@@ -180,10 +245,13 @@ export default function LabDashboard() {
 
           {/* OS por dia — barras */}
           <div style={card}>
-            <div style={rotulo}>Atendimentos nos últimos 14 dias</div>
+            <div style={rotulo}>
+              Atendimentos {range.de || range.ate ? 'no período' : 'nos últimos 14 dias'}
+              {d.periodo?.agrupamento === 'mes' && ' (por mês)'}
+            </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', height: '150px', marginTop: '10px' }}>
               {d.serie.map(s => (
-                <div key={s.dia} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', height: '100%' }} title={`${diaCurto(s.dia)} — ${s.qtd} OS`}>
+                <div key={s.dia} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', height: '100%' }} title={`${s.rotulo} — ${s.qtd} OS`}>
                   <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end' }}>
                     <div style={{
                       width: '100%', height: `${(s.qtd / maxSerie) * 100}%`, minHeight: s.qtd > 0 ? '3px' : '0',
@@ -191,7 +259,7 @@ export default function LabDashboard() {
                       borderRadius: '4px 4px 0 0', boxShadow: R.shSm, transition: 'height .3s',
                     }} />
                   </div>
-                  <span style={{ fontSize: '9px', color: R.dim, fontFamily: "'Courier New', monospace", whiteSpace: 'nowrap' }}>{diaCurto(s.dia)}</span>
+                  <span style={{ fontSize: '9px', color: R.dim, fontFamily: "'Courier New', monospace", whiteSpace: 'nowrap' }}>{s.rotulo}</span>
                 </div>
               ))}
             </div>
