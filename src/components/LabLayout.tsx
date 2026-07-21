@@ -114,6 +114,7 @@ export default function LabLayout() {
   const location = useLocation();
   const [dark, setDark] = useState(() => localStorage.getItem('lab_dark') === '1');
   const [altF1, setAltF1] = useState(false);
+  const [railOpen, setRailOpen] = useState(false);
   const [activeModule, setActiveModule] = useState<ModuleKey | null>(() => detectModule(location.pathname));
   const isDashboard = location.pathname === '/lab/dashboard';
   const isAdminPage = location.pathname === '/lab/admin'; // admin nunca é bloqueado por licença
@@ -185,9 +186,6 @@ export default function LabLayout() {
     navigate(op.to);
   }
 
-  const hdrBg     = 'var(--lab-hdr)';
-  const hdrBorder = 'var(--lab-hdr-bdr)';
-  const hdrTxt    = dark ? 'var(--lab-hdr-txt)' : 'var(--lab-hdr-txt)';
   const mainBg    = 'var(--lab-bg)';
   const modBg     = 'var(--lab-hdr)';
   const modBorder = 'var(--lab-hdr-bdr)';
@@ -196,24 +194,6 @@ export default function LabLayout() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: "'Montserrat', sans-serif", background: mainBg }}>
-
-      {/* ── HEADER ── */}
-      <div style={{ background: hdrBg, color: hdrTxt, padding: '4px 16px', fontSize: '13px', fontWeight: '700', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `2px solid ${hdrBorder}`, letterSpacing: '1.5px', textTransform: 'uppercase', flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ cursor: 'pointer' }} onClick={() => navigate('/lab/dashboard')}>Connect LAB — {tenant?.nome || 'Laboratório'}</span>
-        </div>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <button onClick={() => setAltF1(true)} title="ALT+F1"
-            style={{ padding: '2px 8px', fontSize: '10px', fontWeight: 'bold', background: 'rgba(0,0,0,0.3)', color: hdrTxt, border: `1px solid ${hdrBorder}`, borderRadius: '2px', cursor: 'pointer', fontFamily: "'Courier New', monospace", letterSpacing: '0.5px' }}>
-            🔍 ALT+F1
-          </button>
-          <span style={{ fontSize: '11px', color: 'var(--lab-hdr-txt)' }}>{usuario?.nome}</span>
-          <button onClick={handleLogout}
-            style={{ padding: '2px 10px', fontSize: '11px', background: 'var(--lab-accent)', color: 'var(--lab-on-accent)', border: '1px solid var(--lab-hdr-bdr)', borderRadius: '2px', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 'bold' }}>
-            SAIR
-          </button>
-        </div>
-      </div>
 
       {/* ── AVISO DE VENCIMENTO ── */}
       {!licStatus.blocked && !licStatus.expired && licStatus.daysLeft !== null && licStatus.daysLeft <= 3 && (
@@ -225,42 +205,76 @@ export default function LabLayout() {
       {/* ── BODY ── */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
 
-        {/* ── SIDEBAR LOGO ── */}
-        <div style={{ background: modBg, width: '42px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderRight: `2px solid ${modBorder}`, flexShrink: 0 }}>
-          <div style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', color: 'var(--lab-hdr-txt)', fontSize: '11px', fontWeight: 'bold', letterSpacing: '4px', textTransform: 'uppercase', userSelect: 'none' }}>CONNECT</div>
-          <div style={{ color: 'var(--lab-hdr-txt)', fontSize: '16px' }}>🔬</div>
-          <div style={{ writingMode: 'vertical-rl', color: 'var(--lab-hdr-txt)', fontSize: '10px', fontWeight: 'bold', letterSpacing: '3px', textTransform: 'uppercase' }}>LAB</div>
-        </div>
+        {/* ── MENU LATERAL (faixa verde que expande ao encostar o mouse) ── */}
+        <div style={{ position: 'relative', width: '52px', flexShrink: 0 }}>
+          <div
+            onMouseEnter={() => setRailOpen(true)}
+            onMouseLeave={() => setRailOpen(false)}
+            style={{
+              position: 'absolute', left: 0, top: 0, bottom: 0,
+              width: railOpen ? '252px' : '52px',
+              background: modBg, borderRight: `1px solid ${modBorder}`,
+              boxShadow: railOpen ? 'var(--lab-sh-lg)' : 'none',
+              display: 'flex', flexDirection: 'column', overflow: 'hidden', zIndex: 60,
+              transition: 'width .18s ease, box-shadow .18s ease',
+            }}>
 
-        {/* ── MÓDULOS ── */}
-        <div style={{ width: '240px', background: 'var(--lab-alt)', borderRight: `2px solid ${modBorder}`, display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto' }}>
-          {/* Header */}
-          <div style={{ background: 'var(--lab-hdr)', color: 'var(--lab-hdr-txt)', textAlign: 'center', padding: '5px 12px', fontSize: '12px', fontWeight: '700', letterSpacing: '2px', border: '1px solid var(--lab-hdr-bdr)', boxShadow: 'var(--lab-sh)', borderBottom: 'none' }}>
-            MÓDULOS
-          </div>
-          <div style={{ border: '1px solid var(--lab-bdr)', boxShadow: 'var(--lab-sh-sm)' }}>
-            {/* Painel Principal */}
-            <div onClick={() => { setActiveModule(null); navigate('/lab/dashboard'); }}
-              style={{ display: 'flex', alignItems: 'center', padding: '6px 10px', borderBottom: `1px solid ${'var(--lab-bdr)'}`, background: isDashboard ? 'var(--lab-accent)' : ('var(--lab-alt)'), color: isDashboard ? 'var(--lab-on-accent)' : ('var(--lab-txt)'), cursor: 'pointer', userSelect: 'none' }}
-              onMouseEnter={e => { if (!isDashboard) (e.currentTarget as HTMLElement).style.background = 'var(--lab-hover)'; (e.currentTarget as HTMLElement).style.color = 'var(--lab-accent)'; }}
-              onMouseLeave={e => { if (!isDashboard) { (e.currentTarget as HTMLElement).style.background = 'var(--lab-alt)'; (e.currentTarget as HTMLElement).style.color = 'var(--lab-txt)'; } }}>
-              <span style={{ fontSize: '15px', width: '26px', textAlign: 'center', flexShrink: 0 }}>🏠</span>
-              <span style={{ flex: 1, fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', textTransform: 'uppercase' }}>PAINEL PRINCIPAL</span>
+            {/* topo — logo / nome do laboratório */}
+            <div onClick={() => { setRailOpen(false); setActiveModule(null); navigate('/lab/dashboard'); }}
+              title="Painel principal"
+              style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 0 10px 16px', cursor: 'pointer', borderBottom: `1px solid ${modBorder}`, flexShrink: 0, userSelect: 'none' }}>
+              <span style={{ fontSize: '19px', width: '20px', textAlign: 'center', flexShrink: 0 }}>🔬</span>
+              <span style={{ whiteSpace: 'nowrap', opacity: railOpen ? 1 : 0, transition: 'opacity .15s', color: 'var(--lab-hdr-txt)', fontSize: '12px', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase' }}>
+                Connect LAB
+              </span>
             </div>
-            {MODULOS.map((m, i) => {
-              const isActive = activeModule === m.letra && !isDashboard;
-              const rowBg = isActive ? 'var(--lab-accent)' : (i % 2 === 0 ? ('var(--lab-alt)') : ('var(--lab-panel)'));
-              return (
-                <div key={m.letra} onClick={() => clickModule(m.letra, m.ativo)}
-                  style={{ display: 'flex', alignItems: 'center', padding: '6px 10px', borderBottom: `1px solid ${'var(--lab-bdr)'}`, background: rowBg, color: isActive ? 'var(--lab-on-accent)' : (m.ativo ? ('var(--lab-txt)') : ('var(--lab-dim)')), cursor: m.ativo ? 'pointer' : 'default', opacity: m.ativo ? 1 : 0.5, userSelect: 'none', transition: 'background 0.08s' }}
-                  onMouseEnter={e => { if (m.ativo && !isActive) { (e.currentTarget as HTMLElement).style.background = 'var(--lab-hover)'; (e.currentTarget as HTMLElement).style.color = 'var(--lab-accent)'; } }}
-                  onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = rowBg; (e.currentTarget as HTMLElement).style.color = isActive ? 'var(--lab-on-accent)' : (m.ativo ? ('var(--lab-txt)') : ('var(--lab-dim)')); } }}>
-                  <span style={{ fontSize: '15px', width: '26px', textAlign: 'center', flexShrink: 0 }}>{m.icon}</span>
-                  <span style={{ flex: 1, fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', textTransform: 'uppercase' }}>{m.nome}</span>
-                  <span style={{ fontSize: '12px', fontWeight: '700', color: isActive ? 'var(--lab-on-accent)' : ('var(--lab-accent)'), width: '18px', textAlign: 'right', flexShrink: 0 }}>{m.letra}</span>
-                </div>
-              );
-            })}
+
+            {/* módulos */}
+            <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
+              {[{ letra: null as ModuleKey | null, nome: 'Painel Principal', icon: '🏠', ativo: true }, ...MODULOS].map(m => {
+                const isActive = m.letra === null ? isDashboard : (activeModule === m.letra && !isDashboard);
+                return (
+                  <div key={m.letra ?? 'home'}
+                    onClick={() => { if (m.letra === null) { setActiveModule(null); navigate('/lab/dashboard'); } else { clickModule(m.letra, m.ativo); } }}
+                    title={m.nome}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 0 9px 16px',
+                      background: isActive ? 'var(--lab-accent)' : 'transparent',
+                      color: isActive ? 'var(--lab-on-accent)' : 'var(--lab-hdr-txt)',
+                      cursor: m.ativo ? 'pointer' : 'default', opacity: m.ativo ? 1 : 0.45,
+                      userSelect: 'none', transition: 'background .1s',
+                    }}
+                    onMouseEnter={e => { if (m.ativo && !isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.14)'; }}
+                    onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}>
+                    <span style={{ fontSize: '16px', width: '20px', textAlign: 'center', flexShrink: 0 }}>{m.icon}</span>
+                    <span style={{ flex: 1, whiteSpace: 'nowrap', opacity: railOpen ? 1 : 0, transition: 'opacity .15s', fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', textTransform: 'uppercase' }}>{m.nome}</span>
+                    {m.letra && (
+                      <span style={{ opacity: railOpen ? 0.75 : 0, transition: 'opacity .15s', fontSize: '12px', fontWeight: '700', paddingRight: '12px', flexShrink: 0 }}>{m.letra}</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* rodapé — busca, usuário e sair */}
+            <div style={{ borderTop: `1px solid ${modBorder}`, flexShrink: 0, paddingBottom: '4px' }}>
+              <div onClick={() => setAltF1(true)} title="Busca rápida (ALT+F1)"
+                style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 0 9px 16px', cursor: 'pointer', color: 'var(--lab-hdr-txt)', userSelect: 'none' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.14)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
+                <span style={{ fontSize: '15px', width: '20px', textAlign: 'center', flexShrink: 0 }}>🔍</span>
+                <span style={{ flex: 1, whiteSpace: 'nowrap', opacity: railOpen ? 1 : 0, transition: 'opacity .15s', fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', textTransform: 'uppercase' }}>Buscar (ALT+F1)</span>
+              </div>
+              <div onClick={handleLogout} title={`Sair — ${usuario?.nome ?? ''}`}
+                style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 0 9px 16px', cursor: 'pointer', color: 'var(--lab-hdr-txt)', userSelect: 'none' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.14)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
+                <span style={{ fontSize: '15px', width: '20px', textAlign: 'center', flexShrink: 0 }}>⏻</span>
+                <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', opacity: railOpen ? 1 : 0, transition: 'opacity .15s', fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', textTransform: 'uppercase' }}>
+                  Sair — {usuario?.nome}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -299,12 +313,6 @@ export default function LabLayout() {
           <Outlet />
           {altF1 && <LabAltF1 onClose={() => setAltF1(false)} />}
         </div>
-      </div>
-
-      {/* ── STATUS BAR ── */}
-      <div style={{ background: hdrBg, color: hdrTxt, padding: '3px 16px', fontSize: '11px', borderTop: `2px solid ${hdrBorder}`, display: 'flex', justifyContent: 'space-between', letterSpacing: '0.5px', textTransform: 'uppercase', flexShrink: 0 }}>
-        <span>▶ SELECIONE A OPÇÃO DESEJADA</span>
-        <span style={{ color: 'var(--lab-hdr-txt)' }}>Connect LAB v1.0</span>
       </div>
 
       {/* ── OVERLAY BLOQUEIO/EXPIRADO (admin é isento) ── */}
