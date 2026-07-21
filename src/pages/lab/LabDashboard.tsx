@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '../../lib/api';
 import { FLUXOS, flowOf, cardStage } from '../../lib/labFluxo';
+import LabIcon, { type IconName } from '../../components/LabIcon';
 
 interface OrdemRef { numero?: number; otica_nome?: string | null; created_at?: string; data?: string }
 interface Prazo {
@@ -156,12 +157,12 @@ export default function LabDashboard() {
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button onClick={() => navigate('/lab/ordens/nova')}
-            style={{ padding: '8px 16px', fontSize: '12px', fontWeight: 700, background: R.accent, color: R.onAccent, border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', boxShadow: R.shSm }}>
-            ➕ Nova OS
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 16px', fontSize: '12px', fontWeight: 700, background: R.accent, color: R.onAccent, border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', boxShadow: R.shSm }}>
+            <LabIcon name="plus" size={15} /> Nova OS
           </button>
           <button onClick={toggleDark}
-            style={{ padding: '8px 14px', fontSize: '12px', fontWeight: 700, background: R.alt, color: R.txt, border: '1px solid var(--lab-bdr)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
-            {dark ? '☀️ Claro' : '🌙 Noturno'}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 14px', fontSize: '12px', fontWeight: 700, background: R.alt, color: R.txt, border: '1px solid var(--lab-bdr)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <LabIcon name={dark ? 'sun' : 'moon'} size={15} /> {dark ? 'Claro' : 'Noturno'}
           </button>
         </div>
       </div>
@@ -309,13 +310,13 @@ export default function LabDashboard() {
         {/* prazos de entrega */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px', marginBottom: '12px' }}>
           {[
-            { titulo: 'Atrasados',        itens: d.prazos.atrasados, cor: '#cc0000', icone: '⚠' },
-            { titulo: 'Entrega hoje',     itens: d.prazos.hoje,      cor: '#a07500', icone: '📅' },
-            { titulo: 'Entrega amanhã',   itens: d.prazos.amanha,    cor: '#1069c0', icone: '⏳' },
+            { titulo: 'Atrasados',        itens: d.prazos.atrasados, cor: '#cc0000', icone: 'alert' as IconName },
+            { titulo: 'Entrega hoje',     itens: d.prazos.hoje,      cor: '#a07500', icone: 'calendar' as IconName },
+            { titulo: 'Entrega amanhã',   itens: d.prazos.amanha,    cor: '#1069c0', icone: 'hourglass' as IconName },
           ].map(g => (
             <div key={g.titulo} style={{ ...card, borderTop: `3px solid ${g.cor}` }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ ...rotulo, marginBottom: 0, color: g.cor }}>{g.icone} {g.titulo}</span>
+                <span style={{ ...rotulo, marginBottom: 0, color: g.cor, display: 'inline-flex', alignItems: 'center', gap: '6px' }}><LabIcon name={g.icone} size={14} /> {g.titulo}</span>
                 <span style={{ fontSize: '13px', fontWeight: 800, color: g.itens.length ? g.cor : R.dim, fontFamily: "'Courier New', monospace" }}>{g.itens.length}</span>
               </div>
               {g.itens.length === 0 ? (
@@ -397,7 +398,7 @@ export default function LabDashboard() {
                             display: 'inline-flex', alignItems: 'center', gap: '5px', opacity: salvando ? 0.6 : 1,
                             background: ativo ? et.color : 'transparent', color: ativo ? '#fff' : R.dim,
                             border: `1px solid ${ativo ? et.color : 'var(--lab-bdr)'}` }}>
-                          <span>{et.icon}</span>{et.label}
+                          <LabIcon name={et.icon} size={14} />{et.label}
                         </button>
                       );
                     })}

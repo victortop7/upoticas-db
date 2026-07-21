@@ -1,24 +1,25 @@
 // Etapas do funil de produção do laboratório (compartilhado entre o Kanban e a tela de detalhe da OS)
+import type { IconName } from '../components/LabIcon';
 
-export type Etapa = { key: string; label: string; icon: string; color: string };
+export type Etapa = { key: string; label: string; icon: IconName; color: string };
 
 export const FLUXOS: Record<'simples' | 'progressiva', Etapa[]> = {
   simples: [
-    { key: 'digitacao', label: 'Digitação', icon: '⌨️', color: '#a07500' },
-    { key: 'estoque', label: 'Estoque', icon: '📦', color: '#1069c0' },
-    { key: 'montagem', label: 'Montagem', icon: '🔧', color: '#7a3fb5' },
-    { key: 'pronto', label: 'Pronto', icon: '✅', color: '#0a8a2a' },
-    { key: 'entregue', label: 'Entregue', icon: '🚚', color: '#6b7280' },
+    { key: 'digitacao', label: 'Digitação', icon: 'keyboard', color: '#a07500' },
+    { key: 'estoque', label: 'Estoque', icon: 'box', color: '#1069c0' },
+    { key: 'montagem', label: 'Montagem', icon: 'wrench', color: '#7a3fb5' },
+    { key: 'pronto', label: 'Pronto', icon: 'check', color: '#0a8a2a' },
+    { key: 'entregue', label: 'Entregue', icon: 'truck', color: '#6b7280' },
   ],
   progressiva: [
-    { key: 'digitacao', label: 'Digitação', icon: '⌨️', color: '#a07500' },
-    { key: 'estoque', label: 'Estoque', icon: '📦', color: '#1069c0' },
-    { key: 'surfacagem', label: 'Surfaçagem', icon: '🪚', color: '#c05a1a' },
-    { key: 'antirrisco', label: 'Antirrisco', icon: '🛡️', color: '#0e9488' },
-    { key: 'antirreflexo', label: 'Antirreflexo', icon: '💠', color: '#2563c7' },
-    { key: 'montagem', label: 'Montagem', icon: '🔧', color: '#7a3fb5' },
-    { key: 'pronto', label: 'Pronto', icon: '✅', color: '#0a8a2a' },
-    { key: 'entregue', label: 'Entregue', icon: '🚚', color: '#6b7280' },
+    { key: 'digitacao', label: 'Digitação', icon: 'keyboard', color: '#a07500' },
+    { key: 'estoque', label: 'Estoque', icon: 'box', color: '#1069c0' },
+    { key: 'surfacagem', label: 'Surfaçagem', icon: 'disc', color: '#c05a1a' },
+    { key: 'antirrisco', label: 'Antirrisco', icon: 'shield', color: '#0e9488' },
+    { key: 'antirreflexo', label: 'Antirreflexo', icon: 'sparkle', color: '#2563c7' },
+    { key: 'montagem', label: 'Montagem', icon: 'wrench', color: '#7a3fb5' },
+    { key: 'pronto', label: 'Pronto', icon: 'check', color: '#0a8a2a' },
+    { key: 'entregue', label: 'Entregue', icon: 'truck', color: '#6b7280' },
   ],
 };
 

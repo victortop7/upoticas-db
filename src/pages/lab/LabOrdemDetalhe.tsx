@@ -3,6 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { R } from '../../lib/labTheme';
 import { FLUXOS, flowOf, cardStage } from '../../lib/labFluxo';
+import LabIcon from '../../components/LabIcon';
 
 const STATUS_FLOW = [
   { value: 'aguardando', label: 'Aguardando', color: '#886600' },
@@ -234,7 +235,7 @@ export default function LabOrdemDetalhe() {
                   opacity: updatingStatus ? 0.5 : 1,
                 }}
               >
-                <span style={{ fontSize: '12px' }}>{et.icon}</span>{et.label}
+                <LabIcon name={et.icon} size={14} />{et.label}
               </button>
             );
           })}

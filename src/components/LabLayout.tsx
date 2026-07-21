@@ -3,23 +3,24 @@ import { Outlet, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import LabAltF1 from './LabAltF1';
 import { applyLabTheme } from '../lib/labTheme';
+import LabIcon, { type IconName } from './LabIcon';
 
 type ModuleKey = 'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'|'K'|'L';
 type Opcao = { num: number; label: string; to?: string; disabled?: boolean };
 
-const MODULOS: { letra: ModuleKey; nome: string; icon: string; ativo: boolean }[] = [
-  { letra: 'B', nome: 'ÓTICAS CLIENTES',           icon: '🏪', ativo: true  },
-  { letra: 'C', nome: 'FORNECEDORES/OFTALMOS',     icon: '🏭', ativo: true  },
-  { letra: 'D', nome: 'CADASTRO DE PRODUTOS',      icon: '📦', ativo: true  },
-  { letra: 'E', nome: 'CADASTRO DE ESTOQUE',       icon: '🗂️', ativo: true  },
-  { letra: 'F', nome: 'MOVIMENTAÇÃO DE ESTOQUE',   icon: '🔄', ativo: true  },
-  { letra: 'G', nome: 'VENDAS/ORDENS DE SERVIÇOS', icon: '📋', ativo: true  },
-  { letra: 'H', nome: 'CONTROLE DE FLUXO',         icon: '⚡', ativo: true  },
-  { letra: 'I', nome: 'NOTAS FISCAIS/FECHAMENTOS', icon: '🧾', ativo: false },
-  { letra: 'J', nome: 'FATURAMENTO',               icon: '💰', ativo: true  },
-  { letra: 'K', nome: 'CONTAS A RECEBER/PAGAR',    icon: '📥', ativo: true  },
-  { letra: 'L', nome: 'CONTROLE BANCÁRIO',         icon: '🏛️', ativo: true  },
-  { letra: 'A', nome: 'CONFIGURAÇÕES',             icon: '⚙',  ativo: true  },
+const MODULOS: { letra: ModuleKey; nome: string; icon: IconName; ativo: boolean }[] = [
+  { letra: 'B', nome: 'ÓTICAS CLIENTES',           icon: 'store',     ativo: true  },
+  { letra: 'C', nome: 'FORNECEDORES/OFTALMOS',     icon: 'factory',   ativo: true  },
+  { letra: 'D', nome: 'CADASTRO DE PRODUTOS',      icon: 'box',       ativo: true  },
+  { letra: 'E', nome: 'CADASTRO DE ESTOQUE',       icon: 'layers',    ativo: true  },
+  { letra: 'F', nome: 'MOVIMENTAÇÃO DE ESTOQUE',   icon: 'transfer',  ativo: true  },
+  { letra: 'G', nome: 'VENDAS/ORDENS DE SERVIÇOS', icon: 'clipboard', ativo: true  },
+  { letra: 'H', nome: 'CONTROLE DE FLUXO',         icon: 'flow',      ativo: true  },
+  { letra: 'I', nome: 'NOTAS FISCAIS/FECHAMENTOS', icon: 'invoice',   ativo: false },
+  { letra: 'J', nome: 'FATURAMENTO',               icon: 'billing',   ativo: true  },
+  { letra: 'K', nome: 'CONTAS A RECEBER/PAGAR',    icon: 'wallet',    ativo: true  },
+  { letra: 'L', nome: 'CONTROLE BANCÁRIO',         icon: 'bank',      ativo: true  },
+  { letra: 'A', nome: 'CONFIGURAÇÕES',             icon: 'settings',  ativo: true  },
 ];
 
 const OPCOES: Record<ModuleKey, Opcao[]> = {
@@ -222,7 +223,7 @@ export default function LabLayout() {
             <div onClick={() => { setRailOpen(false); setActiveModule(null); navigate('/lab/dashboard'); }}
               title="Painel principal"
               style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 0 10px 16px', cursor: 'pointer', borderBottom: `1px solid ${modBorder}`, flexShrink: 0, userSelect: 'none' }}>
-              <span style={{ fontSize: '19px', width: '20px', textAlign: 'center', flexShrink: 0 }}>🔬</span>
+              <span style={{ width: '20px', display: 'flex', justifyContent: 'center', flexShrink: 0, color: 'var(--lab-hdr-txt)' }}><LabIcon name="lens" size={20} /></span>
               <span style={{ whiteSpace: 'nowrap', opacity: railOpen ? 1 : 0, transition: 'opacity .15s', color: 'var(--lab-hdr-txt)', fontSize: '12px', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase' }}>
                 Connect LAB
               </span>
@@ -230,7 +231,7 @@ export default function LabLayout() {
 
             {/* módulos */}
             <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
-              {[{ letra: null as ModuleKey | null, nome: 'Painel Principal', icon: '🏠', ativo: true }, ...MODULOS].map(m => {
+              {[{ letra: null as ModuleKey | null, nome: 'Painel Principal', icon: 'home' as IconName, ativo: true }, ...MODULOS].map(m => {
                 const isActive = m.letra === null ? isDashboard : (activeModule === m.letra && !isDashboard);
                 return (
                   <div key={m.letra ?? 'home'}
@@ -245,7 +246,7 @@ export default function LabLayout() {
                     }}
                     onMouseEnter={e => { if (m.ativo && !isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.14)'; }}
                     onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}>
-                    <span style={{ fontSize: '16px', width: '20px', textAlign: 'center', flexShrink: 0 }}>{m.icon}</span>
+                    <span style={{ width: '20px', display: 'flex', justifyContent: 'center', flexShrink: 0 }}><LabIcon name={m.icon} size={17} /></span>
                     <span style={{ flex: 1, whiteSpace: 'nowrap', opacity: railOpen ? 1 : 0, transition: 'opacity .15s', fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', textTransform: 'uppercase' }}>{m.nome}</span>
                     {m.letra && (
                       <span style={{ opacity: railOpen ? 0.75 : 0, transition: 'opacity .15s', fontSize: '12px', fontWeight: '700', paddingRight: '12px', flexShrink: 0 }}>{m.letra}</span>
@@ -261,14 +262,14 @@ export default function LabLayout() {
                 style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 0 9px 16px', cursor: 'pointer', color: 'var(--lab-hdr-txt)', userSelect: 'none' }}
                 onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.14)'; }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
-                <span style={{ fontSize: '15px', width: '20px', textAlign: 'center', flexShrink: 0 }}>🔍</span>
+                <span style={{ width: '20px', display: 'flex', justifyContent: 'center', flexShrink: 0 }}><LabIcon name="search" size={16} /></span>
                 <span style={{ flex: 1, whiteSpace: 'nowrap', opacity: railOpen ? 1 : 0, transition: 'opacity .15s', fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', textTransform: 'uppercase' }}>Buscar (ALT+F1)</span>
               </div>
               <div onClick={handleLogout} title={`Sair — ${usuario?.nome ?? ''}`}
                 style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 0 9px 16px', cursor: 'pointer', color: 'var(--lab-hdr-txt)', userSelect: 'none' }}
                 onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.14)'; }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
-                <span style={{ fontSize: '15px', width: '20px', textAlign: 'center', flexShrink: 0 }}>⏻</span>
+                <span style={{ width: '20px', display: 'flex', justifyContent: 'center', flexShrink: 0 }}><LabIcon name="power" size={16} /></span>
                 <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', opacity: railOpen ? 1 : 0, transition: 'opacity .15s', fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', textTransform: 'uppercase' }}>
                   Sair — {usuario?.nome}
                 </span>

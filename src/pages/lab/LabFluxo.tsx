@@ -2,6 +2,7 @@
 import { api } from '../../lib/api';
 import { R } from '../../lib/labTheme';
 import { FLUXOS, flowOf, cardStage } from '../../lib/labFluxo';
+import LabIcon from '../../components/LabIcon';
 
 interface OrdemFluxo {
   id: string; numero: number; status: string; tipo: string;
@@ -280,7 +281,7 @@ export default function LabFluxo() {
                       {/* topo da coluna */}
                       <div style={{ padding: '9px 12px', borderBottom: `2px solid ${et.color}`, boxShadow: `0 1px 8px ${et.color}44`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '700', color: R.txt, textTransform: 'uppercase', letterSpacing: '0.3px' }}>
-                          <span style={{ fontSize: '13px' }}>{et.icon}</span>{et.label}
+                          <span style={{ color: et.color, display: 'flex' }}><LabIcon name={et.icon} size={15} /></span>{et.label}
                         </span>
                         <span style={{ fontSize: '11px', fontWeight: '700', minWidth: '20px', height: '20px', padding: '0 5px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: col.length ? et.color : R.alt, color: col.length ? '#fff' : R.dim }}>{col.length}</span>
                       </div>
@@ -306,7 +307,7 @@ export default function LabFluxo() {
                             </div>
                             <div style={{ fontSize: '12px', color: R.txt, fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '4px' }}>{o.otica_nome}</div>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
-                              <span style={{ fontSize: '10px', color: R.dim }}>📅 {fmtDate(o.previsao_entrega)}</span>
+                              <span style={{ fontSize: '10px', color: R.dim, display: 'inline-flex', alignItems: 'center', gap: '4px' }}><LabIcon name="calendar" size={11} /> {fmtDate(o.previsao_entrega)}</span>
                               {o.setor_desde && <span style={{ fontSize: '9.5px', color: R.dim, fontFamily: "'Courier New', monospace" }}>desde {o.setor_desde.slice(11, 16) || o.setor_desde.slice(0, 10)}</span>}
                             </div>
                           </div>
@@ -516,7 +517,7 @@ export default function LabFluxo() {
                         <button key={et.key} disabled={ativo} onClick={() => moverDetalhe(et.key)}
                           style={{ padding: '5px 11px', fontSize: '11px', fontWeight: '600', borderRadius: '20px', cursor: ativo ? 'default' : 'pointer', fontFamily: 'inherit', display: 'inline-flex', alignItems: 'center', gap: '5px',
                             background: ativo ? et.color : 'transparent', color: ativo ? '#fff' : R.dim, border: `1px solid ${ativo ? et.color : 'var(--lab-bdr)'}` }}>
-                          <span style={{ fontSize: '11px' }}>{et.icon}</span>{et.label}
+                          <LabIcon name={et.icon} size={13} />{et.label}
                         </button>
                       );
                     })}
@@ -547,7 +548,7 @@ export default function LabFluxo() {
                               </div>
                               {(f.operador || f.maquina) && (
                                 <div style={{ fontSize: '10.5px', color: R.dim, marginTop: '2px' }}>
-                                  {f.operador && <>👤 {f.operador}</>}{f.operador && f.maquina && ' · '}{f.maquina && <>🖥️ {f.maquina}</>}
+                                  {f.operador && <><span style={{ fontWeight: 700 }}>Op.</span> {f.operador}</>}{f.operador && f.maquina && ' · '}{f.maquina && <><span style={{ fontWeight: 700 }}>Máq.</span> {f.maquina}</>}
                                 </div>
                               )}
                             </div>
