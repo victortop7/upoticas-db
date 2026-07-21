@@ -46,11 +46,13 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       );
     }
 
-    // atualiza a OS: etapa atual + status coerente
+    // atualiza a OS: etapa atual + status coerente (marca a data de entrega)
     stmts.push(
       env.DB.prepare(
-        `UPDATE lab_ordens SET setor_atual = ?, status = ? WHERE id = ? AND tenant_id = ?`
-      ).bind(body.setor, statusDoSetor(body.setor), body.ordem_id, tenant_id)
+        `UPDATE lab_ordens SET setor_atual = ?, status = ?,
+           entregue_em = CASE WHEN ? = 'entregue' THEN datetime('now') ELSE entregue_em END
+         WHERE id = ? AND tenant_id = ?`
+      ).bind(body.setor, statusDoSetor(body.setor), body.setor, body.ordem_id, tenant_id)
     );
 
     await env.DB.batch(stmts);

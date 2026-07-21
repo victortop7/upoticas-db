@@ -8,7 +8,6 @@ type ModuleKey = 'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'|'K'|'L';
 type Opcao = { num: number; label: string; to?: string; disabled?: boolean };
 
 const MODULOS: { letra: ModuleKey; nome: string; icon: string; ativo: boolean }[] = [
-  { letra: 'A', nome: 'CONFIGURAÇÕES',             icon: '⚙',  ativo: true  },
   { letra: 'B', nome: 'ÓTICAS CLIENTES',           icon: '🏪', ativo: true  },
   { letra: 'C', nome: 'FORNECEDORES/OFTALMOS',     icon: '🏭', ativo: true  },
   { letra: 'D', nome: 'CADASTRO DE PRODUTOS',      icon: '📦', ativo: true  },
@@ -20,6 +19,7 @@ const MODULOS: { letra: ModuleKey; nome: string; icon: string; ativo: boolean }[
   { letra: 'J', nome: 'FATURAMENTO',               icon: '💰', ativo: true  },
   { letra: 'K', nome: 'CONTAS A RECEBER/PAGAR',    icon: '📥', ativo: true  },
   { letra: 'L', nome: 'CONTROLE BANCÁRIO',         icon: '🏛️', ativo: true  },
+  { letra: 'A', nome: 'CONFIGURAÇÕES',             icon: '⚙',  ativo: true  },
 ];
 
 const OPCOES: Record<ModuleKey, Opcao[]> = {

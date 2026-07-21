@@ -79,9 +79,14 @@ export const onRequestPatch = async ({ request, env, params }: { request: Reques
       return json({ error: 'Status inválido' }, 400);
     }
 
+    // garante a coluna de data de entrega
+    try { await env.DB.prepare('ALTER TABLE lab_ordens ADD COLUMN entregue_em TEXT').run(); } catch {}
+
     const result = await env.DB.prepare(
-      "UPDATE lab_ordens SET status = ?, updated_at = datetime('now') WHERE id = ? AND tenant_id = ?"
-    ).bind(body.status, id, tenant_id).run();
+      `UPDATE lab_ordens SET status = ?, updated_at = datetime('now'),
+         entregue_em = CASE WHEN ? = 'entregue' THEN datetime('now') ELSE entregue_em END
+       WHERE id = ? AND tenant_id = ?`
+    ).bind(body.status, body.status, id, tenant_id).run();
 
     if (!result.success) return json({ error: 'Ordem não encontrada' }, 404);
 
