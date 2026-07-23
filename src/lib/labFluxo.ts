@@ -23,10 +23,11 @@ export const FLUXOS: Record<'simples' | 'progressiva', Etapa[]> = {
   ],
 };
 
-type OrdemLike = { tipo_lente?: string | null; status?: string; setor_atual?: string | null };
+type OrdemLike = { tipo_lente?: string | null; status?: string; setor_atual?: string | null; tipo?: string | null };
 
-// Define o funil da OS pelo tipo de lente (02/progressiva vs. demais)
+// Define o funil da OS: Freeform (tipo F) e progressiva passam pela surfaçagem.
 export function flowOf(o: OrdemLike): 'simples' | 'progressiva' {
+  if ((o.tipo || '').toUpperCase() === 'F') return 'progressiva'; // Freeform = surfaçagem digital
   const t = (o.tipo_lente || '').toUpperCase().trim();
   return (t.includes('PROGRESS') || t === '02' || t.startsWith('02 ')) ? 'progressiva' : 'simples';
 }

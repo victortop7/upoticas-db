@@ -153,6 +153,13 @@ export default function LabNovaOrdem() {
   const [fluxoLab, setFluxoLab] = useState(true);
   const [observacoes, setObservacoes] = useState('');
   const [vendedor1Id, setVendedor1Id] = useState('');
+  const [garantiaOrigem, setGarantiaOrigem] = useState(''); // OS de origem (tipo Garantia)
+
+  const isGarantia = tipo === 'G';
+  const isFreeform = tipo === 'F';
+
+  // Garantia = refação sem cobrança → força etiqueta de garantia
+  useEffect(() => { if (tipo === 'G') setEtiqGarantia(true); }, [tipo]);
 
   // Receita
   const [od, setOd] = useState<RxOlho>({ ...OLHO_INI });
@@ -305,7 +312,8 @@ export default function LabNovaOrdem() {
   const totalGeral = cobranca.reduce((acc, s) => acc + calcItem(s).liq, 0);
   const totalDesc = parseFloat(desconto.replace(',', '.')) || 0;
   const totalFrete = parseFloat(frete.replace(',', '.')) || 0;
-  const totalFinal = Math.max(0, totalGeral - totalDesc + totalFrete);
+  // Garantia é refação sem cobrança: total sempre zero
+  const totalFinal = isGarantia ? 0 : Math.max(0, totalGeral - totalDesc + totalFrete);
 
   function handleFormKeyDown(e: React.KeyboardEvent<HTMLFormElement>) {
     if (e.key !== 'Enter') return;
@@ -392,10 +400,12 @@ export default function LabNovaOrdem() {
         desconto_geral: totalDesc || null,
         cont_interno: contInterno || null,
         caixa: caixa || null,
-        etiq_garantia: etiqGarantia ? 1 : 0,
+        etiq_garantia: (isGarantia || etiqGarantia) ? 1 : 0,
         usuario_receita: usuarioReceita || null,
         fluxo_lab: fluxoLab ? 1 : 0,
-        observacoes: observacoes || null,
+        observacoes: (isGarantia && garantiaOrigem.trim()
+          ? `[Garantia da OS #${garantiaOrigem.trim()}] ${observacoes}`.trim()
+          : observacoes) || null,
         vendedor1_id: vendedor1Id || null,
         total: totalFinal,
         receita: receitaPayload,
@@ -467,6 +477,23 @@ export default function LabNovaOrdem() {
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px', display: 'flex', flexDirection: 'column', gap: '0', background: R.bg }}>
 
         {erro && <div style={{ background: 'var(--lab-chip-bg)', border: '1px solid var(--lab-accent)', padding: '8px 12px', fontSize: '12px', color: 'var(--lab-chip-txt)', marginBottom: '8px', fontWeight: '700' }}>{erro}</div>}
+
+        {/* Aviso da jornada por tipo */}
+        {isFreeform && (
+          <div style={{ background: '#c05a1a18', border: '1px solid #c05a1a', borderRadius: '6px', padding: '7px 12px', fontSize: '12px', color: R.txt, marginBottom: '8px', fontWeight: '600' }}>
+            🪚 <b>OS Freeform</b> — surfaçagem digital. Esta OS entra no funil pelo fluxo com <b>Surfaçagem → Antirrisco → Antirreflexo</b>.
+          </div>
+        )}
+        {isGarantia && (
+          <div style={{ background: 'rgba(200,0,0,0.10)', border: '1px solid #cc0000', borderRadius: '6px', padding: '8px 12px', fontSize: '12px', color: R.txt, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <span style={{ fontWeight: 700, color: '#cc0000' }}>🛡 OS de Garantia — refação sem cobrança (total R$ 0,00)</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <label style={{ fontSize: '11px', fontWeight: 700, color: R.dim, textTransform: 'uppercase' }}>OS de origem</label>
+              <input value={garantiaOrigem} onChange={e => setGarantiaOrigem(e.target.value)} placeholder="Nº da OS original"
+                style={{ padding: '4px 8px', fontSize: '12px', width: '130px', background: R.inp, border: '1px solid var(--lab-bdr)', borderRadius: '5px', color: R.txt, outline: 'none', fontFamily: "'Courier New', monospace" }} />
+            </span>
+          </div>
+        )}
 
         {/* ===== CABEÇALHO ===== */}
         <div style={card}>
