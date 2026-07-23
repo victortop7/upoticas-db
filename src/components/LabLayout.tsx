@@ -47,6 +47,7 @@ const OPCOES: Record<ModuleKey, Opcao[]> = {
     { num: 2, label: 'LANÇAR FLUXO/SETOR',       to: '/lab/fluxo' },
     { num: 3, label: 'LEITURA CÓDIGO DE BARRAS',  to: '/lab/fluxo/scan' },
     { num: 4, label: 'CONSULTA/PRODUÇÃO',         to: '/lab/fluxo' },
+    { num: 5, label: 'RASTREIO / GPS DA OS',      to: '/lab/rastreio' },
   ],
   I: [],
   J: [
@@ -75,7 +76,7 @@ function detectModule(path: string): ModuleKey | null {
   if (path.includes('/lab/estoque')) return 'E';
   if (path.includes('/lab/ordens')) return 'G';
   if (path.includes('/lab/relatorios')) return 'G';
-  if (path.includes('/lab/fluxo')) return 'H';
+  if (path.includes('/lab/fluxo') || path.includes('/lab/rastreio')) return 'H';
   if (path.includes('/lab/faturamento')) return 'J';
   if (path.includes('/lab/vendedores')) return 'J';
   if (path.includes('/lab/servicos') || path.includes('/lab/produtos')) return 'D';

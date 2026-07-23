@@ -32,7 +32,7 @@ export const onRequestGet = async ({ request, env, params }: { request: Request;
     const [otica, ordens, stats] = await Promise.all([
       env.DB.prepare('SELECT * FROM lab_oticas WHERE id = ? AND tenant_id = ?').bind(id, tenant_id).first<Record<string, unknown>>(),
       env.DB.prepare(`
-        SELECT o.id, o.numero, o.status, o.ref_otica, o.previsao_entrega, o.total, o.created_at,
+        SELECT o.id, o.numero, o.status, o.setor_atual, o.ref_otica, o.previsao_entrega, o.total, o.created_at,
                (SELECT COUNT(*) FROM lab_servicos_os WHERE ordem_id = o.id) as servicos_count
         FROM lab_ordens o WHERE o.otica_id = ? AND o.tenant_id = ? ORDER BY o.created_at DESC LIMIT 50
       `).bind(id, tenant_id).all<Record<string, unknown>>(),

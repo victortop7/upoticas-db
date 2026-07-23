@@ -713,7 +713,7 @@ export default function LabOticaDetalhe() {
               <table style={{ width:'100%', borderCollapse:'collapse' }}>
                 <thead style={{ position:'sticky', top:0 }}>
                   <tr style={{ background:RV.hdr }}>
-                    {['Nº OS','DATA','REF.','CONT. INT.','SERV.','TOTAL','PREVISÃO','STATUS'].map(h => (
+                    {['Nº OS','DATA','REF.','CONT. INT.','SERV.','TOTAL','PREVISÃO','POSIÇÃO','STATUS','RASTREIO'].map(h => (
                       <th key={h} style={{ padding:'5px 8px', textAlign: h==='TOTAL'?'right':'left', fontSize:'10px', fontWeight:'700', color:RV.hdrTxt, border:`1px solid ${RV.hdrBdr}`, whiteSpace:'nowrap', letterSpacing:'0.5px' }}>{h}</th>
                     ))}
                   </tr>
@@ -734,8 +734,17 @@ export default function LabOticaDetalhe() {
                         <td style={{ padding:'6px 8px', fontSize:'11px', color:R.txt, textAlign:'center' }}>{o.servicos_count}</td>
                         <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'700', color:RV.txt, textAlign:'right', whiteSpace:'nowrap' }}>{brl(o.total)}</td>
                         <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt, whiteSpace:'nowrap' }}>{fmtD(o.previsao_entrega)}</td>
+                        <td style={{ padding:'6px 8px', fontSize:'11px', color:R.txt, textTransform:'capitalize', whiteSpace:'nowrap' }}>
+                          {o.status==='entregue' ? 'Entregue' : o.status==='pronto' ? 'Pronto' : (o.setor_atual ? String(o.setor_atual).replace('_',' ') : '—')}
+                        </td>
                         <td style={{ padding:'6px 8px' }}>
                           <span style={{ fontSize:'10px', fontWeight:'700', color:st.color, background:st.bg, padding:'2px 6px', border:`1px solid ${st.color}`, whiteSpace:'nowrap' }}>{st.label}</span>
+                        </td>
+                        <td style={{ padding:'6px 8px' }}>
+                          <button onClick={e => { e.stopPropagation(); navigate(`/lab/rastreio?os=${o.numero}`); }}
+                            style={{ fontSize:'10px', fontWeight:'700', color:R.accent2, background:'transparent', border:`1px solid ${RV.bdr}`, borderRadius:'5px', padding:'3px 8px', cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}>
+                            Rastrear
+                          </button>
                         </td>
                       </tr>
                     );
@@ -747,7 +756,7 @@ export default function LabOticaDetalhe() {
                     <td style={{ padding:'5px 8px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'900', color:RV.hdrTxt, textAlign:'right' }}>
                       {brl(ordensFiltradas.reduce((a: number, o: any) => a + (o.total||0), 0))}
                     </td>
-                    <td colSpan={2} />
+                    <td colSpan={4} />
                   </tr>
                 </tfoot>
               </table>
