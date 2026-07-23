@@ -9,7 +9,11 @@ interface Ordem {
   id: string; numero: number; status: string; setor_atual: string | null;
   otica_nome: string | null; ref_otica: string | null; cont_interno: string | null;
   previsao_entrega: string | null; created_at: string; tipo_lente: string | null;
+  caixa?: string | null; vendedor?: string | null; medico?: string | null;
+  tipo?: string | null; condicao_pgto?: string | null; total?: number | null;
 }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Any = any;
 interface Fluxo {
   id: string; setor: string; setor_num: number | null; maquina: string | null; operador: string | null;
   inicio_data: string | null; inicio_hora: string | null;
@@ -35,6 +39,12 @@ function fmtData(s: string | null) {
   if (!s) return '—';
   return s.slice(0, 10).split('-').reverse().join('/');
 }
+function fmtGrau(v: Any) {
+  if (v == null || v === '' || isNaN(Number(v))) return '—';
+  const n = Number(v);
+  return (n > 0 ? '+' : '') + n.toFixed(2).replace('.', ',');
+}
+function val(v: Any) { return (v == null || v === '') ? '—' : String(v); }
 function fmtDur(min: number) {
   if (min < 60) return `${min} min`;
   const h = Math.floor(min / 60), m = min % 60;
@@ -49,16 +59,25 @@ export default function LabRastreio() {
   const [busca, setBusca] = useState(params.get('os') ?? '');
   const [ordem, setOrdem] = useState<Ordem | null>(null);
   const [fluxo, setFluxo] = useState<Fluxo[]>([]);
+  const [receita, setReceita] = useState<Any[]>([]);
+  const [armacao, setArmacao] = useState<Any>(null);
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState('');
 
   const buscar = useCallback(async (q: string) => {
     const termo = q.trim();
     if (!termo) return;
-    setCarregando(true); setErro(''); setOrdem(null); setFluxo([]);
+    setCarregando(true); setErro(''); setOrdem(null); setFluxo([]); setReceita([]); setArmacao(null);
     try {
       const d = await api.get<{ ordem: Ordem; fluxo: Fluxo[] }>(`/lab/fluxo/os?q=${encodeURIComponent(termo)}`);
       setOrdem(d.ordem); setFluxo(d.fluxo ?? []);
+      // detalhe completo (receita + armação) para exibir todos os dados da OS
+      try {
+        const det = await api.get<Any>(`/lab/ordens/${d.ordem.id}`);
+        setReceita(det.receita ?? []);
+        setArmacao(det.armacao ?? null);
+        if (det.ordem) setOrdem(o => ({ ...(o as Ordem), ...det.ordem }));
+      } catch { /* mantém o básico */ }
     } catch {
       setErro('OS não encontrada.');
     }
@@ -158,6 +177,96 @@ export default function LabRastreio() {
               <a onClick={() => navigate(`/lab/ordens/${ordem.id}`)} style={{ marginLeft: 'auto', color: R.accent2, cursor: 'pointer' }}>Abrir OS completa →</a>
             </div>
           </div>
+
+          {/* dados completos da OS (igual à ficha do sistema) */}
+          {(() => {
+            const od = receita.find(r => r.olho === 'D') ?? {};
+            const oe = receita.find(r => r.olho === 'E') ?? {};
+            const a = armacao ?? {};
+            const th: React.CSSProperties = { padding: '4px 8px', fontSize: '10px', fontWeight: 700, color: R.dim, textTransform: 'uppercase', letterSpacing: '0.3px', textAlign: 'center', borderBottom: '1px solid var(--lab-bdr)', whiteSpace: 'nowrap' };
+            const td: React.CSSProperties = { padding: '4px 8px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.txt, textAlign: 'center', borderBottom: '1px solid var(--lab-bdr)' };
+            const olhoTd: React.CSSProperties = { ...td, fontWeight: 800, color: R.dim, textAlign: 'left' };
+            const Item = ({ k, v }: { k: string; v: Any }) => (
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', padding: '3px 0', borderBottom: '1px dotted var(--lab-bdr)' }}>
+                <span style={{ fontSize: '11px', color: R.dim, whiteSpace: 'nowrap' }}>{k}</span>
+                <span style={{ fontSize: '12px', color: R.txt, fontFamily: "'Courier New', monospace", textAlign: 'right' }}>{val(v)}</span>
+              </div>
+            );
+            return (
+              <div style={{ ...card, padding: '16px 18px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Dados da OS</div>
+
+                {/* identificação */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2px 24px', marginBottom: '14px' }}>
+                  <Item k="Cliente / Ótica" v={ordem.otica_nome} />
+                  <Item k="Vendedor" v={ordem.vendedor} />
+                  <Item k="C/Interno" v={ordem.cont_interno} />
+                  <Item k="Referência" v={ordem.ref_otica} />
+                  <Item k="Caixa" v={ordem.caixa} />
+                  <Item k="Médico / Oftalmo" v={ordem.medico} />
+                  <Item k="Tipo" v={ordem.tipo} />
+                  <Item k="Cond. Pagamento" v={ordem.condicao_pgto} />
+                </div>
+
+                {/* receita — grau */}
+                <div style={{ fontSize: '10px', fontWeight: 700, color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Receita das Lentes</div>
+                <div style={{ overflowX: 'auto', marginBottom: '12px' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '520px' }}>
+                    <thead><tr>
+                      {['Olho', 'ESF Longe', 'CIL Longe', 'Eixo', 'Adição', 'ESF Perto', 'CIL Perto'].map(h => <th key={h} style={th}>{h}</th>)}
+                    </tr></thead>
+                    <tbody>
+                      <tr>
+                        <td style={olhoTd}>O/D</td>
+                        <td style={td}>{fmtGrau(od.esf_longe)}</td><td style={td}>{fmtGrau(od.cil_longe)}</td>
+                        <td style={td}>{val(od.eixo_longe)}</td><td style={td}>{fmtGrau(od.adicao)}</td>
+                        <td style={td}>{fmtGrau(od.esf_perto)}</td><td style={td}>{fmtGrau(od.cil_perto)}</td>
+                      </tr>
+                      <tr>
+                        <td style={olhoTd}>O/E</td>
+                        <td style={td}>{fmtGrau(oe.esf_longe)}</td><td style={td}>{fmtGrau(oe.cil_longe)}</td>
+                        <td style={td}>{val(oe.eixo_longe)}</td><td style={td}>{fmtGrau(oe.adicao)}</td>
+                        <td style={td}>{fmtGrau(oe.esf_perto)}</td><td style={td}>{fmtGrau(oe.cil_perto)}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* receita — medidas */}
+                <div style={{ overflowX: 'auto', marginBottom: '14px' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '420px' }}>
+                    <thead><tr>
+                      {['Olho', 'DNP', 'ALT', 'DEC H', 'Prisma'].map(h => <th key={h} style={th}>{h}</th>)}
+                    </tr></thead>
+                    <tbody>
+                      <tr>
+                        <td style={olhoTd}>O/D</td>
+                        <td style={td}>{val(od.dnp)}</td><td style={td}>{val(od.alt)}</td><td style={td}>{val(od.dec_h)}</td><td style={td}>{val(od.prisma)}</td>
+                      </tr>
+                      <tr>
+                        <td style={olhoTd}>O/E</td>
+                        <td style={td}>{val(oe.dnp)}</td><td style={td}>{val(oe.alt)}</td><td style={td}>{val(oe.dec_h)}</td><td style={td}>{val(oe.prisma)}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* lente + armação */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2px 24px' }}>
+                  <Item k="Tipo de Lente" v={a.tipo_lente ?? ordem.tipo_lente} />
+                  <Item k="Marca / Material" v={a.marca_material} />
+                  <Item k="Tipo de Armação" v={a.tipo_material ?? a.material} />
+                  <Item k="Diâmetro Final" v={a.diametro_final} />
+                  <Item k="Largura" v={a.largura} />
+                  <Item k="Ponte" v={a.ponte} />
+                  <Item k="Altura" v={a.altura} />
+                  <Item k="Maior Diagonal" v={a.maior_diagonal} />
+                  <Item k="Eixo Maior Diagonal" v={a.eixo_maior_diagonal} />
+                  <Item k="Estojo" v={a.estojo ? 'Sim' : 'Não'} />
+                </div>
+              </div>
+            );
+          })()}
 
           {/* linha do tempo */}
           <div style={{ ...card, padding: '16px 18px' }}>
