@@ -14,11 +14,16 @@ interface Prazo {
 interface Dash {
   total: number; entregues: number; emProducao: number; aguardando: number; pronto: number;
   abertasHoje: number; entreguesHoje: number;
+  faturamento: number; faturamentoEntregue: number; faturamentoAberto: number; ticketMedio: number;
   ultimoCliente: OrdemRef | null; ultimaEntrega: OrdemRef | null;
   lentes: { simples: number; progressiva: number; semTipo: number };
   serie: { dia: string; qtd: number; rotulo: string }[];
   prazos: { atrasados: Prazo[]; hoje: Prazo[]; amanha: Prazo[] };
   periodo?: { de: string | null; ate: string | null; agrupamento: 'dia' | 'mes' };
+}
+
+function brl(v: number) {
+  return (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
 // atalhos de período (retornam de/ate em AAAA-MM-DD, no fuso de SP)
@@ -40,7 +45,9 @@ const PERIODOS: { key: string; label: string; calc: () => { de: string | null; a
 
 const VAZIO: Dash = {
   total: 0, entregues: 0, emProducao: 0, aguardando: 0, pronto: 0,
-  abertasHoje: 0, entreguesHoje: 0, ultimoCliente: null, ultimaEntrega: null,
+  abertasHoje: 0, entreguesHoje: 0,
+  faturamento: 0, faturamentoEntregue: 0, faturamentoAberto: 0, ticketMedio: 0,
+  ultimoCliente: null, ultimaEntrega: null,
   lentes: { simples: 0, progressiva: 0, semTipo: 0 }, serie: [],
   prazos: { atrasados: [], hoje: [], amanha: [] },
 };
@@ -220,6 +227,21 @@ export default function LabDashboard() {
             <div style={rotulo}>Atendidos hoje</div>
             <div style={{ fontSize: '30px', fontWeight: 800, color: R.accent, fontFamily: "'Courier New', monospace", lineHeight: 1 }}>{d.abertasHoje}</div>
             <div style={{ fontSize: '11px', color: R.dim, marginTop: '5px' }}>{d.entreguesHoje} entregue(s) hoje</div>
+          </div>
+          <div style={{ ...card, gridColumn: 'span 2', minWidth: '260px', borderTop: `3px solid ${R.accent}` }}>
+            <div style={rotulo}>Faturamento {range.de || range.ate ? 'do período' : 'total'}</div>
+            <div style={{ fontSize: '30px', fontWeight: 800, color: R.txt, fontFamily: "'Courier New', monospace", lineHeight: 1 }}>{brl(d.faturamento)}</div>
+            <div style={{ display: 'flex', gap: '18px', flexWrap: 'wrap', marginTop: '8px' }}>
+              <span style={{ fontSize: '11px', color: R.dim }}>
+                Faturado (entregue): <b style={{ color: R.accent, fontFamily: "'Courier New', monospace" }}>{brl(d.faturamentoEntregue)}</b>
+              </span>
+              <span style={{ fontSize: '11px', color: R.dim }}>
+                A receber: <b style={{ color: '#a07500', fontFamily: "'Courier New', monospace" }}>{brl(d.faturamentoAberto)}</b>
+              </span>
+              <span style={{ fontSize: '11px', color: R.dim }}>
+                Ticket médio: <b style={{ color: R.txt, fontFamily: "'Courier New', monospace" }}>{brl(d.ticketMedio)}</b>
+              </span>
+            </div>
           </div>
           <div style={card}>
             <div style={rotulo}>Último cliente</div>

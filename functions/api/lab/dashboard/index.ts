@@ -47,7 +47,10 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
                 SUM(CASE WHEN status = 'entregue'    THEN 1 ELSE 0 END) as entregues,
                 SUM(CASE WHEN status = 'em_producao' THEN 1 ELSE 0 END) as em_producao,
                 SUM(CASE WHEN status = 'aguardando'  THEN 1 ELSE 0 END) as aguardando,
-                SUM(CASE WHEN status = 'pronto'      THEN 1 ELSE 0 END) as pronto
+                SUM(CASE WHEN status = 'pronto'      THEN 1 ELSE 0 END) as pronto,
+                SUM(COALESCE(total,0)) as faturamento,
+                SUM(CASE WHEN status = 'entregue' THEN COALESCE(total,0) ELSE 0 END) as fat_entregue,
+                SUM(CASE WHEN status != 'entregue' THEN COALESCE(total,0) ELSE 0 END) as fat_aberto
          FROM lab_ordens WHERE ${ativos}${f.sql}`
       ).bind(tenant_id, ...f.args),
 
@@ -178,6 +181,10 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
       pronto: num(t.pronto),
       abertasHoje: num(h.abertas_hoje),
       entreguesHoje: num(h.entregues_hoje),
+      faturamento: num(t.faturamento),
+      faturamentoEntregue: num(t.fat_entregue),
+      faturamentoAberto: num(t.fat_aberto),
+      ticketMedio: num(t.total) > 0 ? num(t.faturamento) / num(t.total) : 0,
       ultimoCliente: (ultimoCli.results?.[0] ?? null) as Row | null,
       ultimaEntrega: (ultimaEnt.results?.[0] ?? null) as Row | null,
       lentes: { simples: num(l.simples), progressiva: num(l.progressiva), semTipo: num(l.sem_tipo) },
