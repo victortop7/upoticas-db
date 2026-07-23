@@ -72,7 +72,7 @@ export const onRequestPatch = async ({ request, env, params }: { request: Reques
     const { tenant_id } = auth;
     const { id } = params;
 
-    const body = await request.json() as { status?: string; previsao_entrega?: string };
+    const body = await request.json() as { status?: string; previsao_entrega?: string; total?: number };
     const VALID = ['aguardando', 'em_producao', 'pronto', 'entregue', 'cancelado'];
 
     if (body.status !== undefined && !VALID.includes(body.status)) {
@@ -82,8 +82,11 @@ export const onRequestPatch = async ({ request, env, params }: { request: Reques
         && !/^\d{4}-\d{2}-\d{2}$/.test(body.previsao_entrega)) {
       return json({ error: 'Data de entrega inválida (use AAAA-MM-DD)' }, 400);
     }
-    if (body.status === undefined && body.previsao_entrega === undefined) {
-      return json({ error: 'Informe status e/ou previsao_entrega' }, 400);
+    if (body.total !== undefined && (typeof body.total !== 'number' || body.total < 0 || isNaN(body.total))) {
+      return json({ error: 'Total inválido' }, 400);
+    }
+    if (body.status === undefined && body.previsao_entrega === undefined && body.total === undefined) {
+      return json({ error: 'Informe status, previsao_entrega e/ou total' }, 400);
     }
 
     // garante a coluna de data de entrega
@@ -99,6 +102,10 @@ export const onRequestPatch = async ({ request, env, params }: { request: Reques
     if (body.previsao_entrega !== undefined) {
       sets.push('previsao_entrega = ?');
       vals.push(body.previsao_entrega);
+    }
+    if (body.total !== undefined) {
+      sets.push('total = ?');
+      vals.push(body.total);
     }
 
     const result = await env.DB.prepare(
