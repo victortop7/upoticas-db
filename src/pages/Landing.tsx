@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 // ── Paleta clara ──
 const G = '#16a34a';       // verde (botões/acento)
@@ -33,6 +33,13 @@ const PRODUTOS = [
     print: '/prints/vision-antirreflexo.jpg', cta: 'Conhecer o Vision', to: '/cadastro?tipo=otica',
     bullets: ['Simulação de anti-reflexo e anti-risco', 'Antes e depois em tempo real', 'Teste de visão e campos', 'Roda em tablet (PWA)'],
   },
+];
+
+// Slides do topo — ordem: Vision → Óticas → LAB
+const HERO_SLIDES = [
+  { key: 'vision', nome: 'Connect Vision', cor: '#7c3aed', src: '/prints/vision-antirreflexo.jpg', cap: 'Connect Vision — simulação de anti-reflexo no atendimento' },
+  { key: 'otica', nome: 'Conexão Óticas', cor: '#16a34a', src: '/prints/otica-dashboard.jpg', cap: 'Conexão Óticas — painel de gestão da loja' },
+  { key: 'lab', nome: 'Connect LAB', cor: '#0891b2', src: '/prints/lab-funil.jpg', cap: 'Connect LAB — funil de produção do laboratório' },
 ];
 
 const SHOWCASE = [
@@ -118,11 +125,21 @@ function Frame({ src, alt, cor = G }: { src: string; alt: string; cor?: string }
 export default function Landing() {
   const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+  const [heroIdx, setHeroIdx] = useState(0);
+  const heroPaused = useRef(false);
 
   useEffect(() => {
     const handle = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handle);
     return () => window.removeEventListener('resize', handle);
+  }, []);
+
+  // carrossel do topo: avança sozinho Vision → Óticas → LAB
+  useEffect(() => {
+    const t = setInterval(() => {
+      if (!heroPaused.current) setHeroIdx(i => (i + 1) % HERO_SLIDES.length);
+    }, 4200);
+    return () => clearInterval(t);
   }, []);
 
   const px = isMobile ? '16px' : '48px';
@@ -167,10 +184,52 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ===== HERO PRINT ===== */}
-      <section style={{ padding: `0 ${px} 20px`, maxWidth: '1080px', margin: '0 auto' }}>
-        <Frame src="/prints/lab-funil.jpg" alt="Funil de produção do Connect LAB" cor="#0891b2" />
-        <p style={{ textAlign: 'center', fontSize: '12px', color: TX3, marginTop: '12px' }}>Telas reais do sistema — Connect LAB, funil de produção</p>
+      {/* ===== HERO CARROSSEL (Vision → Óticas → LAB) ===== */}
+      <section style={{ padding: `0 ${px} 24px`, maxWidth: '1080px', margin: '0 auto' }}>
+        {/* abas */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+          {HERO_SLIDES.map((s, i) => {
+            const on = i === heroIdx;
+            return (
+              <button key={s.key} onClick={() => setHeroIdx(i)}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', padding: isMobile ? '7px 12px' : '8px 16px', fontSize: isMobile ? '12px' : '13.5px', fontWeight: '700', borderRadius: '22px', cursor: 'pointer', fontFamily: 'inherit', transition: 'all .2s', background: on ? s.cor : '#fff', color: on ? '#fff' : TX2, border: `1px solid ${on ? s.cor : BD}`, boxShadow: on ? `0 6px 16px ${s.cor}44` : 'none' }}>
+                <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: on ? '#fff' : s.cor }} />
+                {s.nome}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* moldura com o slide atual */}
+        <div onMouseEnter={() => { heroPaused.current = true; }} onMouseLeave={() => { heroPaused.current = false; }}
+          style={{ borderRadius: '14px', overflow: 'hidden', border: `1px solid ${BD}`, background: '#fff', boxShadow: `0 24px 60px rgba(15,23,42,0.14), 0 0 0 1px ${HERO_SLIDES[heroIdx].cor}18`, transition: 'box-shadow .4s' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '9px 12px', background: '#f8fafc', borderBottom: `1px solid ${BD}` }}>
+            <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ff5f57' }} />
+            <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#febc2e' }} />
+            <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#28c840' }} />
+            <span style={{ marginLeft: '10px', fontSize: '11px', color: '#94a3b8', fontFamily: 'monospace' }}>conexaooticas.com.br</span>
+          </div>
+          {/* viewport do carrossel: altura fixa por proporção, imagens deslizam */}
+          <div style={{ position: 'relative', width: '100%', aspectRatio: '16 / 10', overflow: 'hidden', background: '#0b0f17' }}>
+            <div style={{ display: 'flex', width: '100%', height: '100%', transform: `translateX(-${heroIdx * 100}%)`, transition: 'transform .6s cubic-bezier(.4,0,.2,1)' }}>
+              {HERO_SLIDES.map(s => (
+                <img key={s.key} src={s.src} alt={s.nome} loading="lazy"
+                  style={{ flex: '0 0 100%', width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center', display: 'block' }} />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* legenda + bolinhas */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', marginTop: '14px' }}>
+          <div style={{ display: 'flex', gap: '7px' }}>
+            {HERO_SLIDES.map((s, i) => (
+              <button key={s.key} onClick={() => setHeroIdx(i)} aria-label={s.nome}
+                style={{ width: i === heroIdx ? '22px' : '8px', height: '8px', borderRadius: '4px', border: 'none', cursor: 'pointer', padding: 0, transition: 'all .3s', background: i === heroIdx ? s.cor : '#cbd5e1' }} />
+            ))}
+          </div>
+          <p style={{ textAlign: 'center', fontSize: '12px', color: TX3, margin: 0 }}>{HERO_SLIDES[heroIdx].cap}</p>
+        </div>
       </section>
 
       {/* ===== 3 PRODUTOS ===== */}
