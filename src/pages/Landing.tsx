@@ -195,10 +195,56 @@ export default function Landing() {
             <a href="#faq" style={{ padding: '8px 16px', fontSize: '14px', color: TX2, textDecoration: 'none', fontWeight: '500' }}>FAQ</a>
           </>}
           {!isMobile && <InstallAppButton label="Instalar app" style={{ padding: '8px 14px', fontSize: '13px', background: 'transparent', color: G, border: `1px solid ${G}55`, borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600, whiteSpace: 'nowrap' }} />}
-          <button onClick={() => navigate('/login')} style={{ padding: isMobile ? '7px 12px' : '8px 18px', fontSize: '13px', background: 'transparent', color: TX2, border: `1px solid ${BD}`, borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>Entrar</button>
           <button onClick={() => navigate('/cadastro')} style={{ padding: isMobile ? '7px 12px' : '8px 18px', fontSize: '13px', fontWeight: '700', background: G, color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 4px 14px ${GLOW}0.3)`, whiteSpace: 'nowrap' }}>14 dias grátis</button>
         </div>
       </nav>
+
+      {/* ===== DOWNLOADS (primeiro bloco — instalação em destaque) ===== */}
+      <section id="downloads" style={{ borderBottom: `1px solid ${BD}`, padding: isMobile ? '40px 16px 44px' : '56px 48px 60px', background: `linear-gradient(180deg, ${GLOW}0.05), #ffffff 60%)` }}>
+        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 16px', background: `${GLOW}0.1)`, border: `1px solid ${GLOW}0.22)`, borderRadius: '24px', fontSize: '13px', color: G2, marginBottom: '18px', fontWeight: '600' }}>
+              <span style={{ width: '6px', height: '6px', background: G3, borderRadius: '50%' }} /> Comece instalando o aplicativo
+            </div>
+            <h2 style={{ fontSize: isMobile ? '27px' : '38px', fontWeight: '900', margin: '0 0 14px', letterSpacing: '-1px', color: TX, lineHeight: 1.1 }}>Instale o sistema na sua área de trabalho</h2>
+            <p style={{ fontSize: isMobile ? '15px' : '16px', color: TX2, margin: 0, maxWidth: '600px', marginLeft: 'auto', marginRight: 'auto', lineHeight: '1.6' }}>
+              Escolha seu sistema e crie o ícone no computador — abre com um clique, em janela própria, direto no login.
+            </p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '18px' }}>
+            {DOWNLOADS.map(d => (
+              <div key={d.key} style={{ background: '#fff', border: `1px solid ${BD}`, borderRadius: '18px', padding: '26px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', boxShadow: CARD_SH }}>
+                <img src={d.icon} alt={d.nome} width={76} height={76} style={{ borderRadius: '18px', marginBottom: '14px', boxShadow: `0 8px 20px ${d.cor}33` }} />
+                <div style={{ fontSize: '20px', fontWeight: '800', color: TX, marginBottom: '6px' }}>{d.nome}</div>
+                <div style={{ fontSize: '13.5px', color: TX2, lineHeight: '1.55', marginBottom: '18px', maxWidth: '300px' }}>{d.desc}</div>
+                <button onClick={() => instalarApp(d.manifest, d.nome)}
+                  style={{ width: '100%', maxWidth: '300px', padding: '14px', fontSize: '15px', fontWeight: '700', background: `linear-gradient(135deg,${G},${G2})`, color: '#fff', border: 'none', borderRadius: '11px', cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 8px 20px ${GLOW}0.28)`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  ⤓ Instalar {d.nome}
+                </button>
+                <div style={{ fontSize: '11.5px', color: TX3, marginTop: '10px' }}>Cria o ícone na área de trabalho</div>
+              </div>
+            ))}
+          </div>
+          <p style={{ textAlign: 'center', fontSize: '12.5px', color: TX3, marginTop: '20px', lineHeight: 1.6 }}>
+            Funciona no <b style={{ color: TX2 }}>Chrome</b> e <b style={{ color: TX2 }}>Edge</b> (computador). O <b style={{ color: TX2 }}>Connect Vision</b> é usado no celular/tablet, pelos apps de Android e iOS.
+          </p>
+        </div>
+
+        {/* modal de instruções (quando o navegador não abre o instalador direto) */}
+        {instrucao && (
+          <div onClick={() => setInstrucao(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+            <div onClick={e => e.stopPropagation()} style={{ background: '#fff', color: TX, borderRadius: '14px', maxWidth: '400px', padding: '24px', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }}>
+              <div style={{ fontSize: '17px', fontWeight: 800, marginBottom: '10px' }}>Instalar {instrucao}</div>
+              <div style={{ fontSize: '13.5px', color: TX2, lineHeight: 1.65 }}>
+                No <b>Chrome</b> ou <b>Edge</b> (computador): clique no ícone de <b>instalar</b> (um monitor com uma seta ↓) que aparece na <b>barra de endereço</b>, ou vá no menu <b>⋮ → Instalar {instrucao}</b>.<br /><br />
+                No <b>celular/tablet</b>: menu do navegador → <b>Adicionar à tela inicial</b>.<br /><br />
+                Vai criar o ícone e abrir o app em janela própria, direto no login.
+              </div>
+              <button onClick={() => setInstrucao(null)} style={{ marginTop: '18px', width: '100%', padding: '11px', fontSize: '14px', fontWeight: 700, background: G, color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontFamily: 'inherit' }}>Entendi</button>
+            </div>
+          </div>
+        )}
+      </section>
 
       {/* ===== HERO ===== */}
       <section style={{ position: 'relative', textAlign: 'center', padding: isMobile ? '52px 20px 32px' : '78px 24px 40px', maxWidth: '900px', margin: '0 auto' }}>
@@ -295,51 +341,6 @@ export default function Landing() {
             </div>
           ))}
         </div>
-      </section>
-
-      {/* ===== DOWNLOADS ===== */}
-      <section id="downloads" style={{ background: BG2, borderTop: `1px solid ${BD}`, borderBottom: `1px solid ${BD}`, padding: isMobile ? '48px 16px' : '72px 48px' }}>
-        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '36px' }}>
-            <div style={{ fontSize: '13px', color: G, fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '12px' }}>Downloads</div>
-            <h2 style={{ fontSize: isMobile ? '25px' : '34px', fontWeight: '800', margin: '0 0 14px', letterSpacing: '-0.8px', color: TX }}>Instale na área de trabalho</h2>
-            <p style={{ fontSize: '15px', color: TX2, margin: 0, maxWidth: '600px', marginLeft: 'auto', marginRight: 'auto', lineHeight: '1.6' }}>
-              Crie um ícone no computador e acesse o sistema com um clique, como um aplicativo — abre direto no login, em janela própria.
-            </p>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '18px' }}>
-            {DOWNLOADS.map(d => (
-              <div key={d.key} style={{ background: '#fff', border: `1px solid ${BD}`, borderRadius: '18px', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', boxShadow: CARD_SH }}>
-                <img src={d.icon} alt={d.nome} width={72} height={72} style={{ borderRadius: '18px', marginBottom: '14px', boxShadow: `0 8px 20px ${d.cor}33` }} />
-                <div style={{ fontSize: '19px', fontWeight: '800', color: TX, marginBottom: '6px' }}>{d.nome}</div>
-                <div style={{ fontSize: '13.5px', color: TX2, lineHeight: '1.55', marginBottom: '18px', maxWidth: '300px' }}>{d.desc}</div>
-                <button onClick={() => instalarApp(d.manifest, d.nome)}
-                  style={{ width: '100%', maxWidth: '280px', padding: '13px', fontSize: '15px', fontWeight: '700', background: `linear-gradient(135deg,${G},${G2})`, color: '#fff', border: 'none', borderRadius: '11px', cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 8px 20px ${GLOW}0.28)`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                  ⤓ Instalar no computador
-                </button>
-                <div style={{ fontSize: '11.5px', color: TX3, marginTop: '10px' }}>Cria o ícone na área de trabalho</div>
-              </div>
-            ))}
-          </div>
-          <p style={{ textAlign: 'center', fontSize: '12.5px', color: TX3, marginTop: '22px', lineHeight: 1.6 }}>
-            Funciona no <b style={{ color: TX2 }}>Chrome</b> e <b style={{ color: TX2 }}>Edge</b> (computador). O <b style={{ color: TX2 }}>Connect Vision</b> é usado no celular/tablet, pelos apps de Android e iOS.
-          </p>
-        </div>
-
-        {/* modal de instruções (quando o navegador não abre o instalador direto) */}
-        {instrucao && (
-          <div onClick={() => setInstrucao(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-            <div onClick={e => e.stopPropagation()} style={{ background: '#fff', color: TX, borderRadius: '14px', maxWidth: '400px', padding: '24px', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }}>
-              <div style={{ fontSize: '17px', fontWeight: 800, marginBottom: '10px' }}>Instalar {instrucao}</div>
-              <div style={{ fontSize: '13.5px', color: TX2, lineHeight: 1.65 }}>
-                No <b>Chrome</b> ou <b>Edge</b> (computador): clique no ícone de <b>instalar</b> (um monitor com uma seta ↓) que aparece na <b>barra de endereço</b>, ou vá no menu <b>⋮ → Instalar {instrucao}</b>.<br /><br />
-                No <b>celular/tablet</b>: menu do navegador → <b>Adicionar à tela inicial</b>.<br /><br />
-                Vai criar o ícone e abrir o app em janela própria, direto no login.
-              </div>
-              <button onClick={() => setInstrucao(null)} style={{ marginTop: '18px', width: '100%', padding: '11px', fontSize: '14px', fontWeight: 700, background: G, color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontFamily: 'inherit' }}>Entendi</button>
-            </div>
-          </div>
-        )}
       </section>
 
       {/* ===== ECOSSISTEMA CONECTADO ===== */}
