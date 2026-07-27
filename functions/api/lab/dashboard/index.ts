@@ -13,6 +13,8 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
   try {
     const auth = await requireAuth(request, env);
     if (auth instanceof Response) return auth;
+    // Painel de análise: só administradores
+    if (auth.perfil !== 'admin') return json({ error: 'Apenas administradores têm acesso ao painel de análise' }, 403);
     const { tenant_id } = auth;
 
     // garante a coluna de data de entrega

@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import LabAltF1 from './LabAltF1';
 import { applyLabTheme } from '../lib/labTheme';
 import LabIcon, { type IconName } from './LabIcon';
+import { podeModulo, podeDashboard, homeLab } from '../lib/labPerms';
 
 type ModuleKey = 'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'|'K'|'L';
 type Opcao = { num: number; label: string; to?: string; disabled?: boolean };
@@ -159,6 +160,16 @@ export default function LabLayout() {
   if (!usuario) return <Navigate to="/login" replace />;
   if (tenant?.tipo !== 'lab') return <Navigate to="/dashboard" replace />;
 
+  // ── Permissões por perfil ──
+  const perfil = usuario.perfil;
+  // Painel Principal (dashboard com análise) só para admin
+  if (isDashboard && !podeDashboard(perfil)) return <Navigate to={homeLab(perfil)} replace />;
+  // Módulo sem permissão → volta para a home do perfil
+  const modAtual = detectModule(location.pathname);
+  if (modAtual && !podeModulo(perfil, modAtual)) return <Navigate to={homeLab(perfil)} replace />;
+  // Menu filtrado
+  const modulosVisiveis = MODULOS.filter(m => podeModulo(perfil, m.letra));
+
   async function handleLogout() { await logout(); navigate('/login'); }
 
   const MODULO_ROTA: Partial<Record<ModuleKey, string>> = {
@@ -230,7 +241,7 @@ export default function LabLayout() {
 
             {/* módulos */}
             <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
-              {[{ letra: null as ModuleKey | null, nome: 'Painel Principal', icon: 'home' as IconName, ativo: true }, ...MODULOS].map(m => {
+              {[...(podeDashboard(perfil) ? [{ letra: null as ModuleKey | null, nome: 'Painel Principal', icon: 'home' as IconName, ativo: true }] : []), ...modulosVisiveis].map(m => {
                 const isActive = m.letra === null ? isDashboard : (activeModule === m.letra && !isDashboard);
                 return (
                   <div key={m.letra ?? 'home'}

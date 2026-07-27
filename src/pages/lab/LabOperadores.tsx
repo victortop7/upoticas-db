@@ -1,6 +1,7 @@
 ﻿import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
 import { R } from '../../lib/labTheme';
+import { PERFIS_LAB, perfilLabel, perfilCor } from '../../lib/labPerms';
 
 interface Operador { id: string; nome: string; email: string; perfil: string; ativo: number; }
 
@@ -22,6 +23,7 @@ export default function LabOperadores() {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [perfil, setPerfil] = useState('digitador');
 
   function load() {
     setLoading(true);
@@ -39,9 +41,9 @@ export default function LabOperadores() {
     if (senha.length < 6) { setErro('Senha deve ter pelo menos 6 caracteres'); return; }
     setSaving(true);
     try {
-      await api.post('/usuarios', { nome, email, senha, perfil: 'vendedor' });
-      setSucesso(`Operador "${nome}" criado com sucesso.`);
-      setNome(''); setEmail(''); setSenha('');
+      await api.post('/usuarios', { nome, email, senha, perfil });
+      setSucesso(`Operador "${nome}" criado como ${perfilLabel(perfil)}.`);
+      setNome(''); setEmail(''); setSenha(''); setPerfil('digitador');
       setShowForm(false);
       load();
     } catch (err: unknown) {
@@ -95,6 +97,27 @@ export default function LabOperadores() {
             <input type="password" value={senha} onChange={e => setSenha(e.target.value)} required style={INP} placeholder="Mínimo 6 caracteres" />
           </div>
 
+          {/* Perfil / permissões */}
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ fontSize: '11px', fontWeight: '600', color: R.dim, display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Perfil / Permissões *</label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+              {PERFIS_LAB.map(p => {
+                const on = perfil === p.valor;
+                return (
+                  <button type="button" key={p.valor} onClick={() => setPerfil(p.valor)}
+                    style={{ textAlign: 'left', padding: '10px 12px', borderRadius: '10px', cursor: 'pointer', fontFamily: 'inherit',
+                      background: on ? `${p.cor}18` : R.alt, border: `1.5px solid ${on ? p.cor : 'var(--lab-bdr)'}` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                      <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: on ? p.cor : R.dim }} />
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: on ? p.cor : R.txt }}>{p.label}</span>
+                    </div>
+                    <div style={{ fontSize: '10.5px', color: R.dim, lineHeight: 1.4 }}>{p.desc}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <button type="submit" disabled={saving} style={{ padding: '9px 24px', fontSize: '13px', fontWeight: '600', background: saving ? R.dim : R.accent, color: '#fff', border: 'none', borderRadius: '8px', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
               {saving ? 'Salvando...' : 'Criar Operador'}
@@ -110,7 +133,7 @@ export default function LabOperadores() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--lab-bdr)', background: R.alt }}>
-                {['Nome', 'E-mail', 'Situação'].map(h => (
+                {['Nome', 'E-mail', 'Perfil', 'Situação'].map(h => (
                   <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
                 ))}
               </tr>
@@ -118,7 +141,7 @@ export default function LabOperadores() {
             <tbody>
               {operadores.length === 0 ? (
                 <tr>
-                  <td colSpan={3} style={{ padding: '24px 16px', textAlign: 'center', fontSize: '13px', color: R.dim }}>
+                  <td colSpan={4} style={{ padding: '24px 16px', textAlign: 'center', fontSize: '13px', color: R.dim }}>
                     Nenhum operador cadastrado
                   </td>
                 </tr>
@@ -126,6 +149,11 @@ export default function LabOperadores() {
                 <tr key={op.id} style={{ borderBottom: i < operadores.length - 1 ? '1px solid var(--lab-bdr)' : 'none' }}>
                   <td style={{ padding: '12px 16px', fontSize: '13px', color: R.txt, fontWeight: '600' }}>{op.nome}</td>
                   <td style={{ padding: '12px 16px', fontSize: '13px', color: R.dim, fontFamily: "'Courier New', monospace" }}>{op.email}</td>
+                  <td style={{ padding: '12px 16px' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '700', padding: '2px 9px', borderRadius: '20px', background: `${perfilCor(op.perfil)}1e`, color: perfilCor(op.perfil), border: `1px solid ${perfilCor(op.perfil)}55` }}>
+                      {perfilLabel(op.perfil)}
+                    </span>
+                  </td>
                   <td style={{ padding: '12px 16px' }}>
                     <span style={{
                       fontSize: '11px', fontWeight: '600', padding: '2px 8px', borderRadius: '20px',

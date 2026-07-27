@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { login } from '../lib/auth';
 import { useAuth } from '../hooks/useAuth';
 import InstallAppButton from '../components/InstallAppButton';
+import { homeLab } from '../lib/labPerms';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ export default function Login() {
     try {
       const data = await login(email, senha);
       setAuth(data);
-      navigate(data.tenant?.tipo === 'lab' ? '/lab/dashboard' : '/dashboard');
+      navigate(data.tenant?.tipo === 'lab' ? homeLab(data.usuario?.perfil) : '/dashboard');
     } catch (err: unknown) {
       setErro(err instanceof Error ? err.message : 'Erro ao entrar');
     } finally {

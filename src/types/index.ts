@@ -16,7 +16,7 @@ export interface Usuario {
   tenant_id: string;
   nome: string;
   email: string;
-  perfil: 'admin' | 'vendedor' | 'caixa' | 'marketing';
+  perfil: 'admin' | 'vendedor' | 'caixa' | 'marketing' | 'digitador' | 'financeiro';
   ativo: boolean;
 }
 
