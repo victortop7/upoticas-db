@@ -7,7 +7,9 @@ import InstallAppButton from '../components/InstallAppButton';
 export default function Login() {
   const navigate = useNavigate();
   const { setAuth } = useAuth();
-  const [aba, setAba] = useState<'oticas' | 'lab'>('oticas');
+  // Abre já na aba certa quando vem do app instalado (?sistema=lab)
+  const sistemaInicial = new URLSearchParams(window.location.search).get('sistema');
+  const [aba, setAba] = useState<'oticas' | 'lab'>(sistemaInicial === 'lab' ? 'lab' : 'oticas');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState('');

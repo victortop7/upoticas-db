@@ -43,6 +43,12 @@ const HERO_SLIDES = [
   { key: 'lab', nome: 'Connect LAB', cor: '#0891b2', src: '/prints/lab-funil.jpg', cap: 'Connect LAB — funil de produção do laboratório' },
 ];
 
+// Apps instaláveis no computador (Vision fica de fora — é app de celular/tablet)
+const DOWNLOADS = [
+  { key: 'otica', nome: 'Connect Óticas', cor: '#16a34a', icon: '/icon-512.png', desc: 'Gestão da ótica — clientes, OS, vendas, estoque e financeiro.', manifest: '/manifest-otica.webmanifest' },
+  { key: 'lab', nome: 'Connect LAB', cor: '#0f7a35', icon: '/icon-lab-512.png', desc: 'Produção do laboratório — funil, surfaçagem e rastreio.', manifest: '/manifest-lab.webmanifest' },
+];
+
 const SHOWCASE = [
   {
     tag: 'Connect Vision', cor: '#7c3aed', title: 'Mostre a diferença do anti-reflexo para o cliente',
@@ -143,6 +149,31 @@ export default function Landing() {
     return () => clearInterval(t);
   }, []);
 
+  // ── Instalar app no computador (troca o manifesto p/ o produto certo) ──
+  const [instrucao, setInstrucao] = useState<string | null>(null);
+  function setManifest(href: string) {
+    let link = document.querySelector('link[rel="manifest"]') as HTMLLinkElement | null;
+    if (!link) { link = document.createElement('link'); link.rel = 'manifest'; document.head.appendChild(link); }
+    link.href = href;
+  }
+  function esperarPromptFresco(ms: number): Promise<{ prompt: () => Promise<void>; userChoice: Promise<unknown> } | null> {
+    return new Promise(res => {
+      let done = false;
+      const fim = (v: unknown) => { if (done) return; done = true; window.removeEventListener('pwa-installable', on); res(v as never); };
+      const on = () => fim((window as unknown as { __pwaPrompt?: unknown }).__pwaPrompt ?? null);
+      window.addEventListener('pwa-installable', on);
+      setTimeout(() => fim(null), ms);
+    });
+  }
+  async function instalarApp(manifest: string, nome: string) {
+    const jaApp = window.matchMedia('(display-mode: standalone)').matches;
+    if (jaApp) { setInstrucao(nome); return; }
+    setManifest(manifest);
+    const p = await esperarPromptFresco(1800);
+    if (p) { try { await p.prompt(); await p.userChoice; } catch { /* ignora */ } (window as unknown as { __pwaPrompt?: unknown }).__pwaPrompt = null; }
+    else setInstrucao(nome);
+  }
+
   const px = isMobile ? '16px' : '48px';
 
   return (
@@ -159,6 +190,7 @@ export default function Landing() {
         <div style={{ display: 'flex', gap: isMobile ? '6px' : '12px', alignItems: 'center' }}>
           {!isMobile && <>
             <a href="#produtos" style={{ padding: '8px 16px', fontSize: '14px', color: TX2, textDecoration: 'none', fontWeight: '500' }}>Produtos</a>
+            <a href="#downloads" style={{ padding: '8px 16px', fontSize: '14px', color: TX2, textDecoration: 'none', fontWeight: '500' }}>Downloads</a>
             <a href="#planos" style={{ padding: '8px 16px', fontSize: '14px', color: TX2, textDecoration: 'none', fontWeight: '500' }}>Planos</a>
             <a href="#faq" style={{ padding: '8px 16px', fontSize: '14px', color: TX2, textDecoration: 'none', fontWeight: '500' }}>FAQ</a>
           </>}
@@ -263,6 +295,51 @@ export default function Landing() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* ===== DOWNLOADS ===== */}
+      <section id="downloads" style={{ background: BG2, borderTop: `1px solid ${BD}`, borderBottom: `1px solid ${BD}`, padding: isMobile ? '48px 16px' : '72px 48px' }}>
+        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+            <div style={{ fontSize: '13px', color: G, fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '12px' }}>Downloads</div>
+            <h2 style={{ fontSize: isMobile ? '25px' : '34px', fontWeight: '800', margin: '0 0 14px', letterSpacing: '-0.8px', color: TX }}>Instale na área de trabalho</h2>
+            <p style={{ fontSize: '15px', color: TX2, margin: 0, maxWidth: '600px', marginLeft: 'auto', marginRight: 'auto', lineHeight: '1.6' }}>
+              Crie um ícone no computador e acesse o sistema com um clique, como um aplicativo — abre direto no login, em janela própria.
+            </p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '18px' }}>
+            {DOWNLOADS.map(d => (
+              <div key={d.key} style={{ background: '#fff', border: `1px solid ${BD}`, borderRadius: '18px', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', boxShadow: CARD_SH }}>
+                <img src={d.icon} alt={d.nome} width={72} height={72} style={{ borderRadius: '18px', marginBottom: '14px', boxShadow: `0 8px 20px ${d.cor}33` }} />
+                <div style={{ fontSize: '19px', fontWeight: '800', color: TX, marginBottom: '6px' }}>{d.nome}</div>
+                <div style={{ fontSize: '13.5px', color: TX2, lineHeight: '1.55', marginBottom: '18px', maxWidth: '300px' }}>{d.desc}</div>
+                <button onClick={() => instalarApp(d.manifest, d.nome)}
+                  style={{ width: '100%', maxWidth: '280px', padding: '13px', fontSize: '15px', fontWeight: '700', background: `linear-gradient(135deg,${G},${G2})`, color: '#fff', border: 'none', borderRadius: '11px', cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 8px 20px ${GLOW}0.28)`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  ⤓ Instalar no computador
+                </button>
+                <div style={{ fontSize: '11.5px', color: TX3, marginTop: '10px' }}>Cria o ícone na área de trabalho</div>
+              </div>
+            ))}
+          </div>
+          <p style={{ textAlign: 'center', fontSize: '12.5px', color: TX3, marginTop: '22px', lineHeight: 1.6 }}>
+            Funciona no <b style={{ color: TX2 }}>Chrome</b> e <b style={{ color: TX2 }}>Edge</b> (computador). O <b style={{ color: TX2 }}>Connect Vision</b> é usado no celular/tablet, pelos apps de Android e iOS.
+          </p>
+        </div>
+
+        {/* modal de instruções (quando o navegador não abre o instalador direto) */}
+        {instrucao && (
+          <div onClick={() => setInstrucao(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+            <div onClick={e => e.stopPropagation()} style={{ background: '#fff', color: TX, borderRadius: '14px', maxWidth: '400px', padding: '24px', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }}>
+              <div style={{ fontSize: '17px', fontWeight: 800, marginBottom: '10px' }}>Instalar {instrucao}</div>
+              <div style={{ fontSize: '13.5px', color: TX2, lineHeight: 1.65 }}>
+                No <b>Chrome</b> ou <b>Edge</b> (computador): clique no ícone de <b>instalar</b> (um monitor com uma seta ↓) que aparece na <b>barra de endereço</b>, ou vá no menu <b>⋮ → Instalar {instrucao}</b>.<br /><br />
+                No <b>celular/tablet</b>: menu do navegador → <b>Adicionar à tela inicial</b>.<br /><br />
+                Vai criar o ícone e abrir o app em janela própria, direto no login.
+              </div>
+              <button onClick={() => setInstrucao(null)} style={{ marginTop: '18px', width: '100%', padding: '11px', fontSize: '14px', fontWeight: 700, background: G, color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontFamily: 'inherit' }}>Entendi</button>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* ===== ECOSSISTEMA CONECTADO ===== */}
