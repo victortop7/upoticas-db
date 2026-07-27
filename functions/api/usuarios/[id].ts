@@ -17,17 +17,21 @@ export const onRequestPut: PagesFunction<Env> = async ({ request, env, params })
     ).bind(params.id, auth.tenant_id).first();
     if (!existing) return json({ error: 'Usuário não encontrado' }, 404);
 
+    const ativo = body.ativo === undefined ? undefined : (Number(body.ativo) ? 1 : 0);
+    // Não deixar o admin se auto-desativar (perderia o acesso)
+    const ativoFinal = (params.id === auth.usuario_id) ? 1 : ativo;
+
+    const sets = ['nome = ?', 'perfil = ?'];
+    const vals: unknown[] = [body.nome.trim(), body.perfil || 'vendedor'];
     if (body.senha) {
       if (body.senha.length < 6) return json({ error: 'Senha deve ter pelo menos 6 caracteres' }, 400);
-      const senha_hash = await hashPassword(body.senha);
-      await env.DB.prepare(
-        'UPDATE usuarios SET nome = ?, perfil = ?, senha_hash = ? WHERE id = ? AND tenant_id = ?'
-      ).bind(body.nome.trim(), body.perfil || 'vendedor', senha_hash, params.id, auth.tenant_id).run();
-    } else {
-      await env.DB.prepare(
-        'UPDATE usuarios SET nome = ?, perfil = ? WHERE id = ? AND tenant_id = ?'
-      ).bind(body.nome.trim(), body.perfil || 'vendedor', params.id, auth.tenant_id).run();
+      sets.push('senha_hash = ?'); vals.push(await hashPassword(body.senha));
     }
+    if (ativoFinal !== undefined) { sets.push('ativo = ?'); vals.push(ativoFinal); }
+
+    await env.DB.prepare(
+      `UPDATE usuarios SET ${sets.join(', ')} WHERE id = ? AND tenant_id = ?`
+    ).bind(...vals, params.id, auth.tenant_id).run();
 
     const usuario = await env.DB.prepare(
       'SELECT id, nome, email, perfil, ativo FROM usuarios WHERE id = ?'
