@@ -66,13 +66,14 @@ export default function LabOticaDetalhe() {
   const [listasAtivas, setListasAtivas] = useState(5);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async function imprimirRelatorio(oticaId: string, nomeOtica: string, lista: any[]) {
+  async function abrirRelatorio(oticaId: string, nomeOtica: string, lista: any[], auto: boolean) {
+    const G = '#0a7a2e', GBG = '#e8efe9';   // cores fixas do relatório (janela nova não tem as vars do tema)
     const ST: Record<string, { label: string; color: string }> = {
-      aguardando:  { label:'AGUARDANDO',   color:'#886600' },
-      em_producao: { label:'EM PRODUÇÃO',  color:R.accent2 },
-      pronto:      { label:'PRONTO',       color:R.accent },
-      entregue:    { label:'ENTREGUE',     color:R.dim },
-      cancelado:   { label:'CANCELADO',    color:R.accent },
+      aguardando:  { label:'AGUARDANDO',   color:'#a06a00' },
+      em_producao: { label:'EM PRODUÇÃO',  color:'#1069c0' },
+      pronto:      { label:'PRONTO',       color:'#0a8a2a' },
+      entregue:    { label:'ENTREGUE',     color:'#555' },
+      cancelado:   { label:'CANCELADO',    color:'#cc0000' },
     };
     function fd(s: string | null) { return s ? s.slice(0,10).split('-').reverse().join('/') : '—'; }
     function mb(v: number) { return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
@@ -114,19 +115,27 @@ export default function LabOticaDetalhe() {
         : `<tr style="background:#f0ede8"><td colspan="7" style="padding:3px 28px;font-size:10px;color:#aaa;font-style:italic">Sem serviços registrados</td></tr>`;
 
       return `
-        <tr style="background:var(--lab-accent);page-break-inside:avoid">
+        <tr style="background:${G};page-break-inside:avoid">
           <td style="padding:5px 8px;font-family:monospace;font-weight:900;color:#fff;font-size:12px">#${String(o.numero).padStart(4,'0')}</td>
-          <td style="padding:5px 8px;font-family:monospace;color:#ccffcc;font-size:10px">${fd(o.created_at)}</td>
-          <td style="padding:5px 8px;font-family:monospace;color:#ccffcc;font-size:10px">Ref: ${o.ref_otica||'—'}</td>
-          <td style="padding:5px 8px;font-family:monospace;color:#ccffcc;font-size:10px">CI: ${o.cont_interno||'—'}</td>
-          <td colspan="2" style="padding:5px 8px;font-size:10px;font-weight:700;color:${st.color};background:#fff3e0">${st.label}</td>
+          <td style="padding:5px 8px;font-family:monospace;color:#cff0d6;font-size:10px">${fd(o.created_at)}</td>
+          <td style="padding:5px 8px;font-family:monospace;color:#cff0d6;font-size:10px">Ref: ${o.ref_otica||'—'}</td>
+          <td style="padding:5px 8px;font-family:monospace;color:#cff0d6;font-size:10px">CI: ${o.cont_interno||'—'}</td>
+          <td colspan="2" style="padding:5px 8px;font-size:10px;font-weight:700;color:${st.color};background:#fff">${st.label}</td>
           <td style="padding:5px 8px;font-family:monospace;font-weight:900;color:#fff;text-align:right">${mb(o.total||0)}</td>
         </tr>
         ${svcsHtml}
-        <tr><td colspan="7" style="height:4px;background:var(--lab-bg)"></td></tr>`;
+        <tr><td colspan="7" style="height:4px;background:${GBG}"></td></tr>`;
     }).join('');
 
     const totalGeral = lista.reduce((a, o) => a + (o.total||0), 0);
+
+    // barra de ações (não sai na impressão)
+    const toolbar = `
+      <div class="noprint" style="position:sticky;top:0;display:flex;gap:8px;justify-content:flex-end;align-items:center;padding:10px 12px;background:#0f2a1c;margin:-12px -12px 12px">
+        <span style="color:#cff0d6;font-size:12px;margin-right:auto;font-weight:600">Relatório — ${nomeOtica}</span>
+        <button onclick="window.print()" style="padding:8px 16px;font-size:13px;font-weight:700;background:#16a34a;color:#fff;border:none;border-radius:8px;cursor:pointer">⬇ Baixar PDF / Imprimir</button>
+        <button onclick="window.close()" style="padding:8px 14px;font-size:13px;background:transparent;color:#cff0d6;border:1px solid #2f6b45;border-radius:8px;cursor:pointer">Fechar</button>
+      </div>`;
 
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
       <title>Relatório — ${nomeOtica}</title>
@@ -134,14 +143,15 @@ export default function LabOticaDetalhe() {
         *{box-sizing:border-box}
         body{margin:12px;font-family:Arial,sans-serif;font-size:11px;color:#000;background:#fff}
         table{width:100%;border-collapse:collapse}
-        .hdr th{background:var(--lab-accent);color:#fff;padding:5px 8px;text-align:left;font-size:10px;letter-spacing:0.5px;white-space:nowrap}
+        .hdr th{background:${G};color:#fff;padding:5px 8px;text-align:left;font-size:10px;letter-spacing:0.5px;white-space:nowrap}
         .hdr th.r{text-align:right}
         @page{margin:8mm}
-        @media print{body{margin:0}}
+        @media print{body{margin:0} .noprint{display:none!important}}
       </style>
     </head><body>
-      <div style="text-align:center;margin-bottom:12px;border-bottom:2px solid var(--lab-accent);padding-bottom:8px">
-        <div style="font-size:16px;font-weight:900;text-transform:uppercase;color:var(--lab-accent)">${nomeOtica}</div>
+      ${toolbar}
+      <div style="text-align:center;margin-bottom:12px;border-bottom:2px solid ${G};padding-bottom:8px">
+        <div style="font-size:16px;font-weight:900;text-transform:uppercase;color:${G}">${nomeOtica}</div>
         <div style="font-size:11px;color:#333;margin-top:2px">RELATÓRIO DETALHADO DE ORDENS DE SERVIÇO</div>
         <div style="font-size:10px;color:#666">Período: ${periodo} &nbsp;|&nbsp; ${lista.length} OS &nbsp;|&nbsp; Total: ${mb(totalGeral)}</div>
         <div style="font-size:9px;color:#aaa">Emitido em ${new Date().toLocaleString('pt-BR')} — Connect LAB</div>
@@ -153,18 +163,20 @@ export default function LabOticaDetalhe() {
         </tr></thead>
         <tbody>${blocos}</tbody>
         <tfoot>
-          <tr style="background:var(--lab-accent)">
+          <tr style="background:${G}">
             <td colspan="9" style="padding:6px 8px;font-weight:900;color:#fff;font-size:12px">TOTAL GERAL — ${lista.length} OS</td>
             <td style="padding:6px 8px;font-family:monospace;font-weight:900;color:#fff;text-align:right;font-size:13px">${mb(totalGeral)}</td>
           </tr>
         </tfoot>
       </table>
-      <script>window.onload=function(){window.print();window.close()}<\/script>
+      ${auto ? `<script>window.onload=function(){setTimeout(function(){window.print()},350)}<\/script>` : ''}
     </body></html>`;
 
-    const w = window.open('','_blank','width=1000,height=700');
+    const w = window.open('','_blank','width=1040,height=760');
     if (w) { w.document.write(html); w.document.close(); }
   }
+  const visualizarRelatorio = (id: string, nome: string, lista: any[]) => abrirRelatorio(id, nome, lista, false);
+  const baixarRelatorioPDF = (id: string, nome: string, lista: any[]) => abrirRelatorio(id, nome, lista, true);
 
   function load() {
     setLoading(true);
@@ -694,10 +706,16 @@ export default function LabOticaDetalhe() {
                 ✕ LIMPAR
               </button>
             )}
-            <button onClick={() => imprimirRelatorio(id!, otica.nome, ordensFiltradas)}
-              style={{ padding:'4px 12px', fontSize:'11px', fontWeight:'700', background:R.accent2, color:'#fff', border:'1px outset #003388', cursor:'pointer', fontFamily:'inherit', marginLeft:'auto' }}>
-              🖨️ IMPRIMIR RELATÓRIO
-            </button>
+            <div style={{ display:'flex', gap:'6px', marginLeft:'auto' }}>
+              <button onClick={() => visualizarRelatorio(id!, otica.nome, ordensFiltradas)}
+                style={{ padding:'4px 12px', fontSize:'11px', fontWeight:'700', background:RV.alt, color:R.accent, border:`1px solid ${RV.bdr}`, borderRadius:'5px', cursor:'pointer', fontFamily:'inherit' }}>
+                👁 VISUALIZAR
+              </button>
+              <button onClick={() => baixarRelatorioPDF(id!, otica.nome, ordensFiltradas)}
+                style={{ padding:'4px 12px', fontSize:'11px', fontWeight:'700', background:R.accent, color:'#fff', border:'none', borderRadius:'5px', cursor:'pointer', fontFamily:'inherit' }}>
+                ⬇ BAIXAR PDF
+              </button>
+            </div>
           </div>
 
           {/* Tabela */}
