@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { login } from '../lib/auth';
 import { useAuth } from '../hooks/useAuth';
+import InstallAppButton from '../components/InstallAppButton';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -96,6 +97,11 @@ export default function Login() {
           Ainda não tem conta?{' '}
           <Link to="/cadastro" style={{ color: '#16a34a', fontWeight: '500', textDecoration: 'none' }}>Criar conta grátis</Link>
         </p>
+
+        <div style={{ textAlign: 'center', marginTop: '10px' }}>
+          <InstallAppButton alwaysShow label="Instalar aplicativo no computador"
+            style={{ fontSize: '13px', fontWeight: 600, color: '#16a34a', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: '6px' }} />
+        </div>
       </div>
     </div>
   );

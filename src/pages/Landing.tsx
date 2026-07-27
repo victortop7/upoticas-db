@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
+import InstallAppButton from '../components/InstallAppButton';
 
 // ── Paleta clara ──
 const G = '#16a34a';       // verde (botões/acento)
@@ -161,6 +162,7 @@ export default function Landing() {
             <a href="#planos" style={{ padding: '8px 16px', fontSize: '14px', color: TX2, textDecoration: 'none', fontWeight: '500' }}>Planos</a>
             <a href="#faq" style={{ padding: '8px 16px', fontSize: '14px', color: TX2, textDecoration: 'none', fontWeight: '500' }}>FAQ</a>
           </>}
+          {!isMobile && <InstallAppButton label="Instalar app" style={{ padding: '8px 14px', fontSize: '13px', background: 'transparent', color: G, border: `1px solid ${G}55`, borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600, whiteSpace: 'nowrap' }} />}
           <button onClick={() => navigate('/login')} style={{ padding: isMobile ? '7px 12px' : '8px 18px', fontSize: '13px', background: 'transparent', color: TX2, border: `1px solid ${BD}`, borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>Entrar</button>
           <button onClick={() => navigate('/cadastro')} style={{ padding: isMobile ? '7px 12px' : '8px 18px', fontSize: '13px', fontWeight: '700', background: G, color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 4px 14px ${GLOW}0.3)`, whiteSpace: 'nowrap' }}>14 dias grátis</button>
         </div>
