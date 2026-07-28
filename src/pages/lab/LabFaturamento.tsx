@@ -30,22 +30,61 @@ const INP: React.CSSProperties = { padding: '7px 10px', fontSize: '13px', backgr
 const LBL: React.CSSProperties = { fontSize: '11px', fontWeight: '600', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '4px' };
 const STATUS_COLOR: Record<string, string> = { aberto: '#886600', emitido: R.accent2, pago: R.accent };
 
+type PeriodoTipo = 'dia' | 'semana' | 'quinzena' | 'mes' | 'personalizado';
+function ymdLocal(d: Date) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+function hojeStr() { return ymdLocal(new Date()); }
+
 export default function LabFaturamento() {
   const navigate = useNavigate();
-  const [aba, setAba] = useState<'fechamentos' | 'gerar'>('fechamentos');
+  const [aba, setAba] = useState<'fechamentos' | 'gerar'>('gerar');
   const [fechamentos, setFechamentos] = useState<Fechamento[]>([]);
   const [oticas, setOticas] = useState<Otica[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFiltro, setStatusFiltro] = useState('');
 
-  // Gerar fechamento
-  const [mes, setMes] = useState(mesAtual());
+  // Gerar fechamento — período
+  const [periodoTipo, setPeriodoTipo] = useState<PeriodoTipo>('mes');
+  const [refData, setRefData] = useState(hojeStr());     // dia/semana/quinzena
+  const [mes, setMes] = useState(mesAtual());             // mês
+  const [de, setDe] = useState('');                       // personalizado
+  const [ate, setAte] = useState('');                     // personalizado
   const [oticaFiltro, setOticaFiltro] = useState('');
   const [resumo, setResumo] = useState<ResumoOS[]>([]);
   const [loadingResumo, setLoadingResumo] = useState(false);
   const [desconto, setDesconto] = useState('0');
   const [vencimento, setVencimento] = useState('');
   const [gerandoId, setGerandoId] = useState<string | null>(null);
+
+  // intervalo (ini/fim) calculado a partir do tipo de período
+  function calcRange(): { ini: string; fim: string } {
+    if (periodoTipo === 'dia') return { ini: refData, fim: refData };
+    if (periodoTipo === 'semana') {
+      const d = new Date(refData + 'T00:00:00');
+      const dow = (d.getDay() + 6) % 7;            // 0 = segunda
+      const ini = new Date(d); ini.setDate(d.getDate() - dow);
+      const fim = new Date(ini); fim.setDate(ini.getDate() + 6);
+      return { ini: ymdLocal(ini), fim: ymdLocal(fim) };
+    }
+    if (periodoTipo === 'quinzena') {
+      const d = new Date(refData + 'T00:00:00');
+      const y = d.getFullYear(), m = d.getMonth();
+      return d.getDate() <= 15
+        ? { ini: ymdLocal(new Date(y, m, 1)),  fim: ymdLocal(new Date(y, m, 15)) }
+        : { ini: ymdLocal(new Date(y, m, 16)), fim: ymdLocal(new Date(y, m + 1, 0)) };
+    }
+    if (periodoTipo === 'mes') {
+      const [y, m] = mes.split('-');
+      return { ini: `${y}-${m}-01`, fim: ymdLocal(new Date(parseInt(y), parseInt(m), 0)) };
+    }
+    return { ini: de, fim: ate }; // personalizado
+  }
+  function tipoDoFechamento(): 'mensal' | 'especial' | 'avulso' {
+    if (periodoTipo === 'mes') return 'mensal';
+    if (periodoTipo === 'personalizado') return 'especial';
+    return 'avulso';
+  }
+  const rangeAtual = calcRange();
+  const rangeValido = !!rangeAtual.ini && !!rangeAtual.fim && rangeAtual.ini <= rangeAtual.fim;
 
   const load = useCallback(() => {
     setLoading(true);
@@ -60,11 +99,10 @@ export default function LabFaturamento() {
   useEffect(() => { api.get<Otica[]>('/lab/oticas').then(setOticas).catch(() => {}); }, []);
 
   async function carregarResumo() {
+    if (!rangeValido) return;
     setLoadingResumo(true);
     try {
-      const [y, m] = mes.split('-');
-      const ini = `${y}-${m}-01`;
-      const fim = new Date(parseInt(y), parseInt(m), 0).toISOString().split('T')[0];
+      const { ini, fim } = calcRange();
       const data = await api.get<ResumoOS[]>(`/lab/faturamento/resumo?data_ini=${ini}&data_fim=${fim}${oticaFiltro ? `&otica_id=${oticaFiltro}` : ''}`);
       setResumo(data);
     } catch { setResumo([]); }
@@ -73,13 +111,11 @@ export default function LabFaturamento() {
 
   async function gerarFechamento(oticaId: string, qtd: number, valor: number) {
     setGerandoId(oticaId);
-    const [y, m] = mes.split('-');
-    const ini = `${y}-${m}-01`;
-    const fim = new Date(parseInt(y), parseInt(m), 0).toISOString().split('T')[0];
+    const { ini, fim } = calcRange();
     const desc = parseFloat(desconto) || 0;
     try {
       await api.post('/lab/faturamento', {
-        otica_id: oticaId, tipo: 'mensal',
+        otica_id: oticaId, tipo: tipoDoFechamento(),
         periodo_ini: ini, periodo_fim: fim,
         valor_bruto: valor, desconto: desc,
         valor_liquido: Math.max(0, valor - desc),
@@ -177,35 +213,60 @@ export default function LabFaturamento() {
       {/* ABA: GERAR */}
       {aba === 'gerar' && (
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
-          <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '10px', padding: '16px', marginBottom: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-            <div>
-              <label style={LBL}>Mês de Referência</label>
-              <input type="month" value={mes} onChange={e => setMes(e.target.value)} style={{ ...INP, width: '160px' }} />
+          <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '10px', padding: '16px', marginBottom: '16px' }}>
+            {/* tipo de período */}
+            <label style={LBL}>Período do fechamento</label>
+            <div style={{ display: 'flex', gap: '6px', marginBottom: '14px', flexWrap: 'wrap' }}>
+              {([['dia', 'Dia'], ['semana', 'Semana'], ['quinzena', 'Quinzena'], ['mes', 'Mês'], ['personalizado', 'Personalizado']] as [PeriodoTipo, string][]).map(([v, l]) => (
+                <button key={v} onClick={() => { setPeriodoTipo(v); setResumo([]); }}
+                  style={{ padding: '6px 14px', fontSize: '12px', fontWeight: '700', borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${periodoTipo === v ? R.accent : 'var(--lab-bdr)'}`, background: periodoTipo === v ? R.accent : 'transparent', color: periodoTipo === v ? '#fff' : R.dim }}>
+                  {l}
+                </button>
+              ))}
             </div>
-            <div>
-              <label style={LBL}>Ótica (opcional)</label>
-              <select value={oticaFiltro} onChange={e => setOticaFiltro(e.target.value)} style={{ ...INP, width: '200px', fontFamily: "'Montserrat', sans-serif" }}>
-                <option value="">Todas as óticas</option>
-                {oticas.map(o => <option key={o.id} value={o.id}>{o.nome}</option>)}
-              </select>
+
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+              {/* campo(s) do período conforme o tipo */}
+              {periodoTipo === 'mes' ? (
+                <div><label style={LBL}>Mês</label><input type="month" value={mes} onChange={e => setMes(e.target.value)} style={{ ...INP, width: '160px' }} /></div>
+              ) : periodoTipo === 'personalizado' ? (
+                <>
+                  <div><label style={LBL}>De</label><input type="date" value={de} onChange={e => setDe(e.target.value)} style={{ ...INP, width: '150px' }} /></div>
+                  <div><label style={LBL}>Até</label><input type="date" value={ate} onChange={e => setAte(e.target.value)} style={{ ...INP, width: '150px' }} /></div>
+                </>
+              ) : (
+                <div>
+                  <label style={LBL}>{periodoTipo === 'dia' ? 'Dia' : periodoTipo === 'semana' ? 'Dia da semana' : 'Dia da quinzena'}</label>
+                  <input type="date" value={refData} onChange={e => setRefData(e.target.value)} style={{ ...INP, width: '150px' }} />
+                </div>
+              )}
+
+              <div>
+                <label style={LBL}>Ótica (opcional)</label>
+                <select value={oticaFiltro} onChange={e => setOticaFiltro(e.target.value)} style={{ ...INP, width: '200px', fontFamily: "'Montserrat', sans-serif" }}>
+                  <option value="">Todas as óticas</option>
+                  {oticas.map(o => <option key={o.id} value={o.id}>{o.nome}</option>)}
+                </select>
+              </div>
+              <div><label style={LBL}>Desconto (R$)</label><input type="number" step="0.01" value={desconto} onChange={e => setDesconto(e.target.value)} style={{ ...INP, width: '100px' }} /></div>
+              <div><label style={LBL}>Vencimento</label><input type="date" value={vencimento} onChange={e => setVencimento(e.target.value)} style={{ ...INP, width: '140px' }} /></div>
+              <button onClick={carregarResumo} disabled={loadingResumo || !rangeValido} style={{ padding: '8px 20px', fontSize: '13px', fontWeight: '600', background: (loadingResumo || !rangeValido) ? R.dim : R.accent, color: 'var(--lab-on-accent)', border: 'none', borderRadius: '7px', cursor: (loadingResumo || !rangeValido) ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
+                {loadingResumo ? 'Carregando...' : 'Calcular'}
+              </button>
             </div>
-            <div>
-              <label style={LBL}>Desconto (R$)</label>
-              <input type="number" step="0.01" value={desconto} onChange={e => setDesconto(e.target.value)} style={{ ...INP, width: '100px' }} />
+
+            {/* intervalo calculado */}
+            <div style={{ marginTop: '12px', fontSize: '12px', color: R.dim }}>
+              {rangeValido
+                ? <>Fechamento de <b style={{ color: R.txt, fontFamily: "'Courier New', monospace" }}>{fmtDate(rangeAtual.ini)}</b> a <b style={{ color: R.txt, fontFamily: "'Courier New', monospace" }}>{fmtDate(rangeAtual.fim)}</b></>
+                : <span style={{ color: '#cc0000' }}>Informe um período válido (início ≤ fim).</span>}
             </div>
-            <div>
-              <label style={LBL}>Vencimento</label>
-              <input type="date" value={vencimento} onChange={e => setVencimento(e.target.value)} style={{ ...INP, width: '140px' }} />
-            </div>
-            <button onClick={carregarResumo} disabled={loadingResumo} style={{ padding: '8px 20px', fontSize: '13px', fontWeight: '600', background: R.accent, color: 'var(--lab-on-accent)', border: 'none', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>
-              {loadingResumo ? 'Carregando...' : 'Calcular'}
-            </button>
           </div>
 
           {resumo.length > 0 && (
             <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '10px' }}>
               <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--lab-bdr)', fontSize: '12px', fontWeight: '700', color: R.txt }}>
-                OSes do período — {mes} ({resumo.reduce((a, r) => a + r.qtd_os, 0)} OS, {brl(resumo.reduce((a, r) => a + r.valor_total, 0))})
+                OSes do período — {fmtDate(rangeAtual.ini)} a {fmtDate(rangeAtual.fim)} ({resumo.reduce((a, r) => a + r.qtd_os, 0)} OS, {brl(resumo.reduce((a, r) => a + r.valor_total, 0))})
               </div>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
