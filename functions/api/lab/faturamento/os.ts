@@ -17,7 +17,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
 
     let q = `
       SELECT os.id, os.numero, os.ref_otica, os.cont_interno, os.total, os.created_at, os.status,
-             os.otica_id, o.nome AS otica_nome
+             os.otica_id, o.nome AS otica_nome, o.codigo AS otica_codigo
       FROM lab_ordens os
       JOIN lab_oticas o ON o.id = os.otica_id AND o.tenant_id = os.tenant_id
       WHERE os.tenant_id = ?

@@ -13,7 +13,7 @@ interface Fechamento {
 }
 
 interface Otica { id: string; nome: string; }
-interface OsItem { id: string; numero: number; ref_otica: string | null; cont_interno: string | null; total: number; created_at: string; status: string; otica_id: string; otica_nome: string; }
+interface OsItem { id: string; numero: number; ref_otica: string | null; cont_interno: string | null; total: number; created_at: string; status: string; otica_id: string; otica_nome: string; otica_codigo?: string | null; }
 
 function brl(v: number) { return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 function fmtDate(s: string | null) {
@@ -360,6 +360,7 @@ export default function LabFaturamento() {
             const b = busca.trim().toLowerCase();
             const filtradas = osLista.filter(o =>
               !b || String(o.numero).padStart(4, '0').includes(b) || String(o.numero).includes(b)
+              || (o.otica_codigo || '').toLowerCase().includes(b)
               || (o.otica_nome || '').toLowerCase().includes(b) || (o.ref_otica || '').toLowerCase().includes(b)
               || (o.cont_interno || '').toLowerCase().includes(b));
             const qtdSel = sel.size;
@@ -370,35 +371,31 @@ export default function LabFaturamento() {
               <button onClick={on} disabled={!qtdSel || gerando} style={{ padding: '7px 14px', fontSize: '12px', fontWeight: '700', borderRadius: '7px', cursor: (!qtdSel || gerando) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: (!qtdSel || gerando) ? 0.5 : 1, border: primary ? 'none' : `1px solid ${R.accent}66`, background: primary ? R.accent : 'transparent', color: primary ? '#fff' : R.accent }}>{label}</button>
             );
             return (
-              <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '10px' }}>
+              <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '10px', overflow: 'hidden' }}>
                 <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--lab-bdr)', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar OS, ótica, referência..." style={{ ...INP, width: '250px', fontFamily: "'Montserrat', sans-serif" }} />
-                  <span style={{ fontSize: '12px', color: R.dim }}><b style={{ color: R.txt }}>{qtdSel}</b> de {osLista.length} OS selecionadas · <b style={{ color: R.accent }}>{brl(totalSel)}</b></span>
-                  <div style={{ marginLeft: 'auto', display: 'flex', gap: '6px' }}>
-                    {acaoBtn('👁 Visualizar', () => visualizarSelecionadas(false))}
-                    {acaoBtn('⬇ PDF', () => visualizarSelecionadas(true))}
-                    {acaoBtn(gerando ? 'Gerando...' : 'Gerar Fechamento', gerarSelecionadas, true)}
-                  </div>
+                  <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar por código da ótica, referência do cliente, nº da OS..." style={{ ...INP, width: '360px', maxWidth: '100%', fontFamily: "'Montserrat', sans-serif" }} />
+                  <span style={{ fontSize: '12px', color: R.dim }}>Marque as OS que quer faturar</span>
                 </div>
                 <div style={{ maxHeight: 'calc(100vh - 400px)', overflowY: 'auto' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead style={{ position: 'sticky', top: 0 }}>
                       <tr style={{ background: R.alt, borderBottom: '1px solid var(--lab-bdr)' }}>
                         <th style={{ padding: '8px 12px', width: '34px', textAlign: 'center' }}><input type="checkbox" checked={todosMarc} onChange={toggleTodos} title="Selecionar todos" /></th>
-                        {['Nº OS', 'Ótica', 'Ref.', 'C.Int.', 'Data', 'Status', 'Valor'].map(h => (
+                        {['Nº OS', 'Cód.', 'Ótica', 'Ref.', 'C.Int.', 'Data', 'Status', 'Valor'].map(h => (
                           <th key={h} style={{ padding: '8px 12px', textAlign: h === 'Valor' ? 'right' : 'left', fontSize: '10px', fontWeight: '600', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {filtradas.length === 0 ? (
-                        <tr><td colSpan={8} style={{ padding: '30px', textAlign: 'center', color: R.dim, fontSize: '13px' }}>Nenhuma OS encontrada.</td></tr>
+                        <tr><td colSpan={9} style={{ padding: '30px', textAlign: 'center', color: R.dim, fontSize: '13px' }}>Nenhuma OS encontrada.</td></tr>
                       ) : filtradas.map(o => {
                         const on = sel.has(o.id);
                         return (
                           <tr key={o.id} onClick={() => toggleSel(o.id)} style={{ borderBottom: '1px solid var(--lab-bdr)', cursor: 'pointer', background: on ? `${R.accent}12` : 'transparent' }}>
                             <td style={{ padding: '8px 12px', textAlign: 'center' }}><input type="checkbox" checked={on} onChange={() => toggleSel(o.id)} onClick={e => e.stopPropagation()} /></td>
                             <td style={{ padding: '8px 12px', fontFamily: "'Courier New', monospace", fontSize: '13px', fontWeight: '700', color: R.txt }}>#{String(o.numero).padStart(4, '0')}</td>
+                            <td style={{ padding: '8px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{o.otica_codigo || '—'}</td>
                             <td style={{ padding: '8px 12px', fontSize: '13px', color: R.txt, maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.otica_nome}</td>
                             <td style={{ padding: '8px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{o.ref_otica || '—'}</td>
                             <td style={{ padding: '8px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{o.cont_interno || '—'}</td>
@@ -410,6 +407,25 @@ export default function LabFaturamento() {
                       })}
                     </tbody>
                   </table>
+                </div>
+
+                {/* Barra "bilhete" — soma ao vivo conforme marca as OS */}
+                <div style={{ position: 'sticky', bottom: 0, background: 'linear-gradient(90deg, #0f2a1c, #123a24)', borderTop: `2px solid ${R.accent}`, padding: '12px 18px', display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '700', color: '#cff0d6', textTransform: 'uppercase', letterSpacing: '0.5px', background: 'rgba(255,255,255,0.1)', padding: '4px 10px', borderRadius: '20px' }}>🧾 {qtdSel} OS</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                    <span style={{ fontSize: '11px', color: '#9fd3b0', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total a faturar</span>
+                    <span style={{ fontSize: '26px', fontWeight: '900', color: '#fff', fontFamily: "'Courier New', monospace", letterSpacing: '-0.5px' }}>{brl(Math.max(0, totalSel - (sel.size && new Set(osLista.filter(o => sel.has(o.id)).map(o => o.otica_id)).size === 1 ? (parseFloat(desconto) || 0) : 0)))}</span>
+                    {(parseFloat(desconto) || 0) > 0 && new Set(osLista.filter(o => sel.has(o.id)).map(o => o.otica_id)).size === 1 && (
+                      <span style={{ fontSize: '11px', color: '#f0a0a0' }}>(bruto {brl(totalSel)} − desc {brl(parseFloat(desconto) || 0)})</span>
+                    )}
+                  </div>
+                  <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+                    {acaoBtn('👁 Visualizar', () => visualizarSelecionadas(false))}
+                    {acaoBtn('⬇ PDF', () => visualizarSelecionadas(true))}
+                    {acaoBtn(gerando ? 'Gerando...' : '✓ Gerar Fechamento', gerarSelecionadas, true)}
+                  </div>
                 </div>
               </div>
             );
