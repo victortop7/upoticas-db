@@ -29,6 +29,13 @@ function mesAtual() {
 const INP: React.CSSProperties = { padding: '7px 10px', fontSize: '13px', background: R.inp, border: '1px solid var(--lab-bdr)', borderRadius:  0, color: R.txt, outline: 'none', fontFamily: "'Courier New', monospace", width: '100%', boxSizing: 'border-box' };
 const LBL: React.CSSProperties = { fontSize: '11px', fontWeight: '600', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '4px' };
 const STATUS_COLOR: Record<string, string> = { aberto: '#886600', emitido: R.accent2, pago: R.accent };
+// Status das OS (para a listagem do fechamento). Inclui as ainda em produção — cobrança adiantada.
+const OS_STATUS: Record<string, { label: string; cor: string }> = {
+  aguardando:  { label: 'Aguardando',  cor: '#886600' },
+  em_producao: { label: 'Em Produção', cor: R.accent2 },
+  pronto:      { label: 'Pronto',      cor: R.accent },
+  entregue:    { label: 'Entregue',    cor: R.accent },
+};
 
 type PeriodoTipo = 'dia' | 'semana' | 'quinzena' | 'mes' | 'personalizado';
 function ymdLocal(d: Date) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
@@ -108,7 +115,9 @@ export default function LabFaturamento() {
       const { ini, fim } = calcRange();
       const data = await api.get<OsItem[]>(`/lab/faturamento/os?data_ini=${ini}&data_fim=${fim}${oticaFiltro ? `&otica_id=${oticaFiltro}` : ''}`);
       setOsLista(data);
-      setSel(new Set(data.map(o => o.id)));   // começa com todas marcadas
+      // Pré-marca só as prontas/entregues. As ainda em produção ficam desmarcadas —
+      // o usuário marca só se o cliente quiser pagar adiantado.
+      setSel(new Set(data.filter(o => o.status === 'pronto' || o.status === 'entregue').map(o => o.id)));
     } catch { setOsLista([]); setSel(new Set()); }
     setCarregandoOS(false);
   }
@@ -374,7 +383,7 @@ export default function LabFaturamento() {
               <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '10px', overflow: 'hidden' }}>
                 <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--lab-bdr)', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
                   <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar por código da ótica, referência do cliente, nº da OS..." style={{ ...INP, width: '360px', maxWidth: '100%', fontFamily: "'Montserrat', sans-serif" }} />
-                  <span style={{ fontSize: '12px', color: R.dim }}>Marque as OS que quer faturar</span>
+                  <span style={{ fontSize: '12px', color: R.dim }}>Marque as OS que quer faturar — inclusive as <b style={{ color: R.txt }}>Em Produção</b>, se o cliente for pagar adiantado</span>
                 </div>
                 <div style={{ maxHeight: 'calc(100vh - 400px)', overflowY: 'auto' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -400,7 +409,7 @@ export default function LabFaturamento() {
                             <td style={{ padding: '8px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{o.ref_otica || '—'}</td>
                             <td style={{ padding: '8px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{o.cont_interno || '—'}</td>
                             <td style={{ padding: '8px 12px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim, whiteSpace: 'nowrap' }}>{fmtDate(o.created_at)}</td>
-                            <td style={{ padding: '8px 12px' }}><span style={{ fontSize: '10px', fontWeight: '600', color: STATUS_COLOR[o.status] ?? R.dim, background: `${STATUS_COLOR[o.status] ?? R.dim}18`, padding: '2px 7px', borderRadius: '20px', whiteSpace: 'nowrap' }}>{o.status === 'pronto' ? 'Pronto' : 'Entregue'}</span></td>
+                            <td style={{ padding: '8px 12px' }}>{(() => { const st = OS_STATUS[o.status] ?? { label: o.status, cor: R.dim }; return <span style={{ fontSize: '10px', fontWeight: '600', color: st.cor, background: `${st.cor}18`, padding: '2px 7px', borderRadius: '20px', whiteSpace: 'nowrap' }}>{st.label}</span>; })()}</td>
                             <td style={{ padding: '8px 12px', fontSize: '13px', fontFamily: "'Courier New', monospace", fontWeight: '700', color: R.txt, textAlign: 'right', whiteSpace: 'nowrap' }}>{brl(o.total)}</td>
                           </tr>
                         );

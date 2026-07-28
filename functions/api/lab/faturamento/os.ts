@@ -2,7 +2,8 @@ import type { Env } from '../../../lib/types';
 import { requireAuth, json } from '../../../lib/auth-middleware';
 
 // GET /api/lab/faturamento/os?data_ini=&data_fim=&otica_id=
-// Lista as OS individuais faturáveis (pronto/entregue) do período — para seleção no fechamento.
+// Lista as OS do período para seleção no fechamento — inclui OS ainda em produção
+// (permite cobrar adiantado). Apenas OS canceladas ficam de fora.
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   try {
     const auth = await requireAuth(request, env);
@@ -22,7 +23,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
       JOIN lab_oticas o ON o.id = os.otica_id AND o.tenant_id = os.tenant_id
       WHERE os.tenant_id = ?
         AND date(os.created_at) >= ? AND date(os.created_at) <= ?
-        AND os.status IN ('pronto', 'entregue')
+        AND os.status != 'cancelado'
     `;
     const params: unknown[] = [tenant_id, data_ini, data_fim];
     if (otica_id) { q += ' AND os.otica_id = ?'; params.push(otica_id); }
