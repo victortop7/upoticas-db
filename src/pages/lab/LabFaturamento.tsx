@@ -141,7 +141,9 @@ export default function LabFaturamento() {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const r = await api.get<{ ordens: any[]; servicos: any[] }>(`/lab/relatorios/servicos?otica_id=${oticaId}&data_ini=${ini}&data_fim=${fim}`);
-      ordens = r.ordens || []; servicos = r.servicos || [];
+      // fechamento cobra as OS concluídas (mesma base do resumo: pronto/entregue)
+      ordens = (r.ordens || []).filter(o => o.status === 'pronto' || o.status === 'entregue');
+      servicos = r.servicos || [];
     } catch { /* segue vazio */ }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const svcPorOS: Record<string, any[]> = {};
