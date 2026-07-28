@@ -67,16 +67,10 @@ export default function Sidebar() {
       {/* Logo */}
       <div style={{ padding: '20px 16px', borderBottom: '1px solid var(--border)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-          <div style={{
-            width: '32px', height: '32px', background: 'var(--primary)',
-            borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0
-          }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="3"/>
-              <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/>
-            </svg>
-          </div>
+          <img src="/brand-192.png" alt="Conexão Óticas" width="32" height="32" style={{
+            width: '32px', height: '32px', borderRadius: '8px', objectFit: 'cover',
+            border: '1px solid var(--border)', flexShrink: 0
+          }} />
           <span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text)' }}>
             Connect <span style={{ color: 'var(--primary)' }}>Óticas</span>
           </span>

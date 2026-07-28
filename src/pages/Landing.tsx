@@ -179,9 +179,7 @@ export default function Landing() {
       {/* Nav */}
       <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: isMobile ? '12px 16px' : '15px 48px', borderBottom: `1px solid ${BD}`, position: 'sticky', top: 0, background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(16px)', zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ width: '34px', height: '34px', background: `linear-gradient(135deg,${G},${G2})`, borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 14px ${GLOW}0.35)`, flexShrink: 0 }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/></svg>
-          </div>
+          <img src="/brand-192.png" alt="Conexão Óticas" width="34" height="34" style={{ width: '34px', height: '34px', borderRadius: '9px', objectFit: 'cover', border: `1px solid ${BD}`, boxShadow: `0 4px 14px ${GLOW}0.18)`, flexShrink: 0 }} />
           <span style={{ fontSize: isMobile ? '15px' : '17px', fontWeight: '800', letterSpacing: '-0.3px', whiteSpace: 'nowrap', color: TX }}>Conexão <span style={{ color: G }}>Óticas</span></span>
         </div>
         <div style={{ display: 'flex', gap: isMobile ? '6px' : '12px', alignItems: 'center' }}>
@@ -500,9 +498,7 @@ export default function Landing() {
       <footer style={{ borderTop: `1px solid ${BD}`, padding: isMobile ? '28px 16px' : '40px 48px', background: BG2 }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '28px', height: '28px', background: `linear-gradient(135deg,${G},${G2})`, borderRadius: '7px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/></svg>
-            </div>
+            <img src="/brand-192.png" alt="Conexão Óticas" width="28" height="28" style={{ width: '28px', height: '28px', borderRadius: '7px', objectFit: 'cover', border: `1px solid ${BD}` }} />
             <span style={{ fontSize: '15px', fontWeight: '800', color: TX }}>Conexão <span style={{ color: G }}>Óticas</span></span>
           </div>
           {!isMobile && (
