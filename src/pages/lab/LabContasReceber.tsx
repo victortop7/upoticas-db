@@ -77,6 +77,14 @@ export default function LabContasReceber() {
     } catch {} finally { setSalvando(false); }
   }
 
+  async function excluirConta(c: Conta) {
+    if (!window.confirm(`Excluir o lançamento #${String(c.numero).padStart(4, '0')} de ${c.otica_nome} (${brl(c.valor)})?\n\nEssa ação não pode ser desfeita.`)) return;
+    try {
+      await api.delete(`/lab/contas-receber/${c.id}`);
+      load();
+    } catch { /* silencioso */ }
+  }
+
   async function criarConta() {
     if (!novaForm.otica_id || !novaForm.descricao || !novaForm.valor || !novaForm.data_vencimento) return;
     setSalvando(true);
@@ -163,12 +171,18 @@ export default function LabContasReceber() {
                       </span>
                     </td>
                     <td style={{ padding: '9px 12px' }}>
-                      {c.status !== 'pago' && (
-                        <button onClick={() => { setBaixando(c); setDataPgto(new Date().toISOString().split('T')[0]); setFormaPgto(''); }}
-                          style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '5px', border: '1px solid #006600', background: 'rgba(0,102,0,0.15)', color: R.accent, cursor: 'pointer', fontFamily: 'inherit', fontWeight: '600', whiteSpace: 'nowrap' }}>
-                          Dar Baixa
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'flex-end' }}>
+                        {c.status !== 'pago' && (
+                          <button onClick={() => { setBaixando(c); setDataPgto(new Date().toISOString().split('T')[0]); setFormaPgto(''); }}
+                            style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '5px', border: '1px solid #006600', background: 'rgba(0,102,0,0.15)', color: R.accent, cursor: 'pointer', fontFamily: 'inherit', fontWeight: '600', whiteSpace: 'nowrap' }}>
+                            Dar Baixa
+                          </button>
+                        )}
+                        <button onClick={() => excluirConta(c)} title="Excluir lançamento"
+                          style={{ fontSize: '13px', padding: '3px 8px', borderRadius: '5px', border: '1px solid #cc000055', background: 'transparent', color: '#cc0000', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '700', lineHeight: 1 }}>
+                          ✕
                         </button>
-                      )}
+                      </div>
                     </td>
                   </tr>
                 ))}
