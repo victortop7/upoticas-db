@@ -5,7 +5,8 @@ import LabShapePicker from '../../components/LabShapePicker';
 import LabReciboPanel from './LabReciboPanel';
 import LabOrcamentoPanel from './LabOrcamentoPanel';
 
-interface Otica { id: string; codigo?: string; nome: string; lista_preco?: number; condicao_pgto?: string; }
+interface Otica { id: string; codigo?: string; nome: string; lista_preco?: number; condicao_pgto?: string; vendedor_id?: string; }
+interface Vendedor { id: string; codigo: number; nome: string; }
 interface Produto { id: string; codigo?: string; nome: string; unidade?: string; valor_padrao: number; estoque_atual?: number; }
 interface Usuario { id: string; nome: string; }
 
@@ -120,6 +121,7 @@ export default function LabNovaOrdem() {
   const [oticas, setOticas] = useState<Otica[]>([]);
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [operadores, setOperadores] = useState<Usuario[]>([]);
+  const [vendedores, setVendedores] = useState<Vendedor[]>([]);
   const [saving, setSaving] = useState(false);
   const [erro, setErro] = useState('');
   const [step, setStep] = useState(1);
@@ -206,6 +208,7 @@ export default function LabNovaOrdem() {
     }).catch(() => {});
     api.get<Produto[]>('/lab/servicos').then(setProdutos).catch(() => {});
     api.get<{ usuarios: Usuario[] }>('/usuarios').then(d => setOperadores(d.usuarios)).catch(() => {});
+    api.get<Vendedor[]>('/lab/vendedores').then(setVendedores).catch(() => {});
     api.get<Record<string, string>>('/lab/configuracoes').then(cfg => {
       const listas: { numero: string; nome: string }[] = [];
       for (let i = 1; i <= 9; i++) {
@@ -237,9 +240,10 @@ export default function LabNovaOrdem() {
       setOticaNome(found.nome);
       setOticaCod(found.codigo || cod);
       setOticaErro(false);
-      // Auto-fill lista de preço e condição de pagamento (do cadastro da ótica)
+      // Auto-fill lista de preço, condição de pagamento e vendedor (do cadastro da ótica)
       if (found.lista_preco) setListaPreco(String(found.lista_preco));
       if (found.condicao_pgto) setCondPgto(found.condicao_pgto);
+      setVendedor1Id(found.vendedor_id || '');
       // REF. ÓTICA é MANUAL: o digitador informa a numeração que veio da ótica (não gerar).
     } else {
       setOticaId('');
@@ -567,7 +571,10 @@ export default function LabNovaOrdem() {
             </div>
             <div style={{ gridColumn: 'span 3' }}>
               <label style={LBL}>Vendedor (da ótica)</label>
-              <input value={vendedor1Id} onChange={e => setVendedor1Id(e.target.value)} style={INP} placeholder="Nome do vendedor..." />
+              <select value={vendedor1Id} onChange={e => setVendedor1Id(e.target.value)} style={INP}>
+                <option value="">— Vendedor</option>
+                {vendedores.map(v => <option key={v.id} value={v.id}>{v.codigo != null ? `${String(v.codigo).padStart(2, '0')} · ` : ''}{v.nome}</option>)}
+              </select>
             </div>
             <div style={{ gridColumn: 'span 3' }}>
               <label style={LBL}>Médico / Oftalmo</label>

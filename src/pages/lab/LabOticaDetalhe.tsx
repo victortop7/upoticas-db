@@ -64,6 +64,7 @@ export default function LabOticaDetalhe() {
   const [filtroDataFim, setFiltroDataFim] = useState('');
   const [listaNomes, setListaNomes] = useState<string[]>(['PREÇO 1','PREÇO 2','PREÇO 3','PREÇO 4','PREÇO 5']);
   const [listasAtivas, setListasAtivas] = useState(5);
+  const [vendedores, setVendedores] = useState<{ id: string; codigo: number; nome: string; pct_comissao?: number }[]>([]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async function abrirRelatorio(oticaId: string, nomeOtica: string, lista: any[], auto: boolean) {
@@ -221,6 +222,9 @@ export default function LabOticaDetalhe() {
       }
       setListasAtivas(Math.max(2, ativas));
     }).catch(() => {});
+    // Vendedores cadastrados — para o select do cadastro da ótica
+    api.get<{ id: string; codigo: number; nome: string; pct_comissao?: number }[]>('/lab/vendedores')
+      .then(setVendedores).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -352,7 +356,16 @@ export default function LabOticaDetalhe() {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr 80px', gap: '8px', marginBottom: '6px' }}>
               <div><label style={LBL}>Área</label><input value={form.area ?? ''} onKeyDown={nextField} onChange={e => setF('area', e.target.value)} style={INP} /></div>
-              <div><label style={LBL}>Vendedor</label><input value={form.vendedor_id ?? ''} onKeyDown={nextField} onChange={e => setF('vendedor_id', e.target.value)} style={INP} /></div>
+              <div><label style={LBL}>Vendedor</label>
+                <select value={form.vendedor_id ?? ''} onKeyDown={nextField} onChange={e => {
+                  const vid = e.target.value; setF('vendedor_id', vid);
+                  const v = vendedores.find(x => x.id === vid);
+                  if (v && v.pct_comissao != null && !form.comissao) setF('comissao', v.pct_comissao);
+                }} style={INP}>
+                  <option value="">— Vendedor</option>
+                  {vendedores.map(v => <option key={v.id} value={v.id}>{v.codigo != null ? `${String(v.codigo).padStart(2, '0')} · ` : ''}{v.nome}</option>)}
+                </select>
+              </div>
               <div>
                 <label style={LBL}>Vias Pedido</label>
                 <select value={form.vias_pedido ?? 1} onKeyDown={nextField} onChange={e => setF('vias_pedido', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
