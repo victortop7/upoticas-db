@@ -54,6 +54,7 @@ export default function LabFaturamento() {
   const [desconto, setDesconto] = useState('0');
   const [vencimento, setVencimento] = useState('');
   const [gerandoId, setGerandoId] = useState<string | null>(null);
+  const [msg, setMsg] = useState('');
 
   // intervalo (ini/fim) calculado a partir do tipo de período
   function calcRange(): { ini: string; fim: string } {
@@ -109,12 +110,12 @@ export default function LabFaturamento() {
     setLoadingResumo(false);
   }
 
-  async function gerarFechamento(oticaId: string, qtd: number, valor: number) {
-    setGerandoId(oticaId);
+  async function gerarFechamento(oticaId: string, oticaNome: string, qtd: number, valor: number) {
+    setGerandoId(oticaId); setMsg('');
     const { ini, fim } = calcRange();
     const desc = parseFloat(desconto) || 0;
     try {
-      await api.post('/lab/faturamento', {
+      const r = await api.post<{ id: string }>('/lab/faturamento', {
         otica_id: oticaId, tipo: tipoDoFechamento(),
         periodo_ini: ini, periodo_fim: fim,
         valor_bruto: valor, desconto: desc,
@@ -122,9 +123,82 @@ export default function LabFaturamento() {
         data_vencimento: vencimento || null,
         qtd_os: qtd,
       });
-      setResumo(r => r.filter(x => x.otica_id !== oticaId));
+      void r;
+      setResumo(x => x.filter(o => o.otica_id !== oticaId));
+      setMsg(`✓ Fechamento de ${oticaNome} gerado (${fmtDate(ini)} a ${fmtDate(fim)}). Veja na aba "Fechamentos".`);
       load();
-    } catch {} finally { setGerandoId(null); }
+    } catch (e: unknown) {
+      setMsg(`Erro ao gerar: ${e instanceof Error ? e.message : 'tente novamente'}`);
+    } finally { setGerandoId(null); }
+  }
+
+  // Abre o documento do fechamento (todas as OS + serviços do período da ótica) para ver/imprimir/PDF
+  async function visualizarFechamento(oticaId: string, oticaNome: string, auto: boolean) {
+    const { ini, fim } = calcRange();
+    const desc = parseFloat(desconto) || 0;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let ordens: any[] = [], servicos: any[] = [];
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const r = await api.get<{ ordens: any[]; servicos: any[] }>(`/lab/relatorios/servicos?otica_id=${oticaId}&data_ini=${ini}&data_fim=${fim}`);
+      ordens = r.ordens || []; servicos = r.servicos || [];
+    } catch { /* segue vazio */ }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const svcPorOS: Record<string, any[]> = {};
+    servicos.forEach(s => { (svcPorOS[s.ordem_id] ||= []).push(s); });
+    const G = '#0a7a2e', GBG = '#e8efe9';
+    const mb = (v: number) => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const bruto = ordens.reduce((a, o) => a + (o.total || 0), 0);
+    const liq = Math.max(0, bruto - desc);
+
+    const blocos = ordens.map(o => {
+      const svcs = svcPorOS[o.id] || [];
+      const svcHtml = svcs.length
+        ? svcs.map(s => `<tr style="background:#f4f2ee">
+            <td style="padding:3px 8px 3px 26px;font-family:monospace;font-size:10px;color:#555">${s.codigo || ''}</td>
+            <td style="padding:3px 8px;font-size:10px;color:#333">${s.descricao || ''}</td>
+            <td style="padding:3px 8px;font-family:monospace;font-size:10px;text-align:center">${Number(s.qtd || 0).toFixed(2)}</td>
+            <td style="padding:3px 8px;font-family:monospace;font-size:10px;text-align:right">${mb(s.valor_unit || 0)}</td>
+            <td style="padding:3px 8px;font-family:monospace;font-size:10px;text-align:right;font-weight:700">${mb(s.total || 0)}</td>
+          </tr>`).join('')
+        : `<tr style="background:#f4f2ee"><td colspan="5" style="padding:3px 26px;font-size:10px;color:#aaa;font-style:italic">Sem serviços detalhados</td></tr>`;
+      return `<tr style="background:${G}">
+          <td style="padding:5px 8px;font-family:monospace;font-weight:900;color:#fff;font-size:12px">#${String(o.numero).padStart(4, '0')}</td>
+          <td style="padding:5px 8px;font-family:monospace;color:#cff0d6;font-size:10px" colspan="2">${(o.created_at || '').slice(0, 10).split('-').reverse().join('/')} · Ref: ${o.ref_otica || '—'}</td>
+          <td style="padding:5px 8px;font-size:10px;color:#cff0d6;text-align:right">Total OS</td>
+          <td style="padding:5px 8px;font-family:monospace;font-weight:900;color:#fff;text-align:right">${mb(o.total || 0)}</td>
+        </tr>${svcHtml}<tr><td colspan="5" style="height:4px;background:${GBG}"></td></tr>`;
+    }).join('');
+
+    const toolbar = `<div class="noprint" style="position:sticky;top:0;display:flex;gap:8px;justify-content:flex-end;align-items:center;padding:10px 12px;background:#0f2a1c;margin:-12px -12px 12px">
+        <span style="color:#cff0d6;font-size:12px;margin-right:auto;font-weight:600">Fechamento — ${oticaNome}</span>
+        <button onclick="window.print()" style="padding:8px 16px;font-size:13px;font-weight:700;background:#16a34a;color:#fff;border:none;border-radius:8px;cursor:pointer">⬇ Baixar PDF / Imprimir</button>
+        <button onclick="window.close()" style="padding:8px 14px;font-size:13px;background:transparent;color:#cff0d6;border:1px solid #2f6b45;border-radius:8px;cursor:pointer">Fechar</button>
+      </div>`;
+
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Fechamento — ${oticaNome}</title>
+      <style>*{box-sizing:border-box}body{margin:12px;font-family:Arial,sans-serif;font-size:11px;color:#000;background:#fff}
+      table{width:100%;border-collapse:collapse}.hdr th{background:${G};color:#fff;padding:5px 8px;text-align:left;font-size:10px}
+      @page{margin:8mm}@media print{body{margin:0}.noprint{display:none!important}}</style></head><body>
+      ${toolbar}
+      <div style="text-align:center;margin-bottom:12px;border-bottom:2px solid ${G};padding-bottom:8px">
+        <div style="font-size:16px;font-weight:900;text-transform:uppercase;color:${G}">${oticaNome}</div>
+        <div style="font-size:11px;color:#333;margin-top:2px">FECHAMENTO DE FATURAMENTO</div>
+        <div style="font-size:10px;color:#666">Período: ${fmtDate(ini)} a ${fmtDate(fim)} &nbsp;|&nbsp; ${ordens.length} OS${vencimento ? ` &nbsp;|&nbsp; Vencimento: ${fmtDate(vencimento)}` : ''}</div>
+        <div style="font-size:9px;color:#aaa">Emitido em ${new Date().toLocaleString('pt-BR')} — Connect LAB</div>
+      </div>
+      <table><thead class="hdr"><tr><th>Nº OS</th><th>Data / Ref.</th><th style="text-align:center">Qtd</th><th style="text-align:right">V.Unit</th><th style="text-align:right">Total</th></tr></thead>
+      <tbody>${blocos || '<tr><td colspan="5" style="padding:20px;text-align:center;color:#aaa">Nenhuma OS no período.</td></tr>'}</tbody></table>
+      <div style="margin-top:14px;margin-left:auto;width:280px;font-size:12px">
+        <div style="display:flex;justify-content:space-between;padding:4px 0"><span style="color:#555">Bruto</span><b style="font-family:monospace">${mb(bruto)}</b></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0"><span style="color:#555">Desconto</span><b style="font-family:monospace;color:#c00">${desc > 0 ? '- ' + mb(desc) : mb(0)}</b></div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-top:2px solid ${G};margin-top:4px;font-size:15px"><b>TOTAL</b><b style="font-family:monospace;color:${G}">${mb(liq)}</b></div>
+      </div>
+      ${auto ? `<script>window.onload=function(){setTimeout(function(){window.print()},350)}<\/script>` : ''}
+      </body></html>`;
+
+    const w = window.open('', '_blank', 'width=1040,height=760');
+    if (w) { w.document.write(html); w.document.close(); }
   }
 
   async function marcarPago(id: string) {
@@ -263,6 +337,12 @@ export default function LabFaturamento() {
             </div>
           </div>
 
+          {msg && (
+            <div style={{ background: msg.startsWith('Erro') ? 'rgba(200,0,0,0.1)' : 'var(--lab-chip-bg)', border: `1px solid ${msg.startsWith('Erro') ? '#cc0000' : 'var(--lab-accent)'}`, borderRadius: '8px', padding: '10px 14px', marginBottom: '16px', fontSize: '13px', color: msg.startsWith('Erro') ? '#cc0000' : 'var(--lab-chip-txt)', fontWeight: 600 }}>
+              {msg}
+            </div>
+          )}
+
           {resumo.length > 0 && (
             <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '10px' }}>
               <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--lab-bdr)', fontSize: '12px', fontWeight: '700', color: R.txt }}>
@@ -287,12 +367,22 @@ export default function LabFaturamento() {
                         <td style={{ padding: '12px 14px', fontSize: '13px', fontFamily: "'Courier New', monospace", color: R.txt }}>{brl(r.valor_total)}</td>
                         <td style={{ padding: '12px 14px', fontSize: '13px', fontFamily: "'Courier New', monospace", fontWeight: '700', color: R.accent }}>{brl(liq)}</td>
                         <td style={{ padding: '12px 14px' }}>
-                          <button
-                            onClick={() => gerarFechamento(r.otica_id, r.qtd_os, r.valor_total)}
-                            disabled={gerandoId === r.otica_id}
-                            style={{ padding: '6px 16px', fontSize: '12px', fontWeight: '600', background: gerandoId === r.otica_id ? R.dim : R.accent, color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit' }}>
-                            {gerandoId === r.otica_id ? 'Gerando...' : 'Gerar Fechamento'}
-                          </button>
+                          <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                            <button onClick={() => visualizarFechamento(r.otica_id, r.otica_nome, false)}
+                              style={{ padding: '6px 12px', fontSize: '12px', fontWeight: '700', background: R.alt, color: R.accent2, border: '1px solid var(--lab-bdr)', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                              👁 Visualizar
+                            </button>
+                            <button onClick={() => visualizarFechamento(r.otica_id, r.otica_nome, true)}
+                              style={{ padding: '6px 12px', fontSize: '12px', fontWeight: '700', background: 'transparent', color: R.accent, border: `1px solid ${R.accent}66`, borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                              ⬇ PDF
+                            </button>
+                            <button
+                              onClick={() => gerarFechamento(r.otica_id, r.otica_nome, r.qtd_os, r.valor_total)}
+                              disabled={gerandoId === r.otica_id}
+                              style={{ padding: '6px 16px', fontSize: '12px', fontWeight: '700', background: gerandoId === r.otica_id ? R.dim : R.accent, color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                              {gerandoId === r.otica_id ? 'Gerando...' : 'Gerar'}
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
