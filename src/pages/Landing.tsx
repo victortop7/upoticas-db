@@ -14,6 +14,7 @@ const TX2 = '#475569';     // corpo
 const TX3 = '#94a3b8';     // suave
 const BD = '#e6ebf0';      // bordas
 const CARD_SH = '0 1px 2px rgba(15,23,42,0.04), 0 8px 24px rgba(15,23,42,0.05)';
+const inputStyle: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '12px 14px', fontSize: '14px', background: '#f8fafc', border: '1px solid #e6ebf0', borderRadius: '10px', color: '#0f172a', outline: 'none', fontFamily: "'Inter', sans-serif" };
 
 const PRODUTOS = [
   {
@@ -45,9 +46,11 @@ const HERO_SLIDES = [
 
 // Apps instaláveis no computador (Vision fica de fora — é app de celular/tablet)
 const DOWNLOADS = [
-  { key: 'otica', nome: 'Connect Óticas', cor: '#16a34a', icon: '/icon-512.png', desc: 'Gestão da ótica — clientes, OS, vendas, estoque e financeiro.', manifest: '/manifest-otica.webmanifest' },
-  { key: 'lab', nome: 'Connect LAB', cor: '#0f7a35', icon: '/icon-lab-512.png', desc: 'Produção do laboratório — funil, surfaçagem e rastreio.', manifest: '/manifest-lab.webmanifest' },
+  { key: 'otica', nome: 'Connect Óticas', cor: '#16a34a', icon: '/logo-otica.png', desc: 'Gestão da ótica — clientes, OS, vendas, estoque e financeiro.', manifest: '/manifest-otica.webmanifest' },
+  { key: 'lab', nome: 'Connect LAB', cor: '#0f7a35', icon: '/logo-lab-app.png', desc: 'Produção do laboratório — funil, surfaçagem e rastreio.', manifest: '/manifest-lab.webmanifest' },
 ];
+
+const WHATSAPP = '5585991507887';
 
 const SHOWCASE = [
   {
@@ -76,33 +79,6 @@ const FEATURES = [
   { icon: '📊', title: 'Painel Gerencial', desc: 'Relatórios de vendas, OS por situação, top clientes e resumo financeiro.' },
   { icon: '🤝', title: 'CRM & Marketing', desc: 'Funil Kanban automático: pós-venda, aniversário, indicação, reativação. Mensagens no WhatsApp.' },
   { icon: '👥', title: 'Multi-usuário', desc: 'Admin, vendedor e caixa com permissões separadas. Cada colaborador acessa só o que precisa.' },
-];
-
-const PLANOS = [
-  {
-    nome: 'Gestão', preco: '270', desc: 'Tudo para gerir e relacionar com clientes', destaque: false, cta: 'Começar grátis',
-    upsell: '+R$20/mês por usuário adicional',
-    features: [
-      { texto: 'Clientes ilimitados', inc: true }, { texto: 'Ordens de Serviço ilimitadas', inc: true },
-      { texto: 'Controle de Vendas e Caixa', inc: true }, { texto: 'Controle de Estoque', inc: true },
-      { texto: 'Financeiro (contas a pagar/receber)', inc: true }, { texto: 'Relatórios gerenciais', inc: true },
-      { texto: 'Impressão de OS', inc: true }, { texto: 'CRM & Funil de relacionamento', inc: true },
-      { texto: 'Marketing e Campanhas WhatsApp', inc: true }, { texto: '5 usuários incluídos', inc: true },
-      { texto: 'Nota Fiscal Eletrônica (NF-e)', inc: false },
-    ],
-  },
-  {
-    nome: 'Gestão Pro', preco: '370', desc: 'Gestão completa com NF-e e usuários ilimitados', destaque: true, cta: 'Começar grátis',
-    upsell: null,
-    features: [
-      { texto: 'Clientes ilimitados', inc: true }, { texto: 'Ordens de Serviço ilimitadas', inc: true },
-      { texto: 'Controle de Vendas e Caixa', inc: true }, { texto: 'Controle de Estoque', inc: true },
-      { texto: 'Financeiro (contas a pagar/receber)', inc: true }, { texto: 'Relatórios gerenciais', inc: true },
-      { texto: 'Impressão de OS', inc: true }, { texto: 'CRM & Funil de relacionamento', inc: true },
-      { texto: 'Marketing e Campanhas WhatsApp', inc: true }, { texto: 'Usuários ilimitados', inc: true },
-      { texto: 'Nota Fiscal Eletrônica (NF-e)', inc: true },
-    ],
-  },
 ];
 
 const FAQ = [
@@ -149,6 +125,27 @@ export default function Landing() {
     return () => clearInterval(t);
   }, []);
 
+  // ── Formulário de contato → WhatsApp ──
+  const [fNome, setFNome] = useState('');
+  const [fEmpresa, setFEmpresa] = useState('');
+  const [fTelefone, setFTelefone] = useState('');
+  const [fCidade, setFCidade] = useState('');
+  const [fSistema, setFSistema] = useState('Connect Óticas');
+  const [fMsg, setFMsg] = useState('');
+  function enviarWhatsApp(e: React.FormEvent) {
+    e.preventDefault();
+    const texto = [
+      '*Interesse no Conexão Óticas*',
+      `Sistema: ${fSistema}`,
+      `Nome: ${fNome}`,
+      fEmpresa && `Empresa/Ótica: ${fEmpresa}`,
+      fTelefone && `Telefone: ${fTelefone}`,
+      fCidade && `Cidade: ${fCidade}`,
+      fMsg && `Mensagem: ${fMsg}`,
+    ].filter(Boolean).join('\n');
+    window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(texto)}`, '_blank');
+  }
+
   // ── Instalar app no computador (troca o manifesto p/ o produto certo) ──
   const [instrucao, setInstrucao] = useState<string | null>(null);
   function setManifest(href: string) {
@@ -191,7 +188,7 @@ export default function Landing() {
           {!isMobile && <>
             <a href="#produtos" style={{ padding: '8px 16px', fontSize: '14px', color: TX2, textDecoration: 'none', fontWeight: '500' }}>Produtos</a>
             <a href="#downloads" style={{ padding: '8px 16px', fontSize: '14px', color: TX2, textDecoration: 'none', fontWeight: '500' }}>Downloads</a>
-            <a href="#planos" style={{ padding: '8px 16px', fontSize: '14px', color: TX2, textDecoration: 'none', fontWeight: '500' }}>Planos</a>
+            <a href="#contato" style={{ padding: '8px 16px', fontSize: '14px', color: TX2, textDecoration: 'none', fontWeight: '500' }}>Contato</a>
             <a href="#faq" style={{ padding: '8px 16px', fontSize: '14px', color: TX2, textDecoration: 'none', fontWeight: '500' }}>FAQ</a>
           </>}
           {!isMobile && <InstallAppButton label="Instalar app" style={{ padding: '8px 14px', fontSize: '13px', background: 'transparent', color: G, border: `1px solid ${G}55`, borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600, whiteSpace: 'nowrap' }} />}
@@ -436,40 +433,41 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ===== PLANOS ===== */}
-      <section style={{ padding: isMobile ? '60px 16px' : '88px 48px', maxWidth: '1100px', margin: '0 auto' }} id="planos">
-        <div style={{ textAlign: 'center', marginBottom: '44px' }}>
-          <div style={{ fontSize: '13px', color: G, fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '12px' }}>Planos e preços</div>
-          <h2 style={{ fontSize: isMobile ? '28px' : '36px', fontWeight: '800', margin: '0 0 12px', letterSpacing: '-0.8px', color: TX }}>Preços simples e transparentes</h2>
-          <p style={{ fontSize: '15px', color: TX2, margin: 0 }}>14 dias grátis em qualquer plano. Cancele quando quiser, sem multa.</p>
+      {/* ===== CONTATO (formulário → WhatsApp) ===== */}
+      <section style={{ padding: isMobile ? '60px 16px' : '88px 48px', maxWidth: '760px', margin: '0 auto' }} id="contato">
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <div style={{ fontSize: '13px', color: G, fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '12px' }}>Fale com a gente</div>
+          <h2 style={{ fontSize: isMobile ? '28px' : '36px', fontWeight: '800', margin: '0 0 12px', letterSpacing: '-0.8px', color: TX }}>Peça uma demonstração</h2>
+          <p style={{ fontSize: '15px', color: TX2, margin: 0 }}>Preencha os dados e a gente continua a conversa no WhatsApp, sem compromisso.</p>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: '20px', maxWidth: isMobile ? '100%' : '800px', margin: '0 auto' }}>
-          {PLANOS.map((p, i) => (
-            <div key={i} style={{ position: 'relative', background: '#fff', border: `1.5px solid ${p.destaque ? G : BD}`, borderRadius: '20px', padding: isMobile ? '28px 20px' : '36px 32px', boxShadow: p.destaque ? `0 20px 44px ${GLOW}0.16)` : CARD_SH }}>
-              {p.destaque && (
-                <div style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: `linear-gradient(135deg,${G},${G2})`, color: 'white', fontSize: '11px', fontWeight: '700', padding: '4px 14px', borderRadius: '20px', textTransform: 'uppercase', letterSpacing: '0.8px', whiteSpace: 'nowrap' }}>✦ Mais popular</div>
-              )}
-              <h3 style={{ margin: '0 0 4px', fontSize: '22px', fontWeight: '800', color: TX }}>{p.nome}</h3>
-              <p style={{ margin: '0 0 16px', fontSize: '13px', color: TX3 }}>{p.desc}</p>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '4px' }}>
-                <span style={{ fontSize: '14px', color: TX2, alignSelf: 'flex-start', marginTop: '8px' }}>R$</span>
-                <span style={{ fontSize: '48px', fontWeight: '900', letterSpacing: '-2px', color: p.destaque ? G : TX }}>{p.preco}</span>
-                <span style={{ fontSize: '14px', color: TX3 }}>/mês</span>
-              </div>
-              {p.upsell ? <div style={{ fontSize: '12px', color: G, fontWeight: '600', marginBottom: '20px' }}>{p.upsell}</div> : <div style={{ marginBottom: '20px' }} />}
-              <ul style={{ margin: '0 0 24px', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '9px' }}>
-                {p.features.map((f, j) => (
-                  <li key={j} style={{ fontSize: '13.5px', color: f.inc ? '#334155' : '#b4bdc9', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                    <span style={{ color: f.inc ? G : '#cbd5e1', fontWeight: '800', flexShrink: 0, marginTop: '1px', fontSize: '14px' }}>{f.inc ? '✓' : '✕'}</span>
-                    <span style={{ textDecoration: f.inc ? 'none' : 'line-through', textDecorationColor: '#cbd5e1' }}>{f.texto}</span>
-                  </li>
-                ))}
-              </ul>
-              <button onClick={() => navigate('/cadastro')} style={{ width: '100%', padding: '13px', fontSize: '15px', fontWeight: '700', background: p.destaque ? `linear-gradient(135deg,${G},${G2})` : '#fff', color: p.destaque ? 'white' : TX, border: p.destaque ? 'none' : `1px solid ${BD}`, borderRadius: '10px', cursor: 'pointer', fontFamily: 'inherit', boxShadow: p.destaque ? `0 8px 20px ${GLOW}0.3)` : 'none' }}>{p.cta}</button>
+        <form onSubmit={enviarWhatsApp} style={{ background: '#fff', border: `1px solid ${BD}`, borderRadius: '18px', padding: isMobile ? '22px 18px' : '32px', boxShadow: CARD_SH, display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div>
+            <label style={{ fontSize: '12px', fontWeight: 700, color: TX2, display: 'block', marginBottom: '6px' }}>Qual sistema te interessa?</label>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {['Connect Óticas', 'Connect LAB', 'Connect Vision', 'Os três'].map(s => {
+                const on = fSistema === s;
+                return (
+                  <button type="button" key={s} onClick={() => setFSistema(s)}
+                    style={{ padding: '8px 14px', fontSize: '13px', fontWeight: 700, borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit', background: on ? G : '#fff', color: on ? '#fff' : TX2, border: `1px solid ${on ? G : BD}` }}>
+                    {s}
+                  </button>
+                );
+              })}
             </div>
-          ))}
-        </div>
-        <p style={{ textAlign: 'center', fontSize: '13px', color: TX3, marginTop: '24px' }}>Connect LAB e Connect Vision têm planos próprios — fale com a gente para uma demonstração.</p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
+            <input required value={fNome} onChange={e => setFNome(e.target.value)} placeholder="Seu nome *" style={inputStyle} />
+            <input value={fEmpresa} onChange={e => setFEmpresa(e.target.value)} placeholder="Ótica / Laboratório" style={inputStyle} />
+            <input required value={fTelefone} onChange={e => setFTelefone(e.target.value)} placeholder="WhatsApp / Telefone *" style={inputStyle} />
+            <input value={fCidade} onChange={e => setFCidade(e.target.value)} placeholder="Cidade / UF" style={inputStyle} />
+          </div>
+          <textarea value={fMsg} onChange={e => setFMsg(e.target.value)} placeholder="Conte um pouco sobre sua necessidade (opcional)" rows={3} style={{ ...inputStyle, resize: 'vertical' }} />
+          <button type="submit" style={{ padding: '15px', fontSize: '16px', fontWeight: 800, background: '#25D366', color: '#fff', border: 'none', borderRadius: '11px', cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 20px rgba(37,211,102,0.3)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M17.5 14.4c-.3-.15-1.7-.85-2-.95-.26-.1-.45-.15-.64.15-.19.29-.74.94-.9 1.13-.17.19-.33.22-.62.07-.3-.15-1.25-.46-2.38-1.47-.88-.78-1.47-1.75-1.64-2.05-.17-.29-.02-.45.13-.6.13-.13.3-.34.44-.51.15-.17.19-.29.29-.48.1-.19.05-.36-.02-.51-.08-.15-.64-1.55-.88-2.12-.23-.55-.47-.48-.64-.49h-.55c-.19 0-.5.07-.76.36-.26.29-1 .97-1 2.37s1.02 2.75 1.17 2.94c.14.19 2 3.05 4.85 4.28.68.29 1.2.47 1.61.6.68.22 1.29.19 1.78.11.54-.08 1.66-.68 1.9-1.33.23-.65.23-1.21.16-1.33-.06-.11-.24-.18-.53-.32z"/><path d="M12 2C6.5 2 2 6.5 2 12c0 1.77.46 3.42 1.27 4.86L2 22l5.28-1.38A9.94 9.94 0 0 0 12 22c5.5 0 10-4.5 10-10S17.5 2 12 2zm0 18.2c-1.5 0-2.94-.4-4.2-1.15l-.3-.18-3.1.82.83-3.02-.2-.31A8.16 8.16 0 0 1 3.8 12c0-4.52 3.68-8.2 8.2-8.2s8.2 3.68 8.2 8.2-3.68 8.2-8.2 8.2z"/></svg>
+            Continuar no WhatsApp
+          </button>
+          <p style={{ fontSize: '12px', color: TX3, textAlign: 'center', margin: 0 }}>Abre uma conversa com nossa equipe já com seus dados preenchidos.</p>
+        </form>
       </section>
 
       {/* ===== FAQ ===== */}
@@ -510,7 +508,7 @@ export default function Landing() {
           {!isMobile && (
             <div style={{ display: 'flex', gap: '24px' }}>
               <a href="#produtos" style={{ fontSize: '13px', color: TX3, textDecoration: 'none' }}>Produtos</a>
-              <a href="#planos" style={{ fontSize: '13px', color: TX3, textDecoration: 'none' }}>Planos</a>
+              <a href="#contato" style={{ fontSize: '13px', color: TX3, textDecoration: 'none' }}>Contato</a>
               <a href="#faq" style={{ fontSize: '13px', color: TX3, textDecoration: 'none' }}>FAQ</a>
             </div>
           )}
