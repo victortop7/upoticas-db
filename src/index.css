@@ -72,6 +72,12 @@ input, select, textarea, button { font-family: var(--sans); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes pulseBtn {
+  0%, 100% { transform: scale(1); box-shadow: 0 8px 20px rgba(22,163,74,0.28); }
+  50%      { transform: scale(1.03); box-shadow: 0 10px 28px rgba(22,163,74,0.5); }
+}
+.pulse-btn { animation: pulseBtn 1.2s ease-in-out infinite; }
+
 /* ─── Connect Lab — tema (claro/escuro) via variáveis ───
    Trocadas de uma vez pelo atributo data-lab-theme no <html>. */
 /* Claro — "clean tech" esverdeado (mesma identidade verde, sem o bege) */

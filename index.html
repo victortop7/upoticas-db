@@ -11,6 +11,21 @@
     <meta name="apple-mobile-web-app-title" content="Conexão Óticas" />
     <meta name="theme-color" content="#16a34a" />
     <link rel="manifest" href="/manifest.webmanifest" />
+    <script>
+      // Instalação por app: /?instalar=otica|lab troca o manifest ANTES do navegador
+      // avaliar a instalabilidade, para o beforeinstallprompt corresponder ao app certo.
+      (function () {
+        try {
+          var alvo = new URLSearchParams(location.search).get('instalar');
+          var href = alvo === 'lab' ? '/manifest-lab.webmanifest'
+                   : alvo === 'otica' ? '/manifest-otica.webmanifest' : null;
+          if (href) {
+            var l = document.querySelector('link[rel="manifest"]');
+            if (l) l.setAttribute('href', href);
+          }
+        } catch (e) { /* silencioso */ }
+      })();
+    </script>
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <title>Conexão Óticas — Sistema de Gestão</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />

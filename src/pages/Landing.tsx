@@ -148,27 +148,69 @@ export default function Landing() {
 
   // ── Instalar app no computador (troca o manifesto p/ o produto certo) ──
   const [instrucao, setInstrucao] = useState<string | null>(null);
-  function setManifest(href: string) {
-    let link = document.querySelector('link[rel="manifest"]') as HTMLLinkElement | null;
-    if (!link) { link = document.createElement('link'); link.rel = 'manifest'; document.head.appendChild(link); }
-    link.href = href;
-  }
-  function esperarPromptFresco(ms: number): Promise<{ prompt: () => Promise<void>; userChoice: Promise<unknown> } | null> {
+  const [promptPronto, setPromptPronto] = useState<boolean>(
+    typeof window !== 'undefined' && !!(window as unknown as { __pwaPrompt?: unknown }).__pwaPrompt
+  );
+  // Qual app o usuário pediu para instalar (vem na URL: /?instalar=otica|lab).
+  // O <script> no index.html já trocou o manifest para esse produto ANTES do load,
+  // então o beforeinstallprompt capturado corresponde ao app certo.
+  const instalarParam = typeof window !== 'undefined'
+    ? new URLSearchParams(window.location.search).get('instalar')
+    : null;
+
+  type PwaPrompt = { prompt: () => Promise<void>; userChoice: Promise<unknown> };
+  function esperarPrompt(ms: number): Promise<PwaPrompt | null> {
     return new Promise(res => {
+      const atual = (window as unknown as { __pwaPrompt?: PwaPrompt }).__pwaPrompt;
+      if (atual) return res(atual);
       let done = false;
-      const fim = (v: unknown) => { if (done) return; done = true; window.removeEventListener('pwa-installable', on); res(v as never); };
-      const on = () => fim((window as unknown as { __pwaPrompt?: unknown }).__pwaPrompt ?? null);
+      const fim = (v: PwaPrompt | null) => { if (done) return; done = true; window.removeEventListener('pwa-installable', on); res(v); };
+      const on = () => fim((window as unknown as { __pwaPrompt?: PwaPrompt }).__pwaPrompt ?? null);
       window.addEventListener('pwa-installable', on);
       setTimeout(() => fim(null), ms);
     });
   }
-  async function instalarApp(manifest: string, nome: string) {
-    const jaApp = window.matchMedia('(display-mode: standalone)').matches;
-    if (jaApp) { setInstrucao(nome); return; }
-    setManifest(manifest);
-    const p = await esperarPromptFresco(1800);
-    if (p) { try { await p.prompt(); await p.userChoice; } catch { /* ignora */ } (window as unknown as { __pwaPrompt?: unknown }).__pwaPrompt = null; }
-    else setInstrucao(nome);
+
+  useEffect(() => {
+    const onProto = () => setPromptPronto(true);
+    const onInstalado = () => { setPromptPronto(false); setInstrucao(null); };
+    window.addEventListener('pwa-installable', onProto);
+    window.addEventListener('pwa-installed', onInstalado);
+    let timer: number | undefined;
+    if (instalarParam && !window.matchMedia('(display-mode: standalone)').matches) {
+      setTimeout(() => document.getElementById('downloads')?.scrollIntoView({ behavior: 'smooth' }), 250);
+      // Fallback: se em 4s o navegador não ofereceu instalação nativa (Firefox/Safari
+      // ou app já instalado), mostra as instruções manuais.
+      timer = window.setTimeout(() => {
+        if (!(window as unknown as { __pwaPrompt?: unknown }).__pwaPrompt) {
+          setInstrucao(instalarParam === 'lab' ? 'Connect LAB' : 'Connect Óticas');
+        }
+      }, 4000);
+    }
+    return () => {
+      window.removeEventListener('pwa-installable', onProto);
+      window.removeEventListener('pwa-installed', onInstalado);
+      if (timer) clearTimeout(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function instalarApp(key: string, nome: string) {
+    if (window.matchMedia('(display-mode: standalone)').matches) { setInstrucao(nome); return; }
+    // O manifest deste produto já está ativo nesta página → instala nativo agora.
+    if (instalarParam === key) {
+      const p = await esperarPrompt(2500);
+      if (p) {
+        try { await p.prompt(); await p.userChoice; } catch { /* ignora */ }
+        (window as unknown as { __pwaPrompt?: unknown }).__pwaPrompt = null;
+        setPromptPronto(false);
+      } else {
+        setInstrucao(nome);
+      }
+      return;
+    }
+    // Ainda está com o manifest da marca/de outro app → recarrega com o manifest certo.
+    window.location.href = `/?instalar=${key}#downloads`;
   }
 
   const px = isMobile ? '16px' : '48px';
@@ -212,9 +254,10 @@ export default function Landing() {
                 <img src={d.icon} alt={d.nome} width={76} height={76} style={{ borderRadius: '18px', marginBottom: '14px', boxShadow: `0 8px 20px ${d.cor}33` }} />
                 <div style={{ fontSize: '20px', fontWeight: '800', color: TX, marginBottom: '6px' }}>{d.nome}</div>
                 <div style={{ fontSize: '13.5px', color: TX2, lineHeight: '1.55', marginBottom: '18px', maxWidth: '300px' }}>{d.desc}</div>
-                <button onClick={() => instalarApp(d.manifest, d.nome)}
+                <button onClick={() => instalarApp(d.key, d.nome)}
+                  className={instalarParam === d.key && promptPronto ? 'pulse-btn' : undefined}
                   style={{ width: '100%', maxWidth: '300px', padding: '14px', fontSize: '15px', fontWeight: '700', background: `linear-gradient(135deg,${G},${G2})`, color: '#fff', border: 'none', borderRadius: '11px', cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 8px 20px ${GLOW}0.28)`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                  ⤓ Instalar {d.nome}
+                  ⤓ {instalarParam === d.key && promptPronto ? `Instalar agora — clique` : `Instalar ${d.nome}`}
                 </button>
                 <div style={{ fontSize: '11.5px', color: TX3, marginTop: '10px' }}>Cria o ícone na área de trabalho</div>
               </div>
