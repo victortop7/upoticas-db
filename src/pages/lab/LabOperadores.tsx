@@ -75,7 +75,7 @@ export default function LabOperadores() {
   }
 
   return (
-    <div style={{ padding: '32px', maxWidth: '700px' }}>
+    <div style={{ padding: '32px', maxWidth: '1040px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
           <h1 style={{ margin: 0, fontSize: '22px', fontWeight: '700', color: R.txt }}>Operadores do Sistema</h1>
@@ -170,7 +170,7 @@ export default function LabOperadores() {
                 </tr>
               ) : operadores.map((op, i) => (
                 <tr key={op.id} style={{ borderBottom: i < operadores.length - 1 ? '1px solid var(--lab-bdr)' : 'none' }}>
-                  <td style={{ padding: '12px 16px', fontSize: '13px', color: R.txt, fontWeight: '600' }}>{op.nome}</td>
+                  <td style={{ padding: '12px 16px', fontSize: '13px', color: R.txt, fontWeight: '600', whiteSpace: 'nowrap' }}>{op.nome}</td>
                   <td style={{ padding: '12px 16px', fontSize: '13px', color: R.dim, fontFamily: "'Courier New', monospace" }}>{op.email}</td>
                   <td style={{ padding: '12px 16px' }}>
                     <span style={{ fontSize: '11px', fontWeight: '700', padding: '2px 9px', borderRadius: '20px', background: `${perfilCor(op.perfil)}1e`, color: perfilCor(op.perfil), border: `1px solid ${perfilCor(op.perfil)}55` }}>
