@@ -13,7 +13,7 @@ interface Fechamento {
 }
 
 interface Otica { id: string; nome: string; }
-interface ResumoOS { otica_id: string; otica_nome: string; qtd_os: number; valor_total: number; }
+interface OsItem { id: string; numero: number; ref_otica: string | null; cont_interno: string | null; total: number; created_at: string; status: string; otica_id: string; otica_nome: string; }
 
 function brl(v: number) { return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 function fmtDate(s: string | null) {
@@ -49,11 +49,13 @@ export default function LabFaturamento() {
   const [de, setDe] = useState('');                       // personalizado
   const [ate, setAte] = useState('');                     // personalizado
   const [oticaFiltro, setOticaFiltro] = useState('');
-  const [resumo, setResumo] = useState<ResumoOS[]>([]);
-  const [loadingResumo, setLoadingResumo] = useState(false);
+  const [osLista, setOsLista] = useState<OsItem[]>([]);
+  const [sel, setSel] = useState<Set<string>>(new Set());
+  const [busca, setBusca] = useState('');
+  const [carregandoOS, setCarregandoOS] = useState(false);
   const [desconto, setDesconto] = useState('0');
   const [vencimento, setVencimento] = useState('');
-  const [gerandoId, setGerandoId] = useState<string | null>(null);
+  const [gerando, setGerando] = useState(false);
   const [msg, setMsg] = useState('');
 
   // intervalo (ini/fim) calculado a partir do tipo de período
@@ -99,98 +101,107 @@ export default function LabFaturamento() {
   useEffect(() => { load(); }, [load]);
   useEffect(() => { api.get<Otica[]>('/lab/oticas').then(setOticas).catch(() => {}); }, []);
 
-  async function carregarResumo() {
+  async function carregarOS() {
     if (!rangeValido) return;
-    setLoadingResumo(true);
+    setCarregandoOS(true); setMsg('');
     try {
       const { ini, fim } = calcRange();
-      const data = await api.get<ResumoOS[]>(`/lab/faturamento/resumo?data_ini=${ini}&data_fim=${fim}${oticaFiltro ? `&otica_id=${oticaFiltro}` : ''}`);
-      setResumo(data);
-    } catch { setResumo([]); }
-    setLoadingResumo(false);
+      const data = await api.get<OsItem[]>(`/lab/faturamento/os?data_ini=${ini}&data_fim=${fim}${oticaFiltro ? `&otica_id=${oticaFiltro}` : ''}`);
+      setOsLista(data);
+      setSel(new Set(data.map(o => o.id)));   // começa com todas marcadas
+    } catch { setOsLista([]); setSel(new Set()); }
+    setCarregandoOS(false);
+  }
+  function toggleSel(id: string) {
+    setSel(s => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   }
 
-  async function gerarFechamento(oticaId: string, oticaNome: string, qtd: number, valor: number) {
-    setGerandoId(oticaId); setMsg('');
+  async function gerarSelecionadas() {
+    const escolhidas = osLista.filter(o => sel.has(o.id));
+    if (!escolhidas.length) { setMsg('Erro: selecione ao menos uma OS.'); return; }
+    setGerando(true); setMsg('');
     const { ini, fim } = calcRange();
-    const desc = parseFloat(desconto) || 0;
+    const grupos = new Map<string, OsItem[]>();
+    escolhidas.forEach(o => { const a = grupos.get(o.otica_id) || []; a.push(o); grupos.set(o.otica_id, a); });
+    const descTotal = parseFloat(desconto) || 0;
     try {
-      const r = await api.post<{ id: string }>('/lab/faturamento', {
-        otica_id: oticaId, tipo: tipoDoFechamento(),
-        periodo_ini: ini, periodo_fim: fim,
-        valor_bruto: valor, desconto: desc,
-        valor_liquido: Math.max(0, valor - desc),
-        data_vencimento: vencimento || null,
-        qtd_os: qtd,
-      });
-      void r;
-      setResumo(x => x.filter(o => o.otica_id !== oticaId));
-      setMsg(`✓ Fechamento de ${oticaNome} gerado (${fmtDate(ini)} a ${fmtDate(fim)}). Veja na aba "Fechamentos".`);
+      for (const [otica_id, os] of grupos) {
+        const valor = os.reduce((a, o) => a + (o.total || 0), 0);
+        const desc = grupos.size === 1 ? descTotal : 0;   // desconto só quando é uma ótica
+        await api.post('/lab/faturamento', {
+          otica_id, tipo: tipoDoFechamento(), periodo_ini: ini, periodo_fim: fim,
+          valor_bruto: valor, desconto: desc, valor_liquido: Math.max(0, valor - desc),
+          data_vencimento: vencimento || null, qtd_os: os.length,
+        });
+      }
+      setMsg(`✓ ${grupos.size} fechamento(s) gerado(s) com ${escolhidas.length} OS. Veja na aba "Fechamentos".`);
+      setOsLista(l => l.filter(o => !sel.has(o.id)));
+      setSel(new Set());
       load();
     } catch (e: unknown) {
       setMsg(`Erro ao gerar: ${e instanceof Error ? e.message : 'tente novamente'}`);
-    } finally { setGerandoId(null); }
+    } finally { setGerando(false); }
   }
 
-  // Abre o documento do fechamento (todas as OS + serviços do período da ótica) para ver/imprimir/PDF
-  async function visualizarFechamento(oticaId: string, oticaNome: string, auto: boolean) {
+  // Documento do fechamento com as OS SELECIONADAS (agrupadas por ótica) — ver/imprimir/PDF
+  async function visualizarSelecionadas(auto: boolean) {
+    const escolhidas = osLista.filter(o => sel.has(o.id));
+    if (!escolhidas.length) { setMsg('Erro: selecione ao menos uma OS.'); return; }
     const { ini, fim } = calcRange();
-    const desc = parseFloat(desconto) || 0;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let ordens: any[] = [], servicos: any[] = [];
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const r = await api.get<{ ordens: any[]; servicos: any[] }>(`/lab/relatorios/servicos?otica_id=${oticaId}&data_ini=${ini}&data_fim=${fim}`);
-      // fechamento cobra as OS concluídas (mesma base do resumo: pronto/entregue)
-      ordens = (r.ordens || []).filter(o => o.status === 'pronto' || o.status === 'entregue');
-      servicos = r.servicos || [];
-    } catch { /* segue vazio */ }
+    const selIds = new Set(escolhidas.map(o => o.id));
+    const oticaIds = [...new Set(escolhidas.map(o => o.otica_id))];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const svcPorOS: Record<string, any[]> = {};
-    servicos.forEach(s => { (svcPorOS[s.ordem_id] ||= []).push(s); });
+    await Promise.all(oticaIds.map(async oid => {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const r = await api.get<{ servicos: any[] }>(`/lab/relatorios/servicos?otica_id=${oid}&data_ini=${ini}&data_fim=${fim}`);
+        (r.servicos || []).forEach(s => { if (selIds.has(s.ordem_id)) (svcPorOS[s.ordem_id] ||= []).push(s); });
+      } catch { /* segue */ }
+    }));
+    const grupos = new Map<string, OsItem[]>();
+    escolhidas.forEach(o => { const a = grupos.get(o.otica_id) || []; a.push(o); grupos.set(o.otica_id, a); });
+
     const G = '#0a7a2e', GBG = '#e8efe9';
     const mb = (v: number) => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    const bruto = ordens.reduce((a, o) => a + (o.total || 0), 0);
+    const bruto = escolhidas.reduce((a, o) => a + (o.total || 0), 0);
+    const desc = grupos.size === 1 ? (parseFloat(desconto) || 0) : 0;
     const liq = Math.max(0, bruto - desc);
+    const umaOtica = grupos.size === 1;
+    const titulo = umaOtica ? escolhidas[0].otica_nome : `${grupos.size} óticas`;
 
-    const blocos = ordens.map(o => {
-      const svcs = svcPorOS[o.id] || [];
-      const svcHtml = svcs.length
-        ? svcs.map(s => `<tr style="background:#f4f2ee">
-            <td style="padding:3px 8px 3px 26px;font-family:monospace;font-size:10px;color:#555">${s.codigo || ''}</td>
-            <td style="padding:3px 8px;font-size:10px;color:#333">${s.descricao || ''}</td>
-            <td style="padding:3px 8px;font-family:monospace;font-size:10px;text-align:center">${Number(s.qtd || 0).toFixed(2)}</td>
-            <td style="padding:3px 8px;font-family:monospace;font-size:10px;text-align:right">${mb(s.valor_unit || 0)}</td>
-            <td style="padding:3px 8px;font-family:monospace;font-size:10px;text-align:right;font-weight:700">${mb(s.total || 0)}</td>
-          </tr>`).join('')
-        : `<tr style="background:#f4f2ee"><td colspan="5" style="padding:3px 26px;font-size:10px;color:#aaa;font-style:italic">Sem serviços detalhados</td></tr>`;
-      return `<tr style="background:${G}">
-          <td style="padding:5px 8px;font-family:monospace;font-weight:900;color:#fff;font-size:12px">#${String(o.numero).padStart(4, '0')}</td>
-          <td style="padding:5px 8px;font-family:monospace;color:#cff0d6;font-size:10px" colspan="2">${(o.created_at || '').slice(0, 10).split('-').reverse().join('/')} · Ref: ${o.ref_otica || '—'}</td>
-          <td style="padding:5px 8px;font-size:10px;color:#cff0d6;text-align:right">Total OS</td>
-          <td style="padding:5px 8px;font-family:monospace;font-weight:900;color:#fff;text-align:right">${mb(o.total || 0)}</td>
-        </tr>${svcHtml}<tr><td colspan="5" style="height:4px;background:${GBG}"></td></tr>`;
+    const secoes = [...grupos.values()].map(os => {
+      const nome = os[0].otica_nome;
+      const sub = os.reduce((a, o) => a + (o.total || 0), 0);
+      const linhas = os.map(o => {
+        const svcs = svcPorOS[o.id] || [];
+        const svcHtml = svcs.length ? svcs.map(s => `<tr style="background:#f4f2ee"><td style="padding:3px 8px 3px 26px;font-family:monospace;font-size:10px;color:#555">${s.codigo || ''}</td><td style="padding:3px 8px;font-size:10px;color:#333">${s.descricao || ''}</td><td style="padding:3px 8px;font-family:monospace;font-size:10px;text-align:center">${Number(s.qtd || 0).toFixed(2)}</td><td style="padding:3px 8px;font-family:monospace;font-size:10px;text-align:right">${mb(s.valor_unit || 0)}</td><td style="padding:3px 8px;font-family:monospace;font-size:10px;text-align:right;font-weight:700">${mb(s.total || 0)}</td></tr>`).join('') : '';
+        return `<tr style="background:${G}"><td style="padding:5px 8px;font-family:monospace;font-weight:900;color:#fff;font-size:12px">#${String(o.numero).padStart(4, '0')}</td><td colspan="2" style="padding:5px 8px;font-family:monospace;color:#cff0d6;font-size:10px">${(o.created_at || '').slice(0, 10).split('-').reverse().join('/')} · Ref: ${o.ref_otica || '—'}</td><td style="padding:5px 8px;font-size:10px;color:#cff0d6;text-align:right">Total OS</td><td style="padding:5px 8px;font-family:monospace;font-weight:900;color:#fff;text-align:right">${mb(o.total || 0)}</td></tr>${svcHtml}<tr><td colspan="5" style="height:3px;background:${GBG}"></td></tr>`;
+      }).join('');
+      const subRow = umaOtica ? '' : `<tr><td colspan="4" style="padding:4px 8px;text-align:right;font-size:11px;color:#555">Subtotal ${nome}</td><td style="padding:4px 8px;text-align:right;font-family:monospace;font-weight:700">${mb(sub)}</td></tr>`;
+      const cab = umaOtica ? '' : `<tr><td colspan="5" style="padding:10px 8px 4px;font-size:13px;font-weight:900;color:${G}">${nome} — ${os.length} OS</td></tr>`;
+      return cab + linhas + subRow;
     }).join('');
 
     const toolbar = `<div class="noprint" style="position:sticky;top:0;display:flex;gap:8px;justify-content:flex-end;align-items:center;padding:10px 12px;background:#0f2a1c;margin:-12px -12px 12px">
-        <span style="color:#cff0d6;font-size:12px;margin-right:auto;font-weight:600">Fechamento — ${oticaNome}</span>
+        <span style="color:#cff0d6;font-size:12px;margin-right:auto;font-weight:600">Fechamento — ${titulo}</span>
         <button onclick="window.print()" style="padding:8px 16px;font-size:13px;font-weight:700;background:#16a34a;color:#fff;border:none;border-radius:8px;cursor:pointer">⬇ Baixar PDF / Imprimir</button>
         <button onclick="window.close()" style="padding:8px 14px;font-size:13px;background:transparent;color:#cff0d6;border:1px solid #2f6b45;border-radius:8px;cursor:pointer">Fechar</button>
       </div>`;
 
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Fechamento — ${oticaNome}</title>
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Fechamento — ${titulo}</title>
       <style>*{box-sizing:border-box}body{margin:12px;font-family:Arial,sans-serif;font-size:11px;color:#000;background:#fff}
       table{width:100%;border-collapse:collapse}.hdr th{background:${G};color:#fff;padding:5px 8px;text-align:left;font-size:10px}
       @page{margin:8mm}@media print{body{margin:0}.noprint{display:none!important}}</style></head><body>
       ${toolbar}
       <div style="text-align:center;margin-bottom:12px;border-bottom:2px solid ${G};padding-bottom:8px">
-        <div style="font-size:16px;font-weight:900;text-transform:uppercase;color:${G}">${oticaNome}</div>
+        <div style="font-size:16px;font-weight:900;text-transform:uppercase;color:${G}">${titulo}</div>
         <div style="font-size:11px;color:#333;margin-top:2px">FECHAMENTO DE FATURAMENTO</div>
-        <div style="font-size:10px;color:#666">Período: ${fmtDate(ini)} a ${fmtDate(fim)} &nbsp;|&nbsp; ${ordens.length} OS${vencimento ? ` &nbsp;|&nbsp; Vencimento: ${fmtDate(vencimento)}` : ''}</div>
+        <div style="font-size:10px;color:#666">Período: ${fmtDate(ini)} a ${fmtDate(fim)} &nbsp;|&nbsp; ${escolhidas.length} OS${vencimento ? ` &nbsp;|&nbsp; Vencimento: ${fmtDate(vencimento)}` : ''}</div>
         <div style="font-size:9px;color:#aaa">Emitido em ${new Date().toLocaleString('pt-BR')} — Connect LAB</div>
       </div>
       <table><thead class="hdr"><tr><th>Nº OS</th><th>Data / Ref.</th><th style="text-align:center">Qtd</th><th style="text-align:right">V.Unit</th><th style="text-align:right">Total</th></tr></thead>
-      <tbody>${blocos || '<tr><td colspan="5" style="padding:20px;text-align:center;color:#aaa">Nenhuma OS no período.</td></tr>'}</tbody></table>
+      <tbody>${secoes}</tbody></table>
       <div style="margin-top:14px;margin-left:auto;width:280px;font-size:12px">
         <div style="display:flex;justify-content:space-between;padding:4px 0"><span style="color:#555">Bruto</span><b style="font-family:monospace">${mb(bruto)}</b></div>
         <div style="display:flex;justify-content:space-between;padding:4px 0"><span style="color:#555">Desconto</span><b style="font-family:monospace;color:#c00">${desc > 0 ? '- ' + mb(desc) : mb(0)}</b></div>
@@ -294,7 +305,7 @@ export default function LabFaturamento() {
             <label style={LBL}>Período do fechamento</label>
             <div style={{ display: 'flex', gap: '6px', marginBottom: '14px', flexWrap: 'wrap' }}>
               {([['dia', 'Dia'], ['semana', 'Semana'], ['quinzena', 'Quinzena'], ['mes', 'Mês'], ['personalizado', 'Personalizado']] as [PeriodoTipo, string][]).map(([v, l]) => (
-                <button key={v} onClick={() => { setPeriodoTipo(v); setResumo([]); }}
+                <button key={v} onClick={() => { setPeriodoTipo(v); setOsLista([]); setSel(new Set()); }}
                   style={{ padding: '6px 14px', fontSize: '12px', fontWeight: '700', borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${periodoTipo === v ? R.accent : 'var(--lab-bdr)'}`, background: periodoTipo === v ? R.accent : 'transparent', color: periodoTipo === v ? '#fff' : R.dim }}>
                   {l}
                 </button>
@@ -326,8 +337,8 @@ export default function LabFaturamento() {
               </div>
               <div><label style={LBL}>Desconto (R$)</label><input type="number" step="0.01" value={desconto} onChange={e => setDesconto(e.target.value)} style={{ ...INP, width: '100px' }} /></div>
               <div><label style={LBL}>Vencimento</label><input type="date" value={vencimento} onChange={e => setVencimento(e.target.value)} style={{ ...INP, width: '140px' }} /></div>
-              <button onClick={carregarResumo} disabled={loadingResumo || !rangeValido} style={{ padding: '8px 20px', fontSize: '13px', fontWeight: '600', background: (loadingResumo || !rangeValido) ? R.dim : R.accent, color: 'var(--lab-on-accent)', border: 'none', borderRadius: '7px', cursor: (loadingResumo || !rangeValido) ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
-                {loadingResumo ? 'Carregando...' : 'Calcular'}
+              <button onClick={carregarOS} disabled={carregandoOS || !rangeValido} style={{ padding: '8px 20px', fontSize: '13px', fontWeight: '600', background: (carregandoOS || !rangeValido) ? R.dim : R.accent, color: 'var(--lab-on-accent)', border: 'none', borderRadius: '7px', cursor: (carregandoOS || !rangeValido) ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
+                {carregandoOS ? 'Carregando...' : 'Buscar OS'}
               </button>
             </div>
 
@@ -345,54 +356,64 @@ export default function LabFaturamento() {
             </div>
           )}
 
-          {resumo.length > 0 && (
-            <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '10px' }}>
-              <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--lab-bdr)', fontSize: '12px', fontWeight: '700', color: R.txt }}>
-                OSes do período — {fmtDate(rangeAtual.ini)} a {fmtDate(rangeAtual.fim)} ({resumo.reduce((a, r) => a + r.qtd_os, 0)} OS, {brl(resumo.reduce((a, r) => a + r.valor_total, 0))})
-              </div>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ background: R.alt, borderBottom: '1px solid var(--lab-bdr)' }}>
-                    {['Ótica', 'Qtd OS', 'Valor Total', 'Líquido (c/ desconto)', ''].map(h => (
-                      <th key={h} style={{ padding: '8px 14px', textAlign: 'left', fontSize: '10px', fontWeight: '600', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {resumo.map(r => {
-                    const desc = parseFloat(desconto) || 0;
-                    const liq = Math.max(0, r.valor_total - desc);
-                    return (
-                      <tr key={r.otica_id} style={{ borderBottom: '1px solid var(--lab-bdr)' }}>
-                        <td style={{ padding: '12px 14px', fontSize: '13px', fontWeight: '600', color: R.txt }}>{r.otica_nome}</td>
-                        <td style={{ padding: '12px 14px', fontSize: '13px', fontFamily: "'Courier New', monospace", color: R.dim, textAlign: 'center' }}>{r.qtd_os}</td>
-                        <td style={{ padding: '12px 14px', fontSize: '13px', fontFamily: "'Courier New', monospace", color: R.txt }}>{brl(r.valor_total)}</td>
-                        <td style={{ padding: '12px 14px', fontSize: '13px', fontFamily: "'Courier New', monospace", fontWeight: '700', color: R.accent }}>{brl(liq)}</td>
-                        <td style={{ padding: '12px 14px' }}>
-                          <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
-                            <button onClick={() => visualizarFechamento(r.otica_id, r.otica_nome, false)}
-                              style={{ padding: '6px 12px', fontSize: '12px', fontWeight: '700', background: R.alt, color: R.accent2, border: '1px solid var(--lab-bdr)', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit' }}>
-                              👁 Visualizar
-                            </button>
-                            <button onClick={() => visualizarFechamento(r.otica_id, r.otica_nome, true)}
-                              style={{ padding: '6px 12px', fontSize: '12px', fontWeight: '700', background: 'transparent', color: R.accent, border: `1px solid ${R.accent}66`, borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit' }}>
-                              ⬇ PDF
-                            </button>
-                            <button
-                              onClick={() => gerarFechamento(r.otica_id, r.otica_nome, r.qtd_os, r.valor_total)}
-                              disabled={gerandoId === r.otica_id}
-                              style={{ padding: '6px 16px', fontSize: '12px', fontWeight: '700', background: gerandoId === r.otica_id ? R.dim : R.accent, color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit' }}>
-                              {gerandoId === r.otica_id ? 'Gerando...' : 'Gerar'}
-                            </button>
-                          </div>
-                        </td>
+          {osLista.length > 0 && (() => {
+            const b = busca.trim().toLowerCase();
+            const filtradas = osLista.filter(o =>
+              !b || String(o.numero).padStart(4, '0').includes(b) || String(o.numero).includes(b)
+              || (o.otica_nome || '').toLowerCase().includes(b) || (o.ref_otica || '').toLowerCase().includes(b)
+              || (o.cont_interno || '').toLowerCase().includes(b));
+            const qtdSel = sel.size;
+            const totalSel = osLista.filter(o => sel.has(o.id)).reduce((a, o) => a + (o.total || 0), 0);
+            const todosMarc = filtradas.length > 0 && filtradas.every(o => sel.has(o.id));
+            const toggleTodos = () => setSel(s => { const n = new Set(s); if (todosMarc) filtradas.forEach(o => n.delete(o.id)); else filtradas.forEach(o => n.add(o.id)); return n; });
+            const acaoBtn = (label: string, on: () => void, primary?: boolean) => (
+              <button onClick={on} disabled={!qtdSel || gerando} style={{ padding: '7px 14px', fontSize: '12px', fontWeight: '700', borderRadius: '7px', cursor: (!qtdSel || gerando) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: (!qtdSel || gerando) ? 0.5 : 1, border: primary ? 'none' : `1px solid ${R.accent}66`, background: primary ? R.accent : 'transparent', color: primary ? '#fff' : R.accent }}>{label}</button>
+            );
+            return (
+              <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '10px' }}>
+                <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--lab-bdr)', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar OS, ótica, referência..." style={{ ...INP, width: '250px', fontFamily: "'Montserrat', sans-serif" }} />
+                  <span style={{ fontSize: '12px', color: R.dim }}><b style={{ color: R.txt }}>{qtdSel}</b> de {osLista.length} OS selecionadas · <b style={{ color: R.accent }}>{brl(totalSel)}</b></span>
+                  <div style={{ marginLeft: 'auto', display: 'flex', gap: '6px' }}>
+                    {acaoBtn('👁 Visualizar', () => visualizarSelecionadas(false))}
+                    {acaoBtn('⬇ PDF', () => visualizarSelecionadas(true))}
+                    {acaoBtn(gerando ? 'Gerando...' : 'Gerar Fechamento', gerarSelecionadas, true)}
+                  </div>
+                </div>
+                <div style={{ maxHeight: 'calc(100vh - 400px)', overflowY: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead style={{ position: 'sticky', top: 0 }}>
+                      <tr style={{ background: R.alt, borderBottom: '1px solid var(--lab-bdr)' }}>
+                        <th style={{ padding: '8px 12px', width: '34px', textAlign: 'center' }}><input type="checkbox" checked={todosMarc} onChange={toggleTodos} title="Selecionar todos" /></th>
+                        {['Nº OS', 'Ótica', 'Ref.', 'C.Int.', 'Data', 'Status', 'Valor'].map(h => (
+                          <th key={h} style={{ padding: '8px 12px', textAlign: h === 'Valor' ? 'right' : 'left', fontSize: '10px', fontWeight: '600', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>{h}</th>
+                        ))}
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
+                    </thead>
+                    <tbody>
+                      {filtradas.length === 0 ? (
+                        <tr><td colSpan={8} style={{ padding: '30px', textAlign: 'center', color: R.dim, fontSize: '13px' }}>Nenhuma OS encontrada.</td></tr>
+                      ) : filtradas.map(o => {
+                        const on = sel.has(o.id);
+                        return (
+                          <tr key={o.id} onClick={() => toggleSel(o.id)} style={{ borderBottom: '1px solid var(--lab-bdr)', cursor: 'pointer', background: on ? `${R.accent}12` : 'transparent' }}>
+                            <td style={{ padding: '8px 12px', textAlign: 'center' }}><input type="checkbox" checked={on} onChange={() => toggleSel(o.id)} onClick={e => e.stopPropagation()} /></td>
+                            <td style={{ padding: '8px 12px', fontFamily: "'Courier New', monospace", fontSize: '13px', fontWeight: '700', color: R.txt }}>#{String(o.numero).padStart(4, '0')}</td>
+                            <td style={{ padding: '8px 12px', fontSize: '13px', color: R.txt, maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.otica_nome}</td>
+                            <td style={{ padding: '8px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{o.ref_otica || '—'}</td>
+                            <td style={{ padding: '8px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{o.cont_interno || '—'}</td>
+                            <td style={{ padding: '8px 12px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim, whiteSpace: 'nowrap' }}>{fmtDate(o.created_at)}</td>
+                            <td style={{ padding: '8px 12px' }}><span style={{ fontSize: '10px', fontWeight: '600', color: STATUS_COLOR[o.status] ?? R.dim, background: `${STATUS_COLOR[o.status] ?? R.dim}18`, padding: '2px 7px', borderRadius: '20px', whiteSpace: 'nowrap' }}>{o.status === 'pronto' ? 'Pronto' : 'Entregue'}</span></td>
+                            <td style={{ padding: '8px 12px', fontSize: '13px', fontFamily: "'Courier New', monospace", fontWeight: '700', color: R.txt, textAlign: 'right', whiteSpace: 'nowrap' }}>{brl(o.total)}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )}
     </div>
