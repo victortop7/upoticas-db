@@ -18,8 +18,6 @@ const MODULOS: { letra: ModuleKey; nome: string; icon: IconName; ativo: boolean 
   { letra: 'H', nome: 'CONTROLE DE FLUXO',         icon: 'flow',      ativo: true  },
   { letra: 'I', nome: 'NOTAS FISCAIS',             icon: 'invoice',   ativo: false },
   { letra: 'J', nome: 'FATURAMENTO',               icon: 'billing',   ativo: true  },
-  { letra: 'K', nome: 'CONTAS A RECEBER/PAGAR',    icon: 'wallet',    ativo: true  },
-  { letra: 'L', nome: 'CONTROLE BANCÁRIO',         icon: 'bank',      ativo: true  },
   { letra: 'A', nome: 'CONFIGURAÇÕES',             icon: 'settings',  ativo: true  },
 ];
 
@@ -52,20 +50,15 @@ const OPCOES: Record<ModuleKey, Opcao[]> = {
   ],
   I: [],
   J: [
-    { num: 1, label: 'GERAR FECHAMENTO',  to: '/lab/faturamento-lab' },
-    { num: 2, label: 'CONSULTA/LISTAGEM', to: '/lab/faturamento-lab' },
-    { num: 3, label: 'VENDEDORES',        to: '/lab/vendedores' },
+    { num: 1, label: 'GERAR FECHAMENTO',   to: '/lab/faturamento-lab' },
+    { num: 2, label: 'CONSULTA/LISTAGEM',  to: '/lab/faturamento-lab' },
+    { num: 3, label: 'CONTAS A RECEBER',   to: '/lab/contas-receber' },
+    { num: 4, label: 'CONTAS A PAGAR',     to: '/lab/contas-pagar' },
+    { num: 5, label: 'CONTROLE BANCÁRIO',  to: '/lab/bancario-lab' },
+    { num: 6, label: 'VENDEDORES',         to: '/lab/vendedores' },
   ],
-  K: [
-    { num: 1, label: 'CONTAS A RECEBER', to: '/lab/contas-receber' },
-    { num: 2, label: 'CONTAS A PAGAR',   to: '/lab/contas-pagar'   },
-  ],
-  L: [
-    { num: 1, label: 'LANÇAMENTOS',      to: '/lab/bancario-lab'   },
-    { num: 2, label: 'CONSULTA/LISTAGEM',to: '/lab/bancario-lab'   },
-    { num: 3, label: 'CONTAS A RECEBER', to: '/lab/contas-receber' },
-    { num: 4, label: 'CONTAS A PAGAR',   to: '/lab/contas-pagar'   },
-  ],
+  K: [],
+  L: [],
 };
 
 // Detect active module from current path
@@ -81,9 +74,9 @@ function detectModule(path: string): ModuleKey | null {
   if (path.includes('/lab/faturamento')) return 'J';
   if (path.includes('/lab/vendedores')) return 'J';
   if (path.includes('/lab/servicos') || path.includes('/lab/produtos')) return 'D';
-  if (path.includes('/lab/contas-receber')) return 'K';
-  if (path.includes('/lab/contas-pagar')) return 'K';
-  if (path.includes('/lab/bancario')) return 'L';
+  if (path.includes('/lab/contas-receber')) return 'J';
+  if (path.includes('/lab/contas-pagar')) return 'J';
+  if (path.includes('/lab/bancario')) return 'J';
   return null;
 }
 

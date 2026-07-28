@@ -14,7 +14,7 @@ export const PERFIS_LAB: { valor: PerfilLab; label: string; desc: string; cor: s
 const MODULOS_POR_PERFIL: Record<PerfilLab, string[]> = {
   admin:      ['A','B','C','D','E','F','G','H','I','J','K','L'],
   digitador:  ['B','C','D','E','G','H'],
-  financeiro: ['B','J','K','L'],
+  financeiro: ['B','J'],
 };
 
 // normaliza qualquer perfil (inclusive legados) para um dos três
