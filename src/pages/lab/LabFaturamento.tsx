@@ -1,16 +1,7 @@
-﻿import { useEffect, useState, useCallback } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { R } from '../../lib/labTheme';
-
-interface Fechamento {
-  id: string; numero: number; otica_id: string; otica_nome: string;
-  tipo: 'mensal' | 'especial' | 'avulso'; periodo_ini: string; periodo_fim: string;
-  valor_bruto: number; desconto: number; valor_liquido: number;
-  status: 'aberto' | 'emitido' | 'pago'; data_emissao: string;
-  data_vencimento: string | null; data_pagamento: string | null;
-  observacoes: string | null; qtd_os: number;
-}
 
 interface Otica { id: string; nome: string; }
 interface OsItem { id: string; numero: number; ref_otica: string | null; cont_interno: string | null; total: number; created_at: string; status: string; otica_id: string; otica_nome: string; otica_codigo?: string | null; }
@@ -28,7 +19,6 @@ function mesAtual() {
 
 const INP: React.CSSProperties = { padding: '7px 10px', fontSize: '13px', background: R.inp, border: '1px solid var(--lab-bdr)', borderRadius:  0, color: R.txt, outline: 'none', fontFamily: "'Courier New', monospace", width: '100%', boxSizing: 'border-box' };
 const LBL: React.CSSProperties = { fontSize: '11px', fontWeight: '600', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '4px' };
-const STATUS_COLOR: Record<string, string> = { aberto: '#886600', emitido: R.accent2, pago: R.accent };
 // Status das OS (para a listagem do fechamento). Inclui as ainda em produção — cobrança adiantada.
 const OS_STATUS: Record<string, { label: string; cor: string }> = {
   aguardando:  { label: 'Aguardando',  cor: '#886600' },
@@ -43,11 +33,7 @@ function hojeStr() { return ymdLocal(new Date()); }
 
 export default function LabFaturamento() {
   const navigate = useNavigate();
-  const [aba, setAba] = useState<'fechamentos' | 'gerar'>('gerar');
-  const [fechamentos, setFechamentos] = useState<Fechamento[]>([]);
   const [oticas, setOticas] = useState<Otica[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [statusFiltro, setStatusFiltro] = useState('');
 
   // Gerar fechamento — período
   const [periodoTipo, setPeriodoTipo] = useState<PeriodoTipo>('mes');
@@ -88,24 +74,9 @@ export default function LabFaturamento() {
     }
     return { ini: de, fim: ate }; // personalizado
   }
-  function tipoDoFechamento(): 'mensal' | 'especial' | 'avulso' {
-    if (periodoTipo === 'mes') return 'mensal';
-    if (periodoTipo === 'personalizado') return 'especial';
-    return 'avulso';
-  }
   const rangeAtual = calcRange();
   const rangeValido = !!rangeAtual.ini && !!rangeAtual.fim && rangeAtual.ini <= rangeAtual.fim;
 
-  const load = useCallback(() => {
-    setLoading(true);
-    const p = new URLSearchParams();
-    if (statusFiltro) p.set('status', statusFiltro);
-    api.get<Fechamento[]>(`/lab/faturamento?${p}`)
-      .then(setFechamentos).catch(() => setFechamentos([]))
-      .finally(() => setLoading(false));
-  }, [statusFiltro]);
-
-  useEffect(() => { load(); }, [load]);
   useEffect(() => { api.get<Otica[]>('/lab/oticas').then(setOticas).catch(() => {}); }, []);
 
   async function carregarOS() {
@@ -133,20 +104,28 @@ export default function LabFaturamento() {
     const grupos = new Map<string, OsItem[]>();
     escolhidas.forEach(o => { const a = grupos.get(o.otica_id) || []; a.push(o); grupos.set(o.otica_id, a); });
     const descTotal = parseFloat(desconto) || 0;
+    const venc = vencimento || fim || hojeStr();   // vencimento informado, senão fim do período
     try {
+      // Cada fechamento vira um lançamento em Contas a Receber (agrupado por ótica).
       for (const [otica_id, os] of grupos) {
         const valor = os.reduce((a, o) => a + (o.total || 0), 0);
         const desc = grupos.size === 1 ? descTotal : 0;   // desconto só quando é uma ótica
-        await api.post('/lab/faturamento', {
-          otica_id, tipo: tipoDoFechamento(), periodo_ini: ini, periodo_fim: fim,
-          valor_bruto: valor, desconto: desc, valor_liquido: Math.max(0, valor - desc),
-          data_vencimento: vencimento || null, qtd_os: os.length,
+        const liquido = Math.max(0, valor - desc);
+        const numeros = os.map(o => `#${String(o.numero).padStart(4, '0')}`).join(', ');
+        await api.post('/lab/contas-receber', {
+          otica_id,
+          descricao: `Fechamento ${fmtDate(ini)}–${fmtDate(fim)} · ${os.length} OS`,
+          valor: liquido,
+          data_emissao: hojeStr(),
+          data_vencimento: venc,
+          observacoes: `OS: ${numeros}${desc > 0 ? ` · Desconto ${brl(desc)}` : ''}`,
+          ordem_id: os.length === 1 ? os[0].id : null,
+          ordem_numero: os.length === 1 ? os[0].numero : null,
         });
       }
-      setMsg(`✓ ${grupos.size} fechamento(s) gerado(s) com ${escolhidas.length} OS. Veja na aba "Fechamentos".`);
+      setMsg(`✓ Enviado para Contas a Receber: ${grupos.size} lançamento(s) com ${escolhidas.length} OS.`);
       setOsLista(l => l.filter(o => !sel.has(o.id)));
       setSel(new Set());
-      load();
     } catch (e: unknown) {
       setMsg(`Erro ao gerar: ${e instanceof Error ? e.message : 'tente novamente'}`);
     } finally { setGerando(false); }
@@ -223,92 +202,21 @@ export default function LabFaturamento() {
     if (w) { w.document.write(html); w.document.close(); }
   }
 
-  async function marcarPago(id: string) {
-    const data = prompt('Data de pagamento (AAAA-MM-DD):', new Date().toISOString().split('T')[0]);
-    if (!data) return;
-    try {
-      await api.patch(`/lab/faturamento/${id}`, { status: 'pago', data_pagamento: data });
-      load();
-    } catch {}
-  }
-
-  const totalAberto = fechamentos.filter(f => f.status !== 'pago').reduce((a, f) => a + f.valor_liquido, 0);
-  const totalPago   = fechamentos.filter(f => f.status === 'pago').reduce((a, f) => a + f.valor_liquido, 0);
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
 
       {/* Header */}
-      <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--lab-bdr)', background: R.panel, display: 'flex', gap: '12px', alignItems: 'center' }}>
-        <h2 style={{ margin: 0, fontSize: '17px', fontWeight: '700', color: R.txt }}>Faturamento</h2>
-        <div style={{ display: 'flex', gap: '4px' }}>
-          {[['fechamentos', 'Fechamentos'], ['gerar', 'Gerar Fechamento']].map(([v, l]) => (
-            <button key={v} onClick={() => setAba(v as 'fechamentos' | 'gerar')}
-              style={{ padding: '5px 14px', fontSize: '12px', fontWeight: '600', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${aba === v ? R.accent : 'var(--lab-bdr)'}`, background: aba === v ? R.accent : 'transparent', color: aba === v ? '#fff' : R.dim }}>
-              {l}
-            </button>
-          ))}
-        </div>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: '16px', fontSize: '12px', fontFamily: "'Courier New', monospace" }}>
-          <span style={{ color: '#886600' }}>A receber: <b>{brl(totalAberto)}</b></span>
-          <span style={{ color: R.accent }}>Recebido: <b>{brl(totalPago)}</b></span>
-        </div>
+      <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--lab-bdr)', background: R.panel, display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <h2 style={{ margin: 0, fontSize: '17px', fontWeight: '700', color: R.txt }}>Gerar Fechamento</h2>
+        <span style={{ fontSize: '12px', color: R.dim }}>Os fechamentos gerados vão para <b style={{ color: R.txt }}>Contas a Receber</b>.</span>
+        <button onClick={() => navigate('/lab/contas-receber')}
+          style={{ marginLeft: 'auto', padding: '5px 14px', fontSize: '12px', fontWeight: '600', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${R.accent}`, background: 'transparent', color: R.accent }}>
+          Ver Contas a Receber →
+        </button>
       </div>
 
-      {/* ABA: FECHAMENTOS */}
-      {aba === 'fechamentos' && (
-        <>
-          <div style={{ padding: '8px 20px', borderBottom: '1px solid var(--lab-bdr)', display: 'flex', gap: '8px' }}>
-            {[['', 'Todos'], ['aberto', 'Em Aberto'], ['emitido', 'Emitidos'], ['pago', 'Pagos']].map(([v, l]) => (
-              <button key={v} onClick={() => setStatusFiltro(v)} style={{ padding: '4px 12px', fontSize: '11px', fontWeight: '600', borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${statusFiltro === v ? '#b8b4ac' : 'var(--lab-bdr)'}`, background: statusFiltro === v ? R.alt : 'transparent', color: statusFiltro === v ? R.txt : R.dim }}>{l}</button>
-            ))}
-          </div>
-          <div style={{ flex: 1, overflowY: 'auto' }}>
-            {loading ? <div style={{ padding: '60px', textAlign: 'center', color: R.dim }}>Carregando...</div>
-              : fechamentos.length === 0 ? <div style={{ padding: '60px', textAlign: 'center', color: R.dim }}>Nenhum fechamento. Use "Gerar Fechamento" para criar.</div>
-              : <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead style={{ position: 'sticky', top: 0 }}>
-                    <tr style={{ background: R.alt, borderBottom: '1px solid var(--lab-bdr)' }}>
-                      {['Nº', 'Ótica', 'Período', 'OS', 'Bruto', 'Desconto', 'Líquido', 'Vencimento', 'Status', ''].map(h => (
-                        <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: '10px', fontWeight: '600', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {fechamentos.map(f => (
-                      <tr key={f.id} style={{ borderBottom: '1px solid var(--lab-bdr)' }}
-                        onMouseEnter={e => (e.currentTarget.style.background = R.alt)}
-                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                        <td style={{ padding: '9px 12px', fontFamily: "'Courier New', monospace", fontSize: '12px', color: R.dim }}>#{String(f.numero).padStart(4,'0')}</td>
-                        <td style={{ padding: '9px 12px', fontSize: '13px', color: R.txt, maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.otica_nome}</td>
-                        <td style={{ padding: '9px 12px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim, whiteSpace: 'nowrap' }}>{fmtDate(f.periodo_ini)} – {fmtDate(f.periodo_fim)}</td>
-                        <td style={{ padding: '9px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim, textAlign: 'center' }}>{f.qtd_os}</td>
-                        <td style={{ padding: '9px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim, textAlign: 'right' }}>{brl(f.valor_bruto)}</td>
-                        <td style={{ padding: '9px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: '#cc0000', textAlign: 'right' }}>{f.desconto > 0 ? brl(f.desconto) : '—'}</td>
-                        <td style={{ padding: '9px 12px', fontSize: '13px', fontFamily: "'Courier New', monospace", fontWeight: '700', color: R.txt, textAlign: 'right' }}>{brl(f.valor_liquido)}</td>
-                        <td style={{ padding: '9px 12px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim, whiteSpace: 'nowrap' }}>{fmtDate(f.data_vencimento)}</td>
-                        <td style={{ padding: '9px 12px' }}>
-                          <span style={{ fontSize: '10px', fontWeight: '600', color: STATUS_COLOR[f.status], background: `${STATUS_COLOR[f.status]}18`, padding: '2px 7px', borderRadius: '20px' }}>
-                            {f.status === 'aberto' ? 'Em Aberto' : f.status === 'emitido' ? 'Emitido' : 'Pago'}
-                          </span>
-                        </td>
-                        <td style={{ padding: '9px 12px' }}>
-                          <div style={{ display: 'flex', gap: '4px' }}>
-                            {f.status !== 'pago' && <button onClick={() => marcarPago(f.id)} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', border: '1px solid #006600', background: 'rgba(0,102,0,0.15)', color: R.accent, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>Pago</button>}
-                            <button onClick={() => navigate(`/lab/ordens?otica_id=${f.otica_id}`)} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', border: '1px solid var(--lab-bdr)', background: 'transparent', color: R.dim, cursor: 'pointer', fontFamily: 'inherit' }}>OS →</button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>}
-          </div>
-        </>
-      )}
-
-      {/* ABA: GERAR */}
-      {aba === 'gerar' && (
-        <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
+      {/* GERAR FECHAMENTO */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
           <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '10px', padding: '16px', marginBottom: '16px' }}>
             {/* tipo de período */}
             <label style={LBL}>Período do fechamento</label>
@@ -440,7 +348,6 @@ export default function LabFaturamento() {
             );
           })()}
         </div>
-      )}
     </div>
   );
 }
