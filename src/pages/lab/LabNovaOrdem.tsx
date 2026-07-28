@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../../lib/api';
 import LabShapePicker from '../../components/LabShapePicker';
 import LabReciboPanel from './LabReciboPanel';
+import LabOrcamentoPanel from './LabOrcamentoPanel';
 
 interface Otica { id: string; codigo?: string; nome: string; lista_preco?: number; condicao_pgto?: string; }
 interface Produto { id: string; codigo?: string; nome: string; unidade?: string; valor_padrao: number; estoque_atual?: number; }
@@ -477,7 +478,7 @@ export default function LabNovaOrdem() {
       {/* ===== MAIN FORM ===== */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px', display: 'flex', flexDirection: 'column', gap: '0', background: R.bg }}>
 
-        {tipo === 'Z' ? <LabReciboPanel oticas={oticas} /> : <>
+        {tipo === 'Z' ? <LabReciboPanel oticas={oticas} /> : tipo === 'N' ? <LabOrcamentoPanel oticas={oticas} produtos={produtos} /> : <>
 
         {erro && <div style={{ background: 'var(--lab-chip-bg)', border: '1px solid var(--lab-accent)', padding: '8px 12px', fontSize: '12px', color: 'var(--lab-chip-txt)', marginBottom: '8px', fontWeight: '700' }}>{erro}</div>}
 
