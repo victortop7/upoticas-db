@@ -156,7 +156,8 @@ export default function LabNovaOrdem() {
   const [etiqGarantia, setEtiqGarantia] = useState(false);
   const [fluxoLab, setFluxoLab] = useState(true);
   const [observacoes, setObservacoes] = useState('');
-  const [vendedor1Id, setVendedor1Id] = useState('');
+  const [vendedor1Id, setVendedor1Id] = useState('');       // VENDEDOR (DA ÓTICA) — texto livre, manual
+  const [vendedorRepId, setVendedorRepId] = useState('');   // VENDEDOR (cadastrado) — auto pela ótica
   const [garantiaOrigem, setGarantiaOrigem] = useState(''); // OS de origem (tipo Garantia)
 
   const isGarantia = tipo === 'G';
@@ -243,7 +244,7 @@ export default function LabNovaOrdem() {
       // Auto-fill lista de preço, condição de pagamento e vendedor (do cadastro da ótica)
       if (found.lista_preco) setListaPreco(String(found.lista_preco));
       if (found.condicao_pgto) setCondPgto(found.condicao_pgto);
-      setVendedor1Id(found.vendedor_id || '');
+      setVendedorRepId(found.vendedor_id || '');   // vendedor cadastrado da ótica preenche sozinho
       // REF. ÓTICA é MANUAL: o digitador informa a numeração que veio da ótica (não gerar).
     } else {
       setOticaId('');
@@ -413,6 +414,7 @@ export default function LabNovaOrdem() {
           ? `[Garantia da OS #${garantiaOrigem.trim()}] ${observacoes}`.trim()
           : observacoes) || null,
         vendedor1_id: vendedor1Id || null,
+        vendedor2_id: vendedorRepId || null,
         total: totalFinal,
         receita: receitaPayload,
         armacao: {
@@ -571,16 +573,20 @@ export default function LabNovaOrdem() {
             </div>
             <div style={{ gridColumn: 'span 3' }}>
               <label style={LBL}>Vendedor (da ótica)</label>
-              <select value={vendedor1Id} onChange={e => setVendedor1Id(e.target.value)} style={INP}>
+              <input value={vendedor1Id} onChange={e => setVendedor1Id(e.target.value)} style={INP} placeholder="Nome do vendedor..." />
+            </div>
+            <div style={{ gridColumn: 'span 2' }}>
+              <label style={LBL}>Vendedor</label>
+              <select value={vendedorRepId} onChange={e => setVendedorRepId(e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }} title="Preenche sozinho pelo cadastro da ótica">
                 <option value="">— Vendedor</option>
                 {vendedores.map(v => <option key={v.id} value={v.id}>{v.codigo != null ? `${String(v.codigo).padStart(2, '0')} · ` : ''}{v.nome}</option>)}
               </select>
             </div>
-            <div style={{ gridColumn: 'span 3' }}>
+            <div style={{ gridColumn: 'span 2' }}>
               <label style={LBL}>Médico / Oftalmo</label>
               <input value={medico} onChange={e => setMedico(e.target.value)} style={INP} />
             </div>
-            <div style={{ gridColumn: 'span 3' }}>
+            <div style={{ gridColumn: 'span 2' }}>
               <label style={LBL}>Usuário / Receita</label>
               <input value={usuarioReceita} onChange={e => setUsuarioReceita(e.target.value)} style={INP} />
             </div>
