@@ -143,6 +143,11 @@ const INP: React.CSSProperties = {
   fontFamily: "'Courier New', monospace", boxSizing: 'border-box',
 };
 
+const LBL: React.CSSProperties = {
+  fontSize: '10px', fontWeight: '700', color: R.dim,
+  textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '4px',
+};
+
 const STATUS_STYLE: Record<string, { bg: string; color: string; label: string }> = {
   ativo:          { bg: '#ccffcc', color: '#006600', label: 'ATIVO' },
   trial:          { bg: '#cce0ff', color: '#003388', label: 'TRIAL' },
@@ -168,7 +173,7 @@ export default function LabAdmin() {
   const [pinOk, setPinOk] = useState(() => sessionStorage.getItem('admin_pin_ok') === '1');
   const [secret, setSecret] = useState(() => sessionStorage.getItem('admin_secret') || '');
   const [authed, setAuthed] = useState(false);
-  const [aba, setAba] = useState<'licencas' | 'leads' | 'codigos'>('licencas');
+  const [aba, setAba] = useState<'licencas' | 'leads' | 'codigos' | 'senha'>('licencas');
   const [codigos, setCodigos] = useState<Codigo[]>([]);
   const [novoNome, setNovoNome] = useState('');
   const [gerando, setGerando] = useState(false);
@@ -189,6 +194,12 @@ export default function LabAdmin() {
   const [restaurarTenant, setRestaurarTenant] = useState<Tenant | null>(null);
   const [restForm, setRestForm] = useState({ lista1: '', lista2: '', lista3: '', restore_precos: true });
   const [restMsg, setRestMsg] = useState('');
+  // Alterar senha (super-admin)
+  const [senhaEmail, setSenhaEmail] = useState('');
+  const [senhaNova, setSenhaNova] = useState('');
+  const [senhaMostrar, setSenhaMostrar] = useState(false);
+  const [senhaMsg, setSenhaMsg] = useState('');
+  const [senhaSalvando, setSenhaSalvando] = useState(false);
 
   async function handleImpersonate(tenantId: string, tipo: string) {
     if (!confirm('Entrar no sistema deste cliente?')) return;
@@ -440,6 +451,21 @@ export default function LabAdmin() {
     );
   }
 
+  async function resetarSenha() {
+    const email = senhaEmail.trim().toLowerCase();
+    if (!email) { setSenhaMsg('Erro: informe o email do usuário.'); return; }
+    if (senhaNova.length < 6) { setSenhaMsg('Erro: a nova senha deve ter pelo menos 6 caracteres.'); return; }
+    setSenhaSalvando(true); setSenhaMsg('');
+    try {
+      const r = await adminRequest<{ ok: boolean; usuario: { nome: string; email: string; tenant_nome: string | null } }>(
+        '/admin/senha', secret, { method: 'POST', body: JSON.stringify({ email, nova_senha: senhaNova }) });
+      setSenhaMsg(`✓ Senha alterada — ${r.usuario.nome}${r.usuario.tenant_nome ? ` (${r.usuario.tenant_nome})` : ''}. Nova senha: ${senhaNova}`);
+      setSenhaNova('');
+    } catch (e: unknown) {
+      setSenhaMsg(`Erro: ${e instanceof Error ? e.message : 'não foi possível alterar'}`);
+    } finally { setSenhaSalvando(false); }
+  }
+
   const novosLeads = leads.filter(l => l.status === 'novo').length;
 
   return (
@@ -448,12 +474,13 @@ export default function LabAdmin() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', gap: '8px', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', gap: '4px' }}>
-          {(['licencas', 'leads', 'codigos'] as const).map(a => (
+          {(['licencas', 'leads', 'codigos', 'senha'] as const).map(a => (
             <button key={a} onClick={() => setAba(a)}
               style={{ padding: '5px 14px', fontSize: '12px', fontWeight: '700', letterSpacing: '0.5px', cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase', border: `2px outset ${R.hdrBdr}`, background: aba === a ? R.hdr : R.alt, color: aba === a ? R.hdrTxt : R.txt }}>
               {a === 'licencas' ? `LICENÇAS (${tenants.length})`
                 : a === 'leads' ? `LEADS${novosLeads > 0 ? ` ★${novosLeads} NOVOS` : ` (${leads.length})`}`
-                : `TESTE GRÁTIS (${codigos.filter(c => !c.usado).length})`}
+                : a === 'codigos' ? `TESTE GRÁTIS (${codigos.filter(c => !c.usado).length})`
+                : 'ALTERAR SENHA'}
             </button>
           ))}
         </div>
@@ -466,6 +493,36 @@ export default function LabAdmin() {
       </div>
 
       {erro && <div style={{ background: 'var(--lab-chip-bg)', border: '1px solid var(--lab-chip-bdr)', padding: '7px 10px', marginBottom: '8px', fontSize: '11px', color: 'var(--lab-chip-txt)', fontWeight: '700' }}>{erro}</div>}
+
+      {/* ── ABA ALTERAR SENHA ── */}
+      {aba === 'senha' && (
+        <div style={{ maxWidth: '460px' }}>
+          <div style={{ background: R.panel, border: `2px inset ${R.bdr}`, padding: '16px' }}>
+            <div style={{ fontSize: '13px', fontWeight: '700', color: R.txt, marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Alterar senha de usuário</div>
+            <div style={{ fontSize: '11px', color: R.dim, marginBottom: '14px' }}>Informe o email de login e a nova senha. Vale para qualquer cliente/ótica.</div>
+
+            <label style={LBL}>Email do usuário</label>
+            <input value={senhaEmail} onChange={e => setSenhaEmail(e.target.value)} placeholder="email@exemplo.com" style={{ ...INP, width: '100%', marginBottom: '12px', fontFamily: "'Montserrat', sans-serif" }} />
+
+            <label style={LBL}>Nova senha</label>
+            <div style={{ display: 'flex', gap: '6px', marginBottom: '14px' }}>
+              <input type={senhaMostrar ? 'text' : 'password'} value={senhaNova} onChange={e => setSenhaNova(e.target.value)} placeholder="Mínimo 6 caracteres" style={{ ...INP, flex: 1 }} />
+              <button type="button" onClick={() => setSenhaMostrar(m => !m)} style={{ padding: '5px 10px', fontSize: '11px', fontWeight: '700', background: R.alt, color: R.txt, border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit' }}>{senhaMostrar ? 'Ocultar' : 'Ver'}</button>
+            </div>
+
+            <button type="button" onClick={resetarSenha} disabled={senhaSalvando}
+              style={{ width: '100%', padding: '9px', fontSize: '12px', fontWeight: '700', background: R.accent, color: 'var(--lab-on-accent)', border: `2px outset ${R.hdrBdr}`, cursor: senhaSalvando ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '0.5px', opacity: senhaSalvando ? 0.6 : 1 }}>
+              {senhaSalvando ? 'Salvando...' : 'Alterar Senha'}
+            </button>
+
+            {senhaMsg && (
+              <div style={{ marginTop: '12px', padding: '9px 12px', fontSize: '12px', fontWeight: '600', border: `1px solid ${senhaMsg.startsWith('Erro') ? '#cc0000' : R.accent}`, background: senhaMsg.startsWith('Erro') ? 'rgba(200,0,0,0.1)' : 'var(--lab-chip-bg)', color: senhaMsg.startsWith('Erro') ? '#cc0000' : 'var(--lab-chip-txt)', wordBreak: 'break-word' }}>
+                {senhaMsg}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ── ABA LICENÇAS ── */}
       {aba === 'licencas' && (<>
