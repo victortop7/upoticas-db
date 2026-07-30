@@ -94,6 +94,20 @@ CREATE TABLE IF NOT EXISTS vendas (
   UNIQUE(tenant_id, numero)
 );
 
+CREATE TABLE IF NOT EXISTS venda_itens (
+  id TEXT PRIMARY KEY,
+  tenant_id TEXT NOT NULL REFERENCES tenants(id),
+  venda_id TEXT NOT NULL REFERENCES vendas(id),
+  produto_id TEXT REFERENCES produtos(id),
+  descricao TEXT NOT NULL,
+  quantidade REAL NOT NULL DEFAULT 1,
+  valor_unitario REAL NOT NULL DEFAULT 0,
+  desconto REAL NOT NULL DEFAULT 0,
+  valor_total REAL NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_venda_itens_venda ON venda_itens(venda_id);
+
 CREATE TABLE IF NOT EXISTS fornecedores (
   id TEXT PRIMARY KEY,
   tenant_id TEXT NOT NULL REFERENCES tenants(id),

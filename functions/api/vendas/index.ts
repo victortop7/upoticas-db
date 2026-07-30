@@ -112,6 +112,24 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       now, now
     ).run();
 
+    // Itens da venda (produtos comprados) — opcional
+    const itens = Array.isArray((body as Record<string, unknown>).itens) ? (body as Record<string, unknown>).itens as Record<string, unknown>[] : [];
+    if (itens.length) {
+      try { await env.DB.prepare(`CREATE TABLE IF NOT EXISTS venda_itens (id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL, venda_id TEXT NOT NULL, produto_id TEXT, descricao TEXT NOT NULL, quantidade REAL NOT NULL DEFAULT 1, valor_unitario REAL NOT NULL DEFAULT 0, desconto REAL NOT NULL DEFAULT 0, valor_total REAL NOT NULL DEFAULT 0, created_at TEXT NOT NULL DEFAULT (datetime('now')))`).run(); } catch {}
+      const stmts = itens
+        .filter(it => String(it.descricao || '').trim())
+        .map(it => {
+          const qtd = parseFloat(String(it.quantidade)) || 0;
+          const vu = parseFloat(String(it.valor_unitario)) || 0;
+          const desc = parseFloat(String(it.desconto)) || 0;
+          const vt = Math.round((qtd * vu - desc) * 100) / 100;
+          return env.DB.prepare(
+            'INSERT INTO venda_itens (id, tenant_id, venda_id, produto_id, descricao, quantidade, valor_unitario, desconto, valor_total, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+          ).bind(crypto.randomUUID(), auth.tenant_id, id, (it.produto_id as string) || null, String(it.descricao).slice(0, 200), qtd, vu, desc, vt, now);
+        });
+      if (stmts.length) await env.DB.batch(stmts);
+    }
+
     // Se há saldo pendente e tem cliente, move card CRM para oculos_pendente
     if (saldoRestante > 0 && body.cliente_id) {
       try {

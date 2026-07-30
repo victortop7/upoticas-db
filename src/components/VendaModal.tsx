@@ -82,6 +82,8 @@ const EMPTY = {
 };
 
 interface UsuarioSimples { id: string; nome: string; perfil: string; }
+interface ProdutoSimples { id: string; codigo?: string; descricao: string; grupo?: string; preco_venda?: number; }
+interface ItemVenda { produto_id: string | null; descricao: string; quantidade: number; valor_unitario: number; desconto: number; }
 
 export default function VendaModal({ venda, onClose, onSaved }: Props) {
   const { usuario } = useAuth();
@@ -96,6 +98,9 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
   const [erro, setErro] = useState('');
   const [novoClienteOpen, setNovoClienteOpen] = useState(false);
   const [novoVendedorOpen, setNovoVendedorOpen] = useState(false);
+  const [itens, setItens] = useState<ItemVenda[]>([]);
+  const [buscaProduto, setBuscaProduto] = useState('');
+  const [produtos, setProdutos] = useState<ProdutoSimples[]>([]);
 
   useEffect(() => {
     loadClientes('');
@@ -115,6 +120,17 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
         forma_pagamento: venda.forma_pagamento || 'pix',
         observacao: venda.observacao || '',
       });
+      api.get<{ itens?: ItemVenda[] }>(`/vendas/${venda.id}`).then(r => {
+        if (Array.isArray(r.itens) && r.itens.length) {
+          setItens(r.itens.map(it => ({
+            produto_id: it.produto_id ?? null,
+            descricao: it.descricao,
+            quantidade: Number(it.quantidade) || 1,
+            valor_unitario: Number(it.valor_unitario) || 0,
+            desconto: Number(it.desconto) || 0,
+          })));
+        }
+      }).catch(() => {});
     }
   }, [venda, isAdmin]);
 
@@ -130,6 +146,37 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
   function set(field: string, value: string) {
     setForm(f => ({ ...f, [field]: value }));
   }
+
+  async function loadProdutos(q: string) {
+    try {
+      const res = await api.get<{ produtos: ProdutoSimples[] }>(`/produtos?busca=${encodeURIComponent(q)}`);
+      setProdutos(res.produtos.slice(0, 8));
+    } catch { setProdutos([]); }
+  }
+
+  function addProduto(p: ProdutoSimples) {
+    setItens(prev => [...prev, { produto_id: p.id, descricao: p.descricao, quantidade: 1, valor_unitario: p.preco_venda || 0, desconto: 0 }]);
+    setBuscaProduto(''); setProdutos([]);
+  }
+  function addAvulso() {
+    setItens(prev => [...prev, { produto_id: null, descricao: '', quantidade: 1, valor_unitario: 0, desconto: 0 }]);
+  }
+  function updItem(idx: number, field: keyof ItemVenda, value: string) {
+    setItens(prev => prev.map((it, i) => {
+      if (i !== idx) return it;
+      if (field === 'descricao') return { ...it, descricao: value };
+      return { ...it, [field]: parseFloat(value) || 0 };
+    }));
+  }
+  function rmItem(idx: number) { setItens(prev => prev.filter((_, i) => i !== idx)); }
+
+  // Quando há itens, o total e o desconto são calculados a partir deles
+  useEffect(() => {
+    if (itens.length === 0) return;
+    const vt = itens.reduce((a, i) => a + i.quantidade * i.valor_unitario, 0);
+    const d = itens.reduce((a, i) => a + i.desconto, 0);
+    setForm(f => ({ ...f, valor_total: vt.toFixed(2), desconto: d.toFixed(2) }));
+  }, [itens]);
 
   const valorFinal = (parseFloat(form.valor_total) || 0) - (parseFloat(form.desconto) || 0);
   const valorEntrada = form.valor_entrada !== '' ? parseFloat(form.valor_entrada) || 0 : valorFinal;
@@ -148,6 +195,7 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
         ...(isMarketing ? { ...form, valor_total: '0', desconto: '0', forma_pagamento: 'outro' } : form),
         ...(isAdmin && funcionarioId ? { funcionario_id: funcionarioId } : {}),
         valor_entrada: form.valor_entrada || '',
+        ...(isMarketing ? {} : { itens: itens.filter(it => it.descricao.trim()) }),
       };
       if (venda) {
         await api.put(`/vendas/${venda.id}`, payload);
@@ -339,6 +387,68 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
             </div>
           ) : (
             <>
+              {/* Produtos / Itens da venda */}
+              <div style={{ marginBottom: '14px' }}>
+                <label style={labelStyle}>Produtos da venda (opcional)</label>
+                <input
+                  style={inputStyle}
+                  placeholder="Buscar produto do catálogo..."
+                  value={buscaProduto}
+                  onChange={e => { setBuscaProduto(e.target.value); loadProdutos(e.target.value); }}
+                />
+                {produtos.length > 0 && (
+                  <div style={{ border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden', marginTop: '6px', maxHeight: '170px', overflowY: 'auto' }}>
+                    {produtos.map((p, i) => (
+                      <div key={p.id} onClick={() => addProduto(p)} style={{
+                        padding: '8px 12px', cursor: 'pointer', fontSize: '13px',
+                        display: 'flex', justifyContent: 'space-between', gap: '8px',
+                        borderBottom: i < produtos.length - 1 ? '1px solid var(--border)' : 'none',
+                      }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-alt)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                        <span style={{ color: 'var(--text)' }}>{p.descricao}</span>
+                        <span style={{ fontFamily: 'var(--mono)', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                          {(p.preco_venda || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {itens.length > 0 && (
+                  <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {itens.map((it, idx) => {
+                      const sub = it.quantidade * it.valor_unitario - it.desconto;
+                      const cell: React.CSSProperties = { ...inputStyle, padding: '5px 7px', fontSize: '12px', fontFamily: 'var(--mono)', textAlign: 'right' };
+                      return (
+                        <div key={idx} style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'var(--surface-alt)' }}>
+                          <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginBottom: '6px' }}>
+                            <input style={{ ...inputStyle, padding: '5px 8px', fontSize: '13px' }} placeholder="Descrição do item"
+                              value={it.descricao} onChange={e => updItem(idx, 'descricao', e.target.value)} />
+                            <button type="button" onClick={() => rmItem(idx)} title="Remover"
+                              style={{ flexShrink: 0, width: '26px', height: '26px', border: '1px solid var(--border)', borderRadius: '6px', background: 'var(--surface)', color: 'var(--red)', cursor: 'pointer', fontWeight: '700' }}>×</button>
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.3fr 1.3fr auto', gap: '6px', alignItems: 'center' }}>
+                            <div><span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Qtd</span>
+                              <input type="number" step="1" min="0" style={cell} value={it.quantidade} onChange={e => updItem(idx, 'quantidade', e.target.value)} /></div>
+                            <div><span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Unit.</span>
+                              <input type="number" step="0.01" min="0" style={cell} value={it.valor_unitario} onChange={e => updItem(idx, 'valor_unitario', e.target.value)} /></div>
+                            <div><span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Desc.</span>
+                              <input type="number" step="0.01" min="0" style={cell} value={it.desconto} onChange={e => updItem(idx, 'desconto', e.target.value)} /></div>
+                            <div style={{ textAlign: 'right', minWidth: '78px' }}><span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Subtotal</span>
+                              <div style={{ fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '600', color: 'var(--text)' }}>{sub.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div></div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                <button type="button" onClick={addAvulso} style={{
+                  marginTop: '8px', fontSize: '12px', fontWeight: '600', color: 'var(--primary)',
+                  background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                }}>+ Item avulso</button>
+              </div>
+
               {/* Forma de pagamento + Valores */}
               <div style={{ marginBottom: '14px' }}>
                 <label style={labelStyle}>Forma de Pagamento</label>
@@ -348,21 +458,22 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
                 <div>
-                  <label style={labelStyle}>Valor Total (R$) *</label>
+                  <label style={labelStyle}>Valor Total (R$) {itens.length > 0 ? '(automático)' : '*'}</label>
                   <input
                     type="number" step="0.01" min="0"
-                    style={{ ...inputStyle, fontFamily: 'var(--mono)', textAlign: 'right' }}
+                    readOnly={itens.length > 0}
+                    style={{ ...inputStyle, fontFamily: 'var(--mono)', textAlign: 'right', ...(itens.length > 0 ? { background: 'var(--surface-alt)', color: 'var(--text-dim)' } : {}) }}
                     value={form.valor_total}
                     onChange={e => set('valor_total', e.target.value)}
                     placeholder="0,00"
-                    autoFocus
                   />
                 </div>
                 <div>
-                  <label style={labelStyle}>Desconto (R$)</label>
+                  <label style={labelStyle}>Desconto (R$) {itens.length > 0 ? '(automático)' : ''}</label>
                   <input
                     type="number" step="0.01" min="0"
-                    style={{ ...inputStyle, fontFamily: 'var(--mono)', textAlign: 'right' }}
+                    readOnly={itens.length > 0}
+                    style={{ ...inputStyle, fontFamily: 'var(--mono)', textAlign: 'right', ...(itens.length > 0 ? { background: 'var(--surface-alt)', color: 'var(--text-dim)' } : {}) }}
                     value={form.desconto}
                     onChange={e => set('desconto', e.target.value)}
                     placeholder="0,00"

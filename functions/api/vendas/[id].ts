@@ -12,7 +12,16 @@ export const onRequestGet = async ({ request, env, params }: { request: Request;
   `).bind(params.id, auth.tenant_id).first();
 
   if (!venda) return json({ error: 'Venda não encontrada' }, 404);
-  return json(venda);
+
+  let itens: unknown[] = [];
+  try {
+    const r = await env.DB.prepare(
+      'SELECT id, produto_id, descricao, quantidade, valor_unitario, desconto, valor_total FROM venda_itens WHERE venda_id = ? AND tenant_id = ? ORDER BY rowid'
+    ).bind(params.id, auth.tenant_id).all();
+    itens = r.results;
+  } catch { /* tabela pode não existir em bases antigas */ }
+
+  return json({ ...venda, itens });
 };
 
 export const onRequestPut = async ({ request, env, params }: { request: Request; env: Env; params: Record<string, string> }) => {
@@ -63,6 +72,25 @@ export const onRequestPut = async ({ request, env, params }: { request: Request;
       params.id, auth.tenant_id
     ).run();
 
+    // Itens da venda — se enviados, substitui os existentes
+    const itens = (body as Record<string, unknown>).itens;
+    if (Array.isArray(itens)) {
+      try { await env.DB.prepare(`CREATE TABLE IF NOT EXISTS venda_itens (id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL, venda_id TEXT NOT NULL, produto_id TEXT, descricao TEXT NOT NULL, quantidade REAL NOT NULL DEFAULT 1, valor_unitario REAL NOT NULL DEFAULT 0, desconto REAL NOT NULL DEFAULT 0, valor_total REAL NOT NULL DEFAULT 0, created_at TEXT NOT NULL DEFAULT (datetime('now')))`).run(); } catch {}
+      await env.DB.prepare('DELETE FROM venda_itens WHERE venda_id = ? AND tenant_id = ?').bind(params.id, auth.tenant_id).run();
+      const stmts = (itens as Record<string, unknown>[])
+        .filter(it => String(it.descricao || '').trim())
+        .map(it => {
+          const qtd = parseFloat(String(it.quantidade)) || 0;
+          const vu = parseFloat(String(it.valor_unitario)) || 0;
+          const desc = parseFloat(String(it.desconto)) || 0;
+          const vt = Math.round((qtd * vu - desc) * 100) / 100;
+          return env.DB.prepare(
+            'INSERT INTO venda_itens (id, tenant_id, venda_id, produto_id, descricao, quantidade, valor_unitario, desconto, valor_total, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+          ).bind(crypto.randomUUID(), auth.tenant_id, params.id, (it.produto_id as string) || null, String(it.descricao).slice(0, 200), qtd, vu, desc, vt, now);
+        });
+      if (stmts.length) await env.DB.batch(stmts);
+    }
+
     // Ao finalizar (saldo zerado), move card CRM para pos_venda
     const clienteId = body.cliente_id || existing.cliente_id;
     if (saldoRestante === 0 && clienteId) {
@@ -98,6 +126,7 @@ export const onRequestDelete = async ({ request, env, params }: { request: Reque
   ).bind(params.id, auth.tenant_id).first();
   if (!existing) return json({ error: 'Venda não encontrada' }, 404);
 
+  try { await env.DB.prepare('DELETE FROM venda_itens WHERE venda_id = ? AND tenant_id = ?').bind(params.id, auth.tenant_id).run(); } catch {}
   await env.DB.prepare(
     'DELETE FROM vendas WHERE id = ? AND tenant_id = ?'
   ).bind(params.id, auth.tenant_id).run();
