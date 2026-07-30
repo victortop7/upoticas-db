@@ -34,7 +34,11 @@ export const onRequestPut: PagesFunction<Env> = async ({ request, env, params })
       UPDATE clientes SET
         nome = ?, apelido = ?, cpf = ?, telefone = ?, celular = ?, email = ?,
         data_nascimento = ?, endereco = ?, bairro = ?, cidade = ?, uf = ?, cep = ?,
-        observacao = ?, updated_at = ?
+        observacao = ?,
+        rec_od_esf = ?, rec_od_cil = ?, rec_od_eixo = ?,
+        rec_oe_esf = ?, rec_oe_cil = ?, rec_oe_eixo = ?,
+        rec_adicao = ?, rec_dp = ?, rec_obs = ?,
+        updated_at = ?
       WHERE id = ? AND tenant_id = ?
     `).bind(
       body.nome.trim(),
@@ -50,6 +54,15 @@ export const onRequestPut: PagesFunction<Env> = async ({ request, env, params })
       body.uf || null,
       body.cep || null,
       body.observacao || null,
+      body.rec_od_esf || null,
+      body.rec_od_cil || null,
+      body.rec_od_eixo || null,
+      body.rec_oe_esf || null,
+      body.rec_oe_cil || null,
+      body.rec_oe_eixo || null,
+      body.rec_adicao || null,
+      body.rec_dp || null,
+      body.rec_obs || null,
       now,
       params.id, auth.tenant_id
     ).run();

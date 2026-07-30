@@ -57,8 +57,9 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     const now = new Date().toISOString();
 
     await env.DB.prepare(`
-      INSERT INTO clientes (id, tenant_id, nome, apelido, cpf, telefone, celular, email, data_nascimento, endereco, bairro, cidade, uf, cep, observacao, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO clientes (id, tenant_id, nome, apelido, cpf, telefone, celular, email, data_nascimento, endereco, bairro, cidade, uf, cep, observacao,
+        rec_od_esf, rec_od_cil, rec_od_eixo, rec_oe_esf, rec_oe_cil, rec_oe_eixo, rec_adicao, rec_dp, rec_obs, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       id, auth.tenant_id,
       body.nome.trim(),
@@ -74,6 +75,15 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       body.uf || null,
       body.cep || null,
       body.observacao || null,
+      body.rec_od_esf || null,
+      body.rec_od_cil || null,
+      body.rec_od_eixo || null,
+      body.rec_oe_esf || null,
+      body.rec_oe_cil || null,
+      body.rec_oe_eixo || null,
+      body.rec_adicao || null,
+      body.rec_dp || null,
+      body.rec_obs || null,
       now, now
     ).run();
 

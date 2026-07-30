@@ -36,6 +36,16 @@ export interface Cliente {
   uf?: string;
   cep?: string;
   observacao?: string;
+  // Última receita (grau) do cliente
+  rec_od_esf?: string;
+  rec_od_cil?: string;
+  rec_od_eixo?: string;
+  rec_oe_esf?: string;
+  rec_oe_cil?: string;
+  rec_oe_eixo?: string;
+  rec_adicao?: string;
+  rec_dp?: string;
+  rec_obs?: string;
   ativo: boolean;
   created_at: string;
   updated_at: string;

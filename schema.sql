@@ -39,6 +39,10 @@ CREATE TABLE IF NOT EXISTS clientes (
   uf TEXT,
   cep TEXT,
   observacao TEXT,
+  -- Última receita (grau) do cliente
+  rec_od_esf TEXT, rec_od_cil TEXT, rec_od_eixo TEXT,
+  rec_oe_esf TEXT, rec_oe_cil TEXT, rec_oe_eixo TEXT,
+  rec_adicao TEXT, rec_dp TEXT, rec_obs TEXT,
   ativo INTEGER NOT NULL DEFAULT 1,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))

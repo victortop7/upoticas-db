@@ -16,10 +16,13 @@ export default function ClienteModal({ cliente, onClose, onSaved, zIndex = 1000 
     nome: '', apelido: '', cpf: '', telefone: '', celular: '', email: '',
     data_nascimento: '', endereco: '', bairro: '', cidade: '', uf: '', cep: '',
     observacao: '',
+    rec_od_esf: '', rec_od_cil: '', rec_od_eixo: '',
+    rec_oe_esf: '', rec_oe_cil: '', rec_oe_eixo: '',
+    rec_adicao: '', rec_dp: '', rec_obs: '',
   });
   const [saving, setSaving] = useState(false);
   const [erro, setErro] = useState('');
-  const [aba, setAba] = useState<'dados' | 'endereco' | 'obs'>('dados');
+  const [aba, setAba] = useState<'dados' | 'endereco' | 'receita' | 'obs'>('dados');
 
   useEffect(() => {
     if (cliente) {
@@ -37,6 +40,15 @@ export default function ClienteModal({ cliente, onClose, onSaved, zIndex = 1000 
         uf: cliente.uf || '',
         cep: cliente.cep || '',
         observacao: cliente.observacao || '',
+        rec_od_esf: cliente.rec_od_esf || '',
+        rec_od_cil: cliente.rec_od_cil || '',
+        rec_od_eixo: cliente.rec_od_eixo || '',
+        rec_oe_esf: cliente.rec_oe_esf || '',
+        rec_oe_cil: cliente.rec_oe_cil || '',
+        rec_oe_eixo: cliente.rec_oe_eixo || '',
+        rec_adicao: cliente.rec_adicao || '',
+        rec_dp: cliente.rec_dp || '',
+        rec_obs: cliente.rec_obs || '',
       });
     }
   }, [cliente]);
@@ -118,7 +130,7 @@ export default function ClienteModal({ cliente, onClose, onSaved, zIndex = 1000 
           display: 'flex', gap: '4px', padding: '12px 24px 0',
           borderBottom: '1px solid var(--border)',
         }}>
-          {([['dados', 'Dados'], ['endereco', 'Endereço'], ['obs', 'Observação']] as const).map(([key, label]) => (
+          {([['dados', 'Dados'], ['endereco', 'Endereço'], ['receita', 'Receita'], ['obs', 'Observação']] as const).map(([key, label]) => (
             <button key={key} onClick={() => setAba(key)} style={{
               padding: '7px 14px', fontSize: '13px', fontWeight: '500',
               border: 'none', borderRadius: '8px 8px 0 0', cursor: 'pointer',
@@ -199,6 +211,49 @@ export default function ClienteModal({ cliente, onClose, onSaved, zIndex = 1000 
                     {UF_LIST.map(uf => <option key={uf} value={uf}>{uf}</option>)}
                   </select>
                 </div>
+              </div>
+            </>
+          )}
+
+          {aba === 'receita' && (
+            <>
+              <p style={{ margin: '0 0 14px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                Última receita conhecida do cliente. Deixe em branco o que não tiver.
+              </p>
+              {/* Cabeçalho das colunas */}
+              <div style={{ display: 'grid', gridTemplateColumns: '46px 1fr 1fr 1fr', gap: '8px', alignItems: 'center', marginBottom: '6px' }}>
+                <span />
+                <span style={{ ...labelStyle, margin: 0, textAlign: 'center' }}>ESF</span>
+                <span style={{ ...labelStyle, margin: 0, textAlign: 'center' }}>CIL</span>
+                <span style={{ ...labelStyle, margin: 0, textAlign: 'center' }}>EIXO</span>
+              </div>
+              {/* OD */}
+              <div style={{ display: 'grid', gridTemplateColumns: '46px 1fr 1fr 1fr', gap: '8px', alignItems: 'center', marginBottom: '10px' }}>
+                <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--primary)' }}>OD</span>
+                <input style={{ ...inputStyle, fontFamily: 'var(--mono)', textAlign: 'center' }} value={form.rec_od_esf} onChange={e => set('rec_od_esf', e.target.value)} placeholder="+0.00" />
+                <input style={{ ...inputStyle, fontFamily: 'var(--mono)', textAlign: 'center' }} value={form.rec_od_cil} onChange={e => set('rec_od_cil', e.target.value)} placeholder="-0.00" />
+                <input style={{ ...inputStyle, fontFamily: 'var(--mono)', textAlign: 'center' }} value={form.rec_od_eixo} onChange={e => set('rec_od_eixo', e.target.value)} placeholder="0°" />
+              </div>
+              {/* OE */}
+              <div style={{ display: 'grid', gridTemplateColumns: '46px 1fr 1fr 1fr', gap: '8px', alignItems: 'center', marginBottom: '14px' }}>
+                <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--primary)' }}>OE</span>
+                <input style={{ ...inputStyle, fontFamily: 'var(--mono)', textAlign: 'center' }} value={form.rec_oe_esf} onChange={e => set('rec_oe_esf', e.target.value)} placeholder="+0.00" />
+                <input style={{ ...inputStyle, fontFamily: 'var(--mono)', textAlign: 'center' }} value={form.rec_oe_cil} onChange={e => set('rec_oe_cil', e.target.value)} placeholder="-0.00" />
+                <input style={{ ...inputStyle, fontFamily: 'var(--mono)', textAlign: 'center' }} value={form.rec_oe_eixo} onChange={e => set('rec_oe_eixo', e.target.value)} placeholder="0°" />
+              </div>
+              <div style={row2}>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Adição</label>
+                  <input style={{ ...inputStyle, fontFamily: 'var(--mono)' }} value={form.rec_adicao} onChange={e => set('rec_adicao', e.target.value)} placeholder="+0.00" />
+                </div>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>DP (mm)</label>
+                  <input style={{ ...inputStyle, fontFamily: 'var(--mono)' }} value={form.rec_dp} onChange={e => set('rec_dp', e.target.value)} placeholder="62" />
+                </div>
+              </div>
+              <div style={fieldStyle}>
+                <label style={labelStyle}>Observação da receita</label>
+                <input style={inputStyle} value={form.rec_obs} onChange={e => set('rec_obs', e.target.value)} placeholder="Médico, data, tipo de lente..." />
               </div>
             </>
           )}
