@@ -271,6 +271,52 @@ export default function LabNovaOrdem() {
     }
   }
 
+  // Navegação espacial (setas) entre campos de um container
+  function spatialNav(container: HTMLElement, current: HTMLElement, dir: 'up' | 'down' | 'left' | 'right'): HTMLElement | null {
+    const controls = Array.from(container.querySelectorAll<HTMLElement>(
+      'input:not([type="checkbox"]):not([disabled]), select:not([disabled]), textarea:not([disabled])'
+    )).filter(el => el.offsetParent !== null);
+    const cur = current.getBoundingClientRect();
+    const cx = cur.left + cur.width / 2, cy = cur.top + cur.height / 2;
+    let best: HTMLElement | null = null, bestScore = Infinity;
+    for (const el of controls) {
+      if (el === current) continue;
+      const r = el.getBoundingClientRect();
+      const ex = r.left + r.width / 2, ey = r.top + r.height / 2;
+      const dx = ex - cx, dy = ey - cy;
+      let primary: number, cross: number;
+      if (dir === 'left') { if (dx >= -2) continue; primary = -dx; cross = Math.abs(dy); }
+      else if (dir === 'right') { if (dx <= 2) continue; primary = dx; cross = Math.abs(dy); }
+      else if (dir === 'up') { if (dy >= -2) continue; primary = -dy; cross = Math.abs(dx); }
+      else { if (dy <= 2) continue; primary = dy; cross = Math.abs(dx); }
+      const score = primary + cross * 3;
+      if (score < bestScore) { bestScore = score; best = el; }
+    }
+    return best;
+  }
+
+  // Navegação do cabeçalho com as setas / Enter
+  const headerRef = useRef<HTMLDivElement>(null);
+  function handleHeaderKey(e: React.KeyboardEvent) {
+    const el = e.target as HTMLElement;
+    const tag = el.tagName;
+    const isText = tag === 'INPUT' && !['checkbox', 'date'].includes((el as HTMLInputElement).type);
+    const nativeVert = tag === 'SELECT' || (tag === 'INPUT' && (el as HTMLInputElement).type === 'date');
+    let dir: 'up' | 'down' | 'left' | 'right' | null = null;
+    if (e.key === 'ArrowDown') { if (nativeVert) return; dir = 'down'; }
+    else if (e.key === 'ArrowUp') { if (nativeVert) return; dir = 'up'; }
+    else if (e.key === 'Enter') dir = 'right';
+    else if (isText && e.key === 'ArrowRight') { const inp = el as HTMLInputElement; if (inp.selectionStart !== inp.value.length) return; dir = 'right'; }
+    else if (isText && e.key === 'ArrowLeft') { const inp = el as HTMLInputElement; if (inp.selectionStart !== 0) return; dir = 'left'; }
+    if (!dir || !headerRef.current) return;
+    const next = spatialNav(headerRef.current, el, dir);
+    if (next) {
+      e.preventDefault();
+      next.focus();
+      if (next.tagName === 'INPUT' && (next as HTMLInputElement).type !== 'date') (next as HTMLInputElement).select();
+    }
+  }
+
   // Navegação da grade de receita com as setas / Enter
   const rxGridRef = useRef<HTMLTableElement>(null);
   function handleRxKey(e: React.KeyboardEvent) {
@@ -558,7 +604,7 @@ export default function LabNovaOrdem() {
         )}
 
         {/* ===== CABEÇALHO ===== */}
-        <div style={card}>
+        <div ref={headerRef} onKeyDown={handleHeaderKey} style={card}>
           <div style={secTitle}>Cabeçalho da OS</div>
 
           {/* Grid uniforme de 12 colunas — as bordas alinham entre as linhas */}
