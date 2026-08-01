@@ -283,9 +283,8 @@ export default function LabNovaOrdem() {
     let target = -1;
     if (e.key === 'ArrowDown') target = idx + COLS;
     else if (e.key === 'ArrowUp') target = idx - COLS;
-    else if (e.key === 'Enter') target = idx + 1;
-    else if (e.key === 'ArrowRight' && el.selectionStart === el.value.length) target = idx + 1;
-    else if (e.key === 'ArrowLeft' && el.selectionStart === 0) target = idx - 1;
+    else if (e.key === 'Enter' || e.key === 'ArrowRight') target = idx + 1;
+    else if (e.key === 'ArrowLeft') target = idx - 1;
     if (target >= 0 && target < inputs.length) {
       e.preventDefault();
       inputs[target].focus();
