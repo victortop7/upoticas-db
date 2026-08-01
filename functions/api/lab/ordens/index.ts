@@ -62,6 +62,24 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
 
     if (!body.otica_id) return json({ error: 'Ótica é obrigatória' }, 400);
 
+    // Referência não pode repetir para a MESMA ótica (outras óticas podem repetir)
+    const refOtica = (body.ref_otica == null ? '' : String(body.ref_otica)).trim();
+    if (refOtica) {
+      const dup = await env.DB.prepare(
+        `SELECT numero FROM lab_ordens
+         WHERE tenant_id = ? AND otica_id = ? AND TRIM(ref_otica) = ? COLLATE NOCASE
+         LIMIT 1`
+      ).bind(tenant_id, body.otica_id, refOtica).first<{ numero: number }>();
+      if (dup) {
+        return json({
+          error: `A referência "${refOtica}" já foi usada por esta ótica na OS #${dup.numero}. Cada ótica não pode repetir a mesma referência — confira ou use outra.`,
+          code: 'REF_DUPLICADA',
+          ref: refOtica,
+          os_existente: dup.numero,
+        }, 409);
+      }
+    }
+
     const numRow = await env.DB.prepare(
       'SELECT COALESCE(MAX(numero), 0) + 1 as next FROM lab_ordens WHERE tenant_id = ?'
     ).bind(tenant_id).first<{ next: number }>();
@@ -129,7 +147,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
         id, tenant_id, numero, body.otica_id,
         body.operador ?? body.vendedor ?? null,
         body.medico ?? null,
-        body.ref_otica ?? null,
+        refOtica || null,
         body.previsao_entrega ?? null,
         body.condicao_pgto ?? null,
         body.sinal ?? null,
