@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useCallback } from 'react';
+﻿import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../../lib/api';
 import LabShapePicker from '../../components/LabShapePicker';
@@ -107,8 +107,25 @@ const COB_INP: React.CSSProperties = {
   color: R.txt, outline: 'none', fontFamily: "'Courier New', monospace",
 };
 
-function RxInput({ value, onChange, width = 50 }: { value: string; onChange: (v: string) => void; width?: number }) {
-  return <input value={value} onChange={e => onChange(e.target.value)} style={{ ...RX_INP, width: `${width}px` }} />;
+// Sem sinal digitado, número positivo vira "+" (ESF/ADIÇÃO). Aceita vírgula.
+function normPos(raw: string): string {
+  const s = raw.trim();
+  if (s === '') return '';
+  const d = s.replace(',', '.');
+  if (/^[+-]/.test(d)) return d;                                  // já tem sinal
+  if (/^\d*\.?\d+$/.test(d) && parseFloat(d) !== 0) return '+' + d; // número sem sinal
+  return d;
+}
+
+function RxInput({ value, onChange, width = 50, posSign = false }: { value: string; onChange: (v: string) => void; width?: number; posSign?: boolean }) {
+  return (
+    <input
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      onBlur={posSign ? e => { const n = normPos(e.target.value); if (n !== value) onChange(n); } : undefined}
+      style={{ ...RX_INP, width: `${width}px` }}
+    />
+  );
 }
 
 function CobInput({ value, onChange, style }: { value: string; onChange: (v: string) => void; style?: React.CSSProperties }) {
@@ -254,6 +271,28 @@ export default function LabNovaOrdem() {
     }
   }
 
+  // Navegação da grade de receita com as setas / Enter
+  const rxGridRef = useRef<HTMLTableElement>(null);
+  function handleRxKey(e: React.KeyboardEvent) {
+    const el = e.target as HTMLInputElement;
+    if (!(el instanceof HTMLInputElement) || el.type === 'checkbox') return;
+    const inputs = Array.from(rxGridRef.current?.querySelectorAll<HTMLInputElement>('input:not([type="checkbox"])') ?? []);
+    const idx = inputs.indexOf(el);
+    if (idx < 0) return;
+    const COLS = 8; // esf, cil, eixo, adic, esfP, cilP, dnp, alt
+    let target = -1;
+    if (e.key === 'ArrowDown') target = idx + COLS;
+    else if (e.key === 'ArrowUp') target = idx - COLS;
+    else if (e.key === 'Enter') target = idx + 1;
+    else if (e.key === 'ArrowRight' && el.selectionStart === el.value.length) target = idx + 1;
+    else if (e.key === 'ArrowLeft' && el.selectionStart === 0) target = idx - 1;
+    if (target >= 0 && target < inputs.length) {
+      e.preventDefault();
+      inputs[target].focus();
+      inputs[target].select();
+    }
+  }
+
   function updateOlho(olho: 'od' | 'oe', k: keyof RxOlho, v: string) {
     const setter = olho === 'od' ? setOd : setOe;
     setter(prev => {
@@ -265,9 +304,10 @@ export default function LabNovaOrdem() {
         const cil = k === 'cil_longe' ? v : next.cil_longe;
         if (adic !== 0) {
           const esfPerto = esf + adic;
-          next.esf_perto = Number.isInteger(esfPerto * 100)
+          const abs = Number.isInteger(esfPerto * 100)
             ? esfPerto.toFixed(2)
             : String(Math.round(esfPerto * 100) / 100);
+          next.esf_perto = esfPerto > 0 ? '+' + abs : abs;
           next.cil_perto = cil;
         }
       }
@@ -699,7 +739,7 @@ export default function LabNovaOrdem() {
         <div style={card}>
           <div style={secTitle}>Receita das Lentes</div>
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+            <table ref={rxGridRef} onKeyDown={handleRxKey} style={{ borderCollapse: 'collapse', width: '100%' }}>
               <thead>
                 <tr>
                   <th style={TH}>OLHO</th>
@@ -725,11 +765,11 @@ export default function LabNovaOrdem() {
                 {(['od', 'oe'] as const).map((o, i) => (
                   <tr key={o}>
                     <td style={{ ...TD, fontSize: '11px', fontWeight: '700', color: R.dim, paddingRight: '6px', whiteSpace: 'nowrap' }}>O/{i === 0 ? 'D' : 'E'}</td>
-                    <td style={TD}><RxInput value={o === 'od' ? od.esf_longe : oe.esf_longe} onChange={v => updateOlho(o, 'esf_longe', v)} /></td>
+                    <td style={TD}><RxInput value={o === 'od' ? od.esf_longe : oe.esf_longe} onChange={v => updateOlho(o, 'esf_longe', v)} posSign /></td>
                     <td style={TD}><RxInput value={o === 'od' ? od.cil_longe : oe.cil_longe} onChange={v => updateOlho(o, 'cil_longe', v)} /></td>
                     <td style={TD}><RxInput value={o === 'od' ? od.eixo_longe : oe.eixo_longe} onChange={v => updateOlho(o, 'eixo_longe', v)} width={44} /></td>
-                    <td style={TD}><RxInput value={o === 'od' ? od.adicao : oe.adicao} onChange={v => updateOlho(o, 'adicao', v)} /></td>
-                    <td style={TD}><RxInput value={o === 'od' ? od.esf_perto : oe.esf_perto} onChange={v => updateOlho(o, 'esf_perto', v)} /></td>
+                    <td style={TD}><RxInput value={o === 'od' ? od.adicao : oe.adicao} onChange={v => updateOlho(o, 'adicao', v)} posSign /></td>
+                    <td style={TD}><RxInput value={o === 'od' ? od.esf_perto : oe.esf_perto} onChange={v => updateOlho(o, 'esf_perto', v)} posSign /></td>
                     <td style={TD}><RxInput value={o === 'od' ? od.cil_perto : oe.cil_perto} onChange={v => updateOlho(o, 'cil_perto', v)} /></td>
                     <td style={{ ...TD, borderLeft: '2px solid var(--lab-hdr-bdr)' }}><RxInput value={o === 'od' ? od.dnp_longe : oe.dnp_longe} onChange={v => updateOlho(o, 'dnp_longe', v)} width={44} /></td>
                     <td style={TD}><RxInput value={o === 'od' ? od.alt : oe.alt} onChange={v => updateOlho(o, 'alt', v)} width={44} /></td>
