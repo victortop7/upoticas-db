@@ -15,6 +15,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
     const nomeOtica = url.searchParams.get('nome_otica');
     const codOtica  = url.searchParams.get('cod_otica');
     const refOtica  = url.searchParams.get('ref_otica');
+    const refExata  = url.searchParams.get('ref_exata');
     const numOS     = url.searchParams.get('num_os');
     const dataIni   = url.searchParams.get('data_ini');
     const dataFim   = url.searchParams.get('data_fim');
@@ -35,6 +36,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
     if (nomeOtica) { query += ' AND ot.nome LIKE ?'; params.push(`%${nomeOtica}%`); }
     if (codOtica)  { query += ' AND ot.codigo LIKE ?'; params.push(`%${codOtica}%`); }
     if (refOtica)  { query += ' AND o.ref_otica LIKE ?'; params.push(`%${refOtica}%`); }
+    if (refExata)  { query += ' AND TRIM(o.ref_otica) = ? COLLATE NOCASE'; params.push(refExata.trim()); }
     if (numOS)     { query += ' AND CAST(o.numero AS TEXT) LIKE ?'; params.push(`%${numOS}%`); }
     if (dataIni)   { query += ' AND date(o.created_at) >= ?'; params.push(dataIni); }
     if (dataFim)   { query += ' AND date(o.created_at) <= ?'; params.push(dataFim); }

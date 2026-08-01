@@ -135,6 +135,7 @@ export default function LabNovaOrdem() {
   const [oticaNome, setOticaNome] = useState('');
   const [oticaErro, setOticaErro] = useState(false);
   const [refOtica, setRefOtica] = useState('');
+  const [refDup, setRefDup] = useState<number | null>(null); // nº da OS que já usa essa ref nesta ótica
   const [classificacao, setClassificacao] = useState('N');
   const [listaPreco, setListaPreco] = useState('1');
   const [listasDisponiveis, setListasDisponiveis] = useState<{ numero: string; nome: string }[]>([
@@ -301,6 +302,18 @@ export default function LabNovaOrdem() {
         produto_id: p.id,
       });
     }
+  }
+
+  // Checa se a referência já foi usada por ESTA ótica (outras óticas podem repetir)
+  async function checarRefDup() {
+    const ref = refOtica.trim();
+    if (!oticaId || !ref) { setRefDup(null); return; }
+    try {
+      const rows = await api.get<{ numero: number }[]>(
+        `/lab/ordens?otica_id=${encodeURIComponent(oticaId)}&ref_exata=${encodeURIComponent(ref)}`
+      );
+      setRefDup(rows.length > 0 ? rows[0].numero : null);
+    } catch { setRefDup(null); }
   }
 
   async function salvarNovoTipo() {
@@ -531,7 +544,16 @@ export default function LabNovaOrdem() {
             </div>
             <div style={{ gridColumn: 'span 4' }}>
               <label style={LBL}>Ref. Ótica</label>
-              <input value={refOtica} onChange={e => setRefOtica(e.target.value)} style={INP} placeholder="Nº que veio da ótica" />
+              <input value={refOtica}
+                onChange={e => { setRefOtica(e.target.value); setRefDup(null); }}
+                onBlur={checarRefDup}
+                style={{ ...INP, ...(refDup ? { borderColor: '#cc0000', color: '#cc0000', fontWeight: 700 } : {}) }}
+                placeholder="Nº que veio da ótica" />
+              {refDup && (
+                <span style={{ display: 'block', color: '#cc0000', fontSize: '10px', fontWeight: 700, marginTop: '2px' }}>
+                  ⚠ Referência já usada nesta ótica (OS #{String(refDup).padStart(4, '0')})
+                </span>
+              )}
             </div>
           </div>
 
@@ -648,8 +670,19 @@ export default function LabNovaOrdem() {
               style={{ padding: '6px 18px', fontSize: '12px', fontWeight: '700', background: R.panelAlt, color: R.txt, border: `1px outset ${R.border}`, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
               DESISTIR
             </button>
-            <button type="button" onClick={() => {
+            <button type="button" onClick={async () => {
               if (!oticaId) { setErro('Selecione a ótica antes de continuar'); return; }
+              const ref = refOtica.trim();
+              if (ref) {
+                const rows = await api.get<{ numero: number }[]>(
+                  `/lab/ordens?otica_id=${encodeURIComponent(oticaId)}&ref_exata=${encodeURIComponent(ref)}`
+                ).catch(() => []);
+                if (rows.length > 0) {
+                  setRefDup(rows[0].numero);
+                  setErro(`A referência "${ref}" já foi usada por esta ótica na OS #${String(rows[0].numero).padStart(4, '0')}. Confira ou use outra.`);
+                  return;
+                }
+              }
               setErro(''); setStep(2);
               setTimeout(() => window.scrollTo({ top: 0 }), 50);
             }}
