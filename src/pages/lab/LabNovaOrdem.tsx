@@ -306,8 +306,8 @@ export default function LabNovaOrdem() {
     if (e.key === 'ArrowDown') { if (nativeVert) return; dir = 'down'; }
     else if (e.key === 'ArrowUp') { if (nativeVert) return; dir = 'up'; }
     else if (e.key === 'Enter') dir = 'right';
-    else if (isText && e.key === 'ArrowRight') { const inp = el as HTMLInputElement; if (inp.selectionStart !== inp.value.length) return; dir = 'right'; }
-    else if (isText && e.key === 'ArrowLeft') { const inp = el as HTMLInputElement; if (inp.selectionStart !== 0) return; dir = 'left'; }
+    else if (isText && e.key === 'ArrowRight') { const inp = el as HTMLInputElement; const full = inp.selectionStart === 0 && inp.selectionEnd === inp.value.length && inp.value.length > 0; if (!full && inp.selectionStart !== inp.value.length) return; dir = 'right'; }
+    else if (isText && e.key === 'ArrowLeft') { const inp = el as HTMLInputElement; const full = inp.selectionStart === 0 && inp.selectionEnd === inp.value.length && inp.value.length > 0; if (!full && inp.selectionStart !== 0) return; dir = 'left'; }
     if (!dir || !headerRef.current) return;
     const next = spatialNav(headerRef.current, el, dir);
     if (next) {
