@@ -11,4 +11,7 @@ export interface Env {
   ASAAS_VALOR_VISION?: string;    // default: 97 (plano base, 1 tablet)
   ASAAS_VALOR_DISPOSITIVO?: string; // default: 30 (por tablet extra)
   ASAAS_WEBHOOK_TOKEN?: string;   // token de autenticação do webhook (defina o mesmo no Asaas)
+  // Kommo CRM — integração "lead ganho" → cria cliente + OS/venda
+  KOMMO_WEBHOOK_TOKEN?: string;   // token compartilhado com o Kommo (defina o mesmo lá)
+  KOMMO_TENANT_EMAIL?: string;    // e-mail de um usuário da ótica p/ resolver o tenant (ex: oticaconceito4@gmail.com)
 }
