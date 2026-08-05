@@ -40,6 +40,7 @@ interface Tenant {
   trial_expira: string | null;
   licenca_expira: string | null;
   dispositivos_limite?: number;
+  valor_mensal?: number | null;
   created_at: string;
   status: string;
 }
@@ -194,7 +195,7 @@ const lbl: React.CSSProperties = { fontSize: 12, fontWeight: 600, color: C.dim, 
 
 /* ─────────────── NOVO CLIENTE ─────────────── */
 function NovoCliente({ secret, onClose, onSaved }: { secret: string; onClose: () => void; onSaved: () => void }) {
-  const [f, setF] = useState({ nome: '', responsavel: '', email: '', senha: '', tipo: 'otica', plano: 'trial', dias_trial: '14', licenca_expira: '', dispositivos: '1' });
+  const [f, setF] = useState({ nome: '', responsavel: '', email: '', senha: '', tipo: 'otica', plano: 'trial', dias_trial: '14', licenca_expira: '', dispositivos: '1', valor: '' });
   const [erro, setErro] = useState('');
   const [saving, setSaving] = useState(false);
   const set = (k: string, v: string) => setF(p => ({ ...p, [k]: v }));
@@ -213,6 +214,7 @@ function NovoCliente({ secret, onClose, onSaved }: { secret: string; onClose: ()
           dias_trial: f.plano === 'trial' ? Number(f.dias_trial) || 14 : undefined,
           licenca_expira: (f.plano === 'mensal' || f.plano === 'anual') ? (f.licenca_expira || null) : null,
           dispositivos_limite: f.tipo === 'vision' ? (Number(f.dispositivos) || 1) : 1,
+          valor_mensal: Number(String(f.valor).replace(',', '.')) || 0,
         }),
       });
       onSaved();
@@ -249,6 +251,11 @@ function NovoCliente({ secret, onClose, onSaved }: { secret: string; onClose: ()
             <input style={inp} type="number" min={1} value={f.dispositivos} onChange={e => set('dispositivos', e.target.value)} />
           </div>
         )}
+        <div style={{ background: C.accentDim, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 16px' }}>
+          <label style={{ ...lbl, color: C.accent }}>💳 Valor da mensalidade (R$)</label>
+          <input style={{ ...inp, fontSize: 16, fontFamily: C.mono }} value={f.valor} onChange={e => set('valor', e.target.value)} placeholder="Ex: 149,90" inputMode="decimal" />
+          <div style={{ fontSize: 11.5, color: C.dim, marginTop: 6 }}>Este é o valor que aparece no QR Code / chave Pix pro cliente pagar todo mês. Cada cliente pode ter um valor diferente.</div>
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <div>
             <label style={lbl}>E-mail (login) *</label>
@@ -301,6 +308,7 @@ function EditarLicenca({ secret, tenant, onClose, onSaved }: { secret: string; t
   const [bloqueado, setBloqueado] = useState(!!tenant.bloqueado);
   const [ativo, setAtivo] = useState(!!tenant.ativo);
   const [dispositivos, setDispositivos] = useState(String(tenant.dispositivos_limite ?? 1));
+  const [valor, setValor] = useState(tenant.valor_mensal ? String(tenant.valor_mensal).replace('.', ',') : '');
   const [saving, setSaving] = useState(false);
   const [erro, setErro] = useState('');
 
@@ -314,6 +322,7 @@ function EditarLicenca({ secret, tenant, onClose, onSaved }: { secret: string; t
           licenca_expira: (plano === 'mensal' || plano === 'anual') ? (licenca || null) : null,
           bloqueado, ativo,
           dispositivos_limite: Number(dispositivos) || 1,
+          valor_mensal: Number(String(valor).replace(',', '.')) || 0,
         }),
       });
       onSaved();
@@ -344,6 +353,11 @@ function EditarLicenca({ secret, tenant, onClose, onSaved }: { secret: string; t
         <div>
           <label style={lbl}>Limite de dispositivos (Connect Vision)</label>
           <input style={inp} type="number" min={1} value={dispositivos} onChange={e => setDispositivos(e.target.value)} />
+        </div>
+        <div style={{ background: C.accentDim, border: `1px solid ${C.border}`, borderRadius: 10, padding: '12px 14px' }}>
+          <label style={{ ...lbl, color: C.accent, marginBottom: 6 }}>💳 Valor da mensalidade (R$)</label>
+          <input style={{ ...inp, fontFamily: C.mono }} value={valor} onChange={e => setValor(e.target.value)} placeholder="Ex: 149,90" inputMode="decimal" />
+          <div style={{ fontSize: 11, color: C.dim, marginTop: 5 }}>Valor cobrado no Pix deste cliente todo mês.</div>
         </div>
         <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', color: C.text, fontSize: 14 }}>
           <input type="checkbox" checked={bloqueado} onChange={e => setBloqueado(e.target.checked)} />
@@ -500,8 +514,8 @@ export default function Admin() {
                 <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 720 }}>
                   <thead>
                     <tr style={{ background: C.bgAlt }}>
-                      {['Cliente', 'Tipo', 'Plano', 'Status', 'Expira', 'Criado', ''].map((h, i) => (
-                        <th key={i} style={{ textAlign: i === 6 ? 'right' : 'left', padding: '12px 16px', fontSize: 11.5, color: C.dim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: `1px solid ${C.border}` }}>{h}</th>
+                      {['Cliente', 'Tipo', 'Plano', 'Mensal', 'Status', 'Expira', 'Criado', ''].map((h, i) => (
+                        <th key={i} style={{ textAlign: i === 7 ? 'right' : 'left', padding: '12px 16px', fontSize: 11.5, color: C.dim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: `1px solid ${C.border}` }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -517,6 +531,7 @@ export default function Admin() {
                           </td>
                           <td style={{ padding: '13px 16px', fontSize: 13, color: C.dim }}>{t.tipo === 'lab' ? 'Connect LAB' : t.tipo === 'vision' ? 'Connect Vision' : 'Connect Óticas'}</td>
                           <td style={{ padding: '13px 16px', fontSize: 13, textTransform: 'capitalize' }}>{t.plano}</td>
+                          <td style={{ padding: '13px 16px', fontSize: 13, fontFamily: C.mono, color: t.valor_mensal ? C.text : C.dim }}>{t.valor_mensal ? `R$ ${Number(t.valor_mensal).toFixed(2).replace('.', ',')}` : '—'}</td>
                           <td style={{ padding: '13px 16px' }}>
                             <span style={{ fontSize: 12, fontWeight: 700, color: meta.color, background: meta.bg, padding: '4px 10px', borderRadius: 999 }}>{meta.label}</span>
                           </td>
@@ -530,7 +545,7 @@ export default function Admin() {
                       );
                     })}
                     {clientes.length === 0 && (
-                      <tr><td colSpan={7} style={{ padding: 30, textAlign: 'center', color: C.dim, fontSize: 14 }}>Nenhum cliente encontrado.</td></tr>
+                      <tr><td colSpan={8} style={{ padding: 30, textAlign: 'center', color: C.dim, fontSize: 14 }}>Nenhum cliente encontrado.</td></tr>
                     )}
                   </tbody>
                 </table>

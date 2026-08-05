@@ -22,6 +22,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       dias_trial?: number;
       licenca_expira?: string | null;
       dispositivos_limite?: number;
+      valor_mensal?: number;
     };
 
     if (!body.nome?.trim() || !body.email?.trim() || !body.senha) {
@@ -39,6 +40,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
 
     const tipo = ['lab', 'vision', 'otica'].includes(body.tipo || '') ? body.tipo! : 'otica';
     const dispositivos = Math.max(1, Number(body.dispositivos_limite) || 1);
+    const valorMensal = Math.max(0, Number(body.valor_mensal) || 0);
     const plano = body.plano || 'trial';
     const dias = body.dias_trial ?? 14;
     const trialExpira = plano === 'trial'
@@ -56,11 +58,12 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     try { await env.DB.prepare('ALTER TABLE tenants ADD COLUMN bloqueado INTEGER DEFAULT 0').run(); } catch { /* já existe */ }
     try { await env.DB.prepare('ALTER TABLE tenants ADD COLUMN licenca_expira TEXT').run(); } catch { /* já existe */ }
     try { await env.DB.prepare('ALTER TABLE tenants ADD COLUMN dispositivos_limite INTEGER DEFAULT 1').run(); } catch { /* já existe */ }
+    try { await env.DB.prepare('ALTER TABLE tenants ADD COLUMN valor_mensal REAL').run(); } catch { /* já existe */ }
 
     await env.DB.batch([
       env.DB.prepare(
-        'INSERT INTO tenants (id, nome, email, tipo, plano, trial_expira, licenca_expira, dispositivos_limite, ativo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)'
-      ).bind(tenantId, body.nome.trim(), email, tipo, plano, trialExpira, licencaExpira, dispositivos),
+        'INSERT INTO tenants (id, nome, email, tipo, plano, trial_expira, licenca_expira, dispositivos_limite, valor_mensal, ativo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)'
+      ).bind(tenantId, body.nome.trim(), email, tipo, plano, trialExpira, licencaExpira, dispositivos, valorMensal || null),
 
       env.DB.prepare(
         'INSERT INTO usuarios (id, tenant_id, nome, email, senha_hash, perfil, ativo) VALUES (?, ?, ?, ?, ?, ?, 1)'

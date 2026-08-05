@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Outlet, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import LabAltF1 from './LabAltF1';
+import PixLicenca from './PixLicenca';
 import { applyLabTheme } from '../lib/labTheme';
 import LabIcon, { type IconName } from './LabIcon';
 import { podeModulo, podeDashboard, homeLab } from '../lib/labPerms';
@@ -327,9 +328,10 @@ export default function LabLayout() {
             <div style={{ color: 'var(--lab-hdr-txt)', fontSize: '13px', lineHeight: '1.8', marginBottom: '24px' }}>
               {licStatus.message}
             </div>
-            <div style={{ color: 'var(--lab-hdr-txt)', fontSize: '12px', padding: '12px', background: 'rgba(0,85,0,0.3)', border: '1px solid var(--lab-accent)', borderRadius: '2px', marginBottom: '20px' }}>
-              Entre em contato com o suporte para regularizar o acesso ao sistema.
+            <div style={{ color: 'var(--lab-hdr-txt)', fontSize: '12px', padding: '10px', background: 'rgba(0,85,0,0.3)', border: '1px solid var(--lab-accent)', borderRadius: '2px', marginBottom: '16px' }}>
+              Pague a mensalidade pelo Pix abaixo — o acesso é liberado automaticamente.
             </div>
+            <div style={{ marginBottom: '16px' }}><PixLicenca /></div>
             <button onClick={handleLogout}
               style={{ padding: '8px 24px', fontSize: '12px', fontWeight: 'bold', background: 'var(--lab-accent)', color: 'var(--lab-on-accent)', border: '2px outset var(--lab-hdr-bdr)', borderRadius: '2px', cursor: 'pointer', letterSpacing: '1px', textTransform: 'uppercase' }}>
               SAIR DO SISTEMA

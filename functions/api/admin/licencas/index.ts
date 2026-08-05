@@ -11,6 +11,7 @@ async function ensureColumns(env: Env) {
   try { await env.DB.prepare('ALTER TABLE tenants ADD COLUMN licenca_expira TEXT').run(); } catch {}
   try { await env.DB.prepare('ALTER TABLE tenants ADD COLUMN dispositivos_limite INTEGER DEFAULT 1').run(); } catch {}
   try { await env.DB.prepare("ALTER TABLE tenants ADD COLUMN dispositivo_modo TEXT DEFAULT 'bloquear'").run(); } catch {}
+  try { await env.DB.prepare('ALTER TABLE tenants ADD COLUMN valor_mensal REAL').run(); } catch {}
 }
 
 // GET /api/admin/licencas — lista todos os tenants
@@ -23,6 +24,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
             COALESCE(bloqueado, 0) as bloqueado,
             COALESCE(dispositivos_limite, 1) as dispositivos_limite,
             COALESCE(dispositivo_modo, 'bloquear') as dispositivo_modo,
+            valor_mensal,
             trial_expira, licenca_expira, created_at
      FROM tenants ORDER BY created_at DESC`
   ).all();
@@ -73,6 +75,7 @@ export const onRequestPatch = async ({ request, env }: { request: Request; env: 
     ativo?: boolean;
     dispositivos_limite?: number;
     dispositivo_modo?: string;
+    valor_mensal?: number;
   };
 
   if (!body.id) return json({ error: 'id obrigatório' }, 400);
@@ -86,6 +89,7 @@ export const onRequestPatch = async ({ request, env }: { request: Request; env: 
   if (body.ativo !== undefined)         { updates.push('ativo = ?');          vals.push(body.ativo ? 1 : 0); }
   if (body.dispositivos_limite !== undefined) { updates.push('dispositivos_limite = ?'); vals.push(Math.max(1, Number(body.dispositivos_limite) || 1)); }
   if (body.dispositivo_modo !== undefined)    { updates.push('dispositivo_modo = ?');    vals.push(body.dispositivo_modo === 'rotacionar' ? 'rotacionar' : 'bloquear'); }
+  if (body.valor_mensal !== undefined)        { updates.push('valor_mensal = ?');        vals.push(Math.max(0, Number(body.valor_mensal) || 0) || null); }
 
   if (!updates.length) return json({ error: 'Nada para atualizar' }, 400);
 

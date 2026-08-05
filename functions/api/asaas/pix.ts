@@ -24,8 +24,9 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
 
     const body = await request.json().catch(() => ({})) as { documento?: string };
     try { await env.DB.prepare('ALTER TABLE tenants ADD COLUMN dispositivos_limite INTEGER DEFAULT 1').run(); } catch { /* já existe */ }
+    try { await env.DB.prepare('ALTER TABLE tenants ADD COLUMN valor_mensal REAL').run(); } catch { /* já existe */ }
     const tenant = await env.DB.prepare(
-      'SELECT id, nome, email, cnpj, asaas_customer_id, COALESCE(dispositivos_limite, 1) as dispositivos_limite FROM tenants WHERE id = ?'
+      'SELECT id, nome, email, tipo, cnpj, asaas_customer_id, COALESCE(dispositivos_limite, 1) as dispositivos_limite, valor_mensal FROM tenants WHERE id = ?'
     ).bind(auth.tenant_id).first<Record<string, unknown>>();
     if (!tenant) return json({ error: 'Estabelecimento não encontrado' }, 404);
 
@@ -50,16 +51,19 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
         .bind(customerId, doc, tenant.id).run();
     }
 
-    // 2) Cria a cobrança Pix — valor = base + R$30 por tablet extra
+    // 2) Cria a cobrança Pix
+    // Valor: se o cliente tem valor_mensal definido no cadastro, usa ele.
+    // Senão, cai no cálculo do Vision (base + R$30 por tablet extra).
+    const valorMensal = Number(tenant.valor_mensal) || 0;
     const valorBase = Number(env.ASAAS_VALOR_VISION || 97);
     const valorExtra = Number(env.ASAAS_VALOR_DISPOSITIVO || 30);
     const limite = Number(tenant.dispositivos_limite ?? 1) || 1;
     const extras = Math.max(0, limite - 1);
-    const valor = valorBase + extras * valorExtra;
+    const valor = valorMensal > 0 ? valorMensal : (valorBase + extras * valorExtra);
     const due = hojeSP();
-    const desc = extras > 0
-      ? `Connect Vision — Mensalidade (${limite} tablets)`
-      : 'Connect Vision — Mensalidade';
+    const desc = valorMensal > 0
+      ? `Mensalidade — ${tenant.nome}`
+      : (extras > 0 ? `Connect Vision — Mensalidade (${limite} tablets)` : 'Connect Vision — Mensalidade');
     const pRes = await fetch(`${base}/payments`, {
       method: 'POST', headers: H,
       body: JSON.stringify({

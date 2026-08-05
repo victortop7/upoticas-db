@@ -1,6 +1,7 @@
 import { Outlet, Navigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import BuscaGlobal from './BuscaGlobal';
+import PixLicenca from './PixLicenca';
 import { useAuth } from '../hooks/useAuth';
 
 // WhatsApp do suporte para renovação (troque pelo número oficial)
@@ -37,11 +38,13 @@ function BloqueioOverlay({ motivo }: { motivo?: string }) {
         <p style={{ margin: '0 0 6px', fontSize: 14, color: 'var(--text-dim)', lineHeight: 1.6 }}>
           Seus dados estão <strong style={{ color: 'var(--text)' }}>salvos e seguros</strong> — nada foi perdido. Para continuar usando o sistema, renove sua licença.
         </p>
-        <p style={{ margin: '0 0 22px', fontSize: 13, color: 'var(--text-muted)' }}>Assim que renovar, tudo volta a aparecer normalmente.</p>
+        <p style={{ margin: '0 0 18px', fontSize: 13, color: 'var(--text-muted)' }}>Pague pelo Pix abaixo e o acesso é liberado na hora.</p>
+        <PixLicenca />
+        <div style={{ margin: '16px 0 12px', fontSize: 12, color: 'var(--text-muted)' }}>ou</div>
         <a href={`https://wa.me/${SUPORTE_WHATSAPP}?text=${msg}`} target="_blank" rel="noopener noreferrer"
-          style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', padding: '13px', fontSize: 15, fontWeight: 700, background: '#25D366', color: 'white', border: 'none', borderRadius: 10, cursor: 'pointer', textDecoration: 'none', boxSizing: 'border-box' }}>
+          style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', padding: '11px', fontSize: 14, fontWeight: 700, background: '#25D366', color: 'white', border: 'none', borderRadius: 10, cursor: 'pointer', textDecoration: 'none', boxSizing: 'border-box' }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M5.296 19.935l.646-2.352a9.15 9.15 0 01-1.225-4.61C4.72 7.867 8.572 4 13.28 4a8.549 8.549 0 016.073 2.513 8.633 8.633 0 012.511 6.109c-.002 4.767-3.854 8.634-8.562 8.634a8.57 8.57 0 01-4.097-1.04L5.296 19.935z" fillRule="evenodd"/></svg>
-          Renovar pelo WhatsApp
+          Prefiro falar no WhatsApp
         </a>
       </div>
     </div>
