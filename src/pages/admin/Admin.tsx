@@ -194,7 +194,7 @@ const lbl: React.CSSProperties = { fontSize: 12, fontWeight: 600, color: C.dim, 
 
 /* ─────────────── NOVO CLIENTE ─────────────── */
 function NovoCliente({ secret, onClose, onSaved }: { secret: string; onClose: () => void; onSaved: () => void }) {
-  const [f, setF] = useState({ nome: '', responsavel: '', email: '', senha: '', tipo: 'otica', plano: 'trial', dias_trial: '14', licenca_expira: '' });
+  const [f, setF] = useState({ nome: '', responsavel: '', email: '', senha: '', tipo: 'otica', plano: 'trial', dias_trial: '14', licenca_expira: '', dispositivos: '1' });
   const [erro, setErro] = useState('');
   const [saving, setSaving] = useState(false);
   const set = (k: string, v: string) => setF(p => ({ ...p, [k]: v }));
@@ -212,6 +212,7 @@ function NovoCliente({ secret, onClose, onSaved }: { secret: string; onClose: ()
           tipo: f.tipo, plano: f.plano,
           dias_trial: f.plano === 'trial' ? Number(f.dias_trial) || 14 : undefined,
           licenca_expira: (f.plano === 'mensal' || f.plano === 'anual') ? (f.licenca_expira || null) : null,
+          dispositivos_limite: f.tipo === 'vision' ? (Number(f.dispositivos) || 1) : 1,
         }),
       });
       onSaved();
@@ -238,9 +239,16 @@ function NovoCliente({ secret, onClose, onSaved }: { secret: string; onClose: ()
             <select style={inp} value={f.tipo} onChange={e => set('tipo', e.target.value)}>
               <option value="otica">Connect Óticas</option>
               <option value="lab">Connect LAB</option>
+              <option value="vision">Connect Vision</option>
             </select>
           </div>
         </div>
+        {f.tipo === 'vision' && (
+          <div style={{ maxWidth: 200 }}>
+            <label style={lbl}>Limite de dispositivos (tablets)</label>
+            <input style={inp} type="number" min={1} value={f.dispositivos} onChange={e => set('dispositivos', e.target.value)} />
+          </div>
+        )}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <div>
             <label style={lbl}>E-mail (login) *</label>
@@ -507,7 +515,7 @@ export default function Admin() {
                             <div style={{ fontWeight: 600, fontSize: 14 }}>{t.nome}</div>
                             <div style={{ fontSize: 12.5, color: C.dim, fontFamily: C.mono }}>{t.email}</div>
                           </td>
-                          <td style={{ padding: '13px 16px', fontSize: 13, color: C.dim }}>{t.tipo === 'lab' ? 'Connect LAB' : 'Connect Óticas'}</td>
+                          <td style={{ padding: '13px 16px', fontSize: 13, color: C.dim }}>{t.tipo === 'lab' ? 'Connect LAB' : t.tipo === 'vision' ? 'Connect Vision' : 'Connect Óticas'}</td>
                           <td style={{ padding: '13px 16px', fontSize: 13, textTransform: 'capitalize' }}>{t.plano}</td>
                           <td style={{ padding: '13px 16px' }}>
                             <span style={{ fontSize: 12, fontWeight: 700, color: meta.color, background: meta.bg, padding: '4px 10px', borderRadius: 999 }}>{meta.label}</span>
