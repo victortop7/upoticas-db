@@ -428,6 +428,22 @@ export default function Admin() {
     await adminRequest(`/admin/leads?id=${l.id}`, secret, { method: 'DELETE' });
     carregar(secret);
   }
+  async function entrarComoCliente(t: Tenant) {
+    try {
+      const res = await fetch('/api/admin/impersonate', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${secret}` },
+        body: JSON.stringify({ tenant_id: t.id }),
+      });
+      const data = await res.json() as { tipo?: string; error?: string };
+      if (!res.ok) throw new Error(data.error || 'Não foi possível entrar');
+      const dest = data.tipo === 'lab' ? '/lab/dashboard' : data.tipo === 'vision' ? '/vision' : '/dashboard';
+      window.location.href = dest;
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Não foi possível entrar no sistema do cliente');
+    }
+  }
 
   if (!authed) return <LoginScreen onOk={s => setSecret(s)} />;
 
@@ -526,7 +542,10 @@ export default function Admin() {
                       return (
                         <tr key={t.id} style={{ borderBottom: `1px solid ${C.border}` }}>
                           <td style={{ padding: '13px 16px' }}>
-                            <div style={{ fontWeight: 600, fontSize: 14 }}>{t.nome}</div>
+                            <button onClick={() => entrarComoCliente(t)} title="Entrar no sistema deste cliente"
+                              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', fontWeight: 600, fontSize: 14, color: C.accent, fontFamily: C.sans }}>
+                              {t.nome} <span style={{ fontSize: 11, opacity: 0.7 }}>↗</span>
+                            </button>
                             <div style={{ fontSize: 12.5, color: C.dim, fontFamily: C.mono }}>{t.email}</div>
                           </td>
                           <td style={{ padding: '13px 16px', fontSize: 13, color: C.dim }}>{t.tipo === 'lab' ? 'Connect LAB' : t.tipo === 'vision' ? 'Connect Vision' : 'Connect Óticas'}</td>
@@ -538,6 +557,7 @@ export default function Admin() {
                           <td style={{ padding: '13px 16px', fontSize: 13, color: C.dim, fontFamily: C.mono }}>{t.plano === 'vitalicio' ? '∞' : fmtData(expira)}</td>
                           <td style={{ padding: '13px 16px', fontSize: 13, color: C.dim, fontFamily: C.mono }}>{fmtData(t.created_at)}</td>
                           <td style={{ padding: '13px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                            <button onClick={() => entrarComoCliente(t)} style={{ padding: '6px 12px', background: C.accent, color: '#fff', border: 'none', borderRadius: 8, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', marginRight: 6 }}>Entrar</button>
                             <button onClick={() => setEditar(t)} style={{ padding: '6px 12px', background: C.surfaceHi, color: C.text, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', marginRight: 6 }}>Licença</button>
                             <button onClick={() => excluirCliente(t)} style={{ padding: '6px 10px', background: 'transparent', color: C.red, border: `1px solid ${C.redDim}`, borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>Excluir</button>
                           </td>
