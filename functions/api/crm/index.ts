@@ -4,6 +4,18 @@ import { requireAuth, json } from '../../lib/auth-middleware';
 import { ensureCrmTable, ensureEstagiosPadrao } from './setup';
 
 async function aplicarRegras(db: D1Database, tenant_id: string) {
+  // 0. "Cliente Cadastrado" (novo) é só para quem AINDA NÃO comprou.
+  //    Quem já tem venda ou OS sai de 'novo' e vai para Pós-venda (as regras abaixo refinam por recência).
+  await db.prepare(`
+    UPDATE crm_cards SET estagio = 'pos_venda', updated_at = datetime('now')
+    WHERE tenant_id = ? AND estagio = 'novo'
+    AND cliente_id IN (
+      SELECT cliente_id FROM vendas WHERE tenant_id = ?
+      UNION
+      SELECT cliente_id FROM ordens_servico WHERE tenant_id = ?
+    )
+  `).bind(tenant_id, tenant_id, tenant_id).run();
+
   // 1. VIP: total gasto >= R$2.000 (não sobrescreve a_receber, aniversario, oculos_pendente, oculos_pronto)
   await db.prepare(`
     UPDATE crm_cards SET estagio = 'vip', updated_at = datetime('now')
@@ -83,7 +95,11 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
   await env.DB.prepare(`
     INSERT OR IGNORE INTO crm_cards (id, tenant_id, cliente_id, estagio, created_at, updated_at)
     SELECT lower(hex(randomblob(4)) || '-' || hex(randomblob(2)) || '-' || hex(randomblob(2)) || '-' || hex(randomblob(2)) || '-' || hex(randomblob(6))),
-      c.tenant_id, c.id, 'novo', datetime('now'), datetime('now')
+      c.tenant_id, c.id,
+      CASE WHEN EXISTS (SELECT 1 FROM vendas v WHERE v.cliente_id = c.id AND v.tenant_id = c.tenant_id)
+             OR EXISTS (SELECT 1 FROM ordens_servico os WHERE os.cliente_id = c.id AND os.tenant_id = c.tenant_id)
+           THEN 'pos_venda' ELSE 'novo' END,
+      datetime('now'), datetime('now')
     FROM clientes c
     WHERE c.tenant_id = ? AND c.ativo = 1
     AND NOT EXISTS (SELECT 1 FROM crm_cards cc WHERE cc.cliente_id = c.id AND cc.tenant_id = c.tenant_id)
