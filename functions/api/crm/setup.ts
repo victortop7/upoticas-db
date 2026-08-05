@@ -63,7 +63,9 @@ export async function ensureEstagiosPadrao(db: D1Database, tenant_id: string) {
   }
 
   // Garante estágios do sistema mesmo em tenants já criados
+  // 'novo' (Cliente Cadastrado) é garantido aqui: é onde todo cliente novo entra.
   const sistemicos = [
+    { key: 'novo',            label: 'Cliente Cadastrado', icon: '📋', color: '#16a34a', ordem: 0 },
     { key: 'oculos_pendente', label: 'Óculos Pendente', icon: '👓', color: '#f59e0b', ordem: 2 },
     { key: 'oculos_pronto',   label: 'Óculos Pronto',   icon: '✅', color: '#16a34a', ordem: 3 },
   ];

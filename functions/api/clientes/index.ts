@@ -1,6 +1,7 @@
 import type { PagesFunction } from '@cloudflare/workers-types';
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
+import { ensureCrmTable, ensureEstagiosPadrao } from '../crm/setup';
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const auth = await requireAuth(request, env);
@@ -87,8 +88,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       now, now
     ).run();
 
-    // Cria card no CRM automaticamente
+    // Cria card no CRM automaticamente na etapa "Cliente Cadastrado" (key 'novo')
     try {
+      await ensureCrmTable(env.DB);
+      await ensureEstagiosPadrao(env.DB, auth.tenant_id); // garante que a coluna "Cliente Cadastrado" exista
       await env.DB.prepare(
         'INSERT OR IGNORE INTO crm_cards (id, tenant_id, cliente_id, estagio, prioridade, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
       ).bind(crypto.randomUUID(), auth.tenant_id, id, 'novo', 'normal', now, now).run();
