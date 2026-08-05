@@ -71,11 +71,35 @@ function fmtData(iso: string | null): string {
   return d.toLocaleDateString('pt-BR');
 }
 
-/* ─────────────── LOGIN ─────────────── */
+/* ─────────────── LOGIN (PIN 4 dígitos + senha) ─────────────── */
+const PIN_CORRETO = '2423';
+
 function LoginScreen({ onOk }: { onOk: (secret: string) => void }) {
+  const [etapa, setEtapa] = useState<'pin' | 'senha'>(() => sessionStorage.getItem('admin_pin_ok') === '1' ? 'senha' : 'pin');
+  const [pin, setPin] = useState('');
+  const [shake, setShake] = useState(false);
+  const [pinErro, setPinErro] = useState(false);
   const [secret, setSecret] = useState('');
   const [erro, setErro] = useState('');
   const [loading, setLoading] = useState(false);
+
+  function press(d: string) {
+    if (pin.length >= 4) return;
+    const novo = pin + d;
+    setPin(novo); setPinErro(false);
+    if (novo.length === 4) {
+      setTimeout(() => {
+        if (novo === PIN_CORRETO) {
+          sessionStorage.setItem('admin_pin_ok', '1');
+          setEtapa('senha');
+        } else {
+          setPinErro(true); setShake(true);
+          setTimeout(() => { setPin(''); setShake(false); }, 700);
+        }
+      }, 150);
+    }
+  }
+  function del() { setPin(p => p.slice(0, -1)); setPinErro(false); }
 
   async function entrar() {
     if (!secret.trim()) return;
@@ -85,37 +109,67 @@ function LoginScreen({ onOk }: { onOk: (secret: string) => void }) {
       sessionStorage.setItem('admin_secret_v2', secret.trim());
       onOk(secret.trim());
     } catch {
-      setErro('Chave incorreta. Verifique e tente novamente.');
+      setErro('Senha incorreta. Verifique e tente novamente.');
       setLoading(false);
     }
   }
 
+  const digits = ['1','2','3','4','5','6','7','8','9','←','0','✓'];
+
   return (
     <div style={{ minHeight: '100vh', background: C.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: C.sans, padding: 20 }}>
-      <div style={{ width: 380, maxWidth: '100%' }}>
-        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+      <div style={{ width: 340, maxWidth: '100%' }}>
+        <div style={{ textAlign: 'center', marginBottom: 26 }}>
           <div style={{ width: 56, height: 56, borderRadius: 16, background: C.accentDim, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 26 }}>🛡️</div>
           <div style={{ fontSize: 22, fontWeight: 700, color: C.text, letterSpacing: '-0.02em' }}>Painel Administrativo</div>
           <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>Conexão Óticas · acesso restrito</div>
         </div>
+
         <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 16, padding: 24 }}>
-          <label style={{ fontSize: 12, fontWeight: 600, color: C.dim, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Chave de acesso</label>
-          <input
-            type="password"
-            value={secret}
-            autoFocus
-            onChange={e => { setSecret(e.target.value); setErro(''); }}
-            onKeyDown={e => { if (e.key === 'Enter') entrar(); }}
-            placeholder="••••••••••••"
-            style={{ width: '100%', marginTop: 8, padding: '12px 14px', background: C.bgAlt, border: `1px solid ${erro ? C.red : C.border}`, borderRadius: 10, color: C.text, fontSize: 15, fontFamily: C.mono, outline: 'none', boxSizing: 'border-box' }}
-          />
-          {erro && <div style={{ color: C.red, fontSize: 12.5, marginTop: 8 }}>{erro}</div>}
-          <button onClick={entrar} disabled={loading}
-            style={{ width: '100%', marginTop: 16, padding: '12px', background: C.accent, color: '#fff', border: 'none', borderRadius: 10, fontSize: 14.5, fontWeight: 700, cursor: loading ? 'default' : 'pointer', opacity: loading ? 0.7 : 1, fontFamily: C.sans }}>
-            {loading ? 'Verificando…' : 'Entrar'}
-          </button>
+          {etapa === 'pin' ? (
+            <>
+              <div style={{ textAlign: 'center', fontSize: 12.5, color: C.dim, fontWeight: 600, marginBottom: 16 }}>Digite o PIN de 4 dígitos</div>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 18, animation: shake ? 'admShake 0.5s' : 'none' }}>
+                {[0,1,2,3].map(i => (
+                  <div key={i} style={{ width: 40, height: 48, borderRadius: 10, border: `1.5px solid ${pinErro ? C.red : C.border}`, background: C.bgAlt, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, color: pinErro ? C.red : C.text }}>
+                    {pin[i] ? '●' : ''}
+                  </div>
+                ))}
+              </div>
+              {pinErro && <div style={{ textAlign: 'center', color: C.red, fontSize: 12.5, fontWeight: 700, marginBottom: 12 }}>PIN incorreto</div>}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                {digits.map(d => (
+                  <button key={d} onClick={() => d === '←' ? del() : d === '✓' ? undefined : press(d)}
+                    style={{ padding: '14px 0', fontSize: 18, fontWeight: 700, fontFamily: C.mono,
+                      background: d === '←' || d === '✓' ? 'transparent' : C.bgAlt,
+                      color: d === '✓' ? C.dim : C.text,
+                      border: `1px solid ${C.border}`, borderRadius: 10, cursor: d === '✓' ? 'default' : 'pointer' }}>
+                    {d}
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: C.dim, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Senha de acesso</label>
+                <button onClick={() => { sessionStorage.removeItem('admin_pin_ok'); setPin(''); setEtapa('pin'); }} style={{ background: 'none', border: 'none', color: C.dim, fontSize: 12, cursor: 'pointer', textDecoration: 'underline' }}>voltar ao PIN</button>
+              </div>
+              <input type="password" value={secret} autoFocus
+                onChange={e => { setSecret(e.target.value); setErro(''); }}
+                onKeyDown={e => { if (e.key === 'Enter') entrar(); }}
+                placeholder="••••••••••••"
+                style={{ width: '100%', padding: '12px 14px', background: C.bgAlt, border: `1px solid ${erro ? C.red : C.border}`, borderRadius: 10, color: C.text, fontSize: 15, fontFamily: C.mono, outline: 'none', boxSizing: 'border-box' }} />
+              {erro && <div style={{ color: C.red, fontSize: 12.5, marginTop: 8 }}>{erro}</div>}
+              <button onClick={entrar} disabled={loading}
+                style={{ width: '100%', marginTop: 16, padding: 12, background: C.accent, color: '#fff', border: 'none', borderRadius: 10, fontSize: 14.5, fontWeight: 700, cursor: loading ? 'default' : 'pointer', opacity: loading ? 0.7 : 1, fontFamily: C.sans }}>
+                {loading ? 'Verificando…' : 'Entrar'}
+              </button>
+            </>
+          )}
         </div>
       </div>
+      <style>{`@keyframes admShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}`}</style>
     </div>
   );
 }
