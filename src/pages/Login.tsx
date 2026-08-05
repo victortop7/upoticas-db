@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { login } from '../lib/auth';
 import { useAuth } from '../hooks/useAuth';
 import InstallAppButton from '../components/InstallAppButton';
@@ -8,15 +8,12 @@ import { homeLab } from '../lib/labPerms';
 export default function Login() {
   const navigate = useNavigate();
   const { setAuth } = useAuth();
-  // Abre já na aba certa quando vem do app instalado (?sistema=lab)
+  // App instalado antigo abria em /login?sistema=lab — manda pro login do LAB
   const sistemaInicial = new URLSearchParams(window.location.search).get('sistema');
-  const [aba, setAba] = useState<'oticas' | 'lab'>(sistemaInicial === 'lab' ? 'lab' : 'oticas');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const isLab = aba === 'lab';
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -33,22 +30,11 @@ export default function Login() {
     }
   }
 
-  // ── TEMA ÓTICAS ──────────────────────────────────────
-  if (!isLab) return (
+  if (sistemaInicial === 'lab') return <Navigate to="/lab/login" replace />;
+
+  return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
       <div style={{ width: '100%', maxWidth: '420px' }}>
-
-        {/* Seletor de aba */}
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '28px', background: 'var(--surface)', borderRadius: '12px', padding: '4px', border: '1px solid var(--border)' }}>
-          <button onClick={() => { setAba('oticas'); setErro(''); }}
-            style={{ flex: 1, padding: '9px', fontSize: '13px', fontWeight: '700', borderRadius: '8px', border: 'none', cursor: 'pointer', background: '#16a34a', color: 'white', transition: 'all 0.15s' }}>
-            🏪 Connect Óticas
-          </button>
-          <button onClick={() => { setAba('lab'); setErro(''); }}
-            style={{ flex: 1, padding: '9px', fontSize: '13px', fontWeight: '600', borderRadius: '8px', border: 'none', cursor: 'pointer', background: 'transparent', color: 'var(--text-dim)', transition: 'all 0.15s' }}>
-            🔬 Connect LAB
-          </button>
-        </div>
 
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
@@ -101,62 +87,9 @@ export default function Login() {
           <InstallAppButton alwaysShow label="Instalar aplicativo no computador"
             style={{ fontSize: '13px', fontWeight: 600, color: '#16a34a', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: '6px' }} />
         </div>
-      </div>
-    </div>
-  );
 
-  // ── TEMA LAB (retro) ──────────────────────────────────
-  return (
-    <div style={{ minHeight: '100vh', background: '#c8c4b0', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', fontFamily: "'Montserrat', sans-serif" }}>
-      <div style={{ width: '100%', maxWidth: '420px' }}>
-
-        {/* Seletor de aba */}
-        <div style={{ display: 'flex', gap: '4px', marginBottom: '20px', background: '#d4d0c8', border: '2px inset #b0aca4', padding: '4px' }}>
-          <button onClick={() => { setAba('oticas'); setErro(''); }}
-            style={{ flex: 1, padding: '8px', fontSize: '12px', fontWeight: '700', border: '2px outset #b0aca4', cursor: 'pointer', background: '#dedad2', color: '#444', fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            🏪 Connect Óticas
-          </button>
-          <button onClick={() => { setAba('lab'); setErro(''); }}
-            style={{ flex: 1, padding: '8px', fontSize: '12px', fontWeight: '700', border: '2px inset #b0aca4', cursor: 'pointer', background: 'linear-gradient(90deg,#005500,#008800)', color: '#ccffcc', fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            🔬 Connect LAB
-          </button>
-        </div>
-
-        {/* Header retro */}
-        <div style={{ background: 'linear-gradient(90deg,#005500,#008800)', color: '#ccffcc', padding: '10px 16px', fontWeight: '700', fontSize: '14px', letterSpacing: '2px', textTransform: 'uppercase', border: '2px outset #007700', marginBottom: '0', textAlign: 'center' }}>
-          🔬 Connect LAB
-        </div>
-        <div style={{ background: '#d4d0c8', border: '2px inset #b0aca4', padding: '28px 24px' }}>
-          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-            <div style={{ fontSize: '12px', color: '#444', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Sistema para Laboratórios Ópticos</div>
-          </div>
-
-          {erro && (
-            <div style={{ background: '#ffdddd', border: '1px solid #880000', padding: '8px 12px', marginBottom: '14px', fontSize: '12px', color: '#880000', fontWeight: '700', fontFamily: "'Courier New', monospace" }}>
-              {erro}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} autoComplete="on" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#444', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>E-mail</label>
-              <input type="email" name="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="seu@email.com"
-                style={{ width: '100%', padding: '7px 10px', fontSize: '13px', border: '1px solid #999', background: '#fff', color: '#000', outline: 'none', fontFamily: "'Courier New', monospace", boxSizing: 'border-box' }} />
-            </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#444', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Senha</label>
-              <input type="password" name="password" autoComplete="current-password" value={senha} onChange={e => setSenha(e.target.value)} required placeholder="••••••••"
-                style={{ width: '100%', padding: '7px 10px', fontSize: '13px', border: '1px solid #999', background: '#fff', color: '#000', outline: 'none', fontFamily: "'Courier New', monospace", boxSizing: 'border-box' }} />
-            </div>
-            <button type="submit" disabled={loading}
-              style={{ width: '100%', padding: '9px', fontSize: '13px', fontWeight: '700', background: loading ? '#888' : 'linear-gradient(90deg,#005500,#008800)', color: '#ccffcc', border: '2px outset #007700', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '4px' }}>
-              {loading ? 'AGUARDE...' : 'ENTRAR NO SISTEMA'}
-            </button>
-          </form>
-        </div>
-
-        <div style={{ textAlign: 'center', marginTop: '14px', fontSize: '11px', color: '#666', fontFamily: "'Courier New', monospace" }}>
-          Connect LAB v1.0 — Sistema para Laboratórios Ópticos
+        <div style={{ textAlign: 'center', marginTop: '18px' }}>
+          <Link to="/lab/login" style={{ fontSize: '12.5px', color: 'var(--text-muted)', textDecoration: 'none' }}>É um laboratório? Acessar o Connect LAB →</Link>
         </div>
       </div>
     </div>

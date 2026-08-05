@@ -3,7 +3,7 @@
   "name": "Connect LAB",
   "short_name": "Connect LAB",
   "description": "Produção do laboratório óptico: funil, surfaçagem e rastreio.",
-  "start_url": "/login?sistema=lab",
+  "start_url": "/lab/login",
   "scope": "/",
   "display": "standalone",
   "background_color": "#08160f",

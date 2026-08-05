@@ -150,7 +150,7 @@ export default function LabLayout() {
     );
   }
 
-  if (!usuario) return <Navigate to="/login" replace />;
+  if (!usuario) return <Navigate to="/lab/login" replace />;
   if (tenant?.tipo !== 'lab') return <Navigate to="/dashboard" replace />;
 
   // ── Permissões por perfil ──
@@ -163,7 +163,7 @@ export default function LabLayout() {
   // Menu filtrado
   const modulosVisiveis = MODULOS.filter(m => podeModulo(perfil, m.letra));
 
-  async function handleLogout() { await logout(); navigate('/login'); }
+  async function handleLogout() { await logout(); navigate('/lab/login'); }
 
   const MODULO_ROTA: Partial<Record<ModuleKey, string>> = {
     B: '/lab/oticas',

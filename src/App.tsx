@@ -3,6 +3,7 @@ import { AuthProvider } from './hooks/useAuth';
 import Layout from './components/Layout';
 import LabLayout from './components/LabLayout';
 import Login from './pages/Login';
+import LoginLab from './pages/LoginLab';
 import Cadastro from './pages/Cadastro';
 import LabDashboard from './pages/lab/LabDashboard';
 import LabOrdens from './pages/lab/LabOrdens';
@@ -72,6 +73,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/lab/login" element={<LoginLab />} />
           <Route path="/interesse-lab" element={<InteresseLab />} />
           <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/os/:id/imprimir" element={<ImprimirOS />} />
