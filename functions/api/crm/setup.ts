@@ -1,11 +1,11 @@
 import type { D1Database } from '@cloudflare/workers-types';
 
 const ESTAGIOS_PADRAO = [
-  { key: 'novo',             label: 'Novos',            icon: '🆕', color: '#64748b', ordem: 0,  sistema: 1 },
-  { key: 'contato',          label: 'Contato',          icon: '📞', color: '#2563eb', ordem: 1,  sistema: 1 },
+  { key: 'novo',             label: 'Cliente Cadastrado', icon: '📋', color: '#16a34a', ordem: 0,  sistema: 1 },
+  { key: 'contato',          label: 'Em andamento',     icon: '📞', color: '#2563eb', ordem: 1,  sistema: 1 },
   { key: 'oculos_pendente',  label: 'Óculos Pendente',  icon: '👓', color: '#f59e0b', ordem: 2,  sistema: 1 },
   { key: 'oculos_pronto',    label: 'Óculos Pronto',    icon: '✅', color: '#16a34a', ordem: 3,  sistema: 1 },
-  { key: 'pos_venda',        label: 'Pós-venda',        icon: '💰', color: '#0891b2', ordem: 4,  sistema: 1 },
+  { key: 'pos_venda',        label: 'Pós-venda',        icon: '🏅', color: '#0891b2', ordem: 4,  sistema: 1 },
   { key: 'a_receber',        label: 'A Receber',        icon: '💳', color: '#dc2626', ordem: 5,  sistema: 1 },
   { key: 'aniversario',      label: 'Aniversário',      icon: '🎂', color: '#d97706', ordem: 6,  sistema: 1 },
   { key: 'indicacao',        label: 'Indicação',        icon: '👥', color: '#7c3aed', ordem: 7,  sistema: 1 },
@@ -49,6 +49,19 @@ export async function ensureCrmTable(db: D1Database) {
 }
 
 export async function ensureEstagiosPadrao(db: D1Database, tenant_id: string) {
+  // Renomeia os estágios padrão para o fluxo atual, também em óticas já existentes.
+  // Só troca se ainda estiver com o nome antigo (não sobrescreve customização do usuário).
+  const renomear = [
+    { key: 'novo',    de: 'Novos',   label: 'Cliente Cadastrado', icon: '📋', color: '#16a34a' },
+    { key: 'contato', de: 'Contato', label: 'Em andamento',       icon: '📞', color: '#2563eb' },
+  ];
+  for (const r of renomear) {
+    try {
+      await db.prepare('UPDATE crm_estagios SET label = ?, icon = ?, color = ? WHERE tenant_id = ? AND key = ? AND label = ?')
+        .bind(r.label, r.icon, r.color, tenant_id, r.key, r.de).run();
+    } catch { /* coluna/tabela ainda não existe */ }
+  }
+
   // Garante estágios do sistema mesmo em tenants já criados
   const sistemicos = [
     { key: 'oculos_pendente', label: 'Óculos Pendente', icon: '👓', color: '#f59e0b', ordem: 2 },
