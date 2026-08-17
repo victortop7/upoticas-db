@@ -129,24 +129,33 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
   return json(cards.results);
 };
 
+// POST /api/crm — coloca (ou recoloca) um cliente no funil, no início ("Cliente Cadastrado")
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;
   await ensureCrmTable(env.DB);
+  await ensureEstagiosPadrao(env.DB, auth.tenant_id); // garante que a coluna "Cliente Cadastrado" exista
 
   const body = await request.json() as { cliente_id: string };
   if (!body.cliente_id) return json({ error: 'cliente_id obrigatório' }, 400);
 
+  const now = new Date().toISOString();
   const existing = await env.DB.prepare(
     'SELECT id FROM crm_cards WHERE cliente_id = ? AND tenant_id = ?'
-  ).bind(body.cliente_id, auth.tenant_id).first();
-  if (existing) return json(existing);
+  ).bind(body.cliente_id, auth.tenant_id).first<{ id: string }>();
+
+  if (existing) {
+    // Já está no funil → volta para o início ("Cliente Cadastrado")
+    await env.DB.prepare(
+      "UPDATE crm_cards SET estagio = 'novo', updated_at = ? WHERE id = ?"
+    ).bind(now, existing.id).run();
+    return json({ id: existing.id, estagio: 'novo', recolocado: true });
+  }
 
   const id = crypto.randomUUID();
-  const now = new Date().toISOString();
   await env.DB.prepare(
     'INSERT INTO crm_cards (id, tenant_id, cliente_id, estagio, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)'
   ).bind(id, auth.tenant_id, body.cliente_id, 'novo', now, now).run();
 
-  return json({ id }, 201);
+  return json({ id, estagio: 'novo' }, 201);
 };

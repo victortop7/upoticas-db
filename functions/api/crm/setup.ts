@@ -62,26 +62,10 @@ export async function ensureEstagiosPadrao(db: D1Database, tenant_id: string) {
     } catch { /* coluna/tabela ainda não existe */ }
   }
 
-  // Garante estágios do sistema mesmo em tenants já criados
-  // 'novo' (Cliente Cadastrado) é garantido aqui: é onde todo cliente novo entra.
-  const sistemicos = [
-    { key: 'novo',            label: 'Cliente Cadastrado', icon: '📋', color: '#16a34a', ordem: 0 },
-    { key: 'oculos_pendente', label: 'Óculos Pendente', icon: '👓', color: '#f59e0b', ordem: 2 },
-    { key: 'oculos_pronto',   label: 'Óculos Pronto',   icon: '✅', color: '#16a34a', ordem: 3 },
-  ];
-  for (const s of sistemicos) {
-    try {
-      await db.prepare(
-        'INSERT OR IGNORE INTO crm_estagios (id, tenant_id, key, label, icon, color, ordem, sistema) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-      ).bind(crypto.randomUUID(), tenant_id, s.key, s.label, s.icon, s.color, s.ordem, 1).run();
-    } catch {}
-  }
-
-  const existing = await db.prepare(
-    'SELECT COUNT(*) as n FROM crm_estagios WHERE tenant_id = ?'
-  ).bind(tenant_id).first<{ n: number }>();
-  if ((existing?.n || 0) > 1) return;
-
+  // Garante SEMPRE a estrutura padrão completa (todas as colunas que as automações usam:
+  // novo, contato, oculos_pendente, oculos_pronto, pos_venda, a_receber, aniversario,
+  // indicacao, reativacao, vip). INSERT OR IGNORE não apaga estágios customizados do usuário —
+  // só recria os padrões que estiverem faltando, evitando que cards "sumam" sem coluna.
   const now = new Date().toISOString();
   for (const e of ESTAGIOS_PADRAO) {
     try {

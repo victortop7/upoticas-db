@@ -56,6 +56,15 @@ export default function Clientes() {
     load();
   }
 
+  async function adicionarAoFunil(c: Cliente) {
+    try {
+      await api.post('/crm', { cliente_id: c.id });
+      alert(`${c.nome} foi colocado no funil, na etapa "Cliente Cadastrado".`);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Não foi possível adicionar ao funil');
+    }
+  }
+
   return (
     <div style={{ padding: '32px' }}>
       {/* Header */}
@@ -153,6 +162,11 @@ export default function Clientes() {
                   {c.cidade ? `${c.cidade}${c.uf ? `/${c.uf}` : ''}` : '—'}
                 </td>
                 <td style={{ padding: '12px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                  <button onClick={() => adicionarAoFunil(c)} title="Colocar este cliente no funil do CRM (etapa Cliente Cadastrado)" style={{
+                    padding: '5px 10px', fontSize: '12px', marginRight: '6px',
+                    background: 'var(--green-dim)', color: 'var(--green)',
+                    border: '1px solid transparent', borderRadius: '6px', cursor: 'pointer',
+                  }}>+ Funil</button>
                   <button onClick={() => setHistoricoCliente(c)} style={{
                     padding: '5px 10px', fontSize: '12px', marginRight: '6px',
                     background: 'var(--surface-alt)', color: 'var(--text-dim)',
