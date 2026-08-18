@@ -136,8 +136,15 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   await ensureCrmTable(env.DB);
   await ensureEstagiosPadrao(env.DB, auth.tenant_id); // garante que a coluna "Cliente Cadastrado" exista
 
-  const body = await request.json() as { cliente_id: string };
+  const body = await request.json() as { cliente_id: string; estagio?: string };
   if (!body.cliente_id) return json({ error: 'cliente_id obrigatório' }, 400);
+
+  // Etapa escolhida (default: "Cliente Cadastrado"). Valida que ela existe no funil da ótica.
+  let estagio = (body.estagio || 'novo').trim() || 'novo';
+  const valido = await env.DB.prepare(
+    'SELECT 1 FROM crm_estagios WHERE tenant_id = ? AND key = ? AND ativo = 1'
+  ).bind(auth.tenant_id, estagio).first();
+  if (!valido) estagio = 'novo';
 
   const now = new Date().toISOString();
   const existing = await env.DB.prepare(
@@ -145,17 +152,17 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   ).bind(body.cliente_id, auth.tenant_id).first<{ id: string }>();
 
   if (existing) {
-    // Já está no funil → volta para o início ("Cliente Cadastrado")
+    // Já está no funil → move para a etapa escolhida
     await env.DB.prepare(
-      "UPDATE crm_cards SET estagio = 'novo', updated_at = ? WHERE id = ?"
-    ).bind(now, existing.id).run();
-    return json({ id: existing.id, estagio: 'novo', recolocado: true });
+      'UPDATE crm_cards SET estagio = ?, updated_at = ? WHERE id = ?'
+    ).bind(estagio, now, existing.id).run();
+    return json({ id: existing.id, estagio, recolocado: true });
   }
 
   const id = crypto.randomUUID();
   await env.DB.prepare(
     'INSERT INTO crm_cards (id, tenant_id, cliente_id, estagio, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)'
-  ).bind(id, auth.tenant_id, body.cliente_id, 'novo', now, now).run();
+  ).bind(id, auth.tenant_id, body.cliente_id, estagio, now, now).run();
 
-  return json({ id, estagio: 'novo' }, 201);
+  return json({ id, estagio }, 201);
 };

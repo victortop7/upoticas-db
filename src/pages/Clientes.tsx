@@ -11,6 +11,15 @@ interface ClientesResponse {
   pages: number;
 }
 
+interface Estagio {
+  id: string;
+  key: string;
+  label: string;
+  icon: string;
+  color: string;
+  ordem: number;
+}
+
 export default function Clientes() {
   const [data, setData] = useState<ClientesResponse | null>(null);
   const [busca, setBusca] = useState('');
@@ -19,6 +28,12 @@ export default function Clientes() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editando, setEditando] = useState<Cliente | null>(null);
   const [historicoCliente, setHistoricoCliente] = useState<Cliente | null>(null);
+  const [estagios, setEstagios] = useState<Estagio[]>([]);
+  const [funilCliente, setFunilCliente] = useState<Cliente | null>(null);
+
+  useEffect(() => {
+    api.get<Estagio[]>('/crm/estagios').then(setEstagios).catch(() => setEstagios([]));
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -56,10 +71,11 @@ export default function Clientes() {
     load();
   }
 
-  async function adicionarAoFunil(c: Cliente) {
+  async function colocarNoFunil(c: Cliente, estagio: Estagio) {
     try {
-      await api.post('/crm', { cliente_id: c.id });
-      alert(`${c.nome} foi colocado no funil, na etapa "Cliente Cadastrado".`);
+      await api.post('/crm', { cliente_id: c.id, estagio: estagio.key });
+      setFunilCliente(null);
+      alert(`${c.nome} foi colocado no funil, na etapa "${estagio.label}".`);
     } catch (e) {
       alert(e instanceof Error ? e.message : 'Não foi possível adicionar ao funil');
     }
@@ -162,7 +178,7 @@ export default function Clientes() {
                   {c.cidade ? `${c.cidade}${c.uf ? `/${c.uf}` : ''}` : '—'}
                 </td>
                 <td style={{ padding: '12px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
-                  <button onClick={() => adicionarAoFunil(c)} title="Colocar este cliente no funil do CRM (etapa Cliente Cadastrado)" style={{
+                  <button onClick={() => setFunilCliente(c)} title="Colocar este cliente no funil do CRM (escolher a etapa)" style={{
                     padding: '5px 10px', fontSize: '12px', marginRight: '6px',
                     background: 'var(--green-dim)', color: 'var(--green)',
                     border: '1px solid transparent', borderRadius: '6px', cursor: 'pointer',
@@ -218,6 +234,29 @@ export default function Clientes() {
           clienteNome={historicoCliente.nome}
           onClose={() => setHistoricoCliente(null)}
         />
+      )}
+      {funilCliente && (
+        <div onClick={() => setFunilCliente(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(8,10,18,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 16 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, width: 360, maxWidth: '100%', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }}>
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>Colocar no funil</div>
+              <div style={{ fontSize: 13, color: 'var(--text-dim)', marginTop: 2 }}>{funilCliente.nome} — escolha a etapa:</div>
+            </div>
+            <div style={{ padding: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {estagios.length === 0 && <div style={{ padding: 16, textAlign: 'center', color: 'var(--text-dim)', fontSize: 13 }}>Carregando etapas…</div>}
+              {estagios.map(e => (
+                <button key={e.id} onClick={() => colocarNoFunil(funilCliente, e)} style={{
+                  display: 'flex', alignItems: 'center', gap: 10, width: '100%', textAlign: 'left',
+                  padding: '11px 14px', background: 'var(--surface-alt)', border: `1px solid var(--border)`,
+                  borderLeft: `4px solid ${e.color}`, borderRadius: 9, cursor: 'pointer',
+                  color: 'var(--text)', fontSize: 14, fontWeight: 600,
+                }}>
+                  <span style={{ fontSize: 17 }}>{e.icon}</span>{e.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
