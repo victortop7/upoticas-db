@@ -1,6 +1,7 @@
 import type { PagesFunction } from '@cloudflare/workers-types';
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
+import { ensureClienteCols } from '../../lib/ensure-cliente-cols';
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env, params }) => {
   const auth = await requireAuth(request, env);
@@ -30,10 +31,11 @@ export const onRequestPut: PagesFunction<Env> = async ({ request, env, params })
     if (!existing) return json({ error: 'Cliente não encontrado' }, 404);
 
     const now = new Date().toISOString();
+    await ensureClienteCols(env.DB);
     await env.DB.prepare(`
       UPDATE clientes SET
         nome = ?, apelido = ?, cpf = ?, telefone = ?, celular = ?, email = ?,
-        data_nascimento = ?, endereco = ?, bairro = ?, cidade = ?, uf = ?, cep = ?,
+        data_nascimento = ?, data_compra = ?, endereco = ?, bairro = ?, cidade = ?, uf = ?, cep = ?,
         observacao = ?,
         rec_od_esf = ?, rec_od_cil = ?, rec_od_eixo = ?,
         rec_oe_esf = ?, rec_oe_cil = ?, rec_oe_eixo = ?,
@@ -48,6 +50,7 @@ export const onRequestPut: PagesFunction<Env> = async ({ request, env, params })
       body.celular || null,
       body.email || null,
       body.data_nascimento || null,
+      body.data_compra || null,
       body.endereco || null,
       body.bairro || null,
       body.cidade || null,

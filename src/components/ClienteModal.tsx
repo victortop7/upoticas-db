@@ -14,7 +14,7 @@ const UF_LIST = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG
 export default function ClienteModal({ cliente, onClose, onSaved, zIndex = 1000 }: Props) {
   const [form, setForm] = useState({
     nome: '', apelido: '', cpf: '', telefone: '', celular: '', email: '',
-    data_nascimento: '', endereco: '', bairro: '', cidade: '', uf: '', cep: '',
+    data_nascimento: '', data_compra: '', endereco: '', bairro: '', cidade: '', uf: '', cep: '',
     observacao: '',
     rec_od_esf: '', rec_od_cil: '', rec_od_eixo: '',
     rec_oe_esf: '', rec_oe_cil: '', rec_oe_eixo: '',
@@ -34,6 +34,7 @@ export default function ClienteModal({ cliente, onClose, onSaved, zIndex = 1000 
         celular: cliente.celular || '',
         email: cliente.email || '',
         data_nascimento: cliente.data_nascimento || '',
+        data_compra: cliente.data_compra || '',
         endereco: cliente.endereco || '',
         bairro: cliente.bairro || '',
         cidade: cliente.cidade || '',
@@ -181,6 +182,10 @@ export default function ClienteModal({ cliente, onClose, onSaved, zIndex = 1000 
                   <label style={labelStyle}>Data de Nascimento</label>
                   <input style={{ ...inputStyle, fontFamily: 'var(--mono)' }} type="date" value={form.data_nascimento} onChange={e => set('data_nascimento', e.target.value)} />
                 </div>
+              </div>
+              <div style={fieldStyle}>
+                <label style={labelStyle}>🛍️ Data da compra <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(para prospecção / reativação)</span></label>
+                <input style={{ ...inputStyle, fontFamily: 'var(--mono)' }} type="date" value={form.data_compra} onChange={e => set('data_compra', e.target.value)} />
               </div>
             </>
           )}

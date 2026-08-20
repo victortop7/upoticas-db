@@ -30,6 +30,10 @@ export default function Clientes() {
   const [historicoCliente, setHistoricoCliente] = useState<Cliente | null>(null);
   const [estagios, setEstagios] = useState<Estagio[]>([]);
   const [funilCliente, setFunilCliente] = useState<Cliente | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const [importTexto, setImportTexto] = useState('');
+  const [importando, setImportando] = useState(false);
+  const [importResultado, setImportResultado] = useState<any>(null);
 
   useEffect(() => {
     api.get<Estagio[]>('/crm/estagios').then(setEstagios).catch(() => setEstagios([]));
@@ -71,6 +75,35 @@ export default function Clientes() {
     load();
   }
 
+  function fmtData(iso?: string) {
+    if (!iso) return '—';
+    const s = iso.slice(0, 10);
+    const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return m ? `${m[3]}/${m[2]}/${m[1]}` : s;
+  }
+
+  function anos1MaisAtras(iso?: string): boolean {
+    if (!iso) return false;
+    const d = new Date(iso.slice(0, 10));
+    if (isNaN(d.getTime())) return false;
+    return (Date.now() - d.getTime()) / 86400000 >= 365;
+  }
+
+  async function importarDatas() {
+    if (!importTexto.trim()) { alert('Cole a ficha cadastral primeiro.'); return; }
+    setImportando(true);
+    setImportResultado(null);
+    try {
+      const res = await api.post<any>('/clientes/importar-datas', { texto: importTexto });
+      setImportResultado(res);
+      load();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Não foi possível importar');
+    } finally {
+      setImportando(false);
+    }
+  }
+
   async function colocarNoFunil(c: Cliente, estagio: Estagio) {
     try {
       await api.post('/crm', { cliente_id: c.id, estagio: estagio.key });
@@ -91,13 +124,22 @@ export default function Clientes() {
             {data?.total ?? '...'} clientes cadastrados
           </p>
         </div>
-        <button onClick={abrirNovo} style={{
-          padding: '9px 18px', fontSize: '14px', fontWeight: '600',
-          background: 'var(--primary)', color: 'white',
-          border: 'none', borderRadius: '8px', cursor: 'pointer',
-        }}>
-          + Novo Cliente
-        </button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button onClick={() => { setImportResultado(null); setImportOpen(true); }} style={{
+            padding: '9px 16px', fontSize: '14px', fontWeight: '600',
+            background: 'var(--surface)', color: 'var(--text)',
+            border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer',
+          }}>
+            🛍️ Importar datas de compra
+          </button>
+          <button onClick={abrirNovo} style={{
+            padding: '9px 18px', fontSize: '14px', fontWeight: '600',
+            background: 'var(--primary)', color: 'white',
+            border: 'none', borderRadius: '8px', cursor: 'pointer',
+          }}>
+            + Novo Cliente
+          </button>
+        </div>
       </div>
 
       {/* Busca */}
@@ -135,7 +177,7 @@ export default function Clientes() {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border)' }}>
-              {['Nome', 'CPF', 'Celular', 'E-mail', 'Cidade', ''].map(h => (
+              {['Nome', 'CPF', 'Celular', 'E-mail', 'Cidade', 'Compra', ''].map(h => (
                 <th key={h} style={{
                   padding: '12px 16px', textAlign: 'left', fontSize: '11px',
                   fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase',
@@ -148,9 +190,9 @@ export default function Clientes() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>Carregando...</td></tr>
+              <tr><td colSpan={7} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>Carregando...</td></tr>
             ) : !data?.clientes.length ? (
-              <tr><td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>
+              <tr><td colSpan={7} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>
                 {busca ? 'Nenhum cliente encontrado para esta busca.' : 'Nenhum cliente cadastrado ainda.'}
               </td></tr>
             ) : data.clientes.map((c, i) => (
@@ -176,6 +218,9 @@ export default function Clientes() {
                 </td>
                 <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>
                   {c.cidade ? `${c.cidade}${c.uf ? `/${c.uf}` : ''}` : '—'}
+                </td>
+                <td style={{ padding: '12px 16px', fontSize: '13px', fontFamily: 'var(--mono)', whiteSpace: 'nowrap', color: anos1MaisAtras(c.data_compra) ? 'var(--amber)' : 'var(--text-dim)' }} title={anos1MaisAtras(c.data_compra) ? 'Mais de 1 ano — candidato a reativação' : ''}>
+                  {fmtData(c.data_compra)}{anos1MaisAtras(c.data_compra) ? ' 🔄' : ''}
                 </td>
                 <td style={{ padding: '12px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                   <button onClick={() => setFunilCliente(c)} title="Colocar este cliente no funil do CRM (escolher a etapa)" style={{
@@ -254,6 +299,48 @@ export default function Clientes() {
                   <span style={{ fontSize: 17 }}>{e.icon}</span>{e.label}
                 </button>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {importOpen && (
+        <div onClick={() => setImportOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(8,10,18,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 16 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, width: 560, maxWidth: '100%', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }}>
+            <div style={{ padding: '18px 22px', borderBottom: '1px solid var(--border)' }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>🛍️ Importar datas de compra</div>
+              <div style={{ fontSize: 13, color: 'var(--text-dim)', marginTop: 4, lineHeight: 1.5 }}>
+                Cole abaixo a <b>ficha cadastral</b> (com NOME e CADASTRO de cada cliente). O sistema usa a data de <b>CADASTRO</b> como data da compra e casa pelo nome. Quem já tiver data preenchida não é alterado.
+              </div>
+            </div>
+            <div style={{ padding: 18 }}>
+              <textarea
+                value={importTexto}
+                onChange={e => setImportTexto(e.target.value)}
+                placeholder="Cole aqui todo o conteúdo da ficha cadastral..."
+                style={{ width: '100%', minHeight: 200, boxSizing: 'border-box', padding: 12, fontSize: 13, fontFamily: 'var(--mono)', border: '1px solid var(--border)', borderRadius: 10, background: 'var(--surface-alt)', color: 'var(--text)', outline: 'none', resize: 'vertical' }}
+              />
+
+              {importResultado && (
+                <div style={{ marginTop: 14, padding: 14, borderRadius: 10, background: 'var(--green-dim)', border: '1px solid var(--border)', fontSize: 13, color: 'var(--text)' }}>
+                  <div style={{ fontWeight: 700, marginBottom: 6 }}>✅ Importação concluída</div>
+                  <div>Datas reconhecidas na ficha: <b>{importResultado.lidos}</b></div>
+                  <div>Clientes atualizados: <b style={{ color: 'var(--green)' }}>{importResultado.atualizados}</b></div>
+                  <div>Já tinham data (mantidos): <b>{importResultado.jaTinham}</b></div>
+                  <div>Não encontrados pelo nome: <b style={{ color: 'var(--amber)' }}>{importResultado.naoEncontrados}</b></div>
+                  {importResultado.amostraNaoEncontrados?.length > 0 && (
+                    <div style={{ marginTop: 6, fontSize: 12, color: 'var(--text-dim)' }}>
+                      Ex.: {importResultado.amostraNaoEncontrados.join(', ')}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            <div style={{ padding: '14px 18px', borderTop: '1px solid var(--border)', display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <button onClick={() => setImportOpen(false)} style={{ padding: '9px 16px', fontSize: 14, background: 'var(--surface-alt)', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer' }}>Fechar</button>
+              <button onClick={importarDatas} disabled={importando} style={{ padding: '9px 20px', fontSize: 14, fontWeight: 600, background: importando ? 'var(--surface-alt)' : 'var(--primary)', color: importando ? 'var(--text-dim)' : 'white', border: 'none', borderRadius: 8, cursor: importando ? 'default' : 'pointer' }}>
+                {importando ? 'Importando…' : 'Importar datas'}
+              </button>
             </div>
           </div>
         </div>

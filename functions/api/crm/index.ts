@@ -2,6 +2,7 @@ import type { D1Database } from '@cloudflare/workers-types';
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
 import { ensureCrmTable, ensureEstagiosPadrao } from './setup';
+import { ensureClienteCols } from '../../lib/ensure-cliente-cols';
 
 async function aplicarRegras(db: D1Database, tenant_id: string) {
   // 0. "Cliente Cadastrado" (novo) é só para quem AINDA NÃO comprou.
@@ -62,6 +63,21 @@ async function aplicarRegras(db: D1Database, tenant_id: string) {
     )
   `).bind(tenant_id, tenant_id).run();
 
+  // 4b. Reativação por DATA DE COMPRA (base importada sem OS): >= 365 dias desde a última compra.
+  //     Pega clientes antigos que não têm OS/venda registrada mas têm data_compra preenchida.
+  try {
+    await db.prepare(`
+      UPDATE crm_cards SET estagio = 'reativacao', updated_at = datetime('now')
+      WHERE tenant_id = ? AND estagio NOT IN ('vip','a_receber','aniversario','reativacao','oculos_pendente','oculos_pronto')
+      AND cliente_id IN (
+        SELECT id FROM clientes
+        WHERE tenant_id = ? AND ativo = 1
+        AND data_compra IS NOT NULL AND data_compra != ''
+        AND julianday('now') - julianday(data_compra) >= 365
+      )
+    `).bind(tenant_id, tenant_id).run();
+  } catch { /* coluna data_compra ainda não existe */ }
+
   // 5. A Receber: OS com valor restante > 0 (sobrescreve tudo exceto aniversario)
   await db.prepare(`
     UPDATE crm_cards SET estagio = 'a_receber', updated_at = datetime('now')
@@ -90,6 +106,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
   if (auth instanceof Response) return auth;
   await ensureCrmTable(env.DB);
   await ensureEstagiosPadrao(env.DB, auth.tenant_id);
+  await ensureClienteCols(env.DB);
 
   // Cria cards para clientes sem card
   await env.DB.prepare(`

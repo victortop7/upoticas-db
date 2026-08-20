@@ -30,6 +30,7 @@ export interface Cliente {
   celular?: string;
   email?: string;
   data_nascimento?: string;
+  data_compra?: string; // data personalizada da compra (para prospecção/reativação)
   endereco?: string;
   bairro?: string;
   cidade?: string;

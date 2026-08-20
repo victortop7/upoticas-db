@@ -2,12 +2,14 @@ import type { PagesFunction } from '@cloudflare/workers-types';
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
 import { ensureCrmTable, ensureEstagiosPadrao } from '../crm/setup';
+import { ensureClienteCols } from '../../lib/ensure-cliente-cols';
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;
 
   try {
+    await ensureClienteCols(env.DB);
     const url = new URL(request.url);
     const busca = url.searchParams.get('busca') || '';
     const page = parseInt(url.searchParams.get('page') || '1');
@@ -57,10 +59,11 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
 
+    await ensureClienteCols(env.DB);
     await env.DB.prepare(`
-      INSERT INTO clientes (id, tenant_id, nome, apelido, cpf, telefone, celular, email, data_nascimento, endereco, bairro, cidade, uf, cep, observacao,
+      INSERT INTO clientes (id, tenant_id, nome, apelido, cpf, telefone, celular, email, data_nascimento, data_compra, endereco, bairro, cidade, uf, cep, observacao,
         rec_od_esf, rec_od_cil, rec_od_eixo, rec_oe_esf, rec_oe_cil, rec_oe_eixo, rec_adicao, rec_dp, rec_obs, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       id, auth.tenant_id,
       body.nome.trim(),
@@ -70,6 +73,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       body.celular || null,
       body.email || null,
       body.data_nascimento || null,
+      body.data_compra || null,
       body.endereco || null,
       body.bairro || null,
       body.cidade || null,
