@@ -27,7 +27,22 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       params.push(like, like, like, like, like);
     }
 
-    query += ' ORDER BY nome ASC LIMIT ? OFFSET ?';
+    // Filtro por data da compra (data_compra em YYYY-MM-DD; comparação de string funciona)
+    const dataInicio = url.searchParams.get('dataInicio') || '';
+    const dataFim = url.searchParams.get('dataFim') || '';
+    if (dataInicio) {
+      query += " AND data_compra IS NOT NULL AND data_compra != '' AND data_compra >= ?";
+      countQuery += " AND data_compra IS NOT NULL AND data_compra != '' AND data_compra >= ?";
+      params.push(dataInicio);
+    }
+    if (dataFim) {
+      query += " AND data_compra IS NOT NULL AND data_compra != '' AND data_compra <= ?";
+      countQuery += " AND data_compra IS NOT NULL AND data_compra != '' AND data_compra <= ?";
+      params.push(dataFim);
+    }
+
+    // Ordena por data da compra quando filtrando por data (mais antigo primeiro), senão por nome
+    query += (dataInicio || dataFim) ? ' ORDER BY data_compra ASC LIMIT ? OFFSET ?' : ' ORDER BY nome ASC LIMIT ? OFFSET ?';
 
     const [clientes, countResult] = await Promise.all([
       env.DB.prepare(query).bind(...params, limit, offset).all(),

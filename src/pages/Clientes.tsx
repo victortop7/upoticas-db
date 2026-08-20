@@ -3,7 +3,6 @@ import { api } from '../lib/api';
 import type { Cliente } from '../types';
 import ClienteModal from '../components/ClienteModal';
 import ClienteHistoricoModal from '../components/ClienteHistoricoModal';
-import { CONCEITO_DATAS } from '../data/conceitoDatas';
 
 interface ClientesResponse {
   clientes: Cliente[];
@@ -31,10 +30,8 @@ export default function Clientes() {
   const [historicoCliente, setHistoricoCliente] = useState<Cliente | null>(null);
   const [estagios, setEstagios] = useState<Estagio[]>([]);
   const [funilCliente, setFunilCliente] = useState<Cliente | null>(null);
-  const [importOpen, setImportOpen] = useState(false);
-  const [importTexto, setImportTexto] = useState('');
-  const [importando, setImportando] = useState(false);
-  const [importResultado, setImportResultado] = useState<any>(null);
+  const [dataInicio, setDataInicio] = useState('');
+  const [dataFim, setDataFim] = useState('');
 
   useEffect(() => {
     api.get<Estagio[]>('/crm/estagios').then(setEstagios).catch(() => setEstagios([]));
@@ -45,12 +42,14 @@ export default function Clientes() {
     try {
       const params = new URLSearchParams({ page: String(page) });
       if (busca) params.set('busca', busca);
+      if (dataInicio) params.set('dataInicio', dataInicio);
+      if (dataFim) params.set('dataFim', dataFim);
       const res = await api.get<ClientesResponse>(`/clientes?${params}`);
       setData(res);
     } finally {
       setLoading(false);
     }
-  }, [busca, page]);
+  }, [busca, page, dataInicio, dataFim]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -90,36 +89,22 @@ export default function Clientes() {
     return (Date.now() - d.getTime()) / 86400000 >= 365;
   }
 
-  async function importarDatas() {
-    if (!importTexto.trim()) { alert('Cole a ficha cadastral primeiro.'); return; }
-    setImportando(true);
-    setImportResultado(null);
-    try {
-      const res = await api.post<any>('/clientes/importar-datas', { texto: importTexto });
-      setImportResultado(res);
-      load();
-    } catch (e) {
-      alert(e instanceof Error ? e.message : 'Não foi possível importar');
-    } finally {
-      setImportando(false);
-    }
+  // Atalho: clientes que compraram há MAIS de 1 ano (para prospecção/reativação)
+  function filtroMais1Ano() {
+    const d = new Date();
+    d.setDate(d.getDate() - 365);
+    setDataInicio('');
+    setDataFim(d.toISOString().slice(0, 10));
+    setPage(1);
   }
 
-  async function importarConceito() {
-    if (!confirm(`Importar as datas de compra da base da Ótica Conceito (${CONCEITO_DATAS.length} clientes)?\n\nSó rode isto estando logado na Ótica Conceito.`)) return;
-    setImportando(true);
-    setImportResultado(null);
-    try {
-      const registros = CONCEITO_DATAS.map(([nome, data]) => ({ nome, data }));
-      const res = await api.post<any>('/clientes/importar-datas', { registros });
-      setImportResultado(res);
-      load();
-    } catch (e) {
-      alert(e instanceof Error ? e.message : 'Não foi possível importar');
-    } finally {
-      setImportando(false);
-    }
+  function limparFiltroData() {
+    setDataInicio('');
+    setDataFim('');
+    setPage(1);
   }
+
+  const filtroDataAtivo = !!(dataInicio || dataFim);
 
   async function colocarNoFunil(c: Cliente, estagio: Estagio) {
     try {
@@ -141,22 +126,13 @@ export default function Clientes() {
             {data?.total ?? '...'} clientes cadastrados
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button onClick={() => { setImportResultado(null); setImportOpen(true); }} style={{
-            padding: '9px 16px', fontSize: '14px', fontWeight: '600',
-            background: 'var(--surface)', color: 'var(--text)',
-            border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer',
-          }}>
-            🛍️ Importar datas de compra
-          </button>
-          <button onClick={abrirNovo} style={{
-            padding: '9px 18px', fontSize: '14px', fontWeight: '600',
-            background: 'var(--primary)', color: 'white',
-            border: 'none', borderRadius: '8px', cursor: 'pointer',
-          }}>
-            + Novo Cliente
-          </button>
-        </div>
+        <button onClick={abrirNovo} style={{
+          padding: '9px 18px', fontSize: '14px', fontWeight: '600',
+          background: 'var(--primary)', color: 'white',
+          border: 'none', borderRadius: '8px', cursor: 'pointer',
+        }}>
+          + Novo Cliente
+        </button>
       </div>
 
       {/* Busca */}
@@ -188,6 +164,44 @@ export default function Clientes() {
           </button>
         )}
       </form>
+
+      {/* Filtro por data da compra */}
+      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '20px', padding: '12px 14px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px' }}>
+        <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-dim)' }}>🛍️ Data da compra:</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <label style={{ fontSize: '12px', color: 'var(--text-muted)' }}>De</label>
+          <input type="date" value={dataInicio} onChange={e => { setDataInicio(e.target.value); setPage(1); }} style={{
+            padding: '7px 10px', fontSize: '13px', fontFamily: 'var(--mono)',
+            border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--surface-alt)', color: 'var(--text)', outline: 'none',
+          }} />
+          <label style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Até</label>
+          <input type="date" value={dataFim} onChange={e => { setDataFim(e.target.value); setPage(1); }} style={{
+            padding: '7px 10px', fontSize: '13px', fontFamily: 'var(--mono)',
+            border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--surface-alt)', color: 'var(--text)', outline: 'none',
+          }} />
+        </div>
+        <button type="button" onClick={filtroMais1Ano} style={{
+          padding: '7px 14px', fontSize: '13px', fontWeight: 600,
+          background: 'var(--amber-dim)', color: 'var(--amber)',
+          border: '1px solid transparent', borderRadius: '8px', cursor: 'pointer',
+        }}>
+          🔄 Comprou há +1 ano
+        </button>
+        {filtroDataAtivo && (
+          <button type="button" onClick={limparFiltroData} style={{
+            padding: '7px 12px', fontSize: '13px',
+            background: 'transparent', color: 'var(--text-dim)',
+            border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer',
+          }}>
+            Limpar data
+          </button>
+        )}
+        {filtroDataAtivo && (
+          <span style={{ fontSize: '12px', color: 'var(--text-dim)', marginLeft: 'auto' }}>
+            {data?.total ?? 0} cliente(s) neste período
+          </span>
+        )}
+      </div>
 
       {/* Tabela */}
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
@@ -316,66 +330,6 @@ export default function Clientes() {
                   <span style={{ fontSize: 17 }}>{e.icon}</span>{e.label}
                 </button>
               ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {importOpen && (
-        <div onClick={() => setImportOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(8,10,18,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 16 }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, width: 560, maxWidth: '100%', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }}>
-            <div style={{ padding: '18px 22px', borderBottom: '1px solid var(--border)' }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>🛍️ Importar datas de compra</div>
-              <div style={{ fontSize: 13, color: 'var(--text-dim)', marginTop: 4, lineHeight: 1.5 }}>
-                Preenche a data da compra de cada cliente (usa a data de <b>CADASTRO</b>, casando pelo nome). Quem já tiver data preenchida não é alterado.
-              </div>
-            </div>
-            <div style={{ padding: 18 }}>
-              {/* Botão 1-clique: base embutida da Ótica Conceito */}
-              <div style={{ padding: 14, borderRadius: 10, background: 'var(--green-dim)', border: '1px solid var(--border)', marginBottom: 16 }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>✅ Ótica Conceito do Ceará</div>
-                <div style={{ fontSize: 13, color: 'var(--text-dim)', marginBottom: 10 }}>
-                  Base já pronta com <b>{CONCEITO_DATAS.length} clientes</b>. Estando logado na Ótica Conceito, é só clicar:
-                </div>
-                <button onClick={importarConceito} disabled={importando} style={{
-                  padding: '10px 18px', fontSize: 14, fontWeight: 700,
-                  background: importando ? 'var(--surface-alt)' : 'var(--green)', color: importando ? 'var(--text-dim)' : 'white',
-                  border: 'none', borderRadius: 8, cursor: importando ? 'default' : 'pointer',
-                }}>
-                  {importando ? 'Importando…' : `Importar base da Ótica Conceito (${CONCEITO_DATAS.length})`}
-                </button>
-              </div>
-
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>
-                Ou cole manualmente uma ficha cadastral (outras óticas):
-              </div>
-              <textarea
-                value={importTexto}
-                onChange={e => setImportTexto(e.target.value)}
-                placeholder="Cole aqui todo o conteúdo da ficha cadastral..."
-                style={{ width: '100%', minHeight: 200, boxSizing: 'border-box', padding: 12, fontSize: 13, fontFamily: 'var(--mono)', border: '1px solid var(--border)', borderRadius: 10, background: 'var(--surface-alt)', color: 'var(--text)', outline: 'none', resize: 'vertical' }}
-              />
-
-              {importResultado && (
-                <div style={{ marginTop: 14, padding: 14, borderRadius: 10, background: 'var(--green-dim)', border: '1px solid var(--border)', fontSize: 13, color: 'var(--text)' }}>
-                  <div style={{ fontWeight: 700, marginBottom: 6 }}>✅ Importação concluída</div>
-                  <div>Datas reconhecidas na ficha: <b>{importResultado.lidos}</b></div>
-                  <div>Clientes atualizados: <b style={{ color: 'var(--green)' }}>{importResultado.atualizados}</b></div>
-                  <div>Já tinham data (mantidos): <b>{importResultado.jaTinham}</b></div>
-                  <div>Não encontrados pelo nome: <b style={{ color: 'var(--amber)' }}>{importResultado.naoEncontrados}</b></div>
-                  {importResultado.amostraNaoEncontrados?.length > 0 && (
-                    <div style={{ marginTop: 6, fontSize: 12, color: 'var(--text-dim)' }}>
-                      Ex.: {importResultado.amostraNaoEncontrados.join(', ')}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-            <div style={{ padding: '14px 18px', borderTop: '1px solid var(--border)', display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-              <button onClick={() => setImportOpen(false)} style={{ padding: '9px 16px', fontSize: 14, background: 'var(--surface-alt)', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer' }}>Fechar</button>
-              <button onClick={importarDatas} disabled={importando} style={{ padding: '9px 20px', fontSize: 14, fontWeight: 600, background: importando ? 'var(--surface-alt)' : 'var(--primary)', color: importando ? 'var(--text-dim)' : 'white', border: 'none', borderRadius: 8, cursor: importando ? 'default' : 'pointer' }}>
-                {importando ? 'Importando…' : 'Importar datas'}
-              </button>
             </div>
           </div>
         </div>
