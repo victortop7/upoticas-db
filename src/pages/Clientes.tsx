@@ -3,6 +3,7 @@ import { api } from '../lib/api';
 import type { Cliente } from '../types';
 import ClienteModal from '../components/ClienteModal';
 import ClienteHistoricoModal from '../components/ClienteHistoricoModal';
+import { CONCEITO_DATAS } from '../data/conceitoDatas';
 
 interface ClientesResponse {
   clientes: Cliente[];
@@ -95,6 +96,22 @@ export default function Clientes() {
     setImportResultado(null);
     try {
       const res = await api.post<any>('/clientes/importar-datas', { texto: importTexto });
+      setImportResultado(res);
+      load();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Não foi possível importar');
+    } finally {
+      setImportando(false);
+    }
+  }
+
+  async function importarConceito() {
+    if (!confirm(`Importar as datas de compra da base da Ótica Conceito (${CONCEITO_DATAS.length} clientes)?\n\nSó rode isto estando logado na Ótica Conceito.`)) return;
+    setImportando(true);
+    setImportResultado(null);
+    try {
+      const registros = CONCEITO_DATAS.map(([nome, data]) => ({ nome, data }));
+      const res = await api.post<any>('/clientes/importar-datas', { registros });
       setImportResultado(res);
       load();
     } catch (e) {
@@ -310,10 +327,28 @@ export default function Clientes() {
             <div style={{ padding: '18px 22px', borderBottom: '1px solid var(--border)' }}>
               <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>🛍️ Importar datas de compra</div>
               <div style={{ fontSize: 13, color: 'var(--text-dim)', marginTop: 4, lineHeight: 1.5 }}>
-                Cole abaixo a <b>ficha cadastral</b> (com NOME e CADASTRO de cada cliente). O sistema usa a data de <b>CADASTRO</b> como data da compra e casa pelo nome. Quem já tiver data preenchida não é alterado.
+                Preenche a data da compra de cada cliente (usa a data de <b>CADASTRO</b>, casando pelo nome). Quem já tiver data preenchida não é alterado.
               </div>
             </div>
             <div style={{ padding: 18 }}>
+              {/* Botão 1-clique: base embutida da Ótica Conceito */}
+              <div style={{ padding: 14, borderRadius: 10, background: 'var(--green-dim)', border: '1px solid var(--border)', marginBottom: 16 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>✅ Ótica Conceito do Ceará</div>
+                <div style={{ fontSize: 13, color: 'var(--text-dim)', marginBottom: 10 }}>
+                  Base já pronta com <b>{CONCEITO_DATAS.length} clientes</b>. Estando logado na Ótica Conceito, é só clicar:
+                </div>
+                <button onClick={importarConceito} disabled={importando} style={{
+                  padding: '10px 18px', fontSize: 14, fontWeight: 700,
+                  background: importando ? 'var(--surface-alt)' : 'var(--green)', color: importando ? 'var(--text-dim)' : 'white',
+                  border: 'none', borderRadius: 8, cursor: importando ? 'default' : 'pointer',
+                }}>
+                  {importando ? 'Importando…' : `Importar base da Ótica Conceito (${CONCEITO_DATAS.length})`}
+                </button>
+              </div>
+
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>
+                Ou cole manualmente uma ficha cadastral (outras óticas):
+              </div>
               <textarea
                 value={importTexto}
                 onChange={e => setImportTexto(e.target.value)}
