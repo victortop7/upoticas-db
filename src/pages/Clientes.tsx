@@ -3,7 +3,6 @@ import { api } from '../lib/api';
 import type { Cliente } from '../types';
 import ClienteModal from '../components/ClienteModal';
 import ClienteHistoricoModal from '../components/ClienteHistoricoModal';
-import { CONCEITO_DATAS } from '../data/conceitoDatas';
 
 interface ClientesResponse {
   clientes: Cliente[];
@@ -33,7 +32,6 @@ export default function Clientes() {
   const [funilCliente, setFunilCliente] = useState<Cliente | null>(null);
   const [dataInicio, setDataInicio] = useState('');
   const [dataFim, setDataFim] = useState('');
-  const [importando, setImportando] = useState(false);
 
   useEffect(() => {
     api.get<Estagio[]>('/crm/estagios').then(setEstagios).catch(() => setEstagios([]));
@@ -108,29 +106,6 @@ export default function Clientes() {
 
   const filtroDataAtivo = !!(dataInicio || dataFim);
 
-  async function importarConceito() {
-    if (!confirm(`Preencher a data da compra de ${CONCEITO_DATAS.length} clientes (base da Ótica Conceito)?\n\nRode isto UMA vez, estando logado na Ótica Conceito.`)) return;
-    setImportando(true);
-    try {
-      const registros = CONCEITO_DATAS.map(([nome, data]) => ({ nome, data }));
-      const res = await api.post<any>('/clientes/importar-datas', { registros });
-      alert(
-        `✅ Concluído!\n\n` +
-        `Datas na base: ${res.lidos}\n` +
-        `Clientes atualizados: ${res.atualizados}\n` +
-        `Já tinham data: ${res.jaTinham}\n` +
-        `Não encontrados pelo nome: ${res.naoEncontrados}` +
-        (res.amostraNaoEncontrados?.length ? `\n\nEx. não encontrados:\n${res.amostraNaoEncontrados.join(', ')}` : '')
-      );
-      limparFiltroData();
-      load();
-    } catch (e) {
-      alert(e instanceof Error ? e.message : 'Não foi possível importar');
-    } finally {
-      setImportando(false);
-    }
-  }
-
   async function colocarNoFunil(c: Cliente, estagio: Estagio) {
     try {
       await api.post('/crm', { cliente_id: c.id, estagio: estagio.key });
@@ -151,22 +126,13 @@ export default function Clientes() {
             {data?.total ?? '...'} clientes cadastrados
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button onClick={importarConceito} disabled={importando} title="Preencher a data da compra da base da Ótica Conceito (rode 1x)" style={{
-            padding: '9px 16px', fontSize: '14px', fontWeight: '600',
-            background: importando ? 'var(--surface-alt)' : 'var(--surface)', color: importando ? 'var(--text-dim)' : 'var(--text)',
-            border: '1px solid var(--border)', borderRadius: '8px', cursor: importando ? 'default' : 'pointer',
-          }}>
-            {importando ? 'Preenchendo…' : '🛍️ Preencher datas (rodar 1x)'}
-          </button>
-          <button onClick={abrirNovo} style={{
-            padding: '9px 18px', fontSize: '14px', fontWeight: '600',
-            background: 'var(--primary)', color: 'white',
-            border: 'none', borderRadius: '8px', cursor: 'pointer',
-          }}>
-            + Novo Cliente
-          </button>
-        </div>
+        <button onClick={abrirNovo} style={{
+          padding: '9px 18px', fontSize: '14px', fontWeight: '600',
+          background: 'var(--primary)', color: 'white',
+          border: 'none', borderRadius: '8px', cursor: 'pointer',
+        }}>
+          + Novo Cliente
+        </button>
       </div>
 
       {/* Busca */}
