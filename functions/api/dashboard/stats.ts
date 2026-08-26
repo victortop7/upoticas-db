@@ -39,7 +39,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       env.DB.prepare(`SELECT COUNT(*) as n FROM ordens_servico WHERE tenant_id = ? AND date(created_at) = ?`)
         .bind(auth.tenant_id, hoje).first<{ n: number }>(),
 
-      env.DB.prepare(`SELECT COALESCE(SUM(valor_final), 0) as total FROM vendas WHERE tenant_id = ? AND situacao = 'ativa' AND strftime('%Y-%m', created_at) = ?`)
+      env.DB.prepare(`SELECT COALESCE(SUM(valor_final), 0) as total FROM vendas WHERE tenant_id = ? AND situacao != 'cancelada' AND strftime('%Y-%m', created_at) = ?`)
         .bind(auth.tenant_id, mesAtual).first<{ total: number }>(),
 
       env.DB.prepare(`
@@ -59,11 +59,11 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       `).bind(auth.tenant_id).all(),
 
       // Nº de vendas do mês (ticket médio = vendasMes / numVendasMes)
-      env.DB.prepare(`SELECT COUNT(*) as n FROM vendas WHERE tenant_id = ? AND situacao = 'ativa' AND strftime('%Y-%m', created_at) = ?`)
+      env.DB.prepare(`SELECT COUNT(*) as n FROM vendas WHERE tenant_id = ? AND situacao != 'cancelada' AND strftime('%Y-%m', created_at) = ?`)
         .bind(auth.tenant_id, mesAtual).first<{ n: number }>(),
 
       // Faturamento do mês anterior (comparativo)
-      env.DB.prepare(`SELECT COALESCE(SUM(valor_final), 0) as total FROM vendas WHERE tenant_id = ? AND situacao = 'ativa' AND strftime('%Y-%m', created_at) = ?`)
+      env.DB.prepare(`SELECT COALESCE(SUM(valor_final), 0) as total FROM vendas WHERE tenant_id = ? AND situacao != 'cancelada' AND strftime('%Y-%m', created_at) = ?`)
         .bind(auth.tenant_id, mesAnterior).first<{ total: number }>(),
 
       // A receber — saldo pendente de vendas parceladas
@@ -73,7 +73,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       // Faturamento por mês (para o gráfico de tendência)
       env.DB.prepare(`
         SELECT strftime('%Y-%m', created_at) as ym, COALESCE(SUM(valor_final), 0) as total, COUNT(*) as n
-        FROM vendas WHERE tenant_id = ? AND situacao = 'ativa'
+        FROM vendas WHERE tenant_id = ? AND situacao != 'cancelada'
           AND created_at >= date('now', 'start of month', '-5 months')
         GROUP BY ym ORDER BY ym ASC
       `).bind(auth.tenant_id).all(),

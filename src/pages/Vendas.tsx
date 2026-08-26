@@ -12,6 +12,8 @@ interface Venda {
   valor_total: number;
   desconto: number;
   valor_final: number;
+  valor_entrada?: number;
+  saldo_restante?: number;
   forma_pagamento?: string;
   observacao?: string;
   nfce_status?: string;
@@ -25,9 +27,10 @@ interface VendasResponse {
   pages: number;
 }
 
-const SITUACAO_COLOR: Record<string, { bg: string; color: string }> = {
-  ativa:     { bg: 'rgba(34,197,94,0.12)', color: '#16a34a' },
-  cancelada: { bg: 'rgba(0,136,0,0.1)', color: '#dc2626' },
+const SITUACAO_COLOR: Record<string, { bg: string; color: string; label: string }> = {
+  ativa:     { bg: 'rgba(34,197,94,0.12)', color: '#16a34a', label: 'Ativa' },
+  pendente:  { bg: 'rgba(245,158,11,0.14)', color: '#d97706', label: 'Pendente' },
+  cancelada: { bg: 'rgba(239,68,68,0.12)', color: '#dc2626', label: 'Cancelada' },
 };
 
 const PGTO_LABEL: Record<string, string> = {
@@ -125,6 +128,7 @@ export default function Vendas() {
       <div style={{ display: 'flex', gap: '6px', marginBottom: '16px' }}>
         <button style={filterBtn(situacaoFiltro === '')} onClick={() => { setSituacaoFiltro(''); setPage(1); }}>Todas</button>
         <button style={filterBtn(situacaoFiltro === 'ativa')} onClick={() => { setSituacaoFiltro('ativa'); setPage(1); }}>Ativas</button>
+        <button style={filterBtn(situacaoFiltro === 'pendente')} onClick={() => { setSituacaoFiltro('pendente'); setPage(1); }}>Pendentes</button>
         <button style={filterBtn(situacaoFiltro === 'cancelada')} onClick={() => { setSituacaoFiltro('cancelada'); setPage(1); }}>Canceladas</button>
       </div>
 
@@ -206,12 +210,28 @@ export default function Vendas() {
                     {formatBRL(v.valor_final)}
                   </td>
                   <td style={{ padding: '12px 16px' }}>
-                    <span style={{
-                      padding: '3px 9px', borderRadius: '20px', fontSize: '12px', fontWeight: '500',
-                      background: sc.bg, color: sc.color,
-                    }}>
-                      {v.situacao === 'ativa' ? 'Ativa' : 'Cancelada'}
+                    <span
+                      onClick={v.situacao === 'pendente' ? () => alert(
+                        `Venda #${String(v.numero).padStart(4, '0')} — PENDENTE\n\n` +
+                        `Total da venda: ${formatBRL(v.valor_final)}\n` +
+                        `Já pago (entrada): ${formatBRL(v.valor_entrada || 0)}\n` +
+                        `Falta receber: ${formatBRL(v.saldo_restante || 0)}\n\n` +
+                        `Para dar baixa, clique em "Editar" e ajuste a entrada.`
+                      ) : undefined}
+                      title={v.situacao === 'pendente' ? 'Clique para ver o valor a receber' : ''}
+                      style={{
+                        padding: '3px 9px', borderRadius: '20px', fontSize: '12px', fontWeight: '500',
+                        background: sc.bg, color: sc.color,
+                        cursor: v.situacao === 'pendente' ? 'pointer' : 'default',
+                      }}
+                    >
+                      {sc.label}
                     </span>
+                    {v.situacao === 'pendente' && (v.saldo_restante || 0) > 0 && (
+                      <div style={{ marginTop: 3, fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--amber)' }}>
+                        falta {formatBRL(v.saldo_restante || 0)}
+                      </div>
+                    )}
                   </td>
                   <td style={{ padding: '12px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                     <button onClick={() => emitirNfce(v.id)} style={{
