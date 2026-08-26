@@ -3,11 +3,12 @@ import { api } from '../lib/api';
 
 interface Resumo {
   periodo: { inicio: string; fim: string };
-  vendas: { total: number; valor: number; descontos: number };
+  vendas: { total: number; valor: number; descontos: number; recebido: number; a_receber: number };
+  a_receber_geral: { total: number; qtd: number };
   os: { total: number; valor_total: number; recebido: number; pendente: number; por_situacao: { situacao: string; n: number }[] };
-  top_clientes: { nome: string; compras: number; total: number }[];
+  top_clientes: { nome: string; compras: number; total: number; a_receber: number }[];
   vendas_por_dia: { dia: string; vendas: number; valor: number }[];
-  por_vendedor: { vendedor: string; perfil: string; total_vendas: number; valor_total: number; ticket_medio: number; total_desconto: number }[];
+  por_vendedor: { vendedor: string; perfil: string; total_vendas: number; valor_total: number; ticket_medio: number; total_desconto: number; a_receber: number }[];
 }
 
 const SITUACAO_LABEL: Record<string, string> = {
@@ -104,10 +105,10 @@ export default function Relatorios() {
           {/* KPIs */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
             {[
-              { label: 'Faturamento (Vendas)', value: brl(data.vendas.valor), color: '#2563eb', sub: `${data.vendas.total} vendas` },
+              { label: 'Faturamento (Vendas)', value: brl(data.vendas.valor), color: '#2563eb', sub: `${data.vendas.total} vendas • já pago ${brl(data.vendas.recebido)}` },
+              { label: 'A Receber (Vendas)', value: brl(data.a_receber_geral.total), color: '#dc2626', sub: `${data.a_receber_geral.qtd} venda(s) em aberto` },
               { label: 'Descontos', value: brl(data.vendas.descontos), color: '#d97706', sub: 'Total concedido' },
-              { label: 'OS — Total', value: brl(data.os.valor_total), color: '#7c3aed', sub: `${data.os.total} ordens` },
-              { label: 'OS — Recebido', value: brl(data.os.recebido), color: '#16a34a', sub: `Pendente: ${brl(data.os.pendente)}` },
+              { label: 'OS — Recebido', value: brl(data.os.recebido), color: '#16a34a', sub: `OS pendente: ${brl(data.os.pendente)}` },
             ].map((card, i) => (
               <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '18px 20px' }}>
                 <p style={{ margin: '0 0 8px', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{card.label}</p>
@@ -203,6 +204,7 @@ export default function Relatorios() {
                         <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '700', color: '#16a34a', textAlign: 'right' }}>{brl(v.valor_total)}</td>
                         <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '600', color: '#2563eb', textAlign: 'right' }}>{brl(v.ticket_medio)}</td>
                         <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', color: '#d97706', textAlign: 'right' }}>{brl(v.total_desconto)}</td>
+                        <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '600', color: v.a_receber > 0 ? '#dc2626' : 'var(--text-muted)', textAlign: 'right' }}>{v.a_receber > 0 ? brl(v.a_receber) : '—'}</td>
                       </>}
                     </tr>
                   ))}
@@ -218,7 +220,7 @@ export default function Relatorios() {
                       <span style={{ fontSize: '15px' }}>🛒</span>
                       <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>Desempenho — Vendas</h3>
                     </div>
-                    {tabelaRows(vendedores, ['Nome', 'Perfil', 'Qtd Vendas', 'Total Vendido', 'Ticket Médio', 'Descontos'])}
+                    {tabelaRows(vendedores, ['Nome', 'Perfil', 'Qtd Vendas', 'Total Vendido', 'Ticket Médio', 'Descontos', 'A Receber'])}
                   </div>
                 )}
                 {marketing.length > 0 && (
@@ -239,13 +241,15 @@ export default function Relatorios() {
           {data.top_clientes.length > 0 && (
             <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
               <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
-                <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>Top Clientes no Período</h3>
+                <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>Clientes que compraram no período</h3>
+                <p style={{ margin: '2px 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>{data.top_clientes.length} cliente(s) • ordenado por total gasto</p>
               </div>
+              <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    {['#', 'Cliente', 'Compras', 'Total'].map(h => (
-                      <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', background: 'var(--surface-alt)' }}>{h}</th>
+                    {['#', 'Cliente', 'Compras', 'Total', 'A Receber'].map(h => (
+                      <th key={h} style={{ padding: '10px 16px', textAlign: h === 'Cliente' ? 'left' : h === '#' ? 'left' : 'right', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', background: 'var(--surface-alt)' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -254,12 +258,14 @@ export default function Relatorios() {
                     <tr key={i} style={{ borderBottom: i < data.top_clientes.length - 1 ? '1px solid var(--border)' : 'none' }}>
                       <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', color: 'var(--text-muted)' }}>#{i + 1}</td>
                       <td style={{ padding: '12px 16px', fontSize: '14px', color: 'var(--text)', fontWeight: '500' }}>{c.nome}</td>
-                      <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', color: 'var(--text-dim)' }}>{c.compras}</td>
-                      <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '600', color: '#2563eb' }}>{brl(c.total)}</td>
+                      <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', color: 'var(--text-dim)', textAlign: 'right' }}>{c.compras}</td>
+                      <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '600', color: '#2563eb', textAlign: 'right' }}>{brl(c.total)}</td>
+                      <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '600', color: c.a_receber > 0 ? '#dc2626' : 'var(--text-muted)', textAlign: 'right' }}>{c.a_receber > 0 ? brl(c.a_receber) : '—'}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           )}
         </>
