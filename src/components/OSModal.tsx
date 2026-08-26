@@ -9,8 +9,6 @@ interface Props {
   onSaved: () => void;
 }
 
-type Aba = 'cliente' | 'grau' | 'produtos' | 'financeiro';
-
 const TIPOS = [
   { value: 'oculos_grau', label: 'Óculos de Grau' },
   { value: 'oculos_sol', label: 'Óculos de Sol' },
@@ -42,7 +40,6 @@ const EMPTY = {
 
 export default function OSModal({ os, onClose, onSaved }: Props) {
   const [form, setForm] = useState({ ...EMPTY });
-  const [aba, setAba] = useState<Aba>('cliente');
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [buscaCliente, setBuscaCliente] = useState('');
   const [saving, setSaving] = useState(false);
@@ -99,7 +96,7 @@ export default function OSModal({ os, onClose, onSaved }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.cliente_id) { setErro('Selecione um cliente'); setAba('cliente'); return; }
+    if (!form.cliente_id) { setErro('Selecione um cliente'); return; }
     setSaving(true);
     setErro('');
     try {
@@ -130,23 +127,6 @@ export default function OSModal({ os, onClose, onSaved }: Props) {
     color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.4px',
   };
 
-  const ABAS: { key: Aba; label: string }[] = [
-    { key: 'cliente', label: 'Cliente' },
-    { key: 'grau', label: 'Receita' },
-    { key: 'produtos', label: 'Produtos' },
-    { key: 'financeiro', label: 'Financeiro' },
-  ];
-
-  const ORDEM_ABAS: Aba[] = ['cliente', 'grau', 'produtos', 'financeiro'];
-  const abaAtualIdx = ORDEM_ABAS.indexOf(aba);
-  const isUltimaAba = abaAtualIdx === ORDEM_ABAS.length - 1;
-
-  function avancar() {
-    if (!isUltimaAba) {
-      setAba(ORDEM_ABAS[abaAtualIdx + 1]);
-    }
-  }
-
   const clienteSelecionado = clientes.find(c => c.id === form.cliente_id);
 
   async function handleClienteCadastrado() {
@@ -161,6 +141,17 @@ export default function OSModal({ os, onClose, onSaved }: Props) {
       setBuscaCliente(recente.nome);
     }
   }
+
+  // Cabeçalho de seção
+  const Section = ({ icon, title, children }: { icon: string; title: string; children: React.ReactNode }) => (
+    <div style={{ marginBottom: '22px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid var(--border)' }}>
+        <span style={{ fontSize: '16px' }}>{icon}</span>
+        <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '700', color: 'var(--text)' }}>{title}</h3>
+      </div>
+      {children}
+    </div>
+  );
 
   return (
     <>
@@ -179,8 +170,8 @@ export default function OSModal({ os, onClose, onSaved }: Props) {
     }} onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{
         background: 'var(--surface)', borderRadius: '16px',
-        border: '1px solid var(--border)', width: '100%', maxWidth: '600px',
-        maxHeight: '92vh', display: 'flex', flexDirection: 'column',
+        border: '1px solid var(--border)', width: '100%', maxWidth: '820px',
+        maxHeight: '94vh', display: 'flex', flexDirection: 'column',
         boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
       }}>
         {/* Header */}
@@ -193,7 +184,7 @@ export default function OSModal({ os, onClose, onSaved }: Props) {
               {os ? `OS #${String(os.numero).padStart(4, '0')}` : 'Nova OS'}
             </h2>
             <p style={{ margin: '2px 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
-              {os ? 'Editando ordem de serviço' : 'Preencha os dados da OS'}
+              {os ? 'Editando ordem de serviço' : 'Preencha os dados da OS'} — tudo em uma tela
             </p>
           </div>
           <button onClick={onClose} style={{
@@ -203,168 +194,149 @@ export default function OSModal({ os, onClose, onSaved }: Props) {
           }}>×</button>
         </div>
 
-        {/* Abas */}
-        <div style={{ display: 'flex', gap: '4px', padding: '12px 24px 0', borderBottom: '1px solid var(--border)' }}>
-          {ABAS.map(({ key, label }) => (
-            <button key={key} onClick={() => setAba(key)} style={{
-              padding: '7px 14px', fontSize: '13px', fontWeight: '500',
-              border: 'none', borderRadius: '8px 8px 0 0', cursor: 'pointer',
-              background: aba === key ? 'var(--primary)' : 'transparent',
-              color: aba === key ? 'white' : 'var(--text-dim)',
-              marginBottom: '-1px',
-              borderBottom: aba === key ? '1px solid var(--primary)' : 'none',
-            }}>{label}</button>
-          ))}
-        </div>
-
-        {/* Conteúdo */}
+        {/* Conteúdo — tudo em uma tela só */}
         <form onSubmit={handleSubmit} style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
 
-          {/* === ABA CLIENTE === */}
-          {aba === 'cliente' && (
-            <>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
-                <div>
-                  <label style={labelStyle}>Tipo</label>
-                  <select style={inputStyle} value={form.tipo} onChange={e => set('tipo', e.target.value)}>
-                    {TIPOS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label style={labelStyle}>Situação</label>
-                  <select style={inputStyle} value={form.situacao} onChange={e => set('situacao', e.target.value)}>
-                    {SITUACOES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-                  </select>
-                </div>
+          {/* === CLIENTE & DADOS === */}
+          <Section icon="👤" title="Cliente & Dados">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
+              <div>
+                <label style={labelStyle}>Tipo</label>
+                <select style={inputStyle} value={form.tipo} onChange={e => set('tipo', e.target.value)}>
+                  {TIPOS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </select>
               </div>
-              <div style={{ marginBottom: '14px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <label style={{ ...labelStyle, marginBottom: 0 }}>Buscar Cliente</label>
-                  <button type="button" onClick={() => setNovoClienteOpen(true)} style={{
-                    fontSize: '12px', fontWeight: '600', color: 'var(--primary)',
-                    background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-                  }}>+ Cadastrar novo</button>
-                </div>
-                <input
-                  style={inputStyle}
-                  placeholder="Digite o nome do cliente..."
-                  value={buscaCliente}
-                  onChange={e => { setBuscaCliente(e.target.value); loadClientes(e.target.value); }}
-                />
+              <div>
+                <label style={labelStyle}>Situação</label>
+                <select style={inputStyle} value={form.situacao} onChange={e => set('situacao', e.target.value)}>
+                  {SITUACOES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                </select>
               </div>
-              {clientes.length > 0 && (
-                <div style={{
-                  border: '1px solid var(--border)', borderRadius: '8px',
-                  overflow: 'hidden', marginBottom: '14px',
-                  maxHeight: '200px', overflowY: 'auto',
-                }}>
-                  {clientes.map((c, i) => (
-                    <div
-                      key={c.id}
-                      onClick={() => { set('cliente_id', c.id); setBuscaCliente(c.nome); }}
-                      style={{
-                        padding: '10px 14px', cursor: 'pointer', fontSize: '14px',
-                        borderBottom: i < clientes.length - 1 ? '1px solid var(--border)' : 'none',
-                        background: form.cliente_id === c.id ? 'var(--primary-dim)' : 'transparent',
-                        color: form.cliente_id === c.id ? 'var(--primary)' : 'var(--text)',
-                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                      }}
-                      onMouseEnter={e => { if (form.cliente_id !== c.id) e.currentTarget.style.background = 'var(--surface-alt)'; }}
-                      onMouseLeave={e => { if (form.cliente_id !== c.id) e.currentTarget.style.background = 'transparent'; }}
-                    >
-                      <span>{c.nome}</span>
-                      {c.celular && <span style={{ fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--text-muted)' }}>{c.celular}</span>}
-                    </div>
-                  ))}
-                </div>
-              )}
-              {clienteSelecionado && (
-                <div style={{
-                  background: 'rgba(37,99,235,0.06)', border: '1px solid rgba(37,99,235,0.2)',
-                  borderRadius: '8px', padding: '10px 14px', fontSize: '13px',
-                }}>
-                  <span style={{ fontWeight: '600', color: 'var(--primary)' }}>✓ {clienteSelecionado.nome}</span>
-                  {clienteSelecionado.celular && <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--mono)', marginLeft: '8px' }}>{clienteSelecionado.celular}</span>}
-                </div>
-              )}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '14px' }}>
-                <div>
-                  <label style={labelStyle}>Data de Entrega</label>
-                  <input type="date" style={{ ...inputStyle, fontFamily: 'var(--mono)' }} value={form.data_entrega} onChange={e => set('data_entrega', e.target.value)} />
-                </div>
-                <div>
-                  <label style={labelStyle}>Médico / Clínica</label>
-                  <input style={inputStyle} placeholder="Nome do médico" value={form.medico} onChange={e => set('medico', e.target.value)} />
-                </div>
+            </div>
+            <div style={{ marginBottom: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <label style={{ ...labelStyle, marginBottom: 0 }}>Buscar Cliente</label>
+                <button type="button" onClick={() => setNovoClienteOpen(true)} style={{
+                  fontSize: '12px', fontWeight: '600', color: 'var(--primary)',
+                  background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                }}>+ Cadastrar novo</button>
               </div>
-              <div style={{ marginTop: '14px' }}>
-                <label style={labelStyle}>Observação</label>
-                <textarea style={{ ...inputStyle, minHeight: '70px', resize: 'vertical' }} value={form.observacao} onChange={e => set('observacao', e.target.value)} placeholder="Notas adicionais..." />
+              <input
+                style={inputStyle}
+                placeholder="Digite o nome do cliente..."
+                value={buscaCliente}
+                onChange={e => { setBuscaCliente(e.target.value); loadClientes(e.target.value); }}
+              />
+            </div>
+            {clienteSelecionado ? (
+              <div style={{
+                background: 'rgba(37,99,235,0.06)', border: '1px solid rgba(37,99,235,0.2)',
+                borderRadius: '8px', padding: '10px 14px', fontSize: '13px', marginBottom: '12px',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              }}>
+                <span><span style={{ fontWeight: '600', color: 'var(--primary)' }}>✓ {clienteSelecionado.nome}</span>
+                {clienteSelecionado.celular && <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--mono)', marginLeft: '8px' }}>{clienteSelecionado.celular}</span>}</span>
+                <button type="button" onClick={() => { set('cliente_id', ''); setBuscaCliente(''); loadClientes(''); }} style={{ fontSize: '12px', color: 'var(--text-dim)', background: 'none', border: 'none', cursor: 'pointer' }}>trocar</button>
               </div>
-            </>
-          )}
+            ) : clientes.length > 0 && (
+              <div style={{
+                border: '1px solid var(--border)', borderRadius: '8px',
+                overflow: 'hidden', marginBottom: '12px',
+                maxHeight: '180px', overflowY: 'auto',
+              }}>
+                {clientes.map((c, i) => (
+                  <div
+                    key={c.id}
+                    onClick={() => { set('cliente_id', c.id); setBuscaCliente(c.nome); }}
+                    style={{
+                      padding: '10px 14px', cursor: 'pointer', fontSize: '14px',
+                      borderBottom: i < clientes.length - 1 ? '1px solid var(--border)' : 'none',
+                      color: 'var(--text)',
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-alt)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    <span>{c.nome}</span>
+                    {c.celular && <span style={{ fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--text-muted)' }}>{c.celular}</span>}
+                  </div>
+                ))}
+              </div>
+            )}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div>
+                <label style={labelStyle}>Data de Entrega</label>
+                <input type="date" style={{ ...inputStyle, fontFamily: 'var(--mono)' }} value={form.data_entrega} onChange={e => set('data_entrega', e.target.value)} />
+              </div>
+              <div>
+                <label style={labelStyle}>Médico / Clínica</label>
+                <input style={inputStyle} placeholder="Nome do médico" value={form.medico} onChange={e => set('medico', e.target.value)} />
+              </div>
+            </div>
+            <div style={{ marginTop: '12px' }}>
+              <label style={labelStyle}>Observação</label>
+              <textarea style={{ ...inputStyle, minHeight: '60px', resize: 'vertical' }} value={form.observacao} onChange={e => set('observacao', e.target.value)} placeholder="Notas adicionais..." />
+            </div>
+          </Section>
 
-          {/* === ABA GRAU === */}
-          {aba === 'grau' && (
-            <>
-              {/* Grid de grau */}
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '400px' }}>
-                  <thead>
-                    <tr>
-                      <th style={{ width: '80px' }}></th>
-                      {['Esf', 'Cil', 'Eixo'].map(h => (
-                        <th key={h} style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'center' }}>{h}</th>
+          {/* === RECEITA (GRAU) === */}
+          <Section icon="👓" title="Receita (Grau)">
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '400px' }}>
+                <thead>
+                  <tr>
+                    <th style={{ width: '80px' }}></th>
+                    {['Esf', 'Cil', 'Eixo'].map(h => (
+                      <th key={h} style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'center' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { label: 'Longe OD', esf: 'longe_od_esf', cil: 'longe_od_cil', eixo: 'longe_od_eixo' },
+                    { label: 'Longe OE', esf: 'longe_oe_esf', cil: 'longe_oe_cil', eixo: 'longe_oe_eixo' },
+                    { label: 'Perto OD', esf: 'perto_od_esf', cil: 'perto_od_cil', eixo: 'perto_od_eixo' },
+                    { label: 'Perto OE', esf: 'perto_oe_esf', cil: 'perto_oe_cil', eixo: 'perto_oe_eixo' },
+                  ].map(row => (
+                    <tr key={row.label}>
+                      <td style={{ padding: '6px 0', fontSize: '13px', fontWeight: '500', color: 'var(--text-dim)', paddingRight: '8px' }}>{row.label}</td>
+                      {[row.esf, row.cil, row.eixo].map(field => (
+                        <td key={field} style={{ padding: '4px 4px' }}>
+                          <input
+                            type="number"
+                            step="0.01"
+                            style={{ ...monoInput, padding: '7px 6px' }}
+                            value={(form as any)[field]}
+                            onChange={e => set(field, e.target.value)}
+                            placeholder="—"
+                          />
+                        </td>
                       ))}
                     </tr>
-                  </thead>
-                  <tbody>
-                    {[
-                      { label: 'Longe OD', esf: 'longe_od_esf', cil: 'longe_od_cil', eixo: 'longe_od_eixo' },
-                      { label: 'Longe OE', esf: 'longe_oe_esf', cil: 'longe_oe_cil', eixo: 'longe_oe_eixo' },
-                      { label: 'Perto OD', esf: 'perto_od_esf', cil: 'perto_od_cil', eixo: 'perto_od_eixo' },
-                      { label: 'Perto OE', esf: 'perto_oe_esf', cil: 'perto_oe_cil', eixo: 'perto_oe_eixo' },
-                    ].map(row => (
-                      <tr key={row.label}>
-                        <td style={{ padding: '6px 0', fontSize: '13px', fontWeight: '500', color: 'var(--text-dim)', paddingRight: '8px' }}>{row.label}</td>
-                        {[row.esf, row.cil, row.eixo].map(field => (
-                          <td key={field} style={{ padding: '4px 4px' }}>
-                            <input
-                              type="number"
-                              step="0.01"
-                              style={{ ...monoInput, padding: '7px 6px' }}
-                              value={(form as any)[field]}
-                              onChange={e => set(field, e.target.value)}
-                              placeholder="—"
-                            />
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginTop: '14px' }}>
+              <div>
+                <label style={labelStyle}>DP (mm)</label>
+                <input type="number" step="0.1" style={monoInput} value={form.dp} onChange={e => set('dp', e.target.value)} placeholder="—" />
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginTop: '16px' }}>
-                <div>
-                  <label style={labelStyle}>DP (mm)</label>
-                  <input type="number" step="0.1" style={monoInput} value={form.dp} onChange={e => set('dp', e.target.value)} placeholder="—" />
-                </div>
-                <div>
-                  <label style={labelStyle}>Altura</label>
-                  <input type="number" step="0.1" style={monoInput} value={form.altura} onChange={e => set('altura', e.target.value)} placeholder="—" />
-                </div>
-                <div>
-                  <label style={labelStyle}>Adição</label>
-                  <input type="number" step="0.25" style={monoInput} value={form.adicao} onChange={e => set('adicao', e.target.value)} placeholder="—" />
-                </div>
+              <div>
+                <label style={labelStyle}>Altura</label>
+                <input type="number" step="0.1" style={monoInput} value={form.altura} onChange={e => set('altura', e.target.value)} placeholder="—" />
               </div>
-            </>
-          )}
+              <div>
+                <label style={labelStyle}>Adição</label>
+                <input type="number" step="0.25" style={monoInput} value={form.adicao} onChange={e => set('adicao', e.target.value)} placeholder="—" />
+              </div>
+            </div>
+          </Section>
 
-          {/* === ABA PRODUTOS === */}
-          {aba === 'produtos' && (
-            <>
-              <div style={{ marginBottom: '16px' }}>
+          {/* === PRODUTOS === */}
+          <Section icon="🛍️" title="Produtos">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div>
                 <label style={labelStyle}>Armação</label>
                 <input style={inputStyle} value={form.armacao_desc} onChange={e => set('armacao_desc', e.target.value)} placeholder="Marca, modelo, cor..." />
               </div>
@@ -372,38 +344,36 @@ export default function OSModal({ os, onClose, onSaved }: Props) {
                 <label style={labelStyle}>Lente</label>
                 <input style={inputStyle} value={form.lente_desc} onChange={e => set('lente_desc', e.target.value)} placeholder="Tipo, tratamento, marca..." />
               </div>
-            </>
-          )}
+            </div>
+          </Section>
 
-          {/* === ABA FINANCEIRO === */}
-          {aba === 'financeiro' && (
-            <>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
-                <div>
-                  <label style={labelStyle}>Valor Total (R$)</label>
-                  <input type="number" step="0.01" min="0" style={monoInput} value={form.valor_total} onChange={e => set('valor_total', e.target.value)} placeholder="0,00" />
-                </div>
-                <div>
-                  <label style={labelStyle}>Entrada (R$)</label>
-                  <input type="number" step="0.01" min="0" style={monoInput} value={form.valor_entrada} onChange={e => set('valor_entrada', e.target.value)} placeholder="0,00" />
-                </div>
+          {/* === FINANCEIRO === */}
+          <Section icon="💰" title="Financeiro">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
+              <div>
+                <label style={labelStyle}>Valor Total (R$)</label>
+                <input type="number" step="0.01" min="0" style={monoInput} value={form.valor_total} onChange={e => set('valor_total', e.target.value)} placeholder="0,00" />
               </div>
-              <div style={{
-                background: valorRestante > 0 ? 'rgba(0,136,0,0.06)' : 'rgba(34,197,94,0.06)',
-                border: `1px solid ${valorRestante > 0 ? 'rgba(0,136,0,0.2)' : 'rgba(34,197,94,0.2)'}`,
-                borderRadius: '10px', padding: '16px 20px',
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              <div>
+                <label style={labelStyle}>Entrada (R$)</label>
+                <input type="number" step="0.01" min="0" style={monoInput} value={form.valor_entrada} onChange={e => set('valor_entrada', e.target.value)} placeholder="0,00" />
+              </div>
+            </div>
+            <div style={{
+              background: valorRestante > 0 ? 'rgba(220,38,38,0.06)' : 'rgba(34,197,94,0.06)',
+              border: `1px solid ${valorRestante > 0 ? 'rgba(220,38,38,0.2)' : 'rgba(34,197,94,0.2)'}`,
+              borderRadius: '10px', padding: '16px 20px',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            }}>
+              <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-dim)' }}>Restante a receber</span>
+              <span style={{
+                fontSize: '20px', fontWeight: '700', fontFamily: 'var(--mono)',
+                color: valorRestante > 0 ? '#dc2626' : '#16a34a',
               }}>
-                <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-dim)' }}>Restante</span>
-                <span style={{
-                  fontSize: '20px', fontWeight: '700', fontFamily: 'var(--mono)',
-                  color: valorRestante > 0 ? '#dc2626' : '#16a34a',
-                }}>
-                  {valorRestante.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                </span>
-              </div>
-            </>
-          )}
+                {valorRestante.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+              </span>
+            </div>
+          </Section>
         </form>
 
         {/* Footer */}
@@ -417,24 +387,14 @@ export default function OSModal({ os, onClose, onSaved }: Props) {
             background: 'var(--surface-alt)', color: 'var(--text-dim)',
             border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer',
           }}>Cancelar</button>
-          {!isUltimaAba ? (
-            <button type="button" onClick={avancar} style={{
-              padding: '9px 20px', fontSize: '14px', fontWeight: '600',
-              background: 'var(--primary)', color: 'white',
-              border: 'none', borderRadius: '8px', cursor: 'pointer',
-            }}>
-              Avançar →
-            </button>
-          ) : (
-            <button onClick={handleSubmit} disabled={saving} style={{
-              padding: '9px 20px', fontSize: '14px', fontWeight: '600',
-              background: saving ? 'var(--primary-dim)' : 'var(--primary)',
-              color: saving ? 'var(--primary)' : 'white',
-              border: 'none', borderRadius: '8px', cursor: saving ? 'default' : 'pointer',
-            }}>
-              {saving ? 'Salvando...' : os ? 'Salvar' : 'Criar OS'}
-            </button>
-          )}
+          <button onClick={handleSubmit} disabled={saving} style={{
+            padding: '9px 20px', fontSize: '14px', fontWeight: '600',
+            background: saving ? 'var(--primary-dim)' : 'var(--primary)',
+            color: saving ? 'var(--primary)' : 'white',
+            border: 'none', borderRadius: '8px', cursor: saving ? 'default' : 'pointer',
+          }}>
+            {saving ? 'Salvando...' : os ? 'Salvar' : 'Criar OS'}
+          </button>
         </div>
       </div>
     </div>
