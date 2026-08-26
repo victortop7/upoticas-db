@@ -90,15 +90,23 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     const saldoRestante = Math.max(0, valorFinal - valorEntrada);
     const situacao = saldoRestante > 0 ? 'pendente' : (body.situacao || 'ativa');
 
+    // Pessoas adicionais na MESMA venda (mesmo pagamento, mas cada uma é uma venda própria)
+    const adicionais = Array.isArray((body as Record<string, unknown>).adicionais)
+      ? ((body as Record<string, unknown>).adicionais as Record<string, string>[]).filter(a => (parseFloat(a.valor_total) || 0) > 0)
+      : [];
+    const grupoId = adicionais.length > 0 ? crypto.randomUUID() : null;
+    const funcionarioId = (auth.perfil === 'admin' && body.funcionario_id) ? body.funcionario_id : auth.usuario_id;
+
     // Garante colunas novas
     try { await env.DB.prepare('ALTER TABLE vendas ADD COLUMN valor_entrada REAL NOT NULL DEFAULT 0').run(); } catch {}
     try { await env.DB.prepare('ALTER TABLE vendas ADD COLUMN saldo_restante REAL NOT NULL DEFAULT 0').run(); } catch {}
+    try { await env.DB.prepare('ALTER TABLE vendas ADD COLUMN grupo_venda_id TEXT').run(); } catch {}
 
     await env.DB.prepare(`
       INSERT INTO vendas (id, tenant_id, numero, cliente_id, os_id, situacao,
         valor_total, desconto, valor_final, valor_entrada, saldo_restante,
-        forma_pagamento, observacao, funcionario_id, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        forma_pagamento, observacao, funcionario_id, grupo_venda_id, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       id, auth.tenant_id, numero,
       body.cliente_id || null,
@@ -108,7 +116,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       valorEntrada, saldoRestante,
       body.forma_pagamento || null,
       body.observacao || null,
-      (auth.perfil === 'admin' && body.funcionario_id) ? body.funcionario_id : auth.usuario_id,
+      funcionarioId, grupoId,
       now, now
     ).run();
 
@@ -128,6 +136,31 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
           ).bind(crypto.randomUUID(), auth.tenant_id, id, (it.produto_id as string) || null, String(it.descricao).slice(0, 200), qtd, vu, desc, vt, now);
         });
       if (stmts.length) await env.DB.batch(stmts);
+    }
+
+    // Vendas das pessoas adicionais (mesmo grupo/pagamento) — cada uma quitada (ativa)
+    if (adicionais.length > 0) {
+      let proxNumero = numero;
+      for (const ad of adicionais) {
+        const adVt = parseFloat(ad.valor_total) || 0;
+        const adDesc = parseFloat(ad.desconto) || 0;
+        const adFinal = Math.max(0, adVt - adDesc);
+        proxNumero += 1;
+        await env.DB.prepare(`
+          INSERT INTO vendas (id, tenant_id, numero, cliente_id, os_id, situacao,
+            valor_total, desconto, valor_final, valor_entrada, saldo_restante,
+            forma_pagamento, observacao, funcionario_id, grupo_venda_id, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, 'ativa', ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?)
+        `).bind(
+          crypto.randomUUID(), auth.tenant_id, proxNumero,
+          ad.cliente_id || null, null,
+          adVt, adDesc, adFinal, adFinal,
+          body.forma_pagamento || null,
+          ad.observacao || null,
+          funcionarioId, grupoId,
+          now, now
+        ).run();
+      }
     }
 
     // Se há saldo pendente e tem cliente, move card CRM para "A Receber"

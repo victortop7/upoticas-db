@@ -84,6 +84,85 @@ const EMPTY = {
 interface UsuarioSimples { id: string; nome: string; perfil: string; }
 interface ProdutoSimples { id: string; codigo?: string; descricao: string; grupo?: string; preco_venda?: number; }
 interface ItemVenda { produto_id: string | null; descricao: string; quantidade: number; valor_unitario: number; desconto: number; }
+interface AdicionalVenda { cliente_id: string; cliente_nome: string; valor_total: string; desconto: string; }
+
+function brlFmt(v: number) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+
+// Linha de "pessoa adicional" na mesma venda — cada uma tem seu próprio cliente/valor
+function PessoaAdicionalRow({ index, value, onChange, onRemove }: {
+  index: number;
+  value: AdicionalVenda;
+  onChange: (v: AdicionalVenda) => void;
+  onRemove: () => void;
+}) {
+  const [busca, setBusca] = useState(value.cliente_nome || '');
+  const [lista, setLista] = useState<Cliente[]>([]);
+  const [aberto, setAberto] = useState(false);
+
+  async function buscar(q: string) {
+    setBusca(q); setAberto(true);
+    try {
+      const params = new URLSearchParams({ page: '1' });
+      if (q) params.set('busca', q);
+      const res = await api.get<{ clientes: Cliente[] }>(`/clientes?${params}`);
+      setLista(res.clientes.slice(0, 6));
+    } catch { setLista([]); }
+  }
+
+  const inp: React.CSSProperties = { width: '100%', padding: '7px 9px', fontSize: '13px', border: '1px solid var(--border)', borderRadius: '7px', background: 'var(--surface)', color: 'var(--text)', outline: 'none', boxSizing: 'border-box' };
+  const cell: React.CSSProperties = { ...inp, fontFamily: 'var(--mono)', textAlign: 'right', fontSize: '12px', padding: '6px 8px' };
+  const finalRow = Math.max(0, (parseFloat(value.valor_total) || 0) - (parseFloat(value.desconto) || 0));
+
+  return (
+    <div style={{ border: '1px solid var(--border)', borderRadius: '10px', padding: '10px', background: 'var(--surface-alt)', marginBottom: '8px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '7px' }}>
+        <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-dim)' }}>👤 Pessoa {index + 2}</span>
+        <button type="button" onClick={onRemove} title="Remover" style={{ width: '24px', height: '24px', border: '1px solid var(--border)', borderRadius: '6px', background: 'var(--surface)', color: 'var(--red)', cursor: 'pointer', fontWeight: '700' }}>×</button>
+      </div>
+
+      {value.cliente_id ? (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(37,99,235,0.06)', border: '1px solid rgba(37,99,235,0.2)', borderRadius: '7px', padding: '7px 10px', marginBottom: '7px' }}>
+          <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--primary)' }}>✓ {value.cliente_nome}</span>
+          <button type="button" onClick={() => { onChange({ ...value, cliente_id: '', cliente_nome: '' }); setBusca(''); setAberto(false); }} style={{ fontSize: '11px', color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}>trocar</button>
+        </div>
+      ) : (
+        <div style={{ position: 'relative', marginBottom: '7px' }}>
+          <input style={inp} placeholder="Buscar cliente (opcional)..." value={busca}
+            onChange={e => buscar(e.target.value)} onFocus={() => { if (!lista.length) buscar(''); setAberto(true); }} />
+          {aberto && lista.length > 0 && (
+            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 20, marginTop: '4px', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden', maxHeight: '160px', overflowY: 'auto', background: 'var(--surface)', boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}>
+              {lista.map((c, i) => (
+                <div key={c.id} onClick={() => { onChange({ ...value, cliente_id: c.id, cliente_nome: c.nome }); setBusca(c.nome); setAberto(false); }}
+                  style={{ padding: '8px 12px', cursor: 'pointer', fontSize: '13px', color: 'var(--text)', borderBottom: i < lista.length - 1 ? '1px solid var(--border)' : 'none' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-alt)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                  {c.nome}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '6px', alignItems: 'end' }}>
+        <div>
+          <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Valor (R$)</span>
+          <input type="number" step="0.01" min="0" style={cell} value={value.valor_total} placeholder="0,00"
+            onChange={e => onChange({ ...value, valor_total: e.target.value })} />
+        </div>
+        <div>
+          <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Desconto</span>
+          <input type="number" step="0.01" min="0" style={cell} value={value.desconto} placeholder="0,00"
+            onChange={e => onChange({ ...value, desconto: e.target.value })} />
+        </div>
+        <div style={{ textAlign: 'right', minWidth: '74px' }}>
+          <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Final</span>
+          <div style={{ fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '700', color: 'var(--text)' }}>{brlFmt(finalRow)}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function VendaModal({ venda, onClose, onSaved }: Props) {
   const { usuario } = useAuth();
@@ -101,6 +180,7 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
   const [itens, setItens] = useState<ItemVenda[]>([]);
   const [buscaProduto, setBuscaProduto] = useState('');
   const [produtos, setProdutos] = useState<ProdutoSimples[]>([]);
+  const [adicionais, setAdicionais] = useState<AdicionalVenda[]>([]);
 
   useEffect(() => {
     loadClientes('');
@@ -182,6 +262,10 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
   const valorEntrada = form.valor_entrada !== '' ? parseFloat(form.valor_entrada) || 0 : valorFinal;
   const saldoRestante = Math.max(0, valorFinal - valorEntrada);
 
+  const totalAdicionais = adicionais.reduce((a, p) => a + Math.max(0, (parseFloat(p.valor_total) || 0) - (parseFloat(p.desconto) || 0)), 0);
+  const totalCartao = valorFinal + totalAdicionais;
+  const podeAgrupar = !venda && !isMarketing;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!isMarketing && (!form.valor_total || parseFloat(form.valor_total) <= 0)) {
@@ -196,6 +280,11 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
         ...(isAdmin && funcionarioId ? { funcionario_id: funcionarioId } : {}),
         valor_entrada: form.valor_entrada || '',
         ...(isMarketing ? {} : { itens: itens.filter(it => it.descricao.trim()) }),
+        ...(podeAgrupar && adicionais.length
+          ? { adicionais: adicionais
+              .filter(a => (parseFloat(a.valor_total) || 0) > 0)
+              .map(a => ({ cliente_id: a.cliente_id, valor_total: a.valor_total, desconto: a.desconto })) }
+          : {}),
       };
       if (venda) {
         await api.put(`/vendas/${venda.id}`, payload);
@@ -519,6 +608,37 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
                   <span style={{ fontSize: '18px', fontWeight: '700', fontFamily: 'var(--mono)', color: '#d97706' }}>
                     {saldoRestante.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                   </span>
+                </div>
+              )}
+
+              {/* Outras pessoas na mesma venda (mesmo pagamento) */}
+              {podeAgrupar && (
+                <div style={{ marginBottom: '14px', paddingTop: '14px', borderTop: '1px dashed var(--border)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                    <label style={{ ...labelStyle, marginBottom: 0 }}>Outras pessoas na mesma venda</label>
+                    <button type="button" onClick={() => setAdicionais(prev => [...prev, { cliente_id: '', cliente_nome: '', valor_total: '', desconto: '' }])}
+                      style={{ fontSize: '12px', fontWeight: '600', color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>+ Adicionar pessoa</button>
+                  </div>
+                  <p style={{ margin: '0 0 10px', fontSize: '11px', color: 'var(--text-muted)' }}>
+                    Cada pessoa vira uma venda separada, mas todas pagas no mesmo pagamento acima.
+                  </p>
+
+                  {adicionais.map((a, idx) => (
+                    <PessoaAdicionalRow
+                      key={idx}
+                      index={idx}
+                      value={a}
+                      onChange={v => setAdicionais(prev => prev.map((x, i) => i === idx ? v : x))}
+                      onRemove={() => setAdicionais(prev => prev.filter((_, i) => i !== idx))}
+                    />
+                  ))}
+
+                  {adicionais.length > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: '10px', padding: '12px 16px', marginTop: '4px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: '600', color: '#16a34a' }}>💳 Total no pagamento ({adicionais.length + 1} pessoas)</span>
+                      <span style={{ fontSize: '18px', fontWeight: '700', fontFamily: 'var(--mono)', color: '#16a34a' }}>{brlFmt(totalCartao)}</span>
+                    </div>
+                  )}
                 </div>
               )}
             </>

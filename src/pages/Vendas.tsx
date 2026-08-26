@@ -17,6 +17,7 @@ interface Venda {
   forma_pagamento?: string;
   observacao?: string;
   nfce_status?: string;
+  grupo_venda_id?: string;
   created_at: string;
 }
 
@@ -190,6 +191,7 @@ export default function Vendas() {
                 >
                   <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '600', color: 'var(--primary)' }}>
                     #{String(v.numero).padStart(4, '0')}
+                    {v.grupo_venda_id && <span title="Venda em grupo (mesmo pagamento)" style={{ marginLeft: 5 }}>👥</span>}
                   </td>
                   <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', color: 'var(--text-dim)' }}>
                     {formatDate(v.created_at)}
