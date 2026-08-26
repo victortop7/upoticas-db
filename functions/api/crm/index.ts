@@ -78,15 +78,16 @@ async function aplicarRegras(db: D1Database, tenant_id: string) {
     `).bind(tenant_id, tenant_id).run();
   } catch { /* coluna data_compra ainda não existe */ }
 
-  // 5. A Receber: OS com valor restante > 0 (sobrescreve tudo exceto aniversario)
+  // 5. A Receber: OS com valor restante > 0 OU venda com saldo pendente (sobrescreve tudo exceto aniversario)
   await db.prepare(`
     UPDATE crm_cards SET estagio = 'a_receber', updated_at = datetime('now')
     WHERE tenant_id = ? AND estagio != 'aniversario'
     AND cliente_id IN (
-      SELECT DISTINCT cliente_id FROM ordens_servico
-      WHERE tenant_id = ? AND valor_restante > 0
+      SELECT DISTINCT cliente_id FROM ordens_servico WHERE tenant_id = ? AND valor_restante > 0
+      UNION
+      SELECT DISTINCT cliente_id FROM vendas WHERE tenant_id = ? AND saldo_restante > 0
     )
-  `).bind(tenant_id, tenant_id).run();
+  `).bind(tenant_id, tenant_id, tenant_id).run();
 
   // 6. Aniversário hoje: prioridade máxima, sobrescreve tudo
   await db.prepare(`

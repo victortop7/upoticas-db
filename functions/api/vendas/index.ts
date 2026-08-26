@@ -130,15 +130,21 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       if (stmts.length) await env.DB.batch(stmts);
     }
 
-    // Se há saldo pendente e tem cliente, move card CRM para oculos_pendente
+    // Se há saldo pendente e tem cliente, move card CRM para "A Receber"
     if (saldoRestante > 0 && body.cliente_id) {
       try {
         await env.DB.prepare(
           'INSERT OR IGNORE INTO crm_estagios (id, tenant_id, key, label, icon, color, ordem, sistema) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-        ).bind(crypto.randomUUID(), auth.tenant_id, 'oculos_pendente', 'Óculos Pendente', '👓', '#f59e0b', 2, 1).run();
+        ).bind(crypto.randomUUID(), auth.tenant_id, 'a_receber', 'A Receber', '💳', '#dc2626', 5, 1).run();
+
+        // Garante o card do cliente e move para A Receber
+        await env.DB.prepare(
+          `INSERT OR IGNORE INTO crm_cards (id, tenant_id, cliente_id, estagio, created_at, updated_at)
+           VALUES (?, ?, ?, 'a_receber', datetime('now'), datetime('now'))`
+        ).bind(crypto.randomUUID(), auth.tenant_id, body.cliente_id).run();
 
         await env.DB.prepare(
-          `UPDATE crm_cards SET estagio = 'oculos_pendente', updated_at = datetime('now')
+          `UPDATE crm_cards SET estagio = 'a_receber', updated_at = datetime('now')
            WHERE cliente_id = ? AND tenant_id = ?`
         ).bind(body.cliente_id, auth.tenant_id).run();
       } catch {}

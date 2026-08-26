@@ -91,18 +91,24 @@ export const onRequestPut = async ({ request, env, params }: { request: Request;
       if (stmts.length) await env.DB.batch(stmts);
     }
 
-    // Ao finalizar (saldo zerado), move card CRM para pos_venda
+    // Ao quitar o saldo, avança o card CRM:
+    //  - A Receber  → Pós-venda (venda concluída/recebida)
+    //  - Óculos Pendente → Óculos Pronto (fluxo de produção)
     const clienteId = body.cliente_id || existing.cliente_id;
     if (saldoRestante === 0 && clienteId) {
       try {
         const card = await env.DB.prepare(
-          `SELECT id FROM crm_cards WHERE cliente_id = ? AND tenant_id = ? AND estagio = 'oculos_pendente'`
-        ).bind(clienteId, auth.tenant_id).first<{ id: string }>();
+          `SELECT id, estagio FROM crm_cards WHERE cliente_id = ? AND tenant_id = ?`
+        ).bind(clienteId, auth.tenant_id).first<{ id: string; estagio: string }>();
 
         if (card) {
-          await env.DB.prepare(
-            `UPDATE crm_cards SET estagio = 'oculos_pronto', updated_at = datetime('now') WHERE id = ? AND tenant_id = ?`
-          ).bind(card.id, auth.tenant_id).run();
+          const destino = card.estagio === 'a_receber' ? 'pos_venda'
+            : card.estagio === 'oculos_pendente' ? 'oculos_pronto' : null;
+          if (destino) {
+            await env.DB.prepare(
+              `UPDATE crm_cards SET estagio = ?, updated_at = datetime('now') WHERE id = ? AND tenant_id = ?`
+            ).bind(destino, card.id, auth.tenant_id).run();
+          }
         }
       } catch {}
     }

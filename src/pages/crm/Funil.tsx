@@ -380,7 +380,7 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
           <p style={{ margin: '6px 0 0', fontSize: '11px', color: 'var(--text-dim)', fontStyle: 'italic', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>💬 {card.notas}</p>
         )}
 
-        {card.estagio === 'oculos_pendente' && (card.saldo_venda_pendente || 0) > 0 && (
+        {(card.estagio === 'oculos_pendente' || card.estagio === 'a_receber') && (card.saldo_venda_pendente || 0) > 0 && (
           <button onClick={abrirModalFinalizar} disabled={carregandoVenda} style={{ width: '100%', marginTop: '8px', padding: '7px', fontSize: '12px', fontWeight: '700', background: 'rgba(245,158,11,0.15)', color: '#d97706', border: '1px solid rgba(245,158,11,0.4)', borderRadius: '7px', cursor: 'pointer' }}>
             {carregandoVenda ? 'Carregando...' : `💰 Receber Pagamento — ${brl(card.saldo_venda_pendente!)}`}
           </button>
