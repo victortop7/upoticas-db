@@ -16,6 +16,7 @@ interface Card {
   total_gasto: number; valor_pendente: number; updated_at: string;
   saldo_venda_pendente?: number;
   venda_pendente_id?: string;
+  os_pendente_id?: string;
 }
 
 const MSG_PADRAO: Record<string, string> = {
@@ -220,8 +221,6 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
   const [finalizarOpen, setFinalizarOpen] = useState(false);
   const [formaPagFinal, setFormaPagFinal] = useState('pix');
   const [valorRecebido, setValorRecebido] = useState('');
-  const [vendaDetalhes, setVendaDetalhes] = useState<{ valor_final: number; valor_entrada: number } | null>(null);
-  const [carregandoVenda, setCarregandoVenda] = useState(false);
   const [finalizando, setFinalizando] = useState(false);
 
   const fone = card.celular || card.telefone || '';
@@ -230,6 +229,14 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
   const ultimaAtiv = card.ultima_entrega || card.ultima_venda;
   const estagio = estagios.find(e => e.key === card.estagio);
   const priorCor: Record<string, string> = { alta: '#dc2626', normal: '#64748b', baixa: '#94a3b8' };
+
+  // Fonte do saldo a receber: prioriza venda pendente; senão usa a OS em aberto (💳)
+  const saldoVenda = card.saldo_venda_pendente || 0;
+  const saldoOS = card.valor_pendente || 0;
+  const usarVenda = !!card.venda_pendente_id && saldoVenda > 0;
+  const alvoId = usarVenda ? card.venda_pendente_id : card.os_pendente_id;
+  const saldo = usarVenda ? saldoVenda : saldoOS;
+  const podeReceber = (card.estagio === 'oculos_pendente' || card.estagio === 'a_receber') && saldo > 0 && !!alvoId;
 
   function abrirWhatsApp() {
     const msg = aplicarVariaveis(MSG_PADRAO[card.estagio] || MSG_PADRAO.novo, {
@@ -240,29 +247,20 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
 
   function salvarNota() { onSalvarNota(card.id, nota, prioridade); }
 
-  async function abrirModalFinalizar() {
-    if (!card.venda_pendente_id) return;
-    setCarregandoVenda(true);
-    try {
-      const v = await api.get<{ valor_final: number; valor_entrada: number }>(`/vendas/${card.venda_pendente_id}`);
-      setVendaDetalhes(v);
-      setValorRecebido(String(card.saldo_venda_pendente || 0));
-    } catch {
-      setValorRecebido(String(card.saldo_venda_pendente || 0));
-    }
-    setCarregandoVenda(false);
+  function abrirModalFinalizar() {
+    setValorRecebido(String(saldo));
     setFinalizarOpen(true);
   }
 
   async function handleFinalizar() {
-    if (!card.venda_pendente_id) return;
+    if (!alvoId) return;
     const recebido = parseFloat(valorRecebido) || 0;
     if (recebido <= 0) return;
     setFinalizando(true);
     try {
-      const novaEntrada = (vendaDetalhes?.valor_entrada || 0) + recebido;
-      await api.put(`/vendas/${card.venda_pendente_id}`, {
-        valor_entrada: String(novaEntrada),
+      await api.post('/crm/receber', {
+        ...(usarVenda ? { venda_id: alvoId } : { os_id: alvoId }),
+        valor_recebido: String(recebido),
         forma_pagamento: formaPagFinal,
       });
       setFinalizarOpen(false);
@@ -280,7 +278,6 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
     setFinalizando(false);
   }
 
-  const saldo = card.saldo_venda_pendente || 0;
   const recebidoNum = parseFloat(valorRecebido) || 0;
   const novoSaldo = Math.max(0, saldo - recebidoNum);
 
@@ -380,9 +377,9 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
           <p style={{ margin: '6px 0 0', fontSize: '11px', color: 'var(--text-dim)', fontStyle: 'italic', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>💬 {card.notas}</p>
         )}
 
-        {(card.estagio === 'oculos_pendente' || card.estagio === 'a_receber') && (card.saldo_venda_pendente || 0) > 0 && (
-          <button onClick={abrirModalFinalizar} disabled={carregandoVenda} style={{ width: '100%', marginTop: '8px', padding: '7px', fontSize: '12px', fontWeight: '700', background: 'rgba(245,158,11,0.15)', color: '#d97706', border: '1px solid rgba(245,158,11,0.4)', borderRadius: '7px', cursor: 'pointer' }}>
-            {carregandoVenda ? 'Carregando...' : `💰 Receber Pagamento — ${brl(card.saldo_venda_pendente!)}`}
+        {podeReceber && (
+          <button onClick={abrirModalFinalizar} style={{ width: '100%', marginTop: '8px', padding: '7px', fontSize: '12px', fontWeight: '700', background: 'rgba(245,158,11,0.15)', color: '#d97706', border: '1px solid rgba(245,158,11,0.4)', borderRadius: '7px', cursor: 'pointer' }}>
+            {`💰 Receber Pagamento — ${brl(saldo)}`}
           </button>
         )}
 
