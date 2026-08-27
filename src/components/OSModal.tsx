@@ -38,6 +38,20 @@ const EMPTY = {
   data_entrega: '', medico: '', observacao: '',
 };
 
+// Cabeçalho de seção — definido no módulo (identidade estável entre renders,
+// senão os inputs perdem o foco a cada tecla digitada)
+function Section({ icon, title, children }: { icon: string; title: string; children: React.ReactNode }) {
+  return (
+    <div style={{ marginBottom: '22px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid var(--border)' }}>
+        <span style={{ fontSize: '16px' }}>{icon}</span>
+        <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '700', color: 'var(--text)' }}>{title}</h3>
+      </div>
+      {children}
+    </div>
+  );
+}
+
 export default function OSModal({ os, onClose, onSaved }: Props) {
   const [form, setForm] = useState({ ...EMPTY });
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -141,17 +155,6 @@ export default function OSModal({ os, onClose, onSaved }: Props) {
       setBuscaCliente(recente.nome);
     }
   }
-
-  // Cabeçalho de seção
-  const Section = ({ icon, title, children }: { icon: string; title: string; children: React.ReactNode }) => (
-    <div style={{ marginBottom: '22px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid var(--border)' }}>
-        <span style={{ fontSize: '16px' }}>{icon}</span>
-        <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '700', color: 'var(--text)' }}>{title}</h3>
-      </div>
-      {children}
-    </div>
-  );
 
   return (
     <>
