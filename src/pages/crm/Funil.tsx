@@ -30,6 +30,19 @@ const MSG_PADRAO: Record<string, string> = {
   vip:         'Olá {nome}! Como nosso cliente especial, você tem acesso antecipado às nossas novidades. Entre em contato! ⭐',
 };
 
+// Mensagem de aniversário exclusiva da Ótica Conceito do Ceará
+const MSG_ANIVERSARIO_CONCEITO =
+  '🎉 Feliz Aniversário, {nome} 🥳\n\n' +
+  'A equipe da Ótica Conceito do Ceará deseja a você muita saúde, felicidade e muitas conquistas. Que seu novo ciclo seja incrível! 💙\n\n' +
+  '🎁 Para comemorar, você ganhou 20% OFF em nossos solares Conceito, válido por 30 dias.\n\n' +
+  '📍 Passe na nossa loja no São Cristóvão. Sua consultora Brena estará te esperando! 👓\n\n' +
+  '📲 Acompanhe nossas novidades: @oticaconceitooficial_';
+
+// Identifica a loja Ótica Conceito (mensagem de aniversário só vale pra ela)
+function ehOticaConceito(loja?: string) {
+  return /conceito/i.test(loja || '');
+}
+
 function brl(v: number) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 function diasAtras(s?: string) {
   if (!s) return null;
@@ -239,7 +252,10 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
   const podeReceber = (card.estagio === 'oculos_pendente' || card.estagio === 'a_receber') && saldo > 0 && !!alvoId;
 
   function abrirWhatsApp() {
-    const msg = aplicarVariaveis(MSG_PADRAO[card.estagio] || MSG_PADRAO.novo, {
+    const template = (card.estagio === 'aniversario' && ehOticaConceito(tenant))
+      ? MSG_ANIVERSARIO_CONCEITO
+      : (MSG_PADRAO[card.estagio] || MSG_PADRAO.novo);
+    const msg = aplicarVariaveis(template, {
       nome: card.nome.split(' ')[0], loja: tenant,
     });
     window.open(whatsappLink(fone, msg), '_blank');
