@@ -11,7 +11,7 @@ const AVISO_DIAS = 3; // aviso sutil a partir de 3 dias antes de vencer
 const ESPECIALISTA_WA = '5585991507887';
 
 // Dias até a data YYYY-MM-DD (fim do dia, fuso SP). null se sem data.
-// floor => no dia do vencimento dias=0 (mostra Pix — carência de 1 dia); dia seguinte <= -1 (bloqueia).
+// floor => no dia do vencimento dias=0 (mostra Pix — carência de 2 dias); dias <= -2 (bloqueia).
 function diasAte(dateStr?: string): number | null {
   if (!dateStr) return null;
   const d = new Date(`${dateStr}T23:59:59-03:00`);
@@ -87,13 +87,14 @@ export default function VisionLayout() {
   if (!usuario) return <Navigate to="/vision/login" replace />;
 
   // Status da licença.
-  // dias >= 1: dentro da validade. dias === 0: vence hoje = mostra o Pix (carência de 1 dia). dias <= -1: bloqueia.
+  // dias >= 1: dentro da validade. dias 0 e -1: carência (mostra o Pix, pode continuar). dias <= -2: bloqueia.
   const venc = tenant?.plano === 'trial' ? tenant?.trial_expira : tenant?.licenca_expira;
   const dias = diasAte(venc);
   const adminBlock = Boolean(tenant?.bloqueado);
   const perto = !adminBlock && dias != null && dias >= 1 && dias <= AVISO_DIAS;          // aviso sutil (1-3 dias antes)
-  const carencia = !adminBlock && dias === 0;                                             // dia do vencimento: já mostra o Pix
-  const bloqueado = adminBlock || (dias != null && dias <= -1);                           // vencido → Pix obrigatório
+  const carencia = !adminBlock && dias != null && dias <= 0 && dias >= -1;                // 2 dias de carência (mostra o Pix, pode continuar)
+  const bloqueado = adminBlock || (dias != null && dias <= -2);                           // após a carência → bloqueio total
+  const carenciaRestante = dias != null ? dias + 2 : 0;                                   // dias de carência que ainda restam (2 no dia do venc.)
 
   function fecharPix() { setShowPix(false); if (pixPago) window.location.reload(); }
   function fecharBloqueio() { if (pixPago) window.location.reload(); }
@@ -200,14 +201,14 @@ export default function VisionLayout() {
         <PixModal
           dismissible={false}
           titulo="Acesso expirado"
-          subtitulo="Último dia de carência — renove hoje"
+          subtitulo={carenciaRestante <= 1 ? 'Último dia de carência — renove hoje' : `Você tem ${carenciaRestante} dias de carência — renove para não ser bloqueado`}
           onClose={() => { if (pixPago) window.location.reload(); else setCarenciaOk(true); }}
           onPago={() => setPixPago(true)}
           footer={
             <button onClick={() => setCarenciaOk(true)} style={{
               width: '100%', background: 'transparent', border: '1px solid #cbd5e1', color: '#475569',
               borderRadius: 12, padding: '12px', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-            }}>Continuar hoje (1 dia de carência)</button>
+            }}>Continuar hoje ({carenciaRestante} {carenciaRestante === 1 ? 'dia' : 'dias'} de carência)</button>
           }
         />
       )}
