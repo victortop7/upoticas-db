@@ -50,7 +50,6 @@ export default function LabFluxo() {
   const [ordens, setOrdens] = useState<OrdemFluxo[]>([]);
   const [loadingOrdens, setLoadingOrdens] = useState(true);
   const [busca, setBusca] = useState('');
-  const [fluxoTipo, setFluxoTipo] = useState<'simples' | 'progressiva'>('simples');
   const [dragging, setDragging] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<string | null>(null);
 
@@ -241,22 +240,14 @@ export default function LabFluxo() {
 
         {/* ============ FUNIL DE PRODUÇÃO (Kanban) ============ */}
         {modo === 'consulta' && (() => {
-          const etapas = FLUXOS[fluxoTipo];
-          const cards = filtrados.filter(o => flowOf(o) === fluxoTipo);
+          // Board unificado: todas as OS (visão simples e progressiva juntas) num só funil.
+          // A progressiva é superconjunto da simples, então cobre todas as etapas.
+          const etapas = FLUXOS.progressiva;
+          const cards = filtrados;
           return (
           <>
             <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--lab-bdr)', background: R.panel, display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
               <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: R.txt, marginRight: '4px' }}>Funil de Produção</h2>
-              {/* Toggle tipo de fluxo */}
-              <div style={{ display: 'flex', border: '1px solid var(--lab-bdr)', borderRadius: '8px', overflow: 'hidden' }}>
-                {(['simples', 'progressiva'] as const).map(t => (
-                  <button key={t} onClick={() => setFluxoTipo(t)}
-                    style={{ padding: '6px 14px', fontSize: '12px', fontWeight: '700', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-                      background: fluxoTipo === t ? R.accent : 'transparent', color: fluxoTipo === t ? '#fff' : R.dim }}>
-                    {t === 'simples' ? 'Visão Simples' : 'Progressiva'}
-                  </button>
-                ))}
-              </div>
               <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar OS, ótica, ref..." style={{ ...INP, width: '200px' }} />
               <span style={{ fontSize: '11px', color: R.dim }}>{cards.length} OS · arraste os cards entre as etapas</span>
               <button onClick={loadOrdens} style={{ marginLeft: 'auto', padding: '6px 12px', fontSize: '13px', background: R.alt, color: R.dim, border: '1px solid var(--lab-bdr)', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>↺</button>
