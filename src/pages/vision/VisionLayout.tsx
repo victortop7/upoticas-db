@@ -11,7 +11,7 @@ const AVISO_DIAS = 3; // aviso sutil a partir de 3 dias antes de vencer
 const ESPECIALISTA_WA = '5585991507887';
 
 // Dias até a data YYYY-MM-DD (fim do dia, fuso SP). null se sem data.
-// floor => no dia do vencimento dias=0 (válido); dia seguinte -1 (carência); depois <= -2 (bloqueia).
+// floor => no dia do vencimento dias=0 (mostra Pix — carência de 1 dia); dia seguinte <= -1 (bloqueia).
 function diasAte(dateStr?: string): number | null {
   if (!dateStr) return null;
   const d = new Date(`${dateStr}T23:59:59-03:00`);
@@ -87,13 +87,13 @@ export default function VisionLayout() {
   if (!usuario) return <Navigate to="/vision/login" replace />;
 
   // Status da licença.
-  // dias >= 0: dentro da validade (0 = vence hoje). dias === -1: 1º dia vencido = CARÊNCIA. dias <= -2: bloqueia.
+  // dias >= 1: dentro da validade. dias === 0: vence hoje = mostra o Pix (carência de 1 dia). dias <= -1: bloqueia.
   const venc = tenant?.plano === 'trial' ? tenant?.trial_expira : tenant?.licenca_expira;
   const dias = diasAte(venc);
   const adminBlock = Boolean(tenant?.bloqueado);
-  const perto = !adminBlock && dias != null && dias >= 0 && dias <= AVISO_DIAS;          // aviso sutil (3 dias)
-  const carencia = !adminBlock && dias === -1;                                            // 1 dia de carência
-  const bloqueado = adminBlock || (dias != null && dias <= -2);                           // bloqueio total
+  const perto = !adminBlock && dias != null && dias >= 1 && dias <= AVISO_DIAS;          // aviso sutil (1-3 dias antes)
+  const carencia = !adminBlock && dias === 0;                                             // dia do vencimento: já mostra o Pix
+  const bloqueado = adminBlock || (dias != null && dias <= -1);                           // vencido → Pix obrigatório
 
   function fecharPix() { setShowPix(false); if (pixPago) window.location.reload(); }
   function fecharBloqueio() { if (pixPago) window.location.reload(); }
