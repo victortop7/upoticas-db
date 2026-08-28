@@ -142,8 +142,9 @@ export default function VisionLayout() {
         </div>
       )}
 
-      {/* Bloqueio por limite de tablets (dispositivos) */}
-      {dispBloqueado && (
+      {/* Bloqueio por limite de tablets (dispositivos) — só quando a conta está EM DIA.
+          Se o trial/licença venceu, a prioridade é o Pix (renovar), não o aviso de tablet. */}
+      {dispBloqueado && !bloqueado && !carencia && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 280,
           background: 'rgba(5,5,10,0.92)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',

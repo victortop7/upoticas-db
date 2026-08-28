@@ -118,7 +118,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
         await env.DB.prepare(
           `UPDATE tenants SET
              licenca_expira = date(CASE WHEN licenca_expira IS NOT NULL AND licenca_expira > date('now') THEN licenca_expira ELSE date('now') END, '+30 days'),
-             plano = CASE WHEN plano = 'trial' THEN 'basico' ELSE plano END,
+             plano = CASE WHEN plano = 'trial' THEN 'mensal' ELSE plano END,
              bloqueado = 0,
              asaas_last_paid = ?
            WHERE id = ?`
