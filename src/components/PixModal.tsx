@@ -57,7 +57,7 @@ export default function PixModal({ onClose, onPago, dismissible = true, titulo, 
     });
   }
 
-  const valorFmt = pix?.value != null ? pix.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'R$ 97,00';
+  const valorFmt = pix?.value != null ? pix.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '···';
 
   return (
     <div onClick={dismissible ? onClose : undefined} style={{
