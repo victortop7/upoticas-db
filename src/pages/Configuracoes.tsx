@@ -97,6 +97,36 @@ export default function Configuracoes() {
   const [erro, setErro] = useState('');
   const [senhaModalOpen, setSenhaModalOpen] = useState(false);
   const [config, setConfig] = useState<TenantConfig | null>(null);
+  const [bling, setBling] = useState<{ configurado: boolean; conectado: boolean } | null>(null);
+  const [blingBusy, setBlingBusy] = useState(false);
+  const [blingMsg, setBlingMsg] = useState('');
+
+  const carregarBling = () => api.get<{ configurado: boolean; conectado: boolean }>('/bling/status').then(setBling).catch(() => setBling(null));
+
+  useEffect(() => {
+    carregarBling();
+    // Retorno do OAuth do Bling (?bling=ok|erro)
+    const p = new URLSearchParams(window.location.search).get('bling');
+    if (p === 'ok') { setBlingMsg('✓ Bling conectado com sucesso!'); window.history.replaceState({}, '', '/configuracoes'); }
+    else if (p === 'erro') { setBlingMsg('Não foi possível conectar ao Bling. Tente novamente.'); window.history.replaceState({}, '', '/configuracoes'); }
+  }, []);
+
+  async function conectarBling() {
+    setBlingBusy(true); setBlingMsg('');
+    try {
+      const r = await api.get<{ url?: string; error?: string }>('/bling/oauth/start');
+      if (r.url) { window.location.href = r.url; return; }
+      setBlingMsg(r.error || 'Bling não configurado no servidor.');
+    } catch (e) { setBlingMsg(e instanceof Error ? e.message : 'Erro ao iniciar conexão.'); }
+    setBlingBusy(false);
+  }
+
+  async function desconectarBling() {
+    if (!confirm('Desconectar o Bling desta loja?')) return;
+    setBlingBusy(true);
+    try { await api.post('/bling/disconnect', {}); await carregarBling(); setBlingMsg('Bling desconectado.'); } catch {}
+    setBlingBusy(false);
+  }
 
   useEffect(() => {
     api.get<TenantConfig>('/configuracoes').then(data => {
@@ -322,6 +352,40 @@ export default function Configuracoes() {
             {nfceSaving ? 'Salvando...' : 'Salvar configuração NFC-e'}
           </button>
           {nfceSaved && <span style={{ fontSize: '13px', color: 'var(--green)', fontWeight: '500' }}>✓ Salvo</span>}
+        </div>
+      </div>
+
+      {/* Integração Bling — emissão de NF-e */}
+      <div style={{ marginTop: '16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+          <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '600', color: 'var(--text)' }}>Bling — Nota Fiscal (NF-e)</h3>
+          {bling?.conectado
+            ? <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--green)', background: 'rgba(34,197,94,0.12)', padding: '2px 8px', borderRadius: '20px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Conectado</span>
+            : <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', background: 'var(--surface-alt)', padding: '2px 8px', borderRadius: '20px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Não conectado</span>}
+        </div>
+        <p style={{ margin: '0 0 18px', fontSize: '13px', color: 'var(--text-muted)' }}>
+          Conecte a conta do Bling para emitir a nota fiscal das vendas direto pelo sistema. A nota é gerada e enviada pelo próprio Bling.
+        </p>
+
+        {bling && !bling.configurado && (
+          <div style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: '8px', padding: '12px 14px', fontSize: '13px', color: '#d97706', marginBottom: '14px' }}>
+            A integração ainda não foi habilitada no servidor. (Falta configurar o app do Bling.)
+          </div>
+        )}
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          {bling?.conectado ? (
+            <button type="button" disabled={blingBusy} onClick={desconectarBling}
+              style={{ padding: '9px 20px', fontSize: '13px', fontWeight: '600', background: 'var(--red-dim)', color: 'var(--red)', border: '1px solid transparent', borderRadius: '8px', cursor: 'pointer' }}>
+              {blingBusy ? '...' : 'Desconectar Bling'}
+            </button>
+          ) : (
+            <button type="button" disabled={blingBusy || (bling ? !bling.configurado : false)} onClick={conectarBling}
+              style={{ padding: '9px 20px', fontSize: '13px', fontWeight: '600', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', cursor: (blingBusy || (bling && !bling.configurado)) ? 'default' : 'pointer', opacity: (bling && !bling.configurado) ? 0.5 : 1 }}>
+              {blingBusy ? 'Abrindo Bling...' : '🔗 Conectar ao Bling'}
+            </button>
+          )}
+          {blingMsg && <span style={{ fontSize: '13px', color: bling?.conectado ? 'var(--green)' : 'var(--text-dim)', fontWeight: '500' }}>{blingMsg}</span>}
         </div>
       </div>
 

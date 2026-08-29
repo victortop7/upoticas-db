@@ -14,4 +14,7 @@ export interface Env {
   // Kommo CRM — integração "lead ganho" → cria cliente + OS/venda
   KOMMO_WEBHOOK_TOKEN?: string;   // token compartilhado com o Kommo (defina o mesmo lá)
   KOMMO_TENANT_EMAIL?: string;    // e-mail de um usuário da ótica p/ resolver o tenant (ex: oticaconceito4@gmail.com)
+  // Bling (emissão de NF-e) — app OAuth2 único; tokens ficam por tenant no D1
+  BLING_CLIENT_ID?: string;
+  BLING_CLIENT_SECRET?: string;
 }
