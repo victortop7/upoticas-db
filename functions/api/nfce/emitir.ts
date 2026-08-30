@@ -1,6 +1,24 @@
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
+import { blingFetch } from '../../lib/bling';
 
+// Extrai uma mensagem legível do corpo de erro da API do Bling
+function blingErro(obj: any): string {
+  const e = obj?.error || obj;
+  const partes: string[] = [];
+  if (e?.description) partes.push(String(e.description));
+  else if (e?.message) partes.push(String(e.message));
+  const fields = e?.fields || obj?.error?.fields;
+  if (Array.isArray(fields)) {
+    for (const f of fields.slice(0, 4)) {
+      const m = f?.msg || f?.message || f?.description;
+      if (m) partes.push(`${f?.element || f?.field || ''}: ${m}`.trim());
+    }
+  }
+  return partes.length ? partes.join(' · ') : JSON.stringify(e).slice(0, 300);
+}
+
+// POST /api/nfce/emitir { venda_id } — cria e emite a NF-e da venda no Bling.
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
   try {
     const auth = await requireAuth(request, env);
@@ -10,7 +28,11 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     const body = await request.json() as { venda_id: string };
     if (!body.venda_id) return json({ error: 'venda_id é obrigatório' }, 400);
 
-    // Buscar dados da venda + tenant
+    // Garante colunas de controle da NF-e
+    for (const c of ['nfce_status TEXT', 'nfce_numero TEXT', 'nfce_chave TEXT', 'nfce_link TEXT', 'nfce_bling_id TEXT']) {
+      try { await env.DB.prepare(`ALTER TABLE vendas ADD COLUMN ${c}`).run(); } catch { /* já existe */ }
+    }
+
     const [venda, tenant] = await Promise.all([
       env.DB.prepare(`
         SELECT v.*, c.nome as cliente_nome, c.cpf as cliente_cpf,
@@ -19,97 +41,98 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
         LEFT JOIN clientes c ON c.id = v.cliente_id
         WHERE v.id = ? AND v.tenant_id = ?
       `).bind(body.venda_id, tenant_id).first<Record<string, unknown>>(),
-
-      env.DB.prepare('SELECT * FROM tenants WHERE id = ?')
+      env.DB.prepare('SELECT nome, cnpj, bling_natureza_id FROM tenants WHERE id = ?')
         .bind(tenant_id).first<Record<string, unknown>>(),
     ]);
 
     if (!venda) return json({ error: 'Venda não encontrada' }, 404);
+    if (venda.nfce_status === 'emitida') return json({ error: 'NF-e já emitida para esta venda.' }, 400);
 
-    // Verificar se já emitiu
-    if (venda.nfce_status === 'emitida') {
-      return json({ error: 'NFC-e já emitida para esta venda' }, 400);
+    // Cliente com CPF/CNPJ é obrigatório para a NF-e (modelo 55)
+    const docCliente = String(venda.cliente_cpf || '').replace(/\D/g, '');
+    if (!venda.cliente_id || !docCliente) {
+      return json({ error: 'A venda precisa de um cliente com CPF/CNPJ cadastrado para emitir a NF-e.' }, 400);
     }
 
-    // Verificar chave API configurada
-    const apiKey = tenant?.nfce_api_key as string | null;
-    if (!apiKey) {
-      return json({ error: 'Chave API da NFC-e não configurada. Configure em Configurações.' }, 400);
+    // Itens: usa os itens da venda; se não houver, uma linha única com o total
+    let itensVenda: { descricao: string; quantidade: number; valor_unitario: number; codigo?: string }[] = [];
+    try {
+      const r = await env.DB.prepare(
+        'SELECT descricao, quantidade, valor_unitario, produto_id FROM venda_itens WHERE venda_id = ? AND tenant_id = ?'
+      ).bind(body.venda_id, tenant_id).all<{ descricao: string; quantidade: number; valor_unitario: number; produto_id: string | null }>();
+      itensVenda = (r.results || []).map(it => ({ descricao: it.descricao, quantidade: Number(it.quantidade) || 1, valor_unitario: Number(it.valor_unitario) || 0 }));
+    } catch { /* sem tabela de itens */ }
+
+    if (itensVenda.length === 0) {
+      itensVenda = [{ descricao: 'Produtos ópticos', quantidade: 1, valor_unitario: Number(venda.valor_final) || 0 }];
     }
 
-    // =====================================================
-    // PAYLOAD PRONTO PARA FOCUS NF-E
-    // Descomentar quando for ativar a integração
-    // =====================================================
-    const _payload = {
-      natureza_operacao: 'Venda ao Consumidor',
-      forma_pagamento: venda.forma_pagamento === 'dinheiro' ? 0 :
-                       venda.forma_pagamento === 'credito' ? 3 :
-                       venda.forma_pagamento === 'debito' ? 4 : 1,
-      emitente: {
-        cnpj: tenant?.cnpj,
-        nome: tenant?.nome,
-        logradouro: tenant?.endereco,
-        municipio: tenant?.cidade,
-        uf: tenant?.uf,
+    const itens = itensVenda.map(it => ({
+      codigo: it.codigo || 'OPT',
+      descricao: (it.descricao || 'Produto').slice(0, 120),
+      unidade: 'UN',
+      quantidade: it.quantidade,
+      valor: it.valor_unitario,
+    }));
+
+    const naturezaId = tenant?.bling_natureza_id ? Number(tenant.bling_natureza_id) : null;
+
+    const payload: Record<string, unknown> = {
+      tipo: 1,          // saída
+      finalidade: 1,    // normal
+      contato: {
+        nome: venda.cliente_nome || 'Consumidor',
+        tipoPessoa: docCliente.length > 11 ? 'J' : 'F',
+        numeroDocumento: docCliente,
+        contribuinte: 9, // não contribuinte
       },
-      destinatario: venda.cliente_cpf ? {
-        cpf: String(venda.cliente_cpf).replace(/\D/g, ''),
-        nome: venda.cliente_nome,
-        email: venda.cliente_email,
-      } : undefined,
-      itens: [{
-        numero_item: 1,
-        codigo_produto: '001',
-        descricao: 'Serviços ópticos / produtos',
-        cfop: '5102',
-        unidade_comercial: 'UN',
-        quantidade_comercial: 1,
-        valor_unitario_comercial: Number(venda.valor_final),
-        valor_bruto: Number(venda.valor_final),
-        icms_origem: 0,
-        icms_modalidade: 102, // Simples Nacional sem permissão de crédito
-        valor_total_tributos: 0,
-      }],
-      valor_total: Number(venda.valor_final),
-      forma_emissao: tenant?.nfce_ambiente === 'producao' ? 1 : 2, // 1=produção, 2=homologação
+      itens,
+      ...(naturezaId ? { naturezaOperacao: { id: naturezaId } } : {}),
     };
 
-    // =====================================================
-    // TODO: Integração Focus NF-e (descomentar para ativar)
-    // =====================================================
-    // const ambiente = tenant?.nfce_ambiente === 'producao' ? 'producao' : 'homologacao';
-    // const resp = await fetch(`https://api.focusnfe.com.br/v2/nfce?ref=${body.venda_id}`, {
-    //   method: 'POST',
-    //   headers: {
-    //     'Authorization': `Basic ${btoa(apiKey + ':')}`,
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify(_payload),
-    // });
-    // const result = await resp.json() as any;
-    // if (!resp.ok) return json({ error: result.mensagem || 'Erro ao emitir NFC-e' }, 400);
-    //
-    // await env.DB.prepare(
-    //   "UPDATE vendas SET nfce_status='emitida', nfce_numero=?, nfce_chave=?, updated_at=datetime('now') WHERE id=?"
-    // ).bind(result.numero, result.chave_nfe, body.venda_id).run();
-    //
-    // return json({ ok: true, numero: result.numero, danfe_url: result.danfe_url });
-    // =====================================================
+    // 1) Cria a NF-e no Bling
+    let criarResp: Response;
+    try {
+      criarResp = await blingFetch(env, tenant_id, '/nfe', { method: 'POST', body: JSON.stringify(payload) });
+    } catch (e) {
+      if (e instanceof Error && e.message === 'BLING_NAO_CONECTADO') {
+        return json({ error: 'Bling não conectado. Vá em Configurações → Bling e conecte a conta.' }, 400);
+      }
+      throw e;
+    }
+    const criar = await criarResp.json().catch(() => ({})) as Record<string, any>;
+    if (!criarResp.ok) {
+      return json({ error: `Bling recusou a NF-e: ${blingErro(criar)}`, detalhe: criar?.error || criar }, 400);
+    }
+    const notaId = criar?.data?.id;
+    if (!notaId) return json({ error: 'Bling não retornou o ID da nota.', detalhe: criar }, 400);
 
-    // Resposta temporária (modo gatilho)
+    // 2) Envia para a SEFAZ (emite de fato)
+    const enviarResp = await blingFetch(env, tenant_id, `/nfe/${notaId}/enviar`, { method: 'POST' });
+    const enviar = await enviarResp.json().catch(() => ({})) as Record<string, any>;
+    if (!enviarResp.ok) {
+      // Nota criada mas não autorizada — guarda o rascunho e devolve o motivo
+      await env.DB.prepare("UPDATE vendas SET nfce_status='rascunho', nfce_bling_id=?, updated_at=datetime('now') WHERE id=? AND tenant_id=?")
+        .bind(String(notaId), body.venda_id, tenant_id).run();
+      return json({ error: `NF-e criada, mas a SEFAZ recusou: ${blingErro(enviar)}`, detalhe: enviar?.error || enviar }, 400);
+    }
+
+    // 3) Lê os dados finais da nota (número, link do DANFE)
+    let numero: string | null = null;
+    let link: string | null = null;
+    try {
+      const getResp = await blingFetch(env, tenant_id, `/nfe/${notaId}`, { method: 'GET' });
+      const nota = (await getResp.json() as Record<string, any>)?.data;
+      numero = nota?.numero != null ? String(nota.numero) : null;
+      link = nota?.linkDanfe || nota?.linkPDF || nota?.link || null;
+    } catch { /* segue sem os detalhes */ }
+
     await env.DB.prepare(
-      "UPDATE vendas SET nfce_status='pendente', updated_at=datetime('now') WHERE id=? AND tenant_id=?"
-    ).bind(body.venda_id, tenant_id).run();
+      "UPDATE vendas SET nfce_status='emitida', nfce_numero=?, nfce_link=?, nfce_bling_id=?, updated_at=datetime('now') WHERE id=? AND tenant_id=?"
+    ).bind(numero, link, String(notaId), body.venda_id, tenant_id).run();
 
-    return json({
-      ok: true,
-      status: 'pendente',
-      mensagem: 'Integração NFC-e em configuração. Dados validados e prontos para emissão.',
-      payload_pronto: true,
-    });
-
+    return json({ ok: true, status: 'emitida', numero, link, mensagem: `NF-e ${numero ? '#' + numero + ' ' : ''}emitida e enviada ao cliente.` });
   } catch (err) {
-    return json({ error: 'Erro interno', detail: String(err) }, 500);
+    return json({ error: 'Erro interno ao emitir NF-e', detail: String(err) }, 500);
   }
 };

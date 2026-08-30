@@ -88,7 +88,7 @@ interface TenantConfig {
 
 export default function Configuracoes() {
   const { setAuth, usuario, tenant } = useAuth();
-  const [form, setForm] = useState({ nome: '', telefone: '', cnpj: '', endereco: '', cidade: '', uf: '', nfce_api_key: '', nfce_ambiente: 'homologacao' });
+  const [form, setForm] = useState({ nome: '', telefone: '', cnpj: '', endereco: '', cidade: '', uf: '', nfce_api_key: '', nfce_ambiente: 'homologacao', bling_natureza_id: '' });
   const [nfceSaved, setNfceSaved] = useState(false);
   const [nfceSaving, setNfceSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -140,6 +140,7 @@ export default function Configuracoes() {
         uf: data.uf || '',
         nfce_api_key: data.nfce_api_key || '',
         nfce_ambiente: data.nfce_ambiente || 'homologacao',
+        bling_natureza_id: (data as { bling_natureza_id?: string }).bling_natureza_id || '',
       });
     }).finally(() => setLoading(false));
   }, []);
@@ -387,6 +388,29 @@ export default function Configuracoes() {
           )}
           {blingMsg && <span style={{ fontSize: '13px', color: bling?.conectado ? 'var(--green)' : 'var(--text-dim)', fontWeight: '500' }}>{blingMsg}</span>}
         </div>
+
+        {bling?.conectado && (
+          <div style={{ marginTop: '18px', paddingTop: '18px', borderTop: '1px solid var(--border)' }}>
+            <label style={labelStyle}>Natureza de operação (ID no Bling) — opcional</label>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <input
+                style={{ ...inputStyle, fontFamily: 'var(--mono)', maxWidth: '220px' }}
+                value={form.bling_natureza_id}
+                onChange={e => set('bling_natureza_id', e.target.value)}
+                placeholder="Ex: 12345678"
+                inputMode="numeric"
+              />
+              <button type="button" disabled={nfceSaving}
+                onClick={async () => { setNfceSaving(true); try { await api.put('/configuracoes', form); setBlingMsg('✓ Natureza salva'); } catch {} setNfceSaving(false); }}
+                style={{ padding: '9px 18px', fontSize: '13px', fontWeight: '600', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
+                {nfceSaving ? 'Salvando...' : 'Salvar'}
+              </button>
+            </div>
+            <p style={{ margin: '6px 0 0', fontSize: '11px', color: 'var(--text-muted)' }}>
+              Deixe em branco pra usar a natureza padrão da conta Bling. Se a emissão falhar por "natureza", pegue o ID em Bling → Cadastros → Naturezas de operação.
+            </p>
+          </div>
+        )}
       </div>
 
       {senhaModalOpen && <AlterarSenhaModal onClose={() => setSenhaModalOpen(false)} />}

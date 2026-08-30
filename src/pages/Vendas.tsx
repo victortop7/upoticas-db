@@ -243,7 +243,7 @@ export default function Vendas() {
                       border: '1px solid transparent', borderRadius: '6px', cursor: v.nfce_status === 'emitida' ? 'default' : 'pointer',
                       fontWeight: '600',
                     }} disabled={v.nfce_status === 'emitida'}>
-                      {v.nfce_status === 'emitida' ? '✓ NFC-e' : 'NFC-e'}
+                      {v.nfce_status === 'emitida' ? '✓ NF-e' : 'NF-e'}
                     </button>
                     <button onClick={() => abrirEditar(v)} style={{
                       padding: '5px 10px', fontSize: '12px', marginRight: '6px',

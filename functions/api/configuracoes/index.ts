@@ -5,6 +5,7 @@ async function ensureColumns(db: Env['DB']) {
   const cols = [
     'telefone TEXT', 'cnpj TEXT', 'endereco TEXT', 'cidade TEXT', 'uf TEXT',
     'nfce_api_key TEXT', "nfce_ambiente TEXT DEFAULT 'homologacao'",
+    'bling_natureza_id TEXT',
   ];
   for (const col of cols) {
     try {
@@ -33,7 +34,8 @@ export const onRequestPut = async ({ request, env }: { request: Request; env: En
 
     await ensureColumns(env.DB);
     await env.DB.prepare(
-      'UPDATE tenants SET nome=?, telefone=?, cnpj=?, endereco=?, cidade=?, uf=?, nfce_api_key=?, nfce_ambiente=? WHERE id=?'
+      `UPDATE tenants SET nome=?, telefone=?, cnpj=?, endereco=?, cidade=?, uf=?, nfce_api_key=?, nfce_ambiente=?,
+         bling_natureza_id = COALESCE(?, bling_natureza_id) WHERE id=?`
     ).bind(
       body.nome.trim(),
       body.telefone || null,
@@ -43,6 +45,7 @@ export const onRequestPut = async ({ request, env }: { request: Request; env: En
       body.uf || null,
       body.nfce_api_key || null,
       body.nfce_ambiente || 'homologacao',
+      body.bling_natureza_id ? String(body.bling_natureza_id) : null,
       auth.tenant_id,
     ).run();
 
