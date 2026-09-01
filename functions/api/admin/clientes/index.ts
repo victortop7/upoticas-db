@@ -4,7 +4,7 @@ import { hashPassword } from '../../../lib/jwt';
 
 function isAdmin(request: Request, env: Env): boolean {
   const auth = request.headers.get('authorization') || '';
-  return !!env.ADMIN_SECRET && auth === `Bearer ${env.ADMIN_SECRET}`;
+  return !!env.ADMIN_SECRET && auth.replace(/^Bearer\s+/i, '').trim() === env.ADMIN_SECRET.trim();
 }
 
 // POST /api/admin/clientes — cria um novo cliente (tenant + usuário admin) direto, sem lead

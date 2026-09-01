@@ -3,7 +3,7 @@ import { json } from '../../../lib/auth-middleware';
 
 function isAdmin(request: Request, env: Env): boolean {
   const auth = request.headers.get('authorization') || '';
-  return !!env.ADMIN_SECRET && auth === `Bearer ${env.ADMIN_SECRET}`;
+  return !!env.ADMIN_SECRET && auth.replace(/^Bearer\s+/i, '').trim() === env.ADMIN_SECRET.trim();
 }
 
 // GET /api/admin/dispositivos?tenant_id=xxx — lista os tablets registrados de uma conta
