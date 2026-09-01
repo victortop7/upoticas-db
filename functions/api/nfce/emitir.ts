@@ -77,15 +77,19 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
 
     const naturezaId = tenant?.bling_natureza_id ? Number(tenant.bling_natureza_id) : null;
 
+    const contato: Record<string, unknown> = {
+      nome: venda.cliente_nome || 'Consumidor',
+      tipoPessoa: docCliente.length > 11 ? 'J' : 'F',
+      numeroDocumento: docCliente,
+      contribuinte: 9, // não contribuinte
+    };
+    // E-mail do cliente → o Bling envia a nota (DANFE/XML) automaticamente pra ele
+    if (venda.cliente_email) contato.email = String(venda.cliente_email).trim();
+
     const payload: Record<string, unknown> = {
       tipo: 1,          // saída
       finalidade: 1,    // normal
-      contato: {
-        nome: venda.cliente_nome || 'Consumidor',
-        tipoPessoa: docCliente.length > 11 ? 'J' : 'F',
-        numeroDocumento: docCliente,
-        contribuinte: 9, // não contribuinte
-      },
+      contato,
       itens,
       ...(naturezaId ? { naturezaOperacao: { id: naturezaId } } : {}),
     };
@@ -131,7 +135,12 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       "UPDATE vendas SET nfce_status='emitida', nfce_numero=?, nfce_link=?, nfce_bling_id=?, updated_at=datetime('now') WHERE id=? AND tenant_id=?"
     ).bind(numero, link, String(notaId), body.venda_id, tenant_id).run();
 
-    return json({ ok: true, status: 'emitida', numero, link, mensagem: `NF-e ${numero ? '#' + numero + ' ' : ''}emitida e enviada ao cliente.` });
+    const telefone = String(venda.cliente_telefone || '').replace(/\D/g, '');
+    return json({
+      ok: true, status: 'emitida', numero, link, telefone,
+      email: venda.cliente_email ? String(venda.cliente_email) : null,
+      mensagem: `NF-e ${numero ? '#' + numero + ' ' : ''}emitida!${venda.cliente_email ? ' Enviada por e-mail ao cliente.' : ''}`,
+    });
   } catch (err) {
     return json({ error: 'Erro interno ao emitir NF-e', detail: String(err) }, 500);
   }

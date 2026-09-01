@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '../lib/api';
+import { whatsappLink } from '../lib/whatsapp';
 import VendaModal from '../components/VendaModal';
 
 interface Venda {
@@ -83,13 +84,22 @@ export default function Vendas() {
 
   async function emitirNfce(vendaId: string) {
     try {
-      const res = await api.post<{ ok: boolean; mensagem?: string; status?: string }>('/nfce/emitir', { venda_id: vendaId });
+      const res = await api.post<{ ok: boolean; mensagem?: string; status?: string; link?: string; telefone?: string }>('/nfce/emitir', { venda_id: vendaId });
       if (res.ok) {
-        alert(res.mensagem || 'NFC-e registrada com sucesso!');
         load();
+        const base = res.mensagem || 'NF-e emitida com sucesso!';
+        // Se temos o PDF da nota + telefone do cliente, oferece enviar no WhatsApp
+        if (res.link && res.telefone && res.telefone.length >= 10) {
+          if (confirm(`${base}\n\nEnviar o PDF da nota no WhatsApp do cliente?`)) {
+            const msg = `Olá! Segue a sua nota fiscal (NF-e) da compra na nossa ótica: ${res.link}`;
+            window.open(whatsappLink(res.telefone, msg), '_blank');
+          }
+        } else {
+          alert(base + (res.link ? `\n\nLink da nota (PDF): ${res.link}` : ''));
+        }
       }
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Erro ao emitir NFC-e');
+      alert(err instanceof Error ? err.message : 'Erro ao emitir NF-e');
     }
   }
 
