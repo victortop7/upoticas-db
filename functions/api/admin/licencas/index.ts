@@ -17,30 +17,34 @@ async function ensureColumns(env: Env) {
 // GET /api/admin/licencas — lista todos os tenants
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   if (!isAdmin(request, env)) return json({ error: 'Não autorizado' }, 401);
-  await ensureColumns(env);
+  try {
+    await ensureColumns(env);
 
-  const result = await env.DB.prepare(
-    `SELECT id, nome, email, tipo, plano, ativo,
-            COALESCE(bloqueado, 0) as bloqueado,
-            COALESCE(dispositivos_limite, 1) as dispositivos_limite,
-            COALESCE(dispositivo_modo, 'bloquear') as dispositivo_modo,
-            valor_mensal,
-            trial_expira, licenca_expira, created_at
-     FROM tenants ORDER BY created_at DESC`
-  ).all();
+    const result = await env.DB.prepare(
+      `SELECT id, nome, email, tipo, plano, ativo,
+              COALESCE(bloqueado, 0) as bloqueado,
+              COALESCE(dispositivos_limite, 1) as dispositivos_limite,
+              COALESCE(dispositivo_modo, 'bloquear') as dispositivo_modo,
+              valor_mensal,
+              trial_expira, licenca_expira, created_at
+       FROM tenants ORDER BY created_at DESC`
+    ).all();
 
-  const now = new Date().toISOString();
-  const rows = (result.results as Record<string, unknown>[]).map(t => ({
-    ...t,
-    status: !t.ativo ? 'desativado'
-      : t.bloqueado ? 'bloqueado'
-      : t.plano === 'trial' && t.trial_expira && (t.trial_expira as string) < now ? 'trial_expirado'
-      : t.plano !== 'trial' && t.licenca_expira && (t.licenca_expira as string) < now ? 'expirado'
-      : t.plano === 'trial' ? 'trial'
-      : 'ativo',
-  }));
+    const now = new Date().toISOString();
+    const rows = (result.results as Record<string, unknown>[]).map(t => ({
+      ...t,
+      status: !t.ativo ? 'desativado'
+        : t.bloqueado ? 'bloqueado'
+        : t.plano === 'trial' && t.trial_expira && (t.trial_expira as string) < now ? 'trial_expirado'
+        : t.plano !== 'trial' && t.licenca_expira && (t.licenca_expira as string) < now ? 'expirado'
+        : t.plano === 'trial' ? 'trial'
+        : 'ativo',
+    }));
 
-  return json(rows);
+    return json(rows);
+  } catch (err) {
+    return json({ error: `Erro interno admin: ${String(err)}` }, 500);
+  }
 };
 
 // DELETE /api/admin/licencas?id=xxx — exclui tenant e seus usuários
