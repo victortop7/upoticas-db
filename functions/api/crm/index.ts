@@ -3,6 +3,7 @@ import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
 import { ensureCrmTable, ensureEstagiosPadrao } from './setup';
 import { ensureClienteCols } from '../../lib/ensure-cliente-cols';
+import { ensureIndexes } from '../../lib/ensure-indexes';
 
 async function aplicarRegras(db: D1Database, tenant_id: string) {
   // 0. "Cliente Cadastrado" (novo) é só para quem AINDA NÃO comprou.
@@ -108,6 +109,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
   await ensureCrmTable(env.DB);
   await ensureEstagiosPadrao(env.DB, auth.tenant_id);
   await ensureClienteCols(env.DB);
+  await ensureIndexes(env.DB);
 
   // Cria cards para clientes sem card
   await env.DB.prepare(`

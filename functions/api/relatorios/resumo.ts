@@ -1,12 +1,14 @@
 import type { PagesFunction } from '@cloudflare/workers-types';
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
+import { ensureIndexes } from '../../lib/ensure-indexes';
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;
 
   try {
+    await ensureIndexes(env.DB);
     const url = new URL(request.url);
     const inicio = url.searchParams.get('inicio') || new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
     const fim = url.searchParams.get('fim') || new Date().toISOString().split('T')[0];
