@@ -45,7 +45,11 @@ export async function adminRequest<T>(path: string, secret: string, options?: Re
       ...options?.headers,
     },
   });
-  const data = await res.json();
-  if (!res.ok) throw new Error((data as { error?: string }).error || 'Erro');
+  let data: unknown = {};
+  try { data = await res.json(); } catch { /* resposta não-JSON (ex: página de erro) */ }
+  if (!res.ok) {
+    const msg = (data as { error?: string }).error;
+    throw new Error(msg ? `${msg} (HTTP ${res.status})` : `Erro HTTP ${res.status}`);
+  }
   return data as T;
 }

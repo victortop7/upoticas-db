@@ -109,8 +109,12 @@ function LoginScreen({ onOk }: { onOk: (secret: string) => void }) {
       await adminRequest<Tenant[]>('/admin/licencas', secret.trim());
       sessionStorage.setItem('admin_secret_v2', secret.trim());
       onOk(secret.trim());
-    } catch {
-      setErro('Senha incorreta. Verifique e tente novamente.');
+    } catch (e) {
+      const m = e instanceof Error ? e.message : '';
+      // 401 = senha realmente errada; outro código = problema diferente (mostra pra diagnosticar)
+      setErro(m.includes('401') || m.toLowerCase().includes('autoriz')
+        ? 'Senha incorreta. Verifique e tente novamente.'
+        : `Erro ao entrar: ${m || 'sem resposta'}`);
       setLoading(false);
     }
   }
