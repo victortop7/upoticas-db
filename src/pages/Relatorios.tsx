@@ -76,7 +76,12 @@ function VendedorModal({ funcionarioId, nome, inicio, fim, isAdmin, onClose }: {
   useEffect(() => {
     setLoading(true);
     api.get<VendedorDetalhe>(`/relatorios/vendedor?funcionario_id=${funcionarioId}&inicio=${inicio}&fim=${fim}`)
-      .then(r => { setDet(r); setRegras(r.regras || {}); })
+      .then(r => {
+        setDet(r);
+        // Se ainda não tem tabela salva, sugere: à vista 5% / cartão 2,5%
+        const temRegras = r.regras && Object.keys(r.regras).length > 0;
+        setRegras(temRegras ? r.regras : { dinheiro: 5, pix: 5, credito: 2.5, debito: 2.5, boleto: 5 });
+      })
       .catch(() => setDet(null))
       .finally(() => setLoading(false));
   }, [funcionarioId, inicio, fim]);
@@ -209,6 +214,16 @@ function VendedorModal({ funcionarioId, nome, inicio, fim, isAdmin, onClose }: {
                 </table>
               )}
             </div>
+
+            {/* Rodapé — salvar tabela de comissão (bem visível) */}
+            {isAdmin && (
+              <div style={{ padding: '14px 22px', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexShrink: 0, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '13px', color: 'var(--text-dim)' }}>Comissão do período: <b style={{ color: 'var(--primary)', fontFamily: 'var(--mono)', fontSize: '15px' }}>{brl(comissaoTotal)}</b></span>
+                <button onClick={salvarRegras} disabled={salvando} style={{ padding: '11px 26px', fontSize: '14px', fontWeight: 700, background: salvo ? 'var(--green)' : 'var(--primary)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer' }}>
+                  {salvando ? 'Salvando...' : salvo ? '✓ Comissão salva!' : '💾 Salvar tabela de comissão'}
+                </button>
+              </div>
+            )}
           </>
         )}
       </div>
