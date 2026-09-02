@@ -17,11 +17,22 @@ interface VendaVendedor {
   valor_entrada: number; saldo_restante: number; situacao: string; forma_pagamento?: string; cliente_nome?: string;
 }
 interface VendedorDetalhe {
-  vendedor: { id: string; nome: string; perfil: string; comissao_pct: number };
+  vendedor: { id: string; nome: string; perfil: string };
   periodo: { inicio: string; fim: string };
   vendas: VendaVendedor[];
   totais: { qtd: number; total_vendido: number; descontos: number; a_receber: number; recebido: number };
+  regras: Record<string, number>;
 }
+
+const FORMAS_PAG = [
+  { key: 'dinheiro', label: 'Dinheiro' },
+  { key: 'pix', label: 'Pix' },
+  { key: 'credito', label: 'Crédito' },
+  { key: 'debito', label: 'Débito' },
+  { key: 'boleto', label: 'Boleto' },
+  { key: 'outro', label: 'Outro' },
+];
+const FORMA_LABEL: Record<string, string> = Object.fromEntries(FORMAS_PAG.map(f => [f.key, f.label]));
 
 const SITUACAO_LABEL: Record<string, string> = {
   orcamento: 'Orçamento', aprovado: 'Aprovado', em_producao: 'Em Produção',
@@ -58,26 +69,39 @@ function VendedorModal({ funcionarioId, nome, inicio, fim, isAdmin, onClose }: {
 }) {
   const [det, setDet] = useState<VendedorDetalhe | null>(null);
   const [loading, setLoading] = useState(true);
-  const [pct, setPct] = useState('');
+  const [regras, setRegras] = useState<Record<string, number>>({});
   const [salvando, setSalvando] = useState(false);
   const [salvo, setSalvo] = useState(false);
 
   useEffect(() => {
     setLoading(true);
     api.get<VendedorDetalhe>(`/relatorios/vendedor?funcionario_id=${funcionarioId}&inicio=${inicio}&fim=${fim}`)
-      .then(r => { setDet(r); setPct(String(r.vendedor.comissao_pct || '')); })
+      .then(r => { setDet(r); setRegras(r.regras || {}); })
       .catch(() => setDet(null))
       .finally(() => setLoading(false));
   }, [funcionarioId, inicio, fim]);
 
-  const base = det?.totais.total_vendido || 0;
-  const pctNum = parseFloat(pct) || 0;
-  const comissao = base * pctNum / 100;
+  // Base por forma de pagamento (formas desconhecidas caem em "outro")
+  const baseByForma: Record<string, number> = {};
+  (det?.vendas || []).forEach(v => {
+    const k = FORMA_LABEL[v.forma_pagamento || ''] ? (v.forma_pagamento as string) : 'outro';
+    baseByForma[k] = (baseByForma[k] || 0) + (v.valor_final || 0);
+  });
+  const linhas = FORMAS_PAG.map(f => {
+    const base = baseByForma[f.key] || 0;
+    const pctF = Number(regras[f.key]) || 0;
+    return { ...f, base, pct: pctF, comissao: base * pctF / 100 };
+  });
+  const comissaoTotal = linhas.reduce((a, l) => a + l.comissao, 0);
+  const totalBase = det?.totais.total_vendido || 0;
 
-  async function salvarPct() {
+  function setPctForma(k: string, val: string) {
+    setRegras(r => ({ ...r, [k]: parseFloat(val) || 0 }));
+  }
+  async function salvarRegras() {
     setSalvando(true); setSalvo(false);
     try {
-      await api.post('/relatorios/vendedor', { funcionario_id: funcionarioId, comissao_pct: pctNum });
+      await api.post('/relatorios/vendedor', { regras });
       setSalvo(true); setTimeout(() => setSalvo(false), 2500);
     } catch {}
     setSalvando(false);
@@ -106,28 +130,51 @@ function VendedorModal({ funcionarioId, nome, inicio, fim, isAdmin, onClose }: {
           <div style={{ padding: '50px', textAlign: 'center', color: 'var(--text-muted)' }}>Não foi possível carregar.</div>
         ) : (
           <>
-            {/* Comissão */}
-            <div style={{ padding: '16px 22px', borderBottom: '1px solid var(--border)', display: 'flex', gap: '16px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-              <div>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Total Vendido ({det.totais.qtd})</div>
-                <div style={{ fontSize: '20px', fontWeight: 700, fontFamily: 'var(--mono)', color: '#16a34a' }}>{brl(base)}</div>
+            {/* Comissão por forma de pagamento (tabela da loja) */}
+            <div style={{ padding: '16px 22px', borderBottom: '1px solid var(--border)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>
+                  Comissão por forma de pagamento {isAdmin && <span style={{ textTransform: 'none', color: 'var(--text-dim)', fontWeight: 400 }}>· % vale pra loja toda</span>}
+                </div>
+                {isAdmin && (
+                  <button onClick={salvarRegras} disabled={salvando} style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 600, background: salvo ? 'var(--green)' : 'var(--primary)', color: 'white', border: 'none', borderRadius: '7px', cursor: 'pointer' }}>
+                    {salvando ? '...' : salvo ? '✓ Salvo' : 'Salvar %'}
+                  </button>
+                )}
               </div>
-              <div>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, marginBottom: '4px' }}>Comissão %</div>
-                <input type="number" step="0.1" min="0" value={pct} onChange={e => setPct(e.target.value)}
-                  disabled={!isAdmin}
-                  style={{ width: '90px', padding: '8px 10px', fontSize: '15px', fontFamily: 'var(--mono)', textAlign: 'right', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--surface-alt)', color: 'var(--text)', outline: 'none' }}
-                  placeholder="0" />
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '420px' }}>
+                  <thead><tr>
+                    <th style={{ textAlign: 'left', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, padding: '4px 8px' }}>Forma</th>
+                    <th style={{ textAlign: 'right', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, padding: '4px 8px' }}>Vendido</th>
+                    <th style={{ textAlign: 'center', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, padding: '4px 8px' }}>%</th>
+                    <th style={{ textAlign: 'right', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, padding: '4px 8px' }}>Comissão</th>
+                  </tr></thead>
+                  <tbody>
+                    {linhas.filter(l => l.base > 0 || isAdmin).map(l => (
+                      <tr key={l.key}>
+                        <td style={{ padding: '6px 8px', fontSize: '13px', color: 'var(--text)' }}>{l.label}</td>
+                        <td style={{ padding: '6px 8px', fontSize: '13px', fontFamily: 'var(--mono)', textAlign: 'right', color: 'var(--text-dim)' }}>{brl(l.base)}</td>
+                        <td style={{ padding: '6px 8px', textAlign: 'center' }}>
+                          <input type="number" step="0.1" min="0" disabled={!isAdmin}
+                            value={regras[l.key] ?? ''} onChange={e => setPctForma(l.key, e.target.value)}
+                            style={{ width: '64px', padding: '5px 7px', fontSize: '13px', fontFamily: 'var(--mono)', textAlign: 'right', border: '1px solid var(--border)', borderRadius: '6px', background: 'var(--surface-alt)', color: 'var(--text)', outline: 'none' }}
+                            placeholder="0" />
+                        </td>
+                        <td style={{ padding: '6px 8px', fontSize: '13px', fontFamily: 'var(--mono)', fontWeight: 700, textAlign: 'right', color: '#16a34a' }}>{brl(l.comissao)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr style={{ borderTop: '2px solid var(--border)' }}>
+                      <td style={{ padding: '9px 8px', fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>Total ({det.totais.qtd} vendas)</td>
+                      <td style={{ padding: '9px 8px', fontSize: '13px', fontFamily: 'var(--mono)', fontWeight: 700, textAlign: 'right', color: 'var(--text)' }}>{brl(totalBase)}</td>
+                      <td></td>
+                      <td style={{ padding: '9px 8px', fontSize: '16px', fontFamily: 'var(--mono)', fontWeight: 800, textAlign: 'right', color: 'var(--primary)' }}>{brl(comissaoTotal)}</td>
+                    </tr>
+                  </tfoot>
+                </table>
               </div>
-              <div style={{ background: 'rgba(37,99,235,0.08)', border: '1px solid rgba(37,99,235,0.2)', borderRadius: '10px', padding: '10px 16px' }}>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Comissão a pagar</div>
-                <div style={{ fontSize: '22px', fontWeight: 800, fontFamily: 'var(--mono)', color: 'var(--primary)' }}>{brl(comissao)}</div>
-              </div>
-              {isAdmin && (
-                <button onClick={salvarPct} disabled={salvando} style={{ padding: '9px 18px', fontSize: '13px', fontWeight: 600, background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', marginBottom: '2px' }}>
-                  {salvando ? '...' : salvo ? '✓ Salvo' : 'Salvar %'}
-                </button>
-              )}
             </div>
 
             {/* Lista de vendas */}

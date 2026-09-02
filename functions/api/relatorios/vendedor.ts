@@ -2,12 +2,22 @@ import type { PagesFunction } from '@cloudflare/workers-types';
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
 
+// Regras de comissão são por LOJA (tenant), por forma de pagamento — guardadas como JSON.
 async function ensureCol(env: Env) {
-  try { await env.DB.prepare('ALTER TABLE usuarios ADD COLUMN comissao_pct REAL').run(); } catch { /* já existe */ }
+  try { await env.DB.prepare('ALTER TABLE tenants ADD COLUMN comissao_regras TEXT').run(); } catch { /* já existe */ }
+}
+
+function lerRegras(raw: unknown): Record<string, number> {
+  try {
+    const o = typeof raw === 'string' ? JSON.parse(raw) : {};
+    const out: Record<string, number> = {};
+    for (const k of Object.keys(o || {})) out[k] = Math.max(0, Number(o[k]) || 0);
+    return out;
+  } catch { return {}; }
 }
 
 // GET /api/relatorios/vendedor?funcionario_id=&inicio=&fim=
-// Lista todas as vendas do vendedor no período (p/ conferência) + base e % de comissão.
+// Vendas do vendedor no período (com forma de pagamento) + a tabela de comissão da loja.
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;
@@ -20,9 +30,12 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     const fim = url.searchParams.get('fim') || new Date().toISOString().split('T')[0];
     if (!fid) return json({ error: 'funcionario_id requerido' }, 400);
 
-    const vendedor = await env.DB.prepare(
-      'SELECT id, nome, perfil, COALESCE(comissao_pct, 0) as comissao_pct FROM usuarios WHERE id = ? AND tenant_id = ?'
-    ).bind(fid, auth.tenant_id).first<{ id: string; nome: string; perfil: string; comissao_pct: number }>();
+    const [vendedor, tenant] = await Promise.all([
+      env.DB.prepare('SELECT id, nome, perfil FROM usuarios WHERE id = ? AND tenant_id = ?')
+        .bind(fid, auth.tenant_id).first<{ id: string; nome: string; perfil: string }>(),
+      env.DB.prepare('SELECT comissao_regras FROM tenants WHERE id = ?')
+        .bind(auth.tenant_id).first<{ comissao_regras: string | null }>(),
+    ]);
     if (!vendedor) return json({ error: 'Vendedor não encontrado' }, 404);
 
     const r = await env.DB.prepare(`
@@ -46,26 +59,27 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       periodo: { inicio, fim },
       vendas,
       totais: { qtd: vendas.length, total_vendido: totalVendido, descontos, a_receber: aReceber, recebido },
+      regras: lerRegras(tenant?.comissao_regras),
     });
   } catch (err) {
     return json({ error: 'Erro interno', detail: String(err) }, 500);
   }
 };
 
-// POST /api/relatorios/vendedor  { funcionario_id, comissao_pct }  — salva o % de comissão do vendedor (admin)
+// POST /api/relatorios/vendedor  { regras: { pix: 3, credito: 2, ... } }
+// Salva a tabela de comissão da LOJA (admin).
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;
-  if (auth.perfil !== 'admin') return json({ error: 'Apenas admin pode alterar comissão' }, 403);
+  if (auth.perfil !== 'admin') return json({ error: 'Apenas admin pode alterar as regras de comissão' }, 403);
 
   try {
     await ensureCol(env);
-    const body = await request.json() as { funcionario_id?: string; comissao_pct?: number | string };
-    if (!body.funcionario_id) return json({ error: 'funcionario_id requerido' }, 400);
-    const pct = Math.max(0, Number(body.comissao_pct) || 0);
-    await env.DB.prepare('UPDATE usuarios SET comissao_pct = ? WHERE id = ? AND tenant_id = ?')
-      .bind(pct, body.funcionario_id, auth.tenant_id).run();
-    return json({ ok: true, comissao_pct: pct });
+    const body = await request.json() as { regras?: Record<string, number> };
+    const regras = lerRegras(body.regras || {});
+    await env.DB.prepare('UPDATE tenants SET comissao_regras = ? WHERE id = ?')
+      .bind(JSON.stringify(regras), auth.tenant_id).run();
+    return json({ ok: true, regras });
   } catch (err) {
     return json({ error: 'Erro interno', detail: String(err) }, 500);
   }
