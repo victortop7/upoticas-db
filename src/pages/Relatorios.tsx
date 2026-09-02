@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api } from '../lib/api';
+import { useAuth } from '../hooks/useAuth';
 
 interface Resumo {
   periodo: { inicio: string; fim: string };
@@ -8,7 +9,18 @@ interface Resumo {
   os: { total: number; valor_total: number; recebido: number; pendente: number; por_situacao: { situacao: string; n: number }[] };
   top_clientes: { nome: string; compras: number; total: number; a_receber: number }[];
   vendas_por_dia: { dia: string; vendas: number; valor: number }[];
-  por_vendedor: { vendedor: string; perfil: string; total_vendas: number; valor_total: number; ticket_medio: number; total_desconto: number; a_receber: number }[];
+  por_vendedor: { funcionario_id: string; vendedor: string; perfil: string; total_vendas: number; valor_total: number; ticket_medio: number; total_desconto: number; a_receber: number }[];
+}
+
+interface VendaVendedor {
+  id: string; numero: number; created_at: string; valor_final: number; desconto: number;
+  valor_entrada: number; saldo_restante: number; situacao: string; forma_pagamento?: string; cliente_nome?: string;
+}
+interface VendedorDetalhe {
+  vendedor: { id: string; nome: string; perfil: string; comissao_pct: number };
+  periodo: { inicio: string; fim: string };
+  vendas: VendaVendedor[];
+  totais: { qtd: number; total_vendido: number; descontos: number; a_receber: number; recebido: number };
 }
 
 const SITUACAO_LABEL: Record<string, string> = {
@@ -35,7 +47,132 @@ function getPeriodo(tipo: string): { inicio: string; fim: string } {
   return { inicio: `${hoje.getFullYear()}-${pad(hoje.getMonth()+1)}-01`, fim: fmt(hoje) };
 }
 
+const SIT_COR: Record<string, { bg: string; cor: string; label: string }> = {
+  ativa: { bg: 'rgba(34,197,94,0.12)', cor: '#16a34a', label: 'Ativa' },
+  pendente: { bg: 'rgba(245,158,11,0.14)', cor: '#d97706', label: 'Pendente' },
+  cancelada: { bg: 'rgba(239,68,68,0.12)', cor: '#dc2626', label: 'Cancelada' },
+};
+
+function VendedorModal({ funcionarioId, nome, inicio, fim, isAdmin, onClose }: {
+  funcionarioId: string; nome: string; inicio: string; fim: string; isAdmin: boolean; onClose: () => void;
+}) {
+  const [det, setDet] = useState<VendedorDetalhe | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [pct, setPct] = useState('');
+  const [salvando, setSalvando] = useState(false);
+  const [salvo, setSalvo] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    api.get<VendedorDetalhe>(`/relatorios/vendedor?funcionario_id=${funcionarioId}&inicio=${inicio}&fim=${fim}`)
+      .then(r => { setDet(r); setPct(String(r.vendedor.comissao_pct || '')); })
+      .catch(() => setDet(null))
+      .finally(() => setLoading(false));
+  }, [funcionarioId, inicio, fim]);
+
+  const base = det?.totais.total_vendido || 0;
+  const pctNum = parseFloat(pct) || 0;
+  const comissao = base * pctNum / 100;
+
+  async function salvarPct() {
+    setSalvando(true); setSalvo(false);
+    try {
+      await api.post('/relatorios/vendedor', { funcionario_id: funcionarioId, comissao_pct: pctNum });
+      setSalvo(true); setTimeout(() => setSalvo(false), 2500);
+    } catch {}
+    setSalvando(false);
+  }
+
+  const th: React.CSSProperties = { padding: '9px 14px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', background: 'var(--surface-alt)', position: 'sticky', top: 0 };
+  const td: React.CSSProperties = { padding: '10px 14px', fontSize: '13px', color: 'var(--text)' };
+  const tdMono: React.CSSProperties = { ...td, fontFamily: 'var(--mono)', textAlign: 'right' };
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}
+      onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={{ background: 'var(--surface)', borderRadius: '16px', border: '1px solid var(--border)', width: '100%', maxWidth: '780px', maxHeight: '92vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+        {/* Header */}
+        <div style={{ padding: '18px 22px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h2 style={{ margin: 0, fontSize: '17px', fontWeight: 700, color: 'var(--text)' }}>{nome}</h2>
+            <p style={{ margin: '2px 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>Vendas de {fmtDate(inicio)} a {fmtDate(fim)}</p>
+          </div>
+          <button onClick={onClose} style={{ width: '32px', height: '32px', border: 'none', borderRadius: '8px', background: 'var(--surface-alt)', color: 'var(--text-dim)', cursor: 'pointer', fontSize: '18px' }}>×</button>
+        </div>
+
+        {loading ? (
+          <div style={{ padding: '50px', textAlign: 'center', color: 'var(--text-muted)' }}>Carregando…</div>
+        ) : !det ? (
+          <div style={{ padding: '50px', textAlign: 'center', color: 'var(--text-muted)' }}>Não foi possível carregar.</div>
+        ) : (
+          <>
+            {/* Comissão */}
+            <div style={{ padding: '16px 22px', borderBottom: '1px solid var(--border)', display: 'flex', gap: '16px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+              <div>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Total Vendido ({det.totais.qtd})</div>
+                <div style={{ fontSize: '20px', fontWeight: 700, fontFamily: 'var(--mono)', color: '#16a34a' }}>{brl(base)}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, marginBottom: '4px' }}>Comissão %</div>
+                <input type="number" step="0.1" min="0" value={pct} onChange={e => setPct(e.target.value)}
+                  disabled={!isAdmin}
+                  style={{ width: '90px', padding: '8px 10px', fontSize: '15px', fontFamily: 'var(--mono)', textAlign: 'right', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--surface-alt)', color: 'var(--text)', outline: 'none' }}
+                  placeholder="0" />
+              </div>
+              <div style={{ background: 'rgba(37,99,235,0.08)', border: '1px solid rgba(37,99,235,0.2)', borderRadius: '10px', padding: '10px 16px' }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Comissão a pagar</div>
+                <div style={{ fontSize: '22px', fontWeight: 800, fontFamily: 'var(--mono)', color: 'var(--primary)' }}>{brl(comissao)}</div>
+              </div>
+              {isAdmin && (
+                <button onClick={salvarPct} disabled={salvando} style={{ padding: '9px 18px', fontSize: '13px', fontWeight: 600, background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', marginBottom: '2px' }}>
+                  {salvando ? '...' : salvo ? '✓ Salvo' : 'Salvar %'}
+                </button>
+              )}
+            </div>
+
+            {/* Lista de vendas */}
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              {det.vendas.length === 0 ? (
+                <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>Nenhuma venda neste período.</div>
+              ) : (
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead><tr>
+                    <th style={{ ...th, textAlign: 'left' }}>Nº</th>
+                    <th style={{ ...th, textAlign: 'left' }}>Cliente</th>
+                    <th style={{ ...th, textAlign: 'left' }}>Data</th>
+                    <th style={{ ...th, textAlign: 'right' }}>Valor</th>
+                    <th style={{ ...th, textAlign: 'right' }}>A Receber</th>
+                    <th style={{ ...th, textAlign: 'left' }}>Situação</th>
+                  </tr></thead>
+                  <tbody>
+                    {det.vendas.map((v, i) => {
+                      const sc = SIT_COR[v.situacao] || SIT_COR.ativa;
+                      return (
+                        <tr key={v.id} style={{ borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>
+                          <td style={{ ...tdMono, textAlign: 'left', color: 'var(--primary)', fontWeight: 700 }}>#{String(v.numero).padStart(4, '0')}</td>
+                          <td style={td}>{v.cliente_nome || '—'}</td>
+                          <td style={{ ...tdMono, textAlign: 'left', color: 'var(--text-dim)' }}>{fmtDate(v.created_at.split('T')[0])}</td>
+                          <td style={{ ...tdMono, fontWeight: 700 }}>{brl(v.valor_final)}</td>
+                          <td style={{ ...tdMono, color: v.saldo_restante > 0 ? '#dc2626' : 'var(--text-muted)' }}>{v.saldo_restante > 0 ? brl(v.saldo_restante) : '—'}</td>
+                          <td style={td}><span style={{ padding: '2px 9px', borderRadius: '20px', fontSize: '11px', fontWeight: 600, background: sc.bg, color: sc.cor }}>{sc.label}</span></td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Relatorios() {
+  const { usuario } = useAuth();
+  const isAdmin = usuario?.perfil === 'admin';
+  const [vendedorSel, setVendedorSel] = useState<{ id: string; nome: string } | null>(null);
   const [tipoPeriodo, setTipoPeriodo] = useState('mes');
   const [custom, setCustom] = useState({ inicio: '', fim: '' });
   const [data, setData] = useState<Resumo | null>(null);
@@ -185,7 +322,9 @@ export default function Relatorios() {
                 </thead>
                 <tbody>
                   {lista.map((v, i) => (
-                    <tr key={i} style={{ borderBottom: i < lista.length - 1 ? '1px solid var(--border)' : 'none' }}
+                    <tr key={i} style={{ borderBottom: i < lista.length - 1 ? '1px solid var(--border)' : 'none', cursor: 'pointer' }}
+                      onClick={() => v.funcionario_id && setVendedorSel({ id: v.funcionario_id, nome: v.vendedor })}
+                      title="Ver vendas e comissão"
                       onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-alt)')}
                       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                     >
@@ -269,6 +408,17 @@ export default function Relatorios() {
             </div>
           )}
         </>
+      )}
+
+      {vendedorSel && data && (
+        <VendedorModal
+          funcionarioId={vendedorSel.id}
+          nome={vendedorSel.nome}
+          inicio={data.periodo.inicio}
+          fim={data.periodo.fim}
+          isAdmin={isAdmin}
+          onClose={() => setVendedorSel(null)}
+        />
       )}
     </div>
   );
