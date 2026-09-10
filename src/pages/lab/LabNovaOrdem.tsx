@@ -1,5 +1,5 @@
 ﻿import { useEffect, useState, useCallback, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import { api } from '../../lib/api';
 import LabShapePicker from '../../components/LabShapePicker';
 import LabReciboPanel from './LabReciboPanel';
@@ -134,6 +134,7 @@ function CobInput({ value, onChange, style }: { value: string; onChange: (v: str
 
 export default function LabNovaOrdem() {
   const navigate = useNavigate();
+  const { id: editId } = useParams();
   const [searchParams] = useSearchParams();
   const [oticas, setOticas] = useState<Otica[]>([]);
   const [produtos, setProdutos] = useState<Produto[]>([]);
@@ -245,6 +246,72 @@ export default function LabNovaOrdem() {
       if (extras.length > 0) setLenteTipos([...LENTE_TIPOS_PADRAO, ...extras]);
     }).catch(() => {});
   }, [searchParams]);
+
+  // Modo edição: carrega a OS e pré-preenche todos os campos
+  useEffect(() => {
+    if (!editId) return;
+    const s = (v: unknown) => v == null ? '' : String(v);
+    api.get<{ ordem: Record<string, any>; receita: Record<string, any>[]; armacao: Record<string, any> | null; servicos: Record<string, any>[] }>(`/lab/ordens/${editId}`)
+      .then(({ ordem, receita, armacao, servicos }) => {
+        if (!ordem) return;
+        setTipo(ordem.tipo || 'O');
+        setOticaId(ordem.otica_id || '');
+        setOticaCod(s(ordem.otica_codigo) || s(ordem.otica_nome));
+        setOticaNome(s(ordem.otica_nome));
+        setClassificacao(ordem.classificacao || 'N');
+        setListaPreco(s(ordem.lista_preco) || '1');
+        setOperador(s(ordem.vendedor));
+        setMedico(s(ordem.medico));
+        setRefOtica(s(ordem.ref_otica));
+        if (ordem.data_emissao) setDataEmissao(s(ordem.data_emissao));
+        if (ordem.previsao_entrega) setPrevisao(s(ordem.previsao_entrega));
+        setCondPgto(s(ordem.condicao_pgto));
+        setNumVias(s(ordem.num_vias) || '1');
+        setCobrancaTipo(s(ordem.cobranca_tipo) || '1');
+        setFechamento(s(ordem.fechamento_ref));
+        setFrete(s(ordem.frete));
+        setDesconto(s(ordem.desconto_geral));
+        setContInterno(s(ordem.cont_interno));
+        setCaixa(s(ordem.caixa));
+        setEtiqGarantia(!!ordem.etiq_garantia);
+        setUsuarioReceita(s(ordem.usuario_receita));
+        setFluxoLab(!!ordem.fluxo_lab);
+        setObservacoes(s(ordem.observacoes));
+        setVendedor1Id(s(ordem.vendedor1_id));
+        setVendedorRepId(s(ordem.vendedor2_id));
+
+        const mapOlho = (r: Record<string, any>): RxOlho => ({
+          esf_longe: s(r.esf_longe), cil_longe: s(r.cil_longe), eixo_longe: s(r.eixo_longe), adicao: s(r.adicao),
+          esf_perto: s(r.esf_perto), cil_perto: s(r.cil_perto),
+          dnp_longe: s(r.dnp), dnp_perto: '', alt: s(r.alt), dec_h: s(r.dec_h),
+          prisma_valor: s(r.prisma), prisma_eixo: '',
+        });
+        const rOd = (receita || []).find(x => x.olho === 'D');
+        const rOe = (receita || []).find(x => x.olho === 'E');
+        if (rOd) setOd(mapOlho(rOd));
+        if (rOe) setOe(mapOlho(rOe));
+
+        if (armacao) {
+          setArmTipo(s(armacao.tipo_material)); setArmShape(s(armacao.shape));
+          setArmLargura(s(armacao.largura)); setArmAltura(s(armacao.altura)); setArmPonte(s(armacao.ponte));
+          setArmMaiorDiag(s(armacao.maior_diagonal)); setArmEixoMaiorDiag(s(armacao.eixo_maior_diagonal) || '0');
+          setArmDiametroFinal(s(armacao.diametro_final));
+          setLenteTipo(s(armacao.tipo_lente)); setLenteMarca(s(armacao.marca_material));
+          setLenteOd(s(armacao.lente_od)); setLenteOe(s(armacao.lente_oe));
+        }
+
+        if (servicos && servicos.length) {
+          const items: ItemCobranca[] = servicos.map(sv => ({
+            codigo: s(sv.codigo), descricao: s(sv.descricao), un: '', estoque: '',
+            qtd: s(sv.qtd) || '1', pv_unit: s(sv.valor_unit) || '0', perc_desc: s(sv.perc_desc) || '0',
+            produto_id: s(sv.produto_id),
+          }));
+          while (items.length < 6) items.push({ ...ITEM_COB_INI });
+          setCobranca(items);
+        }
+      })
+      .catch(() => {});
+  }, [editId]);
 
   function handleOticaLookup(cod: string) {
     const t = cod.trim().toLowerCase();
@@ -488,7 +555,7 @@ export default function LabNovaOrdem() {
 
     setSaving(true);
     try {
-      const { id } = await api.post<{ id: string; numero: number }>('/lab/ordens', {
+      const payload = {
         otica_id: oticaId, tipo,
         classificacao,
         lista_preco: parseInt(listaPreco) || 1,
@@ -508,7 +575,7 @@ export default function LabNovaOrdem() {
         etiq_garantia: (isGarantia || etiqGarantia) ? 1 : 0,
         usuario_receita: usuarioReceita || null,
         fluxo_lab: fluxoLab ? 1 : 0,
-        observacoes: (isGarantia && garantiaOrigem.trim()
+        observacoes: ((!editId && isGarantia && garantiaOrigem.trim())
           ? `[Garantia da OS #${garantiaOrigem.trim()}] ${observacoes}`.trim()
           : observacoes) || null,
         vendedor1_id: vendedor1Id || null,
@@ -525,7 +592,10 @@ export default function LabNovaOrdem() {
           lente_od: lenteOd || null, lente_oe: lenteOe || null,
         },
         servicos: servicosPayload,
-      });
+      };
+      const { id } = editId
+        ? await api.put<{ id: string; numero: number }>(`/lab/ordens/${editId}`, payload)
+        : await api.post<{ id: string; numero: number }>('/lab/ordens', payload);
       navigate(`/lab/ordens/${id}`);
     } catch (err: unknown) {
       setErro(err instanceof Error ? err.message : 'Erro ao salvar');
@@ -1022,11 +1092,11 @@ export default function LabNovaOrdem() {
           </button>
           <button type="button" disabled={saving} onClick={handleSubmit as unknown as React.MouseEventHandler}
             style={{ padding: '6px 20px', fontSize: '11px', fontWeight: '700', background: R.panelAlt, color: R.txt, border: `1px outset ${R.border}`, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase' }}>
-            GRAVAR
+            {editId ? 'SALVAR ALTERAÇÕES' : 'GRAVAR'}
           </button>
           <button type="button" disabled={saving} onClick={handleSubmit as unknown as React.MouseEventHandler}
             style={{ padding: '6px 24px', fontSize: '11px', fontWeight: '700', background: R.accent, color: 'var(--lab-on-accent)', border: `1px outset ${R.hdrBorder}`, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            {saving ? 'SALVANDO...' : 'GRAVAR + IMPRIMIR'}
+            {saving ? 'SALVANDO...' : editId ? 'SALVAR + IMPRIMIR' : 'GRAVAR + IMPRIMIR'}
           </button>
         </div>
 

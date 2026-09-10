@@ -126,6 +126,12 @@ export default function LabOrdemDetalhe() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', position: 'relative' }}>
+          <button
+            onClick={() => navigate(`/lab/ordens/${id}/editar`)}
+            style={{ padding: '9px 16px', fontSize: '13px', fontWeight: '700', background: R.accent, color: '#fff', border: `1px solid ${R.accent}`, borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}
+          >
+            ✏️ Editar OS
+          </button>
           <Link
             to={`/lab/ordens/${id}/imprimir`}
             target="_blank"

@@ -114,6 +114,7 @@ export default function App() {
             <Route path="/lab/dashboard" element={<LabDashboard />} />
             <Route path="/lab/ordens" element={<LabOrdens />} />
             <Route path="/lab/ordens/nova" element={<LabNovaOrdem />} />
+            <Route path="/lab/ordens/:id/editar" element={<LabNovaOrdem />} />
             <Route path="/lab/ordens/:id" element={<LabOrdemDetalhe />} />
             <Route path="/lab/oticas" element={<LabOticas />} />
             <Route path="/lab/oticas/:id" element={<LabOticaDetalhe />} />
