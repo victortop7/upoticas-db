@@ -16,6 +16,7 @@ const NAV_FINANCEIRO = [
   { to: '/faturamento', label: 'Faturamento', icon: '🧾' },
   { to: '/financeiro/contas-pagar', label: 'Contas a Pagar', icon: '📤' },
   { to: '/financeiro/contas-receber', label: 'Contas a Receber', icon: '📥' },
+  { to: '/carnes', label: 'Carnês / Boletos', icon: '🧾' },
   { to: '/financeiro/fluxo', label: 'Fluxo Financeiro', icon: '📈' },
   { to: '/financeiro/contas', label: 'Contas', icon: '🏦' },
   { to: '/bancario', label: 'Controle Bancário', icon: '🏛️' },

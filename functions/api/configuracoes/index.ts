@@ -6,6 +6,7 @@ async function ensureColumns(db: Env['DB']) {
     'telefone TEXT', 'cnpj TEXT', 'endereco TEXT', 'cidade TEXT', 'uf TEXT',
     'nfce_api_key TEXT', "nfce_ambiente TEXT DEFAULT 'homologacao'",
     'bling_natureza_id TEXT',
+    'pix_chave TEXT', 'pix_beneficiario TEXT', 'pix_cidade TEXT',
   ];
   for (const col of cols) {
     try {
@@ -35,7 +36,11 @@ export const onRequestPut = async ({ request, env }: { request: Request; env: En
     await ensureColumns(env.DB);
     await env.DB.prepare(
       `UPDATE tenants SET nome=?, telefone=?, cnpj=?, endereco=?, cidade=?, uf=?, nfce_api_key=?, nfce_ambiente=?,
-         bling_natureza_id = COALESCE(?, bling_natureza_id) WHERE id=?`
+         bling_natureza_id = COALESCE(?, bling_natureza_id),
+         pix_chave = COALESCE(?, pix_chave),
+         pix_beneficiario = COALESCE(?, pix_beneficiario),
+         pix_cidade = COALESCE(?, pix_cidade)
+       WHERE id=?`
     ).bind(
       body.nome.trim(),
       body.telefone || null,
@@ -46,6 +51,9 @@ export const onRequestPut = async ({ request, env }: { request: Request; env: En
       body.nfce_api_key || null,
       body.nfce_ambiente || 'homologacao',
       body.bling_natureza_id ? String(body.bling_natureza_id) : null,
+      body.pix_chave !== undefined ? (body.pix_chave || '') : null,
+      body.pix_beneficiario !== undefined ? (body.pix_beneficiario || '') : null,
+      body.pix_cidade !== undefined ? (body.pix_cidade || '') : null,
       auth.tenant_id,
     ).run();
 

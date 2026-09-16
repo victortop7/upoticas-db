@@ -88,7 +88,8 @@ interface TenantConfig {
 
 export default function Configuracoes() {
   const { setAuth, usuario, tenant } = useAuth();
-  const [form, setForm] = useState({ nome: '', telefone: '', cnpj: '', endereco: '', cidade: '', uf: '', nfce_api_key: '', nfce_ambiente: 'homologacao', bling_natureza_id: '' });
+  const [form, setForm] = useState({ nome: '', telefone: '', cnpj: '', endereco: '', cidade: '', uf: '', nfce_api_key: '', nfce_ambiente: 'homologacao', bling_natureza_id: '', pix_chave: '', pix_beneficiario: '', pix_cidade: '' });
+  const [pixSaved, setPixSaved] = useState(false);
   const [nfceSaved, setNfceSaved] = useState(false);
   const [nfceSaving, setNfceSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -141,6 +142,9 @@ export default function Configuracoes() {
         nfce_api_key: data.nfce_api_key || '',
         nfce_ambiente: data.nfce_ambiente || 'homologacao',
         bling_natureza_id: (data as { bling_natureza_id?: string }).bling_natureza_id || '',
+        pix_chave: (data as { pix_chave?: string }).pix_chave || '',
+        pix_beneficiario: (data as { pix_beneficiario?: string }).pix_beneficiario || '',
+        pix_cidade: (data as { pix_cidade?: string }).pix_cidade || '',
       });
     }).finally(() => setLoading(false));
   }, []);
@@ -411,6 +415,46 @@ export default function Configuracoes() {
             </p>
           </div>
         )}
+      </div>
+
+      {/* Pix — para os carnês/boletos */}
+      <div style={{ marginTop: '16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+          <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '600', color: 'var(--text)' }}>Pix — Carnês / Boletos</h3>
+        </div>
+        <p style={{ margin: '0 0 18px', fontSize: '13px', color: 'var(--text-muted)' }}>
+          A chave Pix da loja usada pra gerar o QR Code de cada parcela do carnê. O pagamento cai direto na conta da loja.
+        </p>
+
+        <div style={{ marginBottom: '14px' }}>
+          <label style={labelStyle}>Chave Pix *</label>
+          <input style={{ ...inputStyle, fontFamily: 'var(--mono)' }} value={form.pix_chave}
+            onChange={e => set('pix_chave', e.target.value)}
+            placeholder="CPF, CNPJ, e-mail, telefone (+55...) ou chave aleatória" />
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px', marginBottom: '18px' }}>
+          <div>
+            <label style={labelStyle}>Nome do beneficiário</label>
+            <input style={inputStyle} value={form.pix_beneficiario}
+              onChange={e => set('pix_beneficiario', e.target.value)}
+              placeholder={form.nome || 'Nome que aparece no Pix'} />
+          </div>
+          <div>
+            <label style={labelStyle}>Cidade</label>
+            <input style={inputStyle} value={form.pix_cidade}
+              onChange={e => set('pix_cidade', e.target.value)}
+              placeholder={form.cidade || 'Cidade'} />
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <button type="button" disabled={nfceSaving}
+            onClick={async () => { setNfceSaving(true); try { await api.put('/configuracoes', form); setPixSaved(true); setTimeout(() => setPixSaved(false), 3000); } catch {} setNfceSaving(false); }}
+            style={{ padding: '9px 20px', fontSize: '13px', fontWeight: '600', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
+            {nfceSaving ? 'Salvando...' : 'Salvar chave Pix'}
+          </button>
+          {pixSaved && <span style={{ fontSize: '13px', color: 'var(--green)', fontWeight: '500' }}>✓ Salvo</span>}
+        </div>
       </div>
 
       {senhaModalOpen && <AlterarSenhaModal onClose={() => setSenhaModalOpen(false)} />}
