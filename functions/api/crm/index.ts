@@ -6,6 +6,10 @@ import { ensureClienteCols } from '../../lib/ensure-cliente-cols';
 import { ensureIndexes } from '../../lib/ensure-indexes';
 
 async function aplicarRegras(db: D1Database, tenant_id: string) {
+  // Etapas criadas pelo usuário (sistema = 0) são MANUAIS: a automação nunca tira
+  // um cliente delas (ex: "Com retorno" / "Sem retorno"). Só sai se você mover na mão.
+  const naoCustom = `AND estagio NOT IN (SELECT key FROM crm_estagios WHERE tenant_id = ? AND sistema = 0)`;
+
   // 0. "Cliente Cadastrado" (novo) é só para quem AINDA NÃO comprou.
   //    Quem já tem venda ou OS sai de 'novo' e vai para Pós-venda (as regras abaixo refinam por recência).
   await db.prepare(`
@@ -22,23 +26,25 @@ async function aplicarRegras(db: D1Database, tenant_id: string) {
   await db.prepare(`
     UPDATE crm_cards SET estagio = 'vip', updated_at = datetime('now')
     WHERE tenant_id = ? AND estagio NOT IN ('vip','a_receber','aniversario','oculos_pendente','oculos_pronto')
+    ${naoCustom}
     AND cliente_id IN (
       SELECT cliente_id FROM vendas
       WHERE tenant_id = ? AND situacao = 'ativa'
       GROUP BY cliente_id HAVING SUM(valor_final) >= 2000
     )
-  `).bind(tenant_id, tenant_id).run();
+  `).bind(tenant_id, tenant_id, tenant_id).run();
 
   // 2. Pós-venda: OS marcada como entregue nos últimos 3 dias (janela de segurança)
   await db.prepare(`
     UPDATE crm_cards SET estagio = 'pos_venda', updated_at = datetime('now')
     WHERE tenant_id = ? AND estagio NOT IN ('vip','a_receber','aniversario','indicacao','reativacao','oculos_pendente','oculos_pronto')
+    ${naoCustom}
     AND cliente_id IN (
       SELECT DISTINCT cliente_id FROM ordens_servico
       WHERE tenant_id = ? AND situacao = 'entregue'
       AND julianday('now') - julianday(updated_at) <= 3
     )
-  `).bind(tenant_id, tenant_id).run();
+  `).bind(tenant_id, tenant_id, tenant_id).run();
 
   // 3. Indicação: 90 dias (3 meses) após última entrega, se ainda em pos_venda
   await db.prepare(`
@@ -56,13 +62,14 @@ async function aplicarRegras(db: D1Database, tenant_id: string) {
   await db.prepare(`
     UPDATE crm_cards SET estagio = 'reativacao', updated_at = datetime('now')
     WHERE tenant_id = ? AND estagio NOT IN ('vip','a_receber','aniversario','reativacao')
+    ${naoCustom}
     AND cliente_id IN (
       SELECT cliente_id FROM ordens_servico
       WHERE tenant_id = ? AND situacao = 'entregue'
       GROUP BY cliente_id
       HAVING julianday('now') - julianday(MAX(updated_at)) >= 365
     )
-  `).bind(tenant_id, tenant_id).run();
+  `).bind(tenant_id, tenant_id, tenant_id).run();
 
   // 4b. Reativação por DATA DE COMPRA (base importada sem OS): >= 365 dias desde a última compra.
   //     Pega clientes antigos que não têm OS/venda registrada mas têm data_compra preenchida.
@@ -70,37 +77,40 @@ async function aplicarRegras(db: D1Database, tenant_id: string) {
     await db.prepare(`
       UPDATE crm_cards SET estagio = 'reativacao', updated_at = datetime('now')
       WHERE tenant_id = ? AND estagio NOT IN ('vip','a_receber','aniversario','reativacao','oculos_pendente','oculos_pronto')
+      ${naoCustom}
       AND cliente_id IN (
         SELECT id FROM clientes
         WHERE tenant_id = ? AND ativo = 1
         AND data_compra IS NOT NULL AND data_compra != ''
         AND julianday('now') - julianday(data_compra) >= 365
       )
-    `).bind(tenant_id, tenant_id).run();
+    `).bind(tenant_id, tenant_id, tenant_id).run();
   } catch { /* coluna data_compra ainda não existe */ }
 
   // 5. A Receber: OS com valor restante > 0 OU venda com saldo pendente (sobrescreve tudo exceto aniversario)
   await db.prepare(`
     UPDATE crm_cards SET estagio = 'a_receber', updated_at = datetime('now')
     WHERE tenant_id = ? AND estagio != 'aniversario'
+    ${naoCustom}
     AND cliente_id IN (
       SELECT DISTINCT cliente_id FROM ordens_servico WHERE tenant_id = ? AND valor_restante > 0
       UNION
       SELECT DISTINCT cliente_id FROM vendas WHERE tenant_id = ? AND saldo_restante > 0
     )
-  `).bind(tenant_id, tenant_id, tenant_id).run();
+  `).bind(tenant_id, tenant_id, tenant_id, tenant_id).run();
 
   // 6. Aniversário hoje: prioridade máxima, sobrescreve tudo
   await db.prepare(`
     UPDATE crm_cards SET estagio = 'aniversario', updated_at = datetime('now')
     WHERE tenant_id = ?
+    ${naoCustom}
     AND cliente_id IN (
       SELECT id FROM clientes
       WHERE tenant_id = ? AND ativo = 1
       AND data_nascimento IS NOT NULL
       AND strftime('%m-%d', data_nascimento) = strftime('%m-%d', 'now')
     )
-  `).bind(tenant_id, tenant_id).run();
+  `).bind(tenant_id, tenant_id, tenant_id).run();
 }
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
