@@ -181,6 +181,10 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
   const [buscaProduto, setBuscaProduto] = useState('');
   const [produtos, setProdutos] = useState<ProdutoSimples[]>([]);
   const [adicionais, setAdicionais] = useState<AdicionalVenda[]>([]);
+  const [carneParcelas, setCarneParcelas] = useState('1');
+  const [carnePrimeiroVenc, setCarnePrimeiroVenc] = useState(() => {
+    const d = new Date(); d.setDate(d.getDate() + 30); return d.toISOString().split('T')[0];
+  });
 
   useEffect(() => {
     loadClientes('');
@@ -272,13 +276,19 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
       setErro('Informe o valor total da venda');
       return;
     }
+    const ehBoleto = !isMarketing && form.forma_pagamento === 'boleto';
+    if (ehBoleto && !form.cliente_id) {
+      setErro('Selecione o cliente para gerar o boleto/carnê.');
+      return;
+    }
     setSaving(true);
     setErro('');
     try {
       const payload = {
         ...(isMarketing ? { ...form, valor_total: '0', desconto: '0', forma_pagamento: 'outro' } : form),
         ...(isAdmin && funcionarioId ? { funcionario_id: funcionarioId } : {}),
-        valor_entrada: form.valor_entrada || '',
+        // Boleto: a venda entra como "a receber" (entrada 0) até as parcelas serem pagas
+        valor_entrada: (ehBoleto && form.valor_entrada === '') ? '0' : (form.valor_entrada || ''),
         ...(isMarketing ? {} : { itens: itens.filter(it => it.descricao.trim()) }),
         ...(podeAgrupar && adicionais.length
           ? { adicionais: adicionais
@@ -288,10 +298,27 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
       };
       if (venda) {
         await api.put(`/vendas/${venda.id}`, payload);
+        onSaved();
       } else {
-        await api.post('/vendas', payload);
+        const nova = await api.post<{ id: string; numero: number }>('/vendas', payload);
+        // Boleto → gera o carnê Pix da venda e abre pra imprimir/enviar
+        if (ehBoleto && form.cliente_id) {
+          try {
+            const carne = await api.post<{ id: string }>('/carnes', {
+              cliente_id: form.cliente_id,
+              descricao: `Venda #${String(nova.numero).padStart(4, '0')} — boleto`,
+              valor_total: valorFinal,
+              num_parcelas: parseInt(carneParcelas) || 1,
+              primeiro_vencimento: carnePrimeiroVenc,
+              forma_pagamento: 'boleto',
+            });
+            window.open(`/carnes/${carne.id}/imprimir`, '_blank');
+          } catch (e: any) {
+            alert('Venda salva, mas não consegui gerar o carnê: ' + (e?.message || '') + '\nConfira se a chave Pix está configurada em Configurações.');
+          }
+        }
+        onSaved();
       }
-      onSaved();
     } catch (err: any) {
       setErro(err.message || 'Erro ao salvar');
     } finally {
@@ -545,6 +572,28 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
                   {FORMAS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
                 </select>
               </div>
+
+              {/* Boleto → gera carnê Pix ao salvar */}
+              {form.forma_pagamento === 'boleto' && (
+                <div style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: '10px', padding: '14px 16px', marginBottom: '14px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: '600', color: '#d97706', marginBottom: '10px' }}>🧾 Boleto / Carnê (Pix)</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: '12px' }}>
+                    <div>
+                      <label style={labelStyle}>Nº de parcelas</label>
+                      <input type="number" min="1" max="48" style={{ ...inputStyle, fontFamily: 'var(--mono)', textAlign: 'center' }}
+                        value={carneParcelas} onChange={e => setCarneParcelas(e.target.value)} />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>1º vencimento</label>
+                      <input type="date" style={{ ...inputStyle, fontFamily: 'var(--mono)' }}
+                        value={carnePrimeiroVenc} onChange={e => setCarnePrimeiroVenc(e.target.value)} />
+                    </div>
+                  </div>
+                  <p style={{ margin: '10px 0 0', fontSize: '11.5px', color: 'var(--text-muted)' }}>
+                    Ao salvar, o sistema gera o <b>carnê com QR Code Pix</b> deste cliente e abre pra imprimir/enviar. Exige cliente selecionado e a chave Pix configurada.
+                  </p>
+                </div>
+              )}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
                 <div>
                   <label style={labelStyle}>Valor Total (R$) {itens.length > 0 ? '(automático)' : '*'}</label>
