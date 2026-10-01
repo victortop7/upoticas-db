@@ -3,6 +3,7 @@ import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
 import { ensureCrmTable, ensureEstagiosPadrao } from '../crm/setup';
 import { ensureClienteCols } from '../../lib/ensure-cliente-cols';
+import { ensureLojaCols, filtroLojaComLegado, lojaParaGravar } from '../../lib/lojas';
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const auth = await requireAuth(request, env);
@@ -16,9 +17,14 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     const limit = 20;
     const offset = (page - 1) * limit;
 
+    await ensureLojaCols(env.DB);
     let query = 'SELECT * FROM clientes WHERE tenant_id = ? AND ativo = 1';
     let countQuery = 'SELECT COUNT(*) as total FROM clientes WHERE tenant_id = ? AND ativo = 1';
     const params: unknown[] = [auth.tenant_id];
+
+    // Separação por loja (clientes antigos sem loja ficam visíveis p/ todos)
+    const fl = filtroLojaComLegado(auth, 'loja_id');
+    if (fl.sql) { query += fl.sql; countQuery += fl.sql; params.push(...fl.params); }
 
     if (busca) {
       query += ' AND (nome LIKE ? OR cpf LIKE ? OR celular LIKE ? OR telefone LIKE ? OR email LIKE ?)';
@@ -75,12 +81,14 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     const now = new Date().toISOString();
 
     await ensureClienteCols(env.DB);
+    await ensureLojaCols(env.DB);
+    const lojaId = lojaParaGravar(auth, body.loja_id);
     await env.DB.prepare(`
-      INSERT INTO clientes (id, tenant_id, nome, apelido, cpf, telefone, celular, email, data_nascimento, data_compra, endereco, bairro, cidade, uf, cep, observacao,
+      INSERT INTO clientes (id, tenant_id, loja_id, nome, apelido, cpf, telefone, celular, email, data_nascimento, data_compra, endereco, bairro, cidade, uf, cep, observacao,
         rec_od_esf, rec_od_cil, rec_od_eixo, rec_oe_esf, rec_oe_cil, rec_oe_eixo, rec_adicao, rec_dp, rec_obs, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
-      id, auth.tenant_id,
+      id, auth.tenant_id, lojaId,
       body.nome.trim(),
       body.apelido || null,
       body.cpf || null,

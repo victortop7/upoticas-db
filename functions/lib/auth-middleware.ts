@@ -6,6 +6,16 @@ export interface AuthData {
   tenant_id: string;
   email: string;
   perfil: string;
+  loja_id?: string | null;
+}
+
+// Carrega a loja do usuário (multi-loja). Admin fica com loja_id null (vê tudo).
+async function carregarLoja(env: Env, auth: AuthData): Promise<void> {
+  try {
+    const u = await env.DB.prepare('SELECT loja_id FROM usuarios WHERE id = ?')
+      .bind(auth.usuario_id).first<{ loja_id: string | null }>();
+    auth.loja_id = u?.loja_id ?? null;
+  } catch { auth.loja_id = null; /* coluna ainda não existe */ }
 }
 
 function licenseBlock(error: string, blocked = false, expired = false): Response {
@@ -36,7 +46,9 @@ export async function requireAuthBasic(request: Request, env: Env): Promise<Auth
     });
   }
 
-  return payload as unknown as AuthData;
+  const auth = payload as unknown as AuthData;
+  await carregarLoja(env, auth);
+  return auth;
 }
 
 export async function requireAuth(request: Request, env: Env): Promise<AuthData | Response> {
@@ -94,6 +106,7 @@ export async function requireAuth(request: Request, env: Env): Promise<AuthData 
     // Colunas novas ainda não existem — permite acesso (migração pendente)
   }
 
+  await carregarLoja(env, auth);
   return auth;
 }
 

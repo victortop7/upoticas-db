@@ -2,11 +2,13 @@ import type { PagesFunction } from '@cloudflare/workers-types';
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
 import { hashPassword } from '../../lib/jwt';
+import { ensureLojaCols } from '../../lib/lojas';
 
 export const onRequestPut: PagesFunction<Env> = async ({ request, env, params }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;
   if (auth.perfil !== 'admin') return json({ error: 'Apenas admins podem editar usuários' }, 403);
+  await ensureLojaCols(env.DB);
 
   try {
     const body = await request.json() as Record<string, string>;
@@ -21,8 +23,9 @@ export const onRequestPut: PagesFunction<Env> = async ({ request, env, params })
     // Não deixar o admin se auto-desativar (perderia o acesso)
     const ativoFinal = (params.id === auth.usuario_id) ? 1 : ativo;
 
-    const sets = ['nome = ?', 'perfil = ?'];
-    const vals: unknown[] = [body.nome.trim(), body.perfil || 'vendedor'];
+    const perfil = body.perfil || 'vendedor';
+    const sets = ['nome = ?', 'perfil = ?', 'loja_id = ?'];
+    const vals: unknown[] = [body.nome.trim(), perfil, perfil === 'admin' ? null : (body.loja_id || null)];
     if (body.senha) {
       if (body.senha.length < 6) return json({ error: 'Senha deve ter pelo menos 6 caracteres' }, 400);
       sets.push('senha_hash = ?'); vals.push(await hashPassword(body.senha));
@@ -34,7 +37,7 @@ export const onRequestPut: PagesFunction<Env> = async ({ request, env, params })
     ).bind(...vals, params.id, auth.tenant_id).run();
 
     const usuario = await env.DB.prepare(
-      'SELECT id, nome, email, perfil, ativo FROM usuarios WHERE id = ?'
+      'SELECT id, nome, email, perfil, ativo, loja_id FROM usuarios WHERE id = ?'
     ).bind(params.id).first();
     return json(usuario);
   } catch (err) {

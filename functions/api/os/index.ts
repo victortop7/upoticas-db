@@ -1,12 +1,14 @@
 import type { PagesFunction } from '@cloudflare/workers-types';
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
+import { ensureLojaCols, filtroLoja, lojaParaGravar } from '../../lib/lojas';
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;
 
   try {
+    await ensureLojaCols(env.DB);
     const url = new URL(request.url);
     const busca = url.searchParams.get('busca') || '';
     const situacao = url.searchParams.get('situacao') || '';
@@ -26,6 +28,9 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       WHERE os.tenant_id = ?
     `;
     const params: unknown[] = [auth.tenant_id];
+
+    const fl = filtroLoja(auth, 'os.loja_id');
+    if (fl.sql) { query += fl.sql; countQuery += fl.sql; params.push(...fl.params); }
 
     if (busca) {
       const cond = ' AND (c.nome LIKE ? OR CAST(os.numero AS TEXT) LIKE ? OR os.armacao_desc LIKE ?)';
@@ -80,6 +85,9 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     const valorEntrada = parseFloat(body.valor_entrada) || 0;
     const valorRestante = valorTotal - valorEntrada;
 
+    await ensureLojaCols(env.DB);
+    const lojaId = lojaParaGravar(auth, body.loja_id);
+
     await env.DB.prepare(`
       INSERT INTO ordens_servico (
         id, tenant_id, numero, cliente_id, tipo, situacao,
@@ -90,7 +98,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
         dp, altura, adicao,
         armacao_desc, lente_desc,
         valor_total, valor_entrada, valor_restante,
-        data_entrega, medico, observacao, funcionario_id,
+        data_entrega, medico, observacao, funcionario_id, loja_id,
         created_at, updated_at
       ) VALUES (
         ?, ?, ?, ?, ?, ?,
@@ -99,7 +107,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
         ?, ?, ?,
         ?, ?,
         ?, ?, ?,
-        ?, ?, ?, ?,
+        ?, ?, ?, ?, ?,
         ?, ?
       )
     `).bind(
@@ -112,7 +120,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       parseFloat(body.dp) || null, parseFloat(body.altura) || null, parseFloat(body.adicao) || null,
       body.armacao_desc || null, body.lente_desc || null,
       valorTotal, valorEntrada, valorRestante,
-      body.data_entrega || null, body.medico || null, body.observacao || null, auth.usuario_id,
+      body.data_entrega || null, body.medico || null, body.observacao || null, auth.usuario_id, lojaId,
       now, now
     ).run();
 

@@ -1,11 +1,13 @@
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
+import { ensureLojaCols, filtroLoja, lojaParaGravar } from '../../lib/lojas';
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;
 
   try {
+    await ensureLojaCols(env.DB);
     const url = new URL(request.url);
     const busca = url.searchParams.get('busca') || '';
     const situacao = url.searchParams.get('situacao') || '';
@@ -25,6 +27,10 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
       WHERE v.tenant_id = ?
     `;
     const params: unknown[] = [auth.tenant_id];
+
+    // Separação por loja: vendedor só vê a própria loja
+    const fl = filtroLoja(auth, 'v.loja_id');
+    if (fl.sql) { query += fl.sql; countQuery += fl.sql; params.push(...fl.params); }
 
     if (busca) {
       const cond = ' AND (c.nome LIKE ? OR CAST(v.numero AS TEXT) LIKE ? OR v.forma_pagamento LIKE ?)';
@@ -101,12 +107,14 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     try { await env.DB.prepare('ALTER TABLE vendas ADD COLUMN valor_entrada REAL NOT NULL DEFAULT 0').run(); } catch {}
     try { await env.DB.prepare('ALTER TABLE vendas ADD COLUMN saldo_restante REAL NOT NULL DEFAULT 0').run(); } catch {}
     try { await env.DB.prepare('ALTER TABLE vendas ADD COLUMN grupo_venda_id TEXT').run(); } catch {}
+    await ensureLojaCols(env.DB);
+    const lojaId = lojaParaGravar(auth, body.loja_id);
 
     await env.DB.prepare(`
       INSERT INTO vendas (id, tenant_id, numero, cliente_id, os_id, situacao,
         valor_total, desconto, valor_final, valor_entrada, saldo_restante,
-        forma_pagamento, observacao, funcionario_id, grupo_venda_id, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        forma_pagamento, observacao, funcionario_id, grupo_venda_id, loja_id, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       id, auth.tenant_id, numero,
       body.cliente_id || null,
@@ -116,7 +124,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       valorEntrada, saldoRestante,
       body.forma_pagamento || null,
       body.observacao || null,
-      funcionarioId, grupoId,
+      funcionarioId, grupoId, lojaId,
       now, now
     ).run();
 
@@ -149,15 +157,15 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
         await env.DB.prepare(`
           INSERT INTO vendas (id, tenant_id, numero, cliente_id, os_id, situacao,
             valor_total, desconto, valor_final, valor_entrada, saldo_restante,
-            forma_pagamento, observacao, funcionario_id, grupo_venda_id, created_at, updated_at)
-          VALUES (?, ?, ?, ?, ?, 'ativa', ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?)
+            forma_pagamento, observacao, funcionario_id, grupo_venda_id, loja_id, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, 'ativa', ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?)
         `).bind(
           crypto.randomUUID(), auth.tenant_id, proxNumero,
           ad.cliente_id || null, null,
           adVt, adDesc, adFinal, adFinal,
           body.forma_pagamento || null,
           ad.observacao || null,
-          funcionarioId, grupoId,
+          funcionarioId, grupoId, lojaId,
           now, now
         ).run();
       }

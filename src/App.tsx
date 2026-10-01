@@ -40,6 +40,7 @@ import Relatorios from './pages/Relatorios';
 import ImprimirOS from './pages/ImprimirOS';
 import Carnes from './pages/Carnes';
 import CarneImprimir from './pages/CarneImprimir';
+import Lojas from './pages/Lojas';
 import Landing from './pages/Landing';
 import InteresseLab from './pages/InteresseLab';
 import Contas from './pages/financeiro/Contas';
@@ -93,6 +94,7 @@ export default function App() {
             <Route path="/vendas" element={<Vendas />} />
             <Route path="/carnes" element={<Carnes />} />
             <Route path="/usuarios" element={<Usuarios />} />
+            <Route path="/lojas" element={<Lojas />} />
             <Route path="/vendedores" element={<Vendedores />} />
             <Route path="/configuracoes" element={<Configuracoes />} />
             <Route path="/relatorios" element={<Relatorios />} />

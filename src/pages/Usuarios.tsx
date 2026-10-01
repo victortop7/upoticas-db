@@ -8,10 +8,14 @@ interface Usuario {
   email: string;
   perfil: 'admin' | 'vendedor' | 'caixa';
   ativo: boolean;
+  loja_id?: string | null;
 }
+
+interface Loja { id: string; nome: string; }
 
 interface ModalProps {
   usuario: Usuario | null;
+  lojas: Loja[];
   onClose: () => void;
   onSaved: () => void;
 }
@@ -24,14 +28,14 @@ const PERFIL_COLOR: Record<string, { bg: string; color: string }> = {
   marketing: { bg: 'rgba(236,72,153,0.1)', color: '#db2777' },
 };
 
-function UsuarioModal({ usuario, onClose, onSaved }: ModalProps) {
-  const [form, setForm] = useState({ nome: '', email: '', perfil: 'vendedor', senha: '' });
+function UsuarioModal({ usuario, lojas, onClose, onSaved }: ModalProps) {
+  const [form, setForm] = useState({ nome: '', email: '', perfil: 'vendedor', senha: '', loja_id: '' });
   const [saving, setSaving] = useState(false);
   const [erro, setErro] = useState('');
 
   useEffect(() => {
-    if (usuario) setForm({ nome: usuario.nome, email: usuario.email, perfil: usuario.perfil, senha: '' });
-    else setForm({ nome: '', email: '', perfil: 'vendedor', senha: '' });
+    if (usuario) setForm({ nome: usuario.nome, email: usuario.email, perfil: usuario.perfil, senha: '', loja_id: usuario.loja_id || '' });
+    else setForm({ nome: '', email: '', perfil: 'vendedor', senha: '', loja_id: '' });
   }, [usuario]);
 
   function set(field: string, value: string) { setForm(f => ({ ...f, [field]: value })); }
@@ -98,6 +102,20 @@ function UsuarioModal({ usuario, onClose, onSaved }: ModalProps) {
             </div>
           </div>
 
+          {form.perfil !== 'admin' && (
+            <div style={{ marginBottom: '14px' }}>
+              <label style={labelStyle}>Loja {form.perfil === 'vendedor' || form.perfil === 'caixa' ? '(só vê a própria loja)' : ''}</label>
+              <select style={inputStyle} value={form.loja_id} onChange={e => set('loja_id', e.target.value)}>
+                <option value="">— Todas as lojas —</option>
+                {lojas.map(l => <option key={l.id} value={l.id}>{l.nome}</option>)}
+              </select>
+              {lojas.length === 0 && <p style={{ margin: '6px 0 0', fontSize: '11px', color: '#d97706' }}>Nenhuma loja cadastrada ainda. Crie em “Lojas” primeiro.</p>}
+            </div>
+          )}
+          {form.perfil === 'admin' && (
+            <p style={{ margin: '-4px 0 14px', fontSize: '12px', color: 'var(--text-muted)' }}>Admin vê todas as lojas.</p>
+          )}
+
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', paddingTop: '8px', borderTop: '1px solid var(--border)' }}>
             {erro && <span style={{ fontSize: '13px', color: 'var(--red)', flex: 1, display: 'flex', alignItems: 'center' }}>{erro}</span>}
             <button type="button" onClick={onClose} style={{ padding: '9px 18px', fontSize: '14px', background: 'var(--surface-alt)', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer' }}>Cancelar</button>
@@ -114,6 +132,7 @@ function UsuarioModal({ usuario, onClose, onSaved }: ModalProps) {
 export default function Usuarios() {
   const { usuario: meUsuario } = useAuth();
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+  const [lojas, setLojas] = useState<Loja[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editando, setEditando] = useState<Usuario | null>(null);
@@ -121,12 +140,17 @@ export default function Usuarios() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get<{ usuarios: Usuario[] }>('/usuarios');
+      const [res, ls] = await Promise.all([
+        api.get<{ usuarios: Usuario[] }>('/usuarios'),
+        api.get<Loja[]>('/lojas').catch(() => [] as Loja[]),
+      ]);
       setUsuarios(res.usuarios);
+      setLojas(ls);
     } finally {
       setLoading(false);
     }
   }, []);
+  const lojaNome = (id?: string | null) => lojas.find(l => l.id === id)?.nome;
 
   useEffect(() => { load(); }, [load]);
 
@@ -160,16 +184,16 @@ export default function Usuarios() {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border)' }}>
-              {['Nome', 'E-mail', 'Perfil', 'Status', ''].map(h => (
+              {['Nome', 'E-mail', 'Perfil', 'Loja', 'Status', ''].map(h => (
                 <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', background: 'var(--surface-alt)' }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={5} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>Carregando...</td></tr>
+              <tr><td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>Carregando...</td></tr>
             ) : !usuarios.length ? (
-              <tr><td colSpan={5} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>Nenhum usuário encontrado.</td></tr>
+              <tr><td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>Nenhum usuário encontrado.</td></tr>
             ) : usuarios.map((u, i) => {
               const pc = PERFIL_COLOR[u.perfil] || PERFIL_COLOR.vendedor;
               const isMe = u.id === meUsuario?.id;
@@ -189,6 +213,9 @@ export default function Usuarios() {
                     <span style={{ padding: '3px 9px', borderRadius: '20px', fontSize: '12px', fontWeight: '500', background: pc.bg, color: pc.color }}>
                       {PERFIL_LABEL[u.perfil]}
                     </span>
+                  </td>
+                  <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>
+                    {u.perfil === 'admin' ? 'Todas' : (lojaNome(u.loja_id) || '—')}
                   </td>
                   <td style={{ padding: '12px 16px' }}>
                     <span style={{ fontSize: '12px', fontWeight: '500', color: u.ativo ? '#16a34a' : '#dc2626' }}>
@@ -215,6 +242,7 @@ export default function Usuarios() {
       {modalOpen && (
         <UsuarioModal
           usuario={editando}
+          lojas={lojas}
           onClose={() => setModalOpen(false)}
           onSaved={() => { setModalOpen(false); load(); }}
         />
