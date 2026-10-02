@@ -38,7 +38,7 @@ const NAV_CADASTROS = [
 
 const NAV_CONFIG = [
   { to: '/vendedores', label: 'Vendedores', icon: '🏆' },
-  { to: '/lojas', label: 'Lojas', icon: '🏬' },
+  { to: '/lojas', label: 'Lojas & Acessos', icon: '🏬' },
   { to: '/usuarios', label: 'Usuários', icon: '👥' },
   { to: '/configuracoes', label: 'Configurações', icon: '⚙️' },
 ];
