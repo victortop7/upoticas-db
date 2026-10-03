@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 
 interface Loja { id: string; nome: string; endereco?: string; }
 interface Usuario { id: string; nome: string; email: string; perfil: string; ativo: boolean; loja_id?: string | null; }
+interface VendedorVenda { funcionario_id: string; nome: string; qtd: number; com_loja: number; primeira?: string; ultima?: string; }
 
 const inp: React.CSSProperties = { padding: '9px 11px', fontSize: '14px', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--surface)', color: 'var(--text)', outline: 'none', boxSizing: 'border-box' };
 
@@ -54,6 +55,9 @@ export default function Lojas() {
   const isAdmin = usuario?.perfil === 'admin';
   const [lojas, setLojas] = useState<Loja[]>([]);
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+  const [vends, setVends] = useState<VendedorVenda[]>([]);
+  const [selVinc, setSelVinc] = useState<Record<string, { loja_id: string; desde: string }>>({});
+  const [aplicando, setAplicando] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [nome, setNome] = useState('');
   const [endereco, setEndereco] = useState('');
@@ -65,8 +69,21 @@ export default function Lojas() {
     Promise.all([
       api.get<Loja[]>('/lojas').catch(() => [] as Loja[]),
       api.get<{ usuarios: Usuario[] }>('/usuarios').then(r => r.usuarios).catch(() => [] as Usuario[]),
-    ]).then(([ls, us]) => { setLojas(ls); setUsuarios(us); }).finally(() => setLoading(false));
+      api.get<VendedorVenda[]>('/lojas/vendedores').catch(() => [] as VendedorVenda[]),
+    ]).then(([ls, us, vs]) => { setLojas(ls); setUsuarios(us); setVends(vs); }).finally(() => setLoading(false));
   }, []);
+
+  async function aplicarVinculo(fid: string) {
+    const sel = selVinc[fid];
+    if (!sel?.loja_id) { alert('Escolha a loja desse vendedor primeiro.'); return; }
+    setAplicando(fid);
+    try {
+      const r = await api.post<{ vendas: number; os: number }>('/lojas/vincular', { funcionario_id: fid, loja_id: sel.loja_id, desde: sel.desde || undefined });
+      alert(`Pronto! ${r.vendas} venda(s)${r.os ? ' e ' + r.os + ' OS' : ''} vinculada(s) à loja.`);
+      load();
+    } catch (e) { alert('Erro: ' + (e instanceof Error ? e.message : '')); }
+    setAplicando(null);
+  }
   useEffect(() => { load(); }, [load]);
 
   async function criarLoja() {
@@ -148,6 +165,41 @@ export default function Lojas() {
             );
           })}
         </div>}
+
+      {/* Vincular vendas/OS já feitas às lojas */}
+      {lojas.length > 0 && vends.length > 0 && (
+        <div style={{ marginTop: 28, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: 20 }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>Vincular vendas já feitas às lojas</div>
+          <p style={{ margin: '0 0 16px', fontSize: 13, color: 'var(--text-muted)' }}>
+            Para cada vendedor, escolha a loja e clique em Aplicar. As vendas (e OS) dele vão pra essa loja. Use “a partir de” se quiser só de uma data em diante.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {vends.map(v => {
+              const sel = selVinc[v.funcionario_id] || { loja_id: '', desde: '' };
+              const upd = (patch: Partial<{ loja_id: string; desde: string }>) => setSelVinc(s => ({ ...s, [v.funcionario_id]: { ...sel, ...patch } }));
+              return (
+                <div key={v.funcionario_id} style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', background: 'var(--surface-alt)', borderRadius: 10, padding: '10px 14px' }}>
+                  <div style={{ minWidth: 150, flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>{v.nome}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{v.qtd} venda(s){v.com_loja > 0 ? ` · ${v.com_loja} já com loja` : ''}</div>
+                  </div>
+                  <select style={{ ...inp, width: 170 }} value={sel.loja_id} onChange={e => upd({ loja_id: e.target.value })}>
+                    <option value="">— Escolher loja —</option>
+                    {lojas.map(l => <option key={l.id} value={l.id}>{l.nome}</option>)}
+                  </select>
+                  <div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>a partir de (opcional)</div>
+                    <input type="date" style={{ ...inp, width: 150, fontFamily: 'var(--mono)' }} value={sel.desde} onChange={e => upd({ desde: e.target.value })} />
+                  </div>
+                  <button onClick={() => aplicarVinculo(v.funcionario_id)} disabled={aplicando === v.funcionario_id} style={{ padding: '9px 18px', fontSize: 13, fontWeight: 600, background: 'var(--primary)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer' }}>
+                    {aplicando === v.funcionario_id ? '...' : 'Aplicar'}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
