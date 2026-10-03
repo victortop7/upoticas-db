@@ -2,6 +2,7 @@ import type { PagesFunction } from '@cloudflare/workers-types';
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
 import { ensureIndexes } from '../../lib/ensure-indexes';
+import { ensureLojaCols, filtroLoja } from '../../lib/lojas';
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const auth = await requireAuth(request, env);
@@ -9,6 +10,11 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
 
   try {
     await ensureIndexes(env.DB);
+    await ensureLojaCols(env.DB);
+    // Separação por loja (vendedor só vê a própria loja no relatório)
+    const fl = filtroLoja(auth, 'loja_id');     // vendas/OS sem alias
+    const flV = filtroLoja(auth, 'v.loja_id');  // vendas com alias v
+    const p = fl.params;
     const url = new URL(request.url);
     const inicio = url.searchParams.get('inicio') || new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
     const fim = url.searchParams.get('fim') || new Date().toISOString().split('T')[0];
@@ -32,38 +38,38 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
                COALESCE(SUM(valor_entrada), 0) as recebido,
                COALESCE(SUM(saldo_restante), 0) as a_receber
         FROM vendas WHERE tenant_id = ? AND situacao != 'cancelada'
-        AND date(created_at) BETWEEN ? AND ?
-      `).bind(auth.tenant_id, inicio, fim).first<{ total: number; valor: number; descontos: number; recebido: number; a_receber: number }>(),
+        AND date(created_at) BETWEEN ? AND ?${fl.sql}
+      `).bind(auth.tenant_id, inicio, fim, ...p).first<{ total: number; valor: number; descontos: number; recebido: number; a_receber: number }>(),
 
       env.DB.prepare(`
         SELECT COUNT(*) as total, COALESCE(SUM(valor_total), 0) as valor_total,
                COALESCE(SUM(valor_entrada), 0) as recebido,
                COALESCE(SUM(valor_restante), 0) as pendente
         FROM ordens_servico WHERE tenant_id = ?
-        AND date(created_at) BETWEEN ? AND ?
-      `).bind(auth.tenant_id, inicio, fim).first<{ total: number; valor_total: number; recebido: number; pendente: number }>(),
+        AND date(created_at) BETWEEN ? AND ?${fl.sql}
+      `).bind(auth.tenant_id, inicio, fim, ...p).first<{ total: number; valor_total: number; recebido: number; pendente: number }>(),
 
       env.DB.prepare(`
         SELECT situacao, COUNT(*) as n FROM ordens_servico
-        WHERE tenant_id = ? AND date(created_at) BETWEEN ? AND ?
+        WHERE tenant_id = ? AND date(created_at) BETWEEN ? AND ?${fl.sql}
         GROUP BY situacao ORDER BY n DESC
-      `).bind(auth.tenant_id, inicio, fim).all<{ situacao: string; n: number }>(),
+      `).bind(auth.tenant_id, inicio, fim, ...p).all<{ situacao: string; n: number }>(),
 
       env.DB.prepare(`
         SELECT c.nome, COUNT(v.id) as compras, COALESCE(SUM(v.valor_final), 0) as total,
                COALESCE(SUM(v.saldo_restante), 0) as a_receber
         FROM vendas v JOIN clientes c ON c.id = v.cliente_id
         WHERE v.tenant_id = ? AND v.situacao != 'cancelada'
-        AND date(v.created_at) BETWEEN ? AND ?
+        AND date(v.created_at) BETWEEN ? AND ?${flV.sql}
         GROUP BY v.cliente_id ORDER BY total DESC LIMIT 50
-      `).bind(auth.tenant_id, inicio, fim).all<{ nome: string; compras: number; total: number; a_receber: number }>(),
+      `).bind(auth.tenant_id, inicio, fim, ...p).all<{ nome: string; compras: number; total: number; a_receber: number }>(),
 
       env.DB.prepare(`
         SELECT date(created_at) as dia, COUNT(*) as vendas, COALESCE(SUM(valor_final), 0) as valor
         FROM vendas WHERE tenant_id = ? AND situacao != 'cancelada'
-        AND date(created_at) BETWEEN ? AND ?
+        AND date(created_at) BETWEEN ? AND ?${fl.sql}
         GROUP BY date(created_at) ORDER BY dia ASC
-      `).bind(auth.tenant_id, inicio, fim).all<{ dia: string; vendas: number; valor: number }>(),
+      `).bind(auth.tenant_id, inicio, fim, ...p).all<{ dia: string; vendas: number; valor: number }>(),
 
       env.DB.prepare(`
         SELECT v.funcionario_id as funcionario_id, u.nome as vendedor, u.perfil,
@@ -75,15 +81,15 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
         FROM vendas v
         JOIN usuarios u ON u.id = v.funcionario_id
         WHERE v.tenant_id = ? AND v.situacao != 'cancelada'
-        AND date(v.created_at) BETWEEN ? AND ?
+        AND date(v.created_at) BETWEEN ? AND ?${flV.sql}
         GROUP BY v.funcionario_id ORDER BY valor_total DESC
-      `).bind(auth.tenant_id, inicio, fim).all<{ funcionario_id: string; vendedor: string; perfil: string; total_vendas: number; valor_total: number; ticket_medio: number; total_desconto: number; a_receber: number }>(),
+      `).bind(auth.tenant_id, inicio, fim, ...p).all<{ funcionario_id: string; vendedor: string; perfil: string; total_vendas: number; valor_total: number; ticket_medio: number; total_desconto: number; a_receber: number }>(),
 
       // A receber GERAL (todas as vendas em aberto, independente do período)
       env.DB.prepare(`
         SELECT COALESCE(SUM(saldo_restante), 0) as total, COUNT(*) as n
-        FROM vendas WHERE tenant_id = ? AND saldo_restante > 0
-      `).bind(auth.tenant_id).first<{ total: number; n: number }>(),
+        FROM vendas WHERE tenant_id = ? AND saldo_restante > 0${fl.sql}
+      `).bind(auth.tenant_id, ...p).first<{ total: number; n: number }>(),
     ]);
 
     return json({

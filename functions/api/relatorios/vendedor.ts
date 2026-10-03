@@ -1,6 +1,7 @@
 import type { PagesFunction } from '@cloudflare/workers-types';
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
+import { ensureLojaCols, filtroLoja } from '../../lib/lojas';
 
 // Regras de comissão são por LOJA (tenant), por forma de pagamento — guardadas como JSON.
 async function ensureCol(env: Env) {
@@ -38,15 +39,17 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     ]);
     if (!vendedor) return json({ error: 'Vendedor não encontrado' }, 404);
 
+    await ensureLojaCols(env.DB);
+    const fl = filtroLoja(auth, 'v.loja_id');
     const r = await env.DB.prepare(`
       SELECT v.id, v.numero, v.created_at, v.valor_final, v.desconto, v.valor_entrada, v.saldo_restante, v.situacao,
              v.forma_pagamento, c.nome as cliente_nome
       FROM vendas v
       LEFT JOIN clientes c ON c.id = v.cliente_id
       WHERE v.tenant_id = ? AND v.funcionario_id = ? AND v.situacao != 'cancelada'
-      AND date(v.created_at) BETWEEN ? AND ?
+      AND date(v.created_at) BETWEEN ? AND ?${fl.sql}
       ORDER BY v.created_at DESC
-    `).bind(auth.tenant_id, fid, inicio, fim).all<Record<string, unknown>>();
+    `).bind(auth.tenant_id, fid, inicio, fim, ...fl.params).all<Record<string, unknown>>();
 
     const vendas = r.results || [];
     const totalVendido = vendas.reduce((a, v) => a + (Number(v.valor_final) || 0), 0);

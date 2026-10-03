@@ -2,6 +2,7 @@ import type { PagesFunction } from '@cloudflare/workers-types';
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
 import { ensureIndexes } from '../../lib/ensure-indexes';
+import { ensureLojaCols, filtroLoja, filtroLojaComLegado } from '../../lib/lojas';
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const auth = await requireAuth(request, env);
@@ -9,6 +10,13 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
 
   try {
     await ensureIndexes(env.DB);
+    await ensureLojaCols(env.DB);
+    // Separação por loja: vendedor só vê os números da própria loja
+    const fl = filtroLoja(auth, 'loja_id');          // vendas / OS
+    const flOs = filtroLoja(auth, 'os.loja_id');      // OS com alias
+    const flC = filtroLojaComLegado(auth, 'loja_id'); // clientes (legado compartilhado)
+    const p = fl.params;   // params da loja (vazio p/ admin)
+    const pC = flC.params;
     const now = new Date();
     const mesAtual = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     const prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -29,63 +37,63 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       faturamento6m,
       produtosMaisVendidos,
     ] = await Promise.all([
-      env.DB.prepare('SELECT COUNT(*) as n FROM clientes WHERE tenant_id = ? AND ativo = 1')
-        .bind(auth.tenant_id).first<{ n: number }>(),
+      env.DB.prepare('SELECT COUNT(*) as n FROM clientes WHERE tenant_id = ? AND ativo = 1' + flC.sql)
+        .bind(auth.tenant_id, ...pC).first<{ n: number }>(),
 
-      env.DB.prepare(`SELECT COUNT(*) as n FROM ordens_servico WHERE tenant_id = ? AND situacao IN ('orcamento','aprovado','em_producao')`)
-        .bind(auth.tenant_id).first<{ n: number }>(),
+      env.DB.prepare(`SELECT COUNT(*) as n FROM ordens_servico WHERE tenant_id = ? AND situacao IN ('orcamento','aprovado','em_producao')` + fl.sql)
+        .bind(auth.tenant_id, ...p).first<{ n: number }>(),
 
-      env.DB.prepare(`SELECT COUNT(*) as n FROM ordens_servico WHERE tenant_id = ? AND situacao = 'pronto'`)
-        .bind(auth.tenant_id).first<{ n: number }>(),
+      env.DB.prepare(`SELECT COUNT(*) as n FROM ordens_servico WHERE tenant_id = ? AND situacao = 'pronto'` + fl.sql)
+        .bind(auth.tenant_id, ...p).first<{ n: number }>(),
 
-      env.DB.prepare(`SELECT COUNT(*) as n FROM ordens_servico WHERE tenant_id = ? AND date(created_at) = ?`)
-        .bind(auth.tenant_id, hoje).first<{ n: number }>(),
+      env.DB.prepare(`SELECT COUNT(*) as n FROM ordens_servico WHERE tenant_id = ? AND date(created_at) = ?` + fl.sql)
+        .bind(auth.tenant_id, hoje, ...p).first<{ n: number }>(),
 
-      env.DB.prepare(`SELECT COALESCE(SUM(valor_final), 0) as total FROM vendas WHERE tenant_id = ? AND situacao != 'cancelada' AND strftime('%Y-%m', created_at) = ?`)
-        .bind(auth.tenant_id, mesAtual).first<{ total: number }>(),
+      env.DB.prepare(`SELECT COALESCE(SUM(valor_final), 0) as total FROM vendas WHERE tenant_id = ? AND situacao != 'cancelada' AND strftime('%Y-%m', created_at) = ?` + fl.sql)
+        .bind(auth.tenant_id, mesAtual, ...p).first<{ total: number }>(),
 
       env.DB.prepare(`
         SELECT os.numero, os.data_entrega, os.situacao, c.nome as cliente_nome
         FROM ordens_servico os LEFT JOIN clientes c ON c.id = os.cliente_id
         WHERE os.tenant_id = ? AND os.situacao IN ('aprovado','em_producao','pronto')
-          AND os.data_entrega IS NOT NULL AND os.data_entrega >= ?
+          AND os.data_entrega IS NOT NULL AND os.data_entrega >= ?${flOs.sql}
         ORDER BY os.data_entrega ASC LIMIT 5
-      `).bind(auth.tenant_id, hoje).all(),
+      `).bind(auth.tenant_id, hoje, ...p).all(),
 
       env.DB.prepare(`
         SELECT id, nome, data_nascimento, celular
         FROM clientes WHERE tenant_id = ? AND ativo = 1
           AND data_nascimento IS NOT NULL
-          AND strftime('%m-%d', data_nascimento) BETWEEN strftime('%m-%d', 'now') AND strftime('%m-%d', 'now', '+7 days')
+          AND strftime('%m-%d', data_nascimento) BETWEEN strftime('%m-%d', 'now') AND strftime('%m-%d', 'now', '+7 days')${flC.sql}
         ORDER BY strftime('%m-%d', data_nascimento) ASC LIMIT 5
-      `).bind(auth.tenant_id).all(),
+      `).bind(auth.tenant_id, ...pC).all(),
 
       // Nº de vendas do mês (ticket médio = vendasMes / numVendasMes)
-      env.DB.prepare(`SELECT COUNT(*) as n FROM vendas WHERE tenant_id = ? AND situacao != 'cancelada' AND strftime('%Y-%m', created_at) = ?`)
-        .bind(auth.tenant_id, mesAtual).first<{ n: number }>(),
+      env.DB.prepare(`SELECT COUNT(*) as n FROM vendas WHERE tenant_id = ? AND situacao != 'cancelada' AND strftime('%Y-%m', created_at) = ?` + fl.sql)
+        .bind(auth.tenant_id, mesAtual, ...p).first<{ n: number }>(),
 
       // Faturamento do mês anterior (comparativo)
-      env.DB.prepare(`SELECT COALESCE(SUM(valor_final), 0) as total FROM vendas WHERE tenant_id = ? AND situacao != 'cancelada' AND strftime('%Y-%m', created_at) = ?`)
-        .bind(auth.tenant_id, mesAnterior).first<{ total: number }>(),
+      env.DB.prepare(`SELECT COALESCE(SUM(valor_final), 0) as total FROM vendas WHERE tenant_id = ? AND situacao != 'cancelada' AND strftime('%Y-%m', created_at) = ?` + fl.sql)
+        .bind(auth.tenant_id, mesAnterior, ...p).first<{ total: number }>(),
 
       // A receber — saldo pendente de vendas parceladas
-      env.DB.prepare(`SELECT COALESCE(SUM(saldo_restante), 0) as total, COUNT(*) as n FROM vendas WHERE tenant_id = ? AND saldo_restante > 0`)
-        .bind(auth.tenant_id).first<{ total: number; n: number }>(),
+      env.DB.prepare(`SELECT COALESCE(SUM(saldo_restante), 0) as total, COUNT(*) as n FROM vendas WHERE tenant_id = ? AND saldo_restante > 0` + fl.sql)
+        .bind(auth.tenant_id, ...p).first<{ total: number; n: number }>(),
 
       // Faturamento por mês (para o gráfico de tendência)
       env.DB.prepare(`
         SELECT strftime('%Y-%m', created_at) as ym, COALESCE(SUM(valor_final), 0) as total, COUNT(*) as n
         FROM vendas WHERE tenant_id = ? AND situacao != 'cancelada'
-          AND created_at >= date('now', 'start of month', '-5 months')
+          AND created_at >= date('now', 'start of month', '-5 months')${fl.sql}
         GROUP BY ym ORDER BY ym ASC
-      `).bind(auth.tenant_id).all(),
+      `).bind(auth.tenant_id, ...p).all(),
 
       // Produtos mais vendidos (geral) — a partir dos itens de venda
       env.DB.prepare(`
         SELECT descricao, SUM(quantidade) as qtd, COALESCE(SUM(valor_total), 0) as faturamento
-        FROM venda_itens WHERE tenant_id = ?
+        FROM venda_itens WHERE tenant_id = ?${fl.sql ? ` AND venda_id IN (SELECT id FROM vendas WHERE tenant_id = ?${fl.sql})` : ''}
         GROUP BY descricao ORDER BY qtd DESC LIMIT 8
-      `).bind(auth.tenant_id).all().catch(() => ({ results: [] })),
+      `).bind(auth.tenant_id, ...(fl.sql ? [auth.tenant_id, ...p] : [])).all().catch(() => ({ results: [] })),
     ]);
 
     const fatMes = vendasMes?.total || 0;
