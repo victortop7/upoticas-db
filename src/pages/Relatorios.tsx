@@ -273,11 +273,19 @@ export default function Relatorios() {
 
   return (
     <div style={{ padding: '32px' }}>
-      <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ margin: '0 0 4px', fontSize: '22px', fontWeight: '600', color: 'var(--text)' }}>Relatórios</h1>
-        <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-dim)' }}>
-          {data ? `${fmtDate(data.periodo.inicio)} — ${fmtDate(data.periodo.fim)}` : 'Selecione um período'}
-        </p>
+      <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
+        <div>
+          <h1 style={{ margin: '0 0 4px', fontSize: '22px', fontWeight: '600', color: 'var(--text)' }}>Relatórios</h1>
+          <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-dim)' }}>
+            {data ? `${fmtDate(data.periodo.inicio)} — ${fmtDate(data.periodo.fim)}` : 'Selecione um período'}
+          </p>
+        </div>
+        {data && (
+          <a href={`/relatorios/imprimir?inicio=${data.periodo.inicio}&fim=${data.periodo.fim}`} target="_blank" rel="noreferrer"
+            style={{ padding: '9px 18px', fontSize: '14px', fontWeight: 600, background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+            📄 Exportar PDF
+          </a>
+        )}
       </div>
 
       {/* Filtros */}

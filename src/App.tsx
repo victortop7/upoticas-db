@@ -41,6 +41,7 @@ import ImprimirOS from './pages/ImprimirOS';
 import Carnes from './pages/Carnes';
 import CarneImprimir from './pages/CarneImprimir';
 import Lojas from './pages/Lojas';
+import RelatorioImprimir from './pages/RelatorioImprimir';
 import Landing from './pages/Landing';
 import InteresseLab from './pages/InteresseLab';
 import Contas from './pages/financeiro/Contas';
@@ -82,6 +83,7 @@ export default function App() {
           <Route path="/os/:id/imprimir" element={<ImprimirOS />} />
           <Route path="/lab/ordens/:id/imprimir" element={<LabImprimirOS />} />
           <Route path="/carnes/:id/imprimir" element={<CarneImprimir />} />
+          <Route path="/relatorios/imprimir" element={<RelatorioImprimir />} />
           <Route path="/licenca-bloqueada" element={<LicencaBloqueada />} />
           {/* Painel administrativo — sistema próprio, fora do Connect LAB */}
           <Route path="/admin" element={<Admin />} />
