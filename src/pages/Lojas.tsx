@@ -58,6 +58,9 @@ export default function Lojas() {
   const [vends, setVends] = useState<VendedorVenda[]>([]);
   const [selVinc, setSelVinc] = useState<Record<string, { loja_id: string; desde: string }>>({});
   const [aplicando, setAplicando] = useState<string | null>(null);
+  const [imp, setImp] = useState<{ clientes: { total: number; sem_loja: number }; vendas: { total: number; sem_loja: number } } | null>(null);
+  const [impLoja, setImpLoja] = useState('');
+  const [impAplicando, setImpAplicando] = useState(false);
   const [loading, setLoading] = useState(true);
   const [nome, setNome] = useState('');
   const [endereco, setEndereco] = useState('');
@@ -70,7 +73,8 @@ export default function Lojas() {
       api.get<Loja[]>('/lojas').catch(() => [] as Loja[]),
       api.get<{ usuarios: Usuario[] }>('/usuarios').then(r => r.usuarios).catch(() => [] as Usuario[]),
       api.get<VendedorVenda[]>('/lojas/vendedores').catch(() => [] as VendedorVenda[]),
-    ]).then(([ls, us, vs]) => { setLojas(ls); setUsuarios(us); setVends(vs); }).finally(() => setLoading(false));
+      api.get<{ clientes: { total: number; sem_loja: number }; vendas: { total: number; sem_loja: number } }>('/lojas/importados').catch(() => null),
+    ]).then(([ls, us, vs, im]) => { setLojas(ls); setUsuarios(us); setVends(vs); setImp(im); }).finally(() => setLoading(false));
   }, []);
 
   async function aplicarVinculo(fid: string) {
@@ -83,6 +87,18 @@ export default function Lojas() {
       load();
     } catch (e) { alert('Erro: ' + (e instanceof Error ? e.message : '')); }
     setAplicando(null);
+  }
+  async function aplicarImportados() {
+    if (!impLoja) { alert('Escolha a loja primeiro.'); return; }
+    const nm = lojas.find(l => l.id === impLoja)?.nome || '';
+    if (!confirm(`Mover os clientes e vendas importados do sistema antigo para a loja "${nm}"? A outra loja deixa de ver esses clientes.`)) return;
+    setImpAplicando(true);
+    try {
+      const r = await api.post<{ clientes: number; vendas: number }>('/lojas/importados', { loja_id: impLoja });
+      alert(`Pronto! ${r.clientes} cliente(s) e ${r.vendas} venda(s) importados foram para a loja "${nm}".`);
+      load();
+    } catch (e) { alert('Erro: ' + (e instanceof Error ? e.message : '')); }
+    setImpAplicando(false);
   }
   useEffect(() => { load(); }, [load]);
 
@@ -165,6 +181,29 @@ export default function Lojas() {
             );
           })}
         </div>}
+
+      {/* Clientes/vendas importados do sistema antigo */}
+      {lojas.length > 0 && imp && imp.clientes.total > 0 && (
+        <div style={{ marginTop: 28, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: 20 }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>Clientes importados do sistema antigo</div>
+          <p style={{ margin: '0 0 14px', fontSize: 13, color: 'var(--text-muted)' }}>
+            {imp.clientes.sem_loja > 0 || imp.vendas.sem_loja > 0
+              ? <>{imp.clientes.sem_loja} cliente(s) e {imp.vendas.sem_loja} venda(s) importados ainda estão sem loja (todas as lojas enxergam). Escolha a loja dona deles e clique em Aplicar.</>
+              : <>✅ Todos os {imp.clientes.total} clientes importados já estão vinculados a uma loja.</>}
+          </p>
+          {(imp.clientes.sem_loja > 0 || imp.vendas.sem_loja > 0) && (
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+              <select style={{ ...inp, width: 220 }} value={impLoja} onChange={e => setImpLoja(e.target.value)}>
+                <option value="">— Escolher loja —</option>
+                {lojas.map(l => <option key={l.id} value={l.id}>{l.nome}</option>)}
+              </select>
+              <button onClick={aplicarImportados} disabled={impAplicando} style={{ padding: '9px 18px', fontSize: 13, fontWeight: 600, background: 'var(--primary)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer' }}>
+                {impAplicando ? '...' : 'Aplicar'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Vincular vendas/OS já feitas às lojas */}
       {lojas.length > 0 && vends.length > 0 && (
