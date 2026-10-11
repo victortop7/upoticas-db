@@ -1,5 +1,6 @@
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
+import { ensurePagamentos, normalizarLinhas, recebidoDasLinhas, formaResumo, salvarPagamentos } from '../../lib/pagamentos';
 
 export const onRequestGet = async ({ request, env, params }: { request: Request; env: Env; params: Record<string, string> }) => {
   const auth = await requireAuth(request, env);
@@ -21,7 +22,16 @@ export const onRequestGet = async ({ request, env, params }: { request: Request;
     itens = r.results;
   } catch { /* tabela pode não existir em bases antigas */ }
 
-  return json({ ...venda, itens });
+  let pagamentos: unknown[] = [];
+  try {
+    await ensurePagamentos(env.DB);
+    const rp = await env.DB.prepare(
+      'SELECT forma, valor, bandeira, parcelas, data_recebimento, conta FROM venda_pagamentos WHERE venda_id = ? AND tenant_id = ? ORDER BY rowid'
+    ).bind(params.id, auth.tenant_id).all();
+    pagamentos = rp.results;
+  } catch { /* sem tabela */ }
+
+  return json({ ...venda, itens, pagamentos });
 };
 
 export const onRequestPut = async ({ request, env, params }: { request: Request; env: Env; params: Record<string, string> }) => {
@@ -47,9 +57,13 @@ export const onRequestPut = async ({ request, env, params }: { request: Request;
     const desconto = body.desconto !== undefined ? (parseFloat(body.desconto) || 0) : existing.desconto;
     const valorFinal = valorTotal - desconto;
 
-    const valorEntrada = body.valor_entrada !== undefined && body.valor_entrada !== ''
-      ? parseFloat(body.valor_entrada)
-      : (body.saldo_restante === '0' ? valorFinal : existing.valor_entrada);
+    const linhas = normalizarLinhas((body as Record<string, unknown>).pagamentos);
+    const usaLinhas = !!(linhas && linhas.length);
+    const valorEntrada = usaLinhas
+      ? recebidoDasLinhas(linhas!)
+      : (body.valor_entrada !== undefined && body.valor_entrada !== ''
+        ? parseFloat(body.valor_entrada)
+        : (body.saldo_restante === '0' ? valorFinal : existing.valor_entrada));
     const saldoRestante = Math.max(0, valorFinal - valorEntrada);
     const situacao = saldoRestante > 0 ? 'pendente' : (body.situacao || 'ativa');
 
@@ -66,11 +80,15 @@ export const onRequestPut = async ({ request, env, params }: { request: Request;
       situacao,
       valorTotal, desconto, valorFinal,
       valorEntrada, saldoRestante,
-      body.forma_pagamento !== undefined ? (body.forma_pagamento || null) : existing.forma_pagamento,
+      usaLinhas ? formaResumo(linhas!, existing.forma_pagamento) : (body.forma_pagamento !== undefined ? (body.forma_pagamento || null) : existing.forma_pagamento),
       body.observacao !== undefined ? (body.observacao || null) : existing.observacao,
       now,
       params.id, auth.tenant_id
     ).run();
+
+    if (usaLinhas) {
+      try { await salvarPagamentos(env.DB, auth.tenant_id, params.id, linhas!); } catch { /* não bloqueia */ }
+    }
 
     // Itens da venda — se enviados, substitui os existentes
     const itens = (body as Record<string, unknown>).itens;

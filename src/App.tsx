@@ -42,6 +42,8 @@ import Carnes from './pages/Carnes';
 import CarneImprimir from './pages/CarneImprimir';
 import Lojas from './pages/Lojas';
 import RelatorioImprimir from './pages/RelatorioImprimir';
+import RelatorioExportar from './pages/RelatorioExportar';
+import RelatorioExportarImprimir from './pages/RelatorioExportarImprimir';
 import Landing from './pages/Landing';
 import InteresseLab from './pages/InteresseLab';
 import Contas from './pages/financeiro/Contas';
@@ -84,6 +86,7 @@ export default function App() {
           <Route path="/lab/ordens/:id/imprimir" element={<LabImprimirOS />} />
           <Route path="/carnes/:id/imprimir" element={<CarneImprimir />} />
           <Route path="/relatorios/imprimir" element={<RelatorioImprimir />} />
+          <Route path="/relatorios/exportar/imprimir" element={<RelatorioExportarImprimir />} />
           <Route path="/licenca-bloqueada" element={<LicencaBloqueada />} />
           {/* Painel administrativo — sistema próprio, fora do Connect LAB */}
           <Route path="/admin" element={<Admin />} />
@@ -100,6 +103,7 @@ export default function App() {
             <Route path="/vendedores" element={<Vendedores />} />
             <Route path="/configuracoes" element={<Configuracoes />} />
             <Route path="/relatorios" element={<Relatorios />} />
+            <Route path="/relatorios/exportar" element={<RelatorioExportar />} />
             <Route path="/financeiro/contas" element={<Contas />} />
             <Route path="/financeiro/contas-pagar" element={<ContasPagar />} />
             <Route path="/financeiro/contas-receber" element={<ContasReceber />} />

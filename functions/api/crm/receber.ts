@@ -1,5 +1,6 @@
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
+import { ensurePagamentos } from '../../lib/pagamentos';
 
 // POST /api/crm/receber
 // Registra um recebimento (parcial ou total) contra uma VENDA ou uma OS.
@@ -32,8 +33,8 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
 
     if (body.venda_id) {
       const v = await env.DB.prepare(
-        'SELECT id, cliente_id, valor_final, valor_entrada FROM vendas WHERE id = ? AND tenant_id = ?'
-      ).bind(body.venda_id, auth.tenant_id).first<{ id: string; cliente_id: string | null; valor_final: number; valor_entrada: number }>();
+        'SELECT id, cliente_id, valor_final, valor_entrada, forma_pagamento FROM vendas WHERE id = ? AND tenant_id = ?'
+      ).bind(body.venda_id, auth.tenant_id).first<{ id: string; cliente_id: string | null; valor_final: number; valor_entrada: number; forma_pagamento: string | null }>();
       if (!v) return json({ error: 'Venda não encontrada' }, 404);
 
       clienteId = v.cliente_id;
@@ -46,6 +47,24 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
            forma_pagamento = COALESCE(?, forma_pagamento), updated_at = ?
          WHERE id = ? AND tenant_id = ?`
       ).bind(novaEntrada, saldoRestante, situacao, forma, now, body.venda_id, auth.tenant_id).run();
+
+
+      // Registra o recebimento como linha de pagamento (relatório por pagamento).
+      // Se a venda ainda não tinha linhas, cria antes a da entrada original.
+      try {
+        await ensurePagamentos(env.DB);
+        const hoje = now.split('T')[0];
+        const tem = await env.DB.prepare('SELECT COUNT(*) as n FROM venda_pagamentos WHERE venda_id = ? AND tenant_id = ?')
+          .bind(body.venda_id, auth.tenant_id).first<{ n: number }>();
+        const stmts = [];
+        if (!tem?.n && (v.valor_entrada || 0) > 0) {
+          stmts.push(env.DB.prepare('INSERT INTO venda_pagamentos (id, tenant_id, venda_id, forma, valor, data_recebimento) VALUES (?, ?, ?, ?, ?, ?)')
+            .bind(crypto.randomUUID(), auth.tenant_id, body.venda_id, (v.forma_pagamento && v.forma_pagamento !== 'misto') ? v.forma_pagamento : 'outro', v.valor_entrada, null));
+        }
+        stmts.push(env.DB.prepare('INSERT INTO venda_pagamentos (id, tenant_id, venda_id, forma, valor, data_recebimento) VALUES (?, ?, ?, ?, ?, ?)')
+          .bind(crypto.randomUUID(), auth.tenant_id, body.venda_id, forma || 'outro', recebido, hoje));
+        await env.DB.batch(stmts);
+      } catch { /* não bloqueia o recebimento */ }
 
     } else if (body.os_id) {
       const os = await env.DB.prepare(

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 
@@ -280,12 +281,17 @@ export default function Relatorios() {
             {data ? `${fmtDate(data.periodo.inicio)} — ${fmtDate(data.periodo.fim)}` : 'Selecione um período'}
           </p>
         </div>
-        {data && (
-          <a href={`/relatorios/imprimir?inicio=${data.periodo.inicio}&fim=${data.periodo.fim}`} target="_blank" rel="noreferrer"
-            style={{ padding: '9px 18px', fontSize: '14px', fontWeight: 600, background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap' }}>
-            📄 Exportar PDF
-          </a>
-        )}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <Link to="/relatorios/exportar" style={{ padding: '9px 18px', fontSize: '14px', fontWeight: 600, background: 'var(--primary)', color: 'white', borderRadius: '8px', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+            ⚙️ Relatório personalizado / Exportar
+          </Link>
+          {data && (
+            <a href={`/relatorios/imprimir?inicio=${data.periodo.inicio}&fim=${data.periodo.fim}`} target="_blank" rel="noreferrer"
+              style={{ padding: '9px 18px', fontSize: '14px', fontWeight: 600, background: 'transparent', color: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: '8px', cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+              📄 PDF rápido
+            </a>
+          )}
+        </div>
       </div>
 
       {/* Filtros */}

@@ -1,6 +1,7 @@
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
 import { ensureLojaCols, filtroLoja, lojaParaGravar } from '../../lib/lojas';
+import { normalizarLinhas, recebidoDasLinhas, formaResumo, salvarPagamentos } from '../../lib/pagamentos';
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   const auth = await requireAuth(request, env);
@@ -90,9 +91,15 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     const valorTotal = parseFloat(body.valor_total) || 0;
     const desconto = parseFloat(body.desconto) || 0;
     const valorFinal = valorTotal - desconto;
-    const valorEntrada = body.valor_entrada !== undefined && body.valor_entrada !== ''
-      ? parseFloat(body.valor_entrada)
-      : valorFinal; // sem entrada = pagamento integral
+    // Pagamentos por linha (venda mista). Se vierem, mandam no valor recebido e na forma.
+    const linhas = normalizarLinhas((body as Record<string, unknown>).pagamentos);
+    const usaLinhas = !!(linhas && linhas.length);
+    const valorEntrada = usaLinhas
+      ? recebidoDasLinhas(linhas!)
+      : (body.valor_entrada !== undefined && body.valor_entrada !== ''
+        ? parseFloat(body.valor_entrada)
+        : valorFinal); // sem entrada = pagamento integral
+    const formaVenda = usaLinhas ? formaResumo(linhas!, body.forma_pagamento || null) : (body.forma_pagamento || null);
     const saldoRestante = Math.max(0, valorFinal - valorEntrada);
     const situacao = saldoRestante > 0 ? 'pendente' : (body.situacao || 'ativa');
 
@@ -122,11 +129,16 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       situacao,
       valorTotal, desconto, valorFinal,
       valorEntrada, saldoRestante,
-      body.forma_pagamento || null,
+      formaVenda,
       body.observacao || null,
       funcionarioId, grupoId, lojaId,
       now, now
     ).run();
+
+    // Linhas de pagamento
+    if (usaLinhas) {
+      try { await salvarPagamentos(env.DB, auth.tenant_id, id, linhas!); } catch { /* não bloqueia a venda */ }
+    }
 
     // Itens da venda (produtos comprados) — opcional
     const itens = Array.isArray((body as Record<string, unknown>).itens) ? (body as Record<string, unknown>).itens as Record<string, unknown>[] : [];

@@ -84,6 +84,8 @@ const EMPTY = {
 interface UsuarioSimples { id: string; nome: string; perfil: string; }
 interface ProdutoSimples { id: string; codigo?: string; descricao: string; grupo?: string; preco_venda?: number; }
 interface ItemVenda { produto_id: string | null; descricao: string; quantidade: number; valor_unitario: number; desconto: number; }
+interface PagLinha { forma: string; valor: string; bandeira: string; parcelas: string; data_recebimento: string; conta: string; }
+interface PagApi { forma: string; valor: number; bandeira?: string | null; parcelas?: number | null; data_recebimento?: string | null; conta?: string | null; }
 interface AdicionalVenda { cliente_id: string; cliente_nome: string; valor_total: string; desconto: string; }
 
 function brlFmt(v: number) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
@@ -185,6 +187,11 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
   const [carnePrimeiroVenc, setCarnePrimeiroVenc] = useState(() => {
     const d = new Date(); d.setDate(d.getDate() + 30); return d.toISOString().split('T')[0];
   });
+  // Pagamentos: uma forma só (com dados do cartão) ou várias linhas
+  const hojeStr = new Date().toISOString().split('T')[0];
+  const [multiPag, setMultiPag] = useState(false);
+  const [pags, setPags] = useState<PagLinha[]>([]);
+  const [cartao, setCartao] = useState({ bandeira: '', parcelas: '1', conta: '' });
 
   useEffect(() => {
     loadClientes('');
@@ -204,7 +211,14 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
         forma_pagamento: venda.forma_pagamento || 'pix',
         observacao: venda.observacao || '',
       });
-      api.get<{ itens?: ItemVenda[] }>(`/vendas/${venda.id}`).then(r => {
+      api.get<{ itens?: ItemVenda[]; pagamentos?: PagApi[] }>(`/vendas/${venda.id}`).then(r => {
+        const ps = r.pagamentos || [];
+        if (ps.length > 1) {
+          setMultiPag(true);
+          setPags(ps.map(pg => ({ forma: pg.forma, valor: String(pg.valor), bandeira: pg.bandeira || '', parcelas: pg.parcelas ? String(pg.parcelas) : '', data_recebimento: pg.data_recebimento || '', conta: pg.conta || '' })));
+        } else if (ps.length === 1) {
+          setCartao({ bandeira: ps[0].bandeira || '', parcelas: ps[0].parcelas ? String(ps[0].parcelas) : '1', conta: ps[0].conta || '' });
+        }
         if (Array.isArray(r.itens) && r.itens.length) {
           setItens(r.itens.map(it => ({
             produto_id: it.produto_id ?? null,
@@ -265,6 +279,9 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
   const valorFinal = (parseFloat(form.valor_total) || 0) - (parseFloat(form.desconto) || 0);
   const valorEntrada = form.valor_entrada !== '' ? parseFloat(form.valor_entrada) || 0 : valorFinal;
   const saldoRestante = Math.max(0, valorFinal - valorEntrada);
+  const somaPags = pags.reduce((a, pg) => a + (parseFloat(String(pg.valor).replace(',', '.')) || 0), 0);
+  const faltaPags = Math.max(0, Math.round((valorFinal - somaPags) * 100) / 100);
+  const ehCartao = (f: string) => f === 'credito' || f === 'debito';
 
   const totalAdicionais = adicionais.reduce((a, p) => a + Math.max(0, (parseFloat(p.valor_total) || 0) - (parseFloat(p.desconto) || 0)), 0);
   const totalCartao = valorFinal + totalAdicionais;
@@ -276,7 +293,25 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
       setErro('Informe o valor total da venda');
       return;
     }
-    const ehBoleto = !isMarketing && form.forma_pagamento === 'boleto';
+    // Monta as linhas de pagamento (uma por forma)
+    let pagamentos: Record<string, unknown>[] | undefined;
+    if (!isMarketing) {
+      if (multiPag) {
+        pagamentos = pags.filter(pg => (parseFloat(String(pg.valor).replace(',', '.')) || 0) > 0).map(pg => ({ ...pg }));
+        if (somaPags > valorFinal + 0.01) { setErro('Os pagamentos somam mais que o valor final da venda.'); return; }
+      } else if (form.forma_pagamento === 'boleto') {
+        pagamentos = [{ forma: 'boleto', valor: valorFinal, parcelas: carneParcelas, data_recebimento: carnePrimeiroVenc }];
+      } else if (valorEntrada > 0) {
+        const card = ehCartao(form.forma_pagamento);
+        pagamentos = [{
+          forma: form.forma_pagamento, valor: Math.min(valorEntrada, valorFinal),
+          bandeira: card ? cartao.bandeira : '', parcelas: form.forma_pagamento === 'credito' ? cartao.parcelas : '',
+          conta: card ? cartao.conta : '', data_recebimento: hojeStr,
+        }];
+      }
+    }
+    const boletos = (pagamentos || []).filter(pg => pg.forma === 'boleto');
+    const ehBoleto = boletos.length > 0;
     if (ehBoleto && !form.cliente_id) {
       setErro('Selecione o cliente para gerar o boleto/carnê.');
       return;
@@ -288,7 +323,8 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
         ...(isMarketing ? { ...form, valor_total: '0', desconto: '0', forma_pagamento: 'outro' } : form),
         ...(isAdmin && funcionarioId ? { funcionario_id: funcionarioId } : {}),
         // Boleto: a venda entra como "a receber" (entrada 0) até as parcelas serem pagas
-        valor_entrada: (ehBoleto && form.valor_entrada === '') ? '0' : (form.valor_entrada || ''),
+        valor_entrada: (form.forma_pagamento === 'boleto' && form.valor_entrada === '') ? '0' : (form.valor_entrada || ''),
+        ...(pagamentos ? { pagamentos } : {}),
         ...(isMarketing ? {} : { itens: itens.filter(it => it.descricao.trim()) }),
         ...(podeAgrupar && adicionais.length
           ? { adicionais: adicionais
@@ -301,20 +337,23 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
         onSaved();
       } else {
         const nova = await api.post<{ id: string; numero: number }>('/vendas', payload);
-        // Boleto → gera o carnê Pix da venda e abre pra imprimir/enviar
+        // Cada linha "Boleto" gera um carnê Pix daquele valor
         if (ehBoleto && form.cliente_id) {
-          try {
-            const carne = await api.post<{ id: string }>('/carnes', {
-              cliente_id: form.cliente_id,
-              descricao: `Venda #${String(nova.numero).padStart(4, '0')} — boleto`,
-              valor_total: valorFinal,
-              num_parcelas: parseInt(carneParcelas) || 1,
-              primeiro_vencimento: carnePrimeiroVenc,
-              forma_pagamento: 'boleto',
-            });
-            window.open(`/carnes/${carne.id}/imprimir`, '_blank');
-          } catch (e: any) {
-            alert('Venda salva, mas não consegui gerar o carnê: ' + (e?.message || '') + '\nConfira se a chave Pix está configurada em Configurações.');
+          for (const b of boletos) {
+            try {
+              const venc = String(b.data_recebimento || '') || carnePrimeiroVenc;
+              const carne = await api.post<{ id: string }>('/carnes', {
+                cliente_id: form.cliente_id,
+                descricao: `Venda #${String(nova.numero).padStart(4, '0')} — boleto`,
+                valor_total: parseFloat(String(b.valor)) || 0,
+                num_parcelas: parseInt(String(b.parcelas || '1')) || 1,
+                primeiro_vencimento: venc,
+                forma_pagamento: 'boleto',
+              });
+              window.open(`/carnes/${carne.id}/imprimir`, '_blank');
+            } catch (e: any) {
+              alert('Venda salva, mas não consegui gerar o carnê: ' + (e?.message || '') + '\nConfira se a chave Pix está configurada em Configurações.');
+            }
           }
         }
         onSaved();
@@ -567,14 +606,35 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
 
               {/* Forma de pagamento + Valores */}
               <div style={{ marginBottom: '14px' }}>
-                <label style={labelStyle}>Forma de Pagamento</label>
-                <select style={inputStyle} value={form.forma_pagamento} onChange={e => set('forma_pagamento', e.target.value)}>
-                  {FORMAS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-                </select>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <label style={{ ...labelStyle, marginBottom: 0 }}>Forma de Pagamento</label>
+                  <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <input type="checkbox" checked={multiPag} onChange={e => {
+                      const on = e.target.checked; setMultiPag(on);
+                      if (on && pags.length === 0) setPags([{ forma: form.forma_pagamento === 'boleto' ? 'pix' : form.forma_pagamento, valor: '', bandeira: '', parcelas: '', data_recebimento: hojeStr, conta: '' }]);
+                    }} />
+                    Dividir em várias formas
+                  </label>
+                </div>
+                {!multiPag && (
+                  <select style={inputStyle} value={form.forma_pagamento} onChange={e => set('forma_pagamento', e.target.value)}>
+                    {FORMAS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+                  </select>
+                )}
+                {!multiPag && ehCartao(form.forma_pagamento) && (
+                  <div style={{ display: 'grid', gridTemplateColumns: form.forma_pagamento === 'credito' ? '1fr 90px 1fr' : '1fr 1fr', gap: '8px', marginTop: '8px' }}>
+                    <input style={inputStyle} placeholder="Bandeira (Visa, Master...)" value={cartao.bandeira} onChange={e => setCartao(c => ({ ...c, bandeira: e.target.value }))} />
+                    {form.forma_pagamento === 'credito' && (
+                      <input type="number" min="1" max="24" style={{ ...inputStyle, textAlign: 'center' }} title="Parcelas" placeholder="Parc." value={cartao.parcelas} onChange={e => setCartao(c => ({ ...c, parcelas: e.target.value }))} />
+                    )}
+                    <input style={inputStyle} placeholder="Maquininha / conta" value={cartao.conta} onChange={e => setCartao(c => ({ ...c, conta: e.target.value }))} />
+                  </div>
+                )}
+                {multiPag && <p style={{ margin: '2px 0 0', fontSize: '11.5px', color: 'var(--text-muted)' }}>Lance cada forma abaixo do valor final (ex.: entrada no Pix + restante no cartão ou no carnê).</p>}
               </div>
 
               {/* Boleto → gera carnê Pix ao salvar */}
-              {form.forma_pagamento === 'boleto' && (
+              {!multiPag && form.forma_pagamento === 'boleto' && (
                 <div style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: '10px', padding: '14px 16px', marginBottom: '14px' }}>
                   <div style={{ fontSize: '13px', fontWeight: '600', color: '#d97706', marginBottom: '10px' }}>🧾 Boleto / Carnê (Pix)</div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: '12px' }}>
@@ -630,8 +690,56 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
                 </span>
               </div>
 
+              {/* Várias formas de pagamento */}
+              {multiPag && (
+                <div style={{ border: '1px solid var(--border)', borderRadius: '10px', padding: '12px', marginBottom: '14px', background: 'var(--surface-alt)' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)', marginBottom: '8px' }}>💳 Pagamentos</div>
+                  {pags.map((pg, i) => {
+                    const upd = (patch: Partial<PagLinha>) => setPags(ps => ps.map((x, j) => j === i ? { ...x, ...patch } : x));
+                    const small: React.CSSProperties = { ...inputStyle, padding: '6px 8px', fontSize: '12.5px' };
+                    const cap: React.CSSProperties = { fontSize: '10px', color: 'var(--text-muted)', display: 'block', marginBottom: '2px' };
+                    return (
+                      <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', marginBottom: '8px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr 30px', gap: '6px', marginBottom: '6px' }}>
+                          <select style={small} value={pg.forma} onChange={e => upd({ forma: e.target.value })}>
+                            {FORMAS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+                          </select>
+                          <input type="number" step="0.01" min="0" style={{ ...small, fontFamily: 'var(--mono)', textAlign: 'right' }} placeholder="Valor" value={pg.valor} onChange={e => upd({ valor: e.target.value })} />
+                          <button type="button" onClick={() => setPags(ps => ps.filter((_, j) => j !== i))} title="Remover"
+                            style={{ border: '1px solid var(--border)', borderRadius: '6px', background: 'var(--surface)', color: 'var(--red)', cursor: 'pointer', fontWeight: 700 }}>×</button>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 70px 1.1fr 1fr', gap: '6px' }}>
+                          <div><span style={cap}>Bandeira</span>
+                            <input style={small} disabled={!ehCartao(pg.forma)} placeholder={ehCartao(pg.forma) ? 'Visa...' : '—'} value={pg.bandeira} onChange={e => upd({ bandeira: e.target.value })} /></div>
+                          <div><span style={cap}>Parcelas</span>
+                            <input type="number" min="1" style={{ ...small, textAlign: 'center' }} disabled={!(pg.forma === 'credito' || pg.forma === 'boleto')} value={pg.parcelas} onChange={e => upd({ parcelas: e.target.value })} /></div>
+                          <div><span style={cap}>{pg.forma === 'boleto' ? '1º vencimento' : 'Data recebimento'}</span>
+                            <input type="date" style={{ ...small, fontFamily: 'var(--mono)' }} value={pg.data_recebimento} onChange={e => upd({ data_recebimento: e.target.value })} /></div>
+                          <div><span style={cap}>Maquininha / conta</span>
+                            <input style={small} disabled={pg.forma === 'boleto'} placeholder={pg.forma === 'boleto' ? 'carnê Pix' : 'Ex: Stone'} value={pg.conta} onChange={e => upd({ conta: e.target.value })} /></div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <button type="button" onClick={() => setPags(ps => [...ps, { forma: 'credito', valor: '', bandeira: '', parcelas: '1', data_recebimento: hojeStr, conta: '' }])}
+                        style={{ fontSize: '12px', fontWeight: 600, color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>+ Adicionar forma</button>
+                      {faltaPags > 0.009 && (
+                        <button type="button" onClick={() => setPags(ps => [...ps, { forma: 'credito', valor: faltaPags.toFixed(2), bandeira: '', parcelas: '1', data_recebimento: hojeStr, conta: '' }])}
+                          style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-dim)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Completar com o restante</button>
+                      )}
+                    </div>
+                    <span style={{ fontSize: '12px', fontFamily: 'var(--mono)', color: faltaPags > 0.009 ? '#d97706' : '#16a34a', fontWeight: 600 }}>
+                      {brlFmt(somaPags)} de {brlFmt(valorFinal)}{faltaPags > 0.009 ? ` · falta ${brlFmt(faltaPags)} (fica a receber)` : ' ✓'}
+                    </span>
+                  </div>
+                  <p style={{ margin: '8px 0 0', fontSize: '11px', color: 'var(--text-muted)' }}>Linha em <b>Boleto</b> gera o carnê Pix daquele valor. O que faltar fica como a receber.</p>
+                </div>
+              )}
+
               {/* Entrada parcial */}
-              <div style={{ marginBottom: '8px' }}>
+              {!multiPag && <div style={{ marginBottom: '8px' }}>
                 <label style={labelStyle}>Valor de Entrada (R$) — deixe em branco para pagamento integral</label>
                 <input
                   type="number" step="0.01" min="0"
@@ -640,10 +748,10 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
                   onChange={e => set('valor_entrada', e.target.value)}
                   placeholder="Ex: 200,00"
                 />
-              </div>
+              </div>}
 
               {/* Badge saldo restante */}
-              {saldoRestante > 0 && (
+              {!multiPag && saldoRestante > 0 && (
                 <div style={{
                   background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.35)',
                   borderRadius: '10px', padding: '12px 16px',
