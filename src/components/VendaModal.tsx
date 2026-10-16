@@ -23,6 +23,7 @@ interface Props {
   venda: Venda | null;
   onClose: () => void;
   onSaved: () => void;
+  clienteInicial?: { id: string; nome: string }; // nova venda já com o cliente (perfil do cliente)
 }
 
 function NovoVendedorInline({ onClose, onSaved }: { onClose: () => void; onSaved: (id: string) => void }) {
@@ -166,7 +167,7 @@ function PessoaAdicionalRow({ index, value, onChange, onRemove }: {
   );
 }
 
-export default function VendaModal({ venda, onClose, onSaved }: Props) {
+export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: Props) {
   const { usuario } = useAuth();
   const isMarketing = usuario?.perfil === 'marketing';
   const isAdmin = usuario?.perfil === 'admin';
@@ -194,7 +195,11 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
   const [cartao, setCartao] = useState({ bandeira: '', parcelas: '1', conta: '' });
 
   useEffect(() => {
-    loadClientes('');
+    if (!venda && clienteInicial) {
+      setForm(f => ({ ...f, cliente_id: clienteInicial.id }));
+      setBuscaCliente(clienteInicial.nome);
+      loadClientes(clienteInicial.nome);
+    } else loadClientes('');
     if (isAdmin) {
       api.get<{ usuarios: UsuarioSimples[] }>('/usuarios').then(r =>
         setVendedores(r.usuarios.filter((u: any) => u.ativo))
@@ -349,6 +354,7 @@ export default function VendaModal({ venda, onClose, onSaved }: Props) {
                 num_parcelas: parseInt(String(b.parcelas || '1')) || 1,
                 primeiro_vencimento: venc,
                 forma_pagamento: 'boleto',
+                venda_id: nova.id,
               });
               window.open(`/carnes/${carne.id}/imprimir`, '_blank');
             } catch (e: any) {

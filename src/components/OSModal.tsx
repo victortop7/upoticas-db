@@ -7,6 +7,7 @@ interface Props {
   os: OrdemServico | null;
   onClose: () => void;
   onSaved: () => void;
+  clienteInicial?: { id: string; nome: string };
 }
 
 const TIPOS = [
@@ -52,7 +53,7 @@ function Section({ icon, title, children }: { icon: string; title: string; child
   );
 }
 
-export default function OSModal({ os, onClose, onSaved }: Props) {
+export default function OSModal({ os, onClose, onSaved, clienteInicial }: Props) {
   const [form, setForm] = useState({ ...EMPTY });
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [buscaCliente, setBuscaCliente] = useState('');
@@ -61,7 +62,11 @@ export default function OSModal({ os, onClose, onSaved }: Props) {
   const [novoClienteOpen, setNovoClienteOpen] = useState(false);
 
   useEffect(() => {
-    loadClientes('');
+    if (!os && clienteInicial) {
+      setForm(f => ({ ...f, cliente_id: clienteInicial.id }));
+      setBuscaCliente(clienteInicial.nome);
+      loadClientes(clienteInicial.nome);
+    } else loadClientes('');
     if (os) {
       setForm({
         cliente_id: os.cliente_id || '',

@@ -285,6 +285,9 @@ export default function Relatorios() {
           <Link to="/relatorios/exportar" style={{ padding: '9px 18px', fontSize: '14px', fontWeight: 600, background: 'var(--primary)', color: 'white', borderRadius: '8px', textDecoration: 'none', whiteSpace: 'nowrap' }}>
             ⚙️ Relatório personalizado / Exportar
           </Link>
+          <Link to="/financeiro/contas-receber" style={{ padding: '9px 18px', fontSize: '14px', fontWeight: 600, background: 'transparent', color: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: '8px', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+            🧾 Cobrança / crediário
+          </Link>
           {data && (
             <a href={`/relatorios/imprimir?inicio=${data.periodo.inicio}&fim=${data.periodo.fim}`} target="_blank" rel="noreferrer"
               style={{ padding: '9px 18px', fontSize: '14px', fontWeight: 600, background: 'transparent', color: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: '8px', cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap' }}>

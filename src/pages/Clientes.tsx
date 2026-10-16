@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import type { Cliente } from '../types';
 import ClienteModal from '../components/ClienteModal';
@@ -21,6 +22,7 @@ interface Estagio {
 }
 
 export default function Clientes() {
+  const navigate = useNavigate();
   const [data, setData] = useState<ClientesResponse | null>(null);
   const [busca, setBusca] = useState('');
   const [page, setPage] = useState(1);
@@ -235,7 +237,7 @@ export default function Clientes() {
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
               >
                 <td style={{ padding: '12px 16px' }}>
-                  <div style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text)' }}>{c.nome}</div>
+                  <button onClick={() => navigate(`/clientes/${c.id}`)} title="Abrir perfil do cliente" style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: 'var(--primary)' }}>{c.nome}</button>
                   {c.apelido && <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{c.apelido}</div>}
                 </td>
                 <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)', fontFamily: 'var(--mono)' }}>

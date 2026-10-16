@@ -61,6 +61,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     const body = await request.json() as {
       cliente_id?: string; descricao?: string; valor_total?: number | string;
       num_parcelas?: number | string; primeiro_vencimento?: string; forma_pagamento?: string;
+      venda_id?: string;
     };
 
     const total = Math.round((parseFloat(String(body.valor_total)) || 0) * 100);
@@ -85,9 +86,18 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     const base = Math.floor(total / num);
     const resto = total - base * num;
 
+    // liga o carnê à venda (Contas a Receber / perfil do cliente) e à loja
+    for (const c of ['venda_id TEXT', 'loja_id TEXT']) {
+      try { await env.DB.prepare(`ALTER TABLE carnes ADD COLUMN ${c}`).run(); } catch { /* já existe */ }
+    }
+    let lojaId: string | null = auth.loja_id || null;
+    if (body.venda_id) {
+      const v = await env.DB.prepare('SELECT loja_id FROM vendas WHERE id = ? AND tenant_id = ?').bind(body.venda_id, auth.tenant_id).first<{ loja_id: string | null }>();
+      if (v?.loja_id) lojaId = v.loja_id;
+    }
     const stmts = [
-      env.DB.prepare('INSERT INTO carnes (id, tenant_id, cliente_id, descricao, valor_total, num_parcelas, forma_pagamento, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
-        .bind(carneId, auth.tenant_id, body.cliente_id || null, descricao, total / 100, num, body.forma_pagamento || 'boleto', now),
+      env.DB.prepare('INSERT INTO carnes (id, tenant_id, cliente_id, descricao, valor_total, num_parcelas, forma_pagamento, venda_id, loja_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+        .bind(carneId, auth.tenant_id, body.cliente_id || null, descricao, total / 100, num, body.forma_pagamento || 'boleto', body.venda_id || null, lojaId, now),
     ];
 
     for (let i = 0; i < num; i++) {

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 import type { Cliente } from '../../types';
 
@@ -83,50 +84,69 @@ function Modal({ conta, onClose, onSaved }: { conta: ContaReceber | null; contas
   );
 }
 
-function ReceberModal({ conta, contas, onClose, onSaved }: { conta: ContaReceber; contas: Conta[]; onClose: () => void; onSaved: () => void }) {
+// ── Contas a Receber integrado: carnês + saldo das vendas + lançamentos manuais ──
+export interface Titulo {
+  origem: 'carne' | 'venda' | 'manual'; id: string;
+  cliente_id: string | null; cliente_nome: string | null; apelido: string | null; cpf: string | null;
+  celular: string | null; telefone: string | null; endereco: string | null; bairro: string | null; cidade: string | null; uf: string | null; referencia: string | null;
+  venda_id: string | null; venda_numero: number | null; carne_id: string | null;
+  descricao: string; parcela: string | null; vencimento: string; valor: number;
+  situacao: 'pendente' | 'vencido' | 'recebido'; recebido_em: string | null; dias_atraso: number;
+}
+interface RespTit { titulos: Titulo[]; resumo: { pendente: number; vencido: number; recebido: number; qtd: number; clientes_em_atraso: number } }
+
+const ORIGEM: Record<string, { label: string; cor: string }> = {
+  carne: { label: 'Carnê', cor: '#7c3aed' },
+  venda: { label: 'Saldo venda', cor: '#2563eb' },
+  manual: { label: 'Manual', cor: '#64748b' },
+};
+
+export function BaixaModal({ t, contas, onClose, onSaved }: { t: Titulo; contas: Conta[]; onClose: () => void; onSaved: () => void }) {
   const hoje = new Date().toISOString().split('T')[0];
-  const [form, setForm] = useState({ data_recebimento: hoje, forma_recebimento: 'Pix', conta_id: contas[0]?.id || '' });
+  const [form, setForm] = useState({ data: hoje, forma: 'Pix', conta_id: contas[0]?.id || '', valor: String(t.valor) });
   const [saving, setSaving] = useState(false);
+  const [erro, setErro] = useState('');
+  const parcial = t.origem === 'venda';
   const inp: React.CSSProperties = { width: '100%', padding: '8px 10px', fontSize: '14px', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--surface)', color: 'var(--text)', outline: 'none', boxSizing: 'border-box' };
   const lbl: React.CSSProperties = { display: 'block', fontSize: '12px', fontWeight: '500', color: 'var(--text-muted)', marginBottom: '4px' };
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setSaving(true);
-    try { await api.put(`/financeiro/contas-receber/${conta.id}`, { acao: 'receber', ...form }); onSaved(); }
-    finally { setSaving(false); }
+  async function salvar(e: React.FormEvent) {
+    e.preventDefault(); setSaving(true); setErro('');
+    try {
+      await api.post('/financeiro/receber/baixar', { origem: t.origem, id: t.id, valor: form.valor, forma: form.forma, data: form.data, conta_id: form.conta_id || null });
+      onSaved();
+    } catch (err) { setErro(err instanceof Error ? err.message : 'Erro'); setSaving(false); }
   }
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, padding: '16px' }} onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={{ background: 'var(--surface)', borderRadius: '16px', border: '1px solid var(--border)', width: '100%', maxWidth: '400px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }}>
-        <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between' }}>
-          <div>
-            <h2 style={{ margin: '0 0 2px', fontSize: '17px', fontWeight: '700', color: 'var(--text)' }}>Registrar Recebimento</h2>
-            <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)' }}>{conta.descricao} — <strong style={{ fontFamily: 'var(--mono)', color: '#16a34a' }}>{brl(conta.valor)}</strong></p>
-          </div>
-          <button onClick={onClose} style={{ width: '32px', height: '32px', border: 'none', borderRadius: '8px', background: 'var(--surface-alt)', color: 'var(--text-dim)', cursor: 'pointer', fontSize: '18px' }}>×</button>
+      <div style={{ background: 'var(--surface)', borderRadius: '16px', border: '1px solid var(--border)', width: '100%', maxWidth: '420px' }}>
+        <div style={{ padding: '18px 24px 14px', borderBottom: '1px solid var(--border)' }}>
+          <h2 style={{ margin: '0 0 3px', fontSize: '17px', fontWeight: '700', color: 'var(--text)' }}>Registrar recebimento</h2>
+          <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)' }}>
+            {t.cliente_nome || '—'} · {t.descricao}{t.parcela ? ` ${t.parcela}` : ''} — <b style={{ fontFamily: 'var(--mono)', color: 'var(--text)' }}>{brl(t.valor)}</b>
+          </p>
         </div>
-        <form onSubmit={handleSubmit} style={{ padding: '20px 24px' }}>
-          <div style={{ marginBottom: '14px' }}><label style={lbl}>Data do Recebimento</label><input type="date" style={{ ...inp, fontFamily: 'var(--mono)' }} value={form.data_recebimento} onChange={e => setForm(f => ({ ...f, data_recebimento: e.target.value }))} /></div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
+        <form onSubmit={salvar} style={{ padding: '18px 24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+            <div><label style={lbl}>{parcial ? 'Valor recebido (pode ser parcial)' : 'Valor'}</label>
+              <input type="number" step="0.01" min="0" disabled={!parcial} style={{ ...inp, fontFamily: 'var(--mono)', opacity: parcial ? 1 : 0.7 }} value={form.valor} onChange={e => setForm(f => ({ ...f, valor: e.target.value }))} /></div>
+            <div><label style={lbl}>Data</label><input type="date" style={{ ...inp, fontFamily: 'var(--mono)' }} value={form.data} onChange={e => setForm(f => ({ ...f, data: e.target.value }))} /></div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
             <div><label style={lbl}>Forma</label>
-              <select style={inp} value={form.forma_recebimento} onChange={e => setForm(f => ({ ...f, forma_recebimento: e.target.value }))}>
-                {FORMAS.map(f => <option key={f} value={f}>{f}</option>)}
-              </select>
+              <select style={inp} value={form.forma} onChange={e => setForm(f => ({ ...f, forma: e.target.value }))}>{FORMAS.map(f => <option key={f} value={f}>{f}</option>)}</select>
             </div>
-            <div><label style={lbl}>Conta</label>
+            <div><label style={lbl}>Entrou em qual conta</label>
               <select style={inp} value={form.conta_id} onChange={e => setForm(f => ({ ...f, conta_id: e.target.value }))}>
-                <option value="">— Nenhuma —</option>
-                {contas.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+                <option value="">— Nenhuma —</option>{contas.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
               </select>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', paddingTop: '8px', borderTop: '1px solid var(--border)' }}>
-            <button type="button" onClick={onClose} style={{ padding: '9px 18px', fontSize: '14px', background: 'var(--surface-alt)', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer' }}>Cancelar</button>
-            <button type="submit" disabled={saving} style={{ padding: '9px 20px', fontSize: '14px', fontWeight: '600', background: '#16a34a', color: 'white', border: 'none', borderRadius: '8px', cursor: saving ? 'default' : 'pointer' }}>
-              {saving ? '...' : '✓ Confirmar Recebimento'}
-            </button>
+          {erro && <p style={{ margin: '0 0 12px', fontSize: 13, color: 'var(--red)' }}>{erro}</p>}
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 10, borderTop: '1px solid var(--border)' }}>
+            <button type="button" onClick={onClose} style={{ padding: '9px 18px', fontSize: 14, background: 'var(--surface-alt)', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer' }}>Cancelar</button>
+            <button type="submit" disabled={saving} style={{ padding: '9px 20px', fontSize: 14, fontWeight: 600, background: '#16a34a', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer' }}>{saving ? '...' : '✓ Confirmar'}</button>
           </div>
         </form>
       </div>
@@ -134,107 +154,155 @@ function ReceberModal({ conta, contas, onClose, onSaved }: { conta: ContaReceber
   );
 }
 
-interface Resp { contas: ContaReceber[]; total: number; pages: number; totais: { pendente: number; recebido: number }; }
+export function filtrosParaQuery(f: Record<string, string>) {
+  const p = new URLSearchParams();
+  Object.entries(f).forEach(([k, v]) => { if (v) p.set(k, v); });
+  return p.toString();
+}
 
 export default function ContasReceber() {
-  const [data, setData] = useState<Resp | null>(null);
+  const navigate = useNavigate();
+  const [f, setF] = useState({ situacao: 'aberto', inicio: '', fim: '', q: '', bairro: '', cidade: '', endereco: '', origem: '' });
+  const [aplicado, setAplicado] = useState(f);
+  const [data, setData] = useState<RespTit | null>(null);
   const [contasFin, setContasFin] = useState<Conta[]>([]);
-  const [situacao, setSituacao] = useState('');
-  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
-  const [receberModal, setReceberModal] = useState<ContaReceber | null>(null);
-  const [editando, setEditando] = useState<ContaReceber | null>(null);
+  const [baixa, setBaixa] = useState<Titulo | null>(null);
+  const [mais, setMais] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
-    try {
-      const params = new URLSearchParams({ page: String(page) });
-      if (situacao) params.set('situacao', situacao);
-      const [res, cf] = await Promise.all([
-        api.get<Resp>(`/financeiro/contas-receber?${params}`),
-        api.get<Conta[]>('/financeiro/contas'),
-      ]);
-      setData(res); setContasFin(cf);
-    } finally { setLoading(false); }
-  }, [situacao, page]);
-
+    try { setData(await api.get<RespTit>(`/financeiro/receber?${filtrosParaQuery(aplicado)}`)); }
+    catch { setData(null); }
+    finally { setLoading(false); }
+  }, [aplicado]);
   useEffect(() => { load(); }, [load]);
+  useEffect(() => { api.get<Conta[]>('/financeiro/contas').then(setContasFin).catch(() => {}); }, []);
 
-  async function excluir(id: string) {
-    if (!confirm('Excluir esta conta?')) return;
-    await api.delete(`/financeiro/contas-receber/${id}`);
+  const set = (k: keyof typeof f, v: string) => setF(x => ({ ...x, [k]: v }));
+  const aplicar = (patch?: Partial<typeof f>) => { const n = { ...f, ...(patch || {}) }; setF(n); setAplicado(n); };
+
+  async function desfazer(t: Titulo) {
+    if (!confirm('Desfazer este recebimento?')) return;
+    await api.post('/financeiro/receber/baixar', { origem: t.origem, id: t.id, desfazer: true });
     load();
   }
+  async function excluirManual(t: Titulo) {
+    if (!confirm('Excluir este lançamento manual?')) return;
+    await api.delete(`/financeiro/contas-receber/${t.id}`);
+    load();
+  }
+  function imprimirCobranca() {
+    window.open(`/financeiro/cobranca/imprimir?${filtrosParaQuery(aplicado)}`, '_blank');
+  }
 
-  const filterBtn = (active: boolean): React.CSSProperties => ({ padding: '6px 14px', fontSize: '12px', fontWeight: '500', border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`, borderRadius: '20px', cursor: 'pointer', background: active ? 'var(--primary)' : 'var(--surface)', color: active ? 'white' : 'var(--text-dim)' });
+  const inp: React.CSSProperties = { width: '100%', padding: '8px 10px', fontSize: '13px', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--surface)', color: 'var(--text)', outline: 'none', boxSizing: 'border-box' };
+  const lbl: React.CSSProperties = { display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '.4px' };
+  const chip = (on: boolean): React.CSSProperties => ({ padding: '6px 14px', fontSize: '12px', fontWeight: 500, border: `1px solid ${on ? 'var(--primary)' : 'var(--border)'}`, borderRadius: '20px', cursor: 'pointer', background: on ? 'var(--primary)' : 'var(--surface)', color: on ? 'white' : 'var(--text-dim)' });
+  const r = data?.resumo;
 
   return (
     <div style={{ padding: '32px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, gap: 12, flexWrap: 'wrap' }}>
         <div>
           <h1 style={{ margin: '0 0 4px', fontSize: '22px', fontWeight: '600', color: 'var(--text)' }}>Contas a Receber</h1>
-          <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-dim)' }}>{data?.total ?? '...'} contas</p>
+          <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-dim)' }}>Carnês, saldo das vendas e lançamentos manuais, tudo junto</p>
         </div>
-        <button onClick={() => { setEditando(null); setModalOpen(true); }} style={{ padding: '9px 18px', fontSize: '14px', fontWeight: '600', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>+ Nova Conta</button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={imprimirCobranca} style={{ padding: '9px 16px', fontSize: 14, fontWeight: 600, background: 'transparent', color: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: 8, cursor: 'pointer' }}>🖨️ Relatório do cobrador</button>
+          <button onClick={() => setModalOpen(true)} style={{ padding: '9px 18px', fontSize: '14px', fontWeight: '600', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>+ Lançamento manual</button>
+        </div>
       </div>
 
-      {data && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
-          {[{ label: 'Pendente / Vencido', value: brl(data.totais.pendente), color: '#d97706' }, { label: 'Recebido', value: brl(data.totais.recebido), color: '#16a34a' }].map((c, i) => (
-            <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px 20px' }}>
-              <p style={{ margin: '0 0 4px', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{c.label}</p>
-              <p style={{ margin: 0, fontSize: '22px', fontWeight: '700', fontFamily: 'var(--mono)', color: c.color }}>{c.value}</p>
+      {r && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 14, marginBottom: 18 }}>
+          {[
+            { l: 'Em atraso', v: brl(r.vencido), c: '#dc2626', s: `${r.clientes_em_atraso} cliente${r.clientes_em_atraso === 1 ? '' : 's'}`, on: () => aplicar({ situacao: 'vencido' }) },
+            { l: 'A vencer', v: brl(r.pendente), c: '#d97706', s: 'pendente', on: () => aplicar({ situacao: 'pendente' }) },
+            { l: 'Recebido', v: brl(r.recebido), c: '#16a34a', s: aplicado.situacao === 'recebido' || aplicado.situacao === 'todos' ? 'no filtro' : 'veja em "Recebidos"', on: () => aplicar({ situacao: 'recebido' }) },
+          ].map(k => (
+            <div key={k.l} onClick={k.on} style={{ cursor: 'pointer', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '14px 18px' }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{k.l}</div>
+              <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--mono)', color: k.c }}>{k.v}</div>
+              <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>{k.s}</div>
             </div>
           ))}
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: '6px', marginBottom: '20px' }}>
-        {[['', 'Todas'], ['pendente', 'Pendentes'], ['vencido', 'Vencidas'], ['recebido', 'Recebidas']].map(([val, label]) => (
-          <button key={val} style={filterBtn(situacao === val)} onClick={() => { setSituacao(val); setPage(1); }}>{label}</button>
-        ))}
-      </div>
+      {/* Filtros */}
+      <form onSubmit={e => { e.preventDefault(); aplicar(); }} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: 16, marginBottom: 16 }}>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+          {[['aberto', 'Em aberto'], ['vencido', 'Atrasados'], ['pendente', 'A vencer'], ['recebido', 'Recebidos'], ['todos', 'Todos']].map(([v, l]) => (
+            <button type="button" key={v} style={chip(aplicado.situacao === v)} onClick={() => aplicar({ situacao: v })}>{l}</button>
+          ))}
+          <span style={{ width: 10 }} />
+          {[['', 'Todas origens'], ['carne', 'Carnês'], ['venda', 'Saldo de vendas'], ['manual', 'Manuais']].map(([v, l]) => (
+            <button type="button" key={v || 'all'} style={chip(aplicado.origem === v)} onClick={() => aplicar({ origem: v })}>{l}</button>
+          ))}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: 10, alignItems: 'end' }}>
+          <div><label style={lbl}>Cliente, CPF ou nº da venda</label><input style={inp} value={f.q} onChange={e => set('q', e.target.value)} placeholder="Buscar..." /></div>
+          <div><label style={lbl}>Vencimento de</label><input type="date" style={{ ...inp, fontFamily: 'var(--mono)' }} value={f.inicio} onChange={e => set('inicio', e.target.value)} /></div>
+          <div><label style={lbl}>até</label><input type="date" style={{ ...inp, fontFamily: 'var(--mono)' }} value={f.fim} onChange={e => set('fim', e.target.value)} /></div>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <button type="button" onClick={() => setMais(m => !m)} style={{ padding: '8px 12px', fontSize: 13, background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer', whiteSpace: 'nowrap' }}>{mais ? '− Endereço' : '+ Endereço'}</button>
+            <button type="submit" style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, background: 'var(--primary)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer' }}>Buscar</button>
+          </div>
+        </div>
+        {mais && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 10, marginTop: 10 }}>
+            <div><label style={lbl}>Bairro</label><input style={inp} value={f.bairro} onChange={e => set('bairro', e.target.value)} /></div>
+            <div><label style={lbl}>Cidade</label><input style={inp} value={f.cidade} onChange={e => set('cidade', e.target.value)} /></div>
+            <div><label style={lbl}>Endereço (rua)</label><input style={inp} value={f.endereco} onChange={e => set('endereco', e.target.value)} /></div>
+          </div>
+        )}
+      </form>
 
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
-            <tr style={{ borderBottom: '1px solid var(--border)' }}>
-              {['Descrição', 'Cliente', 'Vencimento', 'Valor', 'Situação', ''].map(h => (
-                <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', background: 'var(--surface-alt)' }}>{h}</th>
+            <tr>
+              {['Cliente', 'Referente', 'Vencimento', 'Valor', 'Situação', ''].map(h => (
+                <th key={h} style={{ padding: '11px 14px', textAlign: h === 'Valor' ? 'right' : 'left', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', background: 'var(--surface-alt)', borderBottom: '1px solid var(--border)' }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>Carregando...</td></tr>
-            ) : !data?.contas.length ? (
-              <tr><td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>Nenhuma conta encontrada.</td></tr>
-            ) : data.contas.map((c, i) => {
-              const sc = SIT_COLOR[c.situacao] || SIT_COLOR.pendente;
+              <tr><td colSpan={6} style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)', fontSize: 14 }}>Carregando...</td></tr>
+            ) : !data?.titulos.length ? (
+              <tr><td colSpan={6} style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)', fontSize: 14 }}>Nada encontrado com esses filtros.</td></tr>
+            ) : data.titulos.map(t => {
+              const sc = SIT_COLOR[t.situacao] || SIT_COLOR.pendente;
+              const og = ORIGEM[t.origem];
               return (
-                <tr key={c.id} style={{ borderBottom: i < data.contas.length - 1 ? '1px solid var(--border)' : 'none' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-alt)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                  <td style={{ padding: '12px 16px' }}>
-                    <div style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text)' }}>{c.descricao}</div>
-                    {c.categoria && <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{c.categoria}</div>}
+                <tr key={t.origem + t.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                  <td style={{ padding: '10px 14px' }}>
+                    {t.cliente_id
+                      ? <button onClick={() => navigate(`/clientes/${t.cliente_id}`)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 14, fontWeight: 600, color: 'var(--primary)', textAlign: 'left' }}>{t.cliente_nome}</button>
+                      : <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>—</span>}
+                    <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>{[t.bairro, t.cidade].filter(Boolean).join(' · ')}{t.celular ? ` · ${t.celular}` : ''}</div>
                   </td>
-                  <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>{(c as any).cliente_nome || '—'}</td>
-                  <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', color: c.situacao === 'vencido' ? '#dc2626' : 'var(--text-dim)' }}>
-                    {fmtDate(c.data_vencimento)}
-                    {c.data_recebimento && <div style={{ fontSize: '11px', color: '#16a34a' }}>Recebido: {fmtDate(c.data_recebimento)}</div>}
+                  <td style={{ padding: '10px 14px', fontSize: 13, color: 'var(--text-dim)' }}>
+                    <span style={{ fontSize: 10.5, fontWeight: 700, padding: '2px 7px', borderRadius: 10, background: og.cor + '1f', color: og.cor, marginRight: 6 }}>{og.label}</span>
+                    {t.venda_numero ? <b style={{ fontFamily: 'var(--mono)' }}>#{t.venda_numero}</b> : t.descricao}
+                    {t.parcela && <span style={{ fontFamily: 'var(--mono)', marginLeft: 6 }}>parc. {t.parcela}</span>}
                   </td>
-                  <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '600', color: 'var(--text)' }}>{brl(c.valor)}</td>
-                  <td style={{ padding: '12px 16px' }}>
-                    <span style={{ padding: '3px 9px', borderRadius: '20px', fontSize: '12px', fontWeight: '500', background: sc.bg, color: sc.color }}>{SIT_LABEL[c.situacao]}</span>
+                  <td style={{ padding: '10px 14px', fontFamily: 'var(--mono)', fontSize: 13, color: t.situacao === 'vencido' ? '#dc2626' : 'var(--text-dim)', whiteSpace: 'nowrap' }}>
+                    {fmtDate(t.vencimento)}
+                    {t.dias_atraso > 0 && <div style={{ fontSize: 11 }}>{t.dias_atraso} dia{t.dias_atraso > 1 ? 's' : ''} de atraso</div>}
+                    {t.recebido_em && <div style={{ fontSize: 11, color: '#16a34a' }}>Recebido {fmtDate(t.recebido_em)}</div>}
                   </td>
-                  <td style={{ padding: '12px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
-                    {c.situacao !== 'recebido' && (
-                      <button onClick={() => setReceberModal(c)} style={{ padding: '5px 10px', fontSize: '12px', marginRight: '6px', background: 'rgba(34,197,94,0.12)', color: '#16a34a', border: '1px solid transparent', borderRadius: '6px', cursor: 'pointer' }}>Receber</button>
-                    )}
-                    <button onClick={() => { setEditando(c); setModalOpen(true); }} style={{ padding: '5px 10px', fontSize: '12px', marginRight: '6px', background: 'var(--primary-dim)', color: 'var(--primary)', border: '1px solid transparent', borderRadius: '6px', cursor: 'pointer' }}>Editar</button>
-                    <button onClick={() => excluir(c.id)} style={{ padding: '5px 10px', fontSize: '12px', background: 'var(--red-dim)', color: 'var(--red)', border: '1px solid transparent', borderRadius: '6px', cursor: 'pointer' }}>Excluir</button>
+                  <td style={{ padding: '10px 14px', fontFamily: 'var(--mono)', fontSize: 13, fontWeight: 700, color: 'var(--text)', textAlign: 'right' }}>{brl(t.valor)}</td>
+                  <td style={{ padding: '10px 14px' }}><span style={{ padding: '3px 9px', borderRadius: 20, fontSize: 12, fontWeight: 500, background: sc.bg, color: sc.color }}>{t.situacao === 'vencido' ? 'Em atraso' : SIT_LABEL[t.situacao]}</span></td>
+                  <td style={{ padding: '10px 14px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                    {t.situacao !== 'recebido'
+                      ? <button onClick={() => setBaixa(t)} style={{ padding: '5px 12px', fontSize: 12, background: 'rgba(34,197,94,0.12)', color: '#16a34a', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}>Receber</button>
+                      : t.origem !== 'venda' && <button onClick={() => desfazer(t)} style={{ padding: '5px 10px', fontSize: 12, background: 'var(--surface-alt)', color: 'var(--text-dim)', border: 'none', borderRadius: 6, cursor: 'pointer' }}>Desfazer</button>}
+                    {t.origem === 'carne' && t.carne_id && <a href={`/carnes/${t.carne_id}/imprimir`} target="_blank" rel="noreferrer" style={{ marginLeft: 6, padding: '5px 10px', fontSize: 12, background: 'var(--primary-dim)', color: 'var(--primary)', borderRadius: 6, textDecoration: 'none' }}>Carnê</a>}
+                    {t.origem === 'manual' && <button onClick={() => excluirManual(t)} style={{ marginLeft: 6, padding: '5px 10px', fontSize: 12, background: 'var(--red-dim)', color: 'var(--red)', border: 'none', borderRadius: 6, cursor: 'pointer' }}>Excluir</button>}
                   </td>
                 </tr>
               );
@@ -242,17 +310,10 @@ export default function ContasReceber() {
           </tbody>
         </table>
       </div>
+      {data && data.titulos.length >= 3000 && <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Mostrando os primeiros 3000. Use os filtros para refinar.</p>}
 
-      {data && data.pages > 1 && (
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '20px' }}>
-          {Array.from({ length: data.pages }, (_, i) => i + 1).map(p => (
-            <button key={p} onClick={() => setPage(p)} style={{ width: '36px', height: '36px', fontSize: '14px', background: p === page ? 'var(--primary)' : 'var(--surface)', color: p === page ? 'white' : 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer' }}>{p}</button>
-          ))}
-        </div>
-      )}
-
-      {modalOpen && <Modal conta={editando} contas={contasFin} onClose={() => setModalOpen(false)} onSaved={() => { setModalOpen(false); load(); }} />}
-      {receberModal && <ReceberModal conta={receberModal} contas={contasFin} onClose={() => setReceberModal(null)} onSaved={() => { setReceberModal(null); load(); }} />}
+      {modalOpen && <Modal conta={null} contas={contasFin} onClose={() => setModalOpen(false)} onSaved={() => { setModalOpen(false); load(); }} />}
+      {baixa && <BaixaModal t={baixa} contas={contasFin} onClose={() => setBaixa(null)} onSaved={() => { setBaixa(null); load(); }} />}
     </div>
   );
 }
