@@ -15,7 +15,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
 
     const tipo = body.tipo === 'lab' ? 'lab' : 'otica';
 
-    const existing = await env.DB.prepare('SELECT id FROM usuarios WHERE email = ?').bind(body.email).first();
+    const existing = await env.DB.prepare('SELECT id FROM usuarios WHERE lower(trim(email)) = ?').bind(String(body.email || '').trim().toLowerCase()).first();
     if (existing) {
       return json({ error: 'Este e-mail já está em uso' }, 409);
     }

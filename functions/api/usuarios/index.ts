@@ -29,9 +29,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     if (!body.senha || body.senha.length < 6) return json({ error: 'Senha deve ter pelo menos 6 caracteres' }, 400);
 
     const existing = await env.DB.prepare(
-      'SELECT id FROM usuarios WHERE tenant_id = ? AND email = ?'
-    ).bind(auth.tenant_id, body.email.trim().toLowerCase()).first();
-    if (existing) return json({ error: 'E-mail já cadastrado' }, 409);
+      'SELECT tenant_id FROM usuarios WHERE lower(trim(email)) = ?'
+    ).bind(body.email.trim().toLowerCase()).first<{ tenant_id: string }>();
+    // e-mail é o login dos sistemas (Óticas, Vision, LAB) — não pode repetir nem em outra conta
+    if (existing) return json({ error: existing.tenant_id === auth.tenant_id ? 'E-mail já cadastrado' : 'Este e-mail já é usado em outra conta. Use outro e-mail ou peça ao suporte para unir as contas.' }, 409);
 
     const id = crypto.randomUUID();
     const senha_hash = await hashPassword(body.senha);

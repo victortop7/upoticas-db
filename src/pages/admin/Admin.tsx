@@ -419,6 +419,64 @@ function EditarLicenca({ secret, tenant, onClose, onSaved }: { secret: string; t
   );
 }
 
+/* ─────────────── UNIR CONTAS ─────────────── */
+function UnirContas({ secret, tenant, todos, onClose, onSaved }: { secret: string; tenant: Tenant; todos: Tenant[]; onClose: () => void; onSaved: () => void }) {
+  const outras = todos.filter(t => t.id !== tenant.id && t.ativo);
+  // sugere primeiro as contas com o mesmo e-mail ou nome parecido
+  const chave = (s: string) => s.toLowerCase().normalize('NFD').replace(/[^a-z0-9]/g, '');
+  const parecida = (t: Tenant) => t.email.toLowerCase() === tenant.email.toLowerCase() || chave(t.nome).includes(chave(tenant.nome).slice(0, 8)) || chave(tenant.nome).includes(chave(t.nome).slice(0, 8));
+  const ordenadas = [...outras].sort((a, b) => Number(parecida(b)) - Number(parecida(a)) || a.nome.localeCompare(b.nome));
+  const [outra, setOutra] = useState(ordenadas.find(parecida)?.id || '');
+  const [saving, setSaving] = useState(false);
+  const [erro, setErro] = useState('');
+  const sel = outras.find(t => t.id === outra);
+
+  async function unir() {
+    if (!sel) { setErro('Escolha a outra conta.'); return; }
+    if (!confirm(`Juntar "${sel.nome}" (${sel.email}) dentro de "${tenant.nome}"?\n\nTodos os dados passam pra "${tenant.nome}", que fica com os dois sistemas. Esse login continua valendo nos dois. A conta "${sel.nome}" é desativada.`)) return;
+    setSaving(true); setErro('');
+    try {
+      await adminRequest('/admin/unir', secret, { method: 'POST', body: JSON.stringify({ principal_id: tenant.id, outra_id: sel.id }) });
+      onSaved();
+    } catch (e) { setErro(e instanceof Error ? e.message : 'Erro ao unir'); setSaving(false); }
+  }
+
+  return (
+    <Modal title={`Unir contas · ${tenant.nome}`} onClose={onClose} width={520}>
+      <div style={{ display: 'grid', gap: 14 }}>
+        <p style={{ margin: 0, fontSize: 13.5, color: C.dim, lineHeight: 1.6 }}>
+          Use quando o mesmo cliente tem uma conta no <b style={{ color: C.text }}>Óticas</b> e outra no <b style={{ color: C.text }}>Vision</b>.
+          Vira uma conta só: mesmo e-mail e mesma senha nos dois sistemas, com clientes, OS e usuários interligados.
+        </p>
+        <div>
+          <label style={lbl}>Conta que fica (principal)</label>
+          <div style={{ ...inp, background: C.accentDim }}>{tenant.nome} · <span style={{ fontFamily: C.mono }}>{tenant.email}</span> · {nomesSistemas(tenant)}</div>
+        </div>
+        <div>
+          <label style={lbl}>Conta que será juntada nela</label>
+          <select style={inp} value={outra} onChange={e => setOutra(e.target.value)}>
+            <option value="">— Escolher —</option>
+            {ordenadas.map(t => <option key={t.id} value={t.id}>{parecida(t) ? '★ ' : ''}{t.nome} · {t.email} · {nomesSistemas(t)}</option>)}
+          </select>
+        </div>
+        {sel && (
+          <div style={{ fontSize: 12.5, color: C.dim, background: C.surfaceHi, borderRadius: 9, padding: '10px 12px', lineHeight: 1.6 }}>
+            Depois de unir, <b style={{ color: C.text }}>{tenant.email}</b> entra no {SISTEMAS_OPC.filter(o => new Set([...(tenant.sistemas || [tenant.tipo]), ...(sel.sistemas || [sel.tipo])]).has(o.id)).map(o => o.nome).join(' e no ')}.
+            Se o mesmo e-mail existir nas duas, vale a senha da conta principal.
+          </div>
+        )}
+        {erro && <div style={{ color: C.red, fontSize: 13 }}>{erro}</div>}
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+          <button onClick={onClose} style={{ padding: '10px 18px', background: 'transparent', color: C.dim, border: `1px solid ${C.border}`, borderRadius: 9, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Cancelar</button>
+          <button onClick={unir} disabled={saving || !sel} style={{ padding: '10px 22px', background: C.accent, color: '#fff', border: 'none', borderRadius: 9, fontSize: 14, fontWeight: 700, cursor: 'pointer', opacity: saving || !sel ? 0.6 : 1 }}>
+            {saving ? 'Unindo…' : 'Unir contas'}
+          </button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
 /* ─────────────── KPI CARD ─────────────── */
 function Kpi({ label, value, color }: { label: string; value: number | string; color: string }) {
   return (
@@ -440,6 +498,7 @@ export default function Admin() {
   const [loading, setLoading] = useState(false);
   const [novo, setNovo] = useState(false);
   const [editar, setEditar] = useState<Tenant | null>(null);
+  const [unir, setUnir] = useState<Tenant | null>(null);
 
   const carregar = useCallback(async (s: string) => {
     setLoading(true);
@@ -599,6 +658,7 @@ export default function Admin() {
                           <td style={{ padding: '13px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                             <button onClick={() => entrarComoCliente(t)} style={{ padding: '6px 12px', background: C.accent, color: '#fff', border: 'none', borderRadius: 8, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', marginRight: 6 }}>Entrar</button>
                             <button onClick={() => setEditar(t)} style={{ padding: '6px 12px', background: C.surfaceHi, color: C.text, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', marginRight: 6 }}>Licença</button>
+                            <button onClick={() => setUnir(t)} title="Juntar com a conta do outro sistema (Óticas + Vision)" style={{ padding: '6px 12px', background: C.surfaceHi, color: C.text, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', marginRight: 6 }}>Unir</button>
                             <button onClick={() => excluirCliente(t)} style={{ padding: '6px 10px', background: 'transparent', color: C.red, border: `1px solid ${C.redDim}`, borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>Excluir</button>
                           </td>
                         </tr>
@@ -659,6 +719,7 @@ export default function Admin() {
       </main>
 
       {novo && <NovoCliente secret={secret} onClose={() => setNovo(false)} onSaved={() => { setNovo(false); carregar(secret); setAba('clientes'); }} />}
+      {unir && <UnirContas secret={secret} tenant={unir} todos={tenants} onClose={() => setUnir(null)} onSaved={() => { setUnir(null); carregar(secret); }} />}
       {editar && <EditarLicenca secret={secret} tenant={editar} onClose={() => setEditar(null)} onSaved={() => { setEditar(null); carregar(secret); }} />}
     </div>
   );
