@@ -12,10 +12,19 @@ export interface AuthData {
 // Carrega a loja do usuário (multi-loja). Admin fica com loja_id null (vê tudo).
 async function carregarLoja(env: Env, auth: AuthData): Promise<void> {
   try {
-    const u = await env.DB.prepare('SELECT loja_id FROM usuarios WHERE id = ?')
-      .bind(auth.usuario_id).first<{ loja_id: string | null }>();
+    const u = await env.DB.prepare('SELECT loja_id, permissoes FROM usuarios WHERE id = ?')
+      .bind(auth.usuario_id).first<{ loja_id: string | null; permissoes: string | null }>();
     auth.loja_id = u?.loja_id ?? null;
-  } catch { auth.loja_id = null; /* coluna ainda não existe */ }
+    // permissão personalizada "ver todas as lojas" (definida no painel admin)
+    try { if (u?.permissoes && JSON.parse(u.permissoes)?.todas_lojas) auth.loja_id = null; } catch { /* json inválido */ }
+  } catch {
+    // coluna permissoes ainda não existe
+    try {
+      const u = await env.DB.prepare('SELECT loja_id FROM usuarios WHERE id = ?')
+        .bind(auth.usuario_id).first<{ loja_id: string | null }>();
+      auth.loja_id = u?.loja_id ?? null;
+    } catch { auth.loja_id = null; }
+  }
 }
 
 function licenseBlock(error: string, blocked = false, expired = false): Response {

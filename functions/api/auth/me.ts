@@ -2,14 +2,19 @@ import type { Env } from '../../lib/types';
 import { requireAuthBasic, json } from '../../lib/auth-middleware';
 import { ensureSistemas, parseSistemas } from '../../lib/sistemas';
 
+function lerPermissoes(raw: unknown) {
+  try { return raw ? JSON.parse(String(raw)) : null; } catch { return null; }
+}
+
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   const auth = await requireAuthBasic(request, env);
   if (auth instanceof Response) return auth;
 
   try {
     await ensureSistemas(env.DB);
+    try { await env.DB.prepare('ALTER TABLE usuarios ADD COLUMN permissoes TEXT').run(); } catch { /* já existe */ }
     const usuario = await env.DB.prepare(
-      `SELECT u.id, u.tenant_id, u.nome, u.email, u.perfil, u.ativo,
+      `SELECT u.id, u.tenant_id, u.nome, u.email, u.perfil, u.ativo, u.permissoes,
               t.nome as tenant_nome, t.tipo as tenant_tipo, t.plano,
               t.trial_expira, t.ativo as tenant_ativo, t.sistemas,
               COALESCE(t.bloqueado, 0) as bloqueado,
@@ -28,6 +33,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
         email: usuario.email,
         perfil: usuario.perfil,
         ativo: Boolean(usuario.ativo),
+        permissoes: lerPermissoes(usuario.permissoes),
       },
       tenant: {
         id: usuario.tenant_id,

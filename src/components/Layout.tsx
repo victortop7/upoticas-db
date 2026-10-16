@@ -1,4 +1,5 @@
-import { Outlet, Navigate } from 'react-router-dom';
+import { Outlet, Navigate, useLocation } from 'react-router-dom';
+import { TODOS_MENUS, menusDo, rotaLiberada } from '../lib/permissoes';
 import Sidebar from './Sidebar';
 import BuscaGlobal from './BuscaGlobal';
 import PixLicenca from './PixLicenca';
@@ -71,6 +72,7 @@ function AvisoBanner({ dias, motivo }: { dias?: number; motivo?: string }) {
 
 export default function Layout() {
   const { usuario, tenant, loading } = useAuth();
+  const { pathname } = useLocation();
 
   if (loading) {
     return (
@@ -82,6 +84,10 @@ export default function Layout() {
 
   if (!usuario) return <Navigate to="/login" replace />;
   if (!temSistema(tenant, 'otica')) return <SemAcesso sistema="otica" login="/login" />;
+  const liberados = menusDo(usuario);
+  if (rotaLiberada(pathname, TODOS_MENUS) && !rotaLiberada(pathname, liberados) && liberados.length) {
+    return <Navigate to={liberados[0]} replace />;
+  }
 
   const licenca = avaliarLicenca(tenant);
 

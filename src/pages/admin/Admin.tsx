@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { adminRequest } from '../../lib/api';
+import { MENU_GRUPOS, TODOS_MENUS, menusPadrao } from '../../lib/permissoes';
 
 /* ============================================================
    PAINEL ADMINISTRATIVO — Conexão Óticas
@@ -375,7 +376,7 @@ function EditarLicenca({ secret, tenant, onClose, onSaved, onSenhas }: { secret:
     <Modal title={`Licença · ${tenant.nome}`} onClose={onClose}>
       <div style={{ display: 'grid', gap: 14 }}>
         <button onClick={onSenhas} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 14px', background: C.surfaceHi, color: C.text, border: `1px solid ${C.border}`, borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: C.sans }}>
-          🔑 Usuários e senhas (trocar senha) <span style={{ color: C.accent }}>→</span>
+          🔑 Usuários, permissões e senhas <span style={{ color: C.accent }}>→</span>
         </button>
         <div>
           <label style={lbl}>Plano</label>
@@ -423,7 +424,102 @@ function EditarLicenca({ secret, tenant, onClose, onSaved, onSenhas }: { secret:
 }
 
 /* ─────────────── USUÁRIOS E SENHAS ─────────────── */
-type UsuarioAdm = { id: string; nome: string; email: string; perfil: string; ativo: number };
+type PermAdm = { menus?: string[] | null; todas_lojas?: boolean } | null;
+type UsuarioAdm = { id: string; nome: string; email: string; perfil: string; ativo: number; loja_id?: string | null; permissoes?: PermAdm };
+type LojaAdm = { id: string; nome: string };
+const PERFIS_OTICA = [
+  { v: 'admin', l: 'Administrador (vê tudo)' },
+  { v: 'vendedor', l: 'Vendedor' },
+  { v: 'caixa', l: 'Caixa' },
+  { v: 'financeiro', l: 'Financeiro' },
+  { v: 'marketing', l: 'Marketing' },
+];
+
+function EditorPermissoes({ secret, u, lojas, onSaved, onCancel }: { secret: string; u: UsuarioAdm; lojas: LojaAdm[]; onSaved: () => void; onCancel: () => void }) {
+  const [perfil, setPerfil] = useState(u.perfil);
+  const [loja, setLoja] = useState(u.loja_id || '');
+  const [todas, setTodas] = useState(Boolean(u.permissoes?.todas_lojas));
+  const [menus, setMenus] = useState<string[]>(Array.isArray(u.permissoes?.menus) ? u.permissoes!.menus! : menusPadrao(u.perfil));
+  const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState('');
+  const isAdm = perfil === 'admin';
+  const toggle = (to: string) => setMenus(m => m.includes(to) ? m.filter(x => x !== to) : [...m, to]);
+
+  async function salvar() {
+    if (!isAdm && !menus.length) { setErro('Libere pelo menos uma tela.'); return; }
+    setSalvando(true); setErro('');
+    try {
+      await adminRequest('/admin/usuarios', secret, { method: 'PATCH', body: JSON.stringify({
+        id: u.id, perfil, loja_id: isAdm ? null : (loja || null),
+        permissoes: isAdm ? null : { menus: TODOS_MENUS.filter(m => menus.includes(m)), todas_lojas: todas },
+      }) });
+      onSaved();
+    } catch (e) { setErro(e instanceof Error ? e.message : 'Erro ao salvar'); setSalvando(false); }
+  }
+
+  const chip = (on: boolean): React.CSSProperties => ({ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 12.5, color: on ? C.text : C.dim, padding: '6px 9px', border: `1px solid ${on ? C.accent : C.border}`, background: on ? C.accentDim : 'transparent', borderRadius: 8 });
+
+  return (
+    <div style={{ marginTop: 10, display: 'grid', gap: 12, borderTop: `1px solid ${C.border}`, paddingTop: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+        <div>
+          <label style={lbl}>Cargo</label>
+          <select style={inp} value={perfil} onChange={e => { setPerfil(e.target.value); setMenus(menusPadrao(e.target.value)); }}>
+            {PERFIS_OTICA.map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
+            {!PERFIS_OTICA.some(o => o.v === perfil) && <option value={perfil}>{perfil}</option>}
+          </select>
+        </div>
+        <div>
+          <label style={lbl}>Loja</label>
+          <select style={inp} value={isAdm ? '' : loja} disabled={isAdm} onChange={e => setLoja(e.target.value)}>
+            <option value="">{lojas.length ? '— Sem loja —' : '— Conta sem lojas —'}</option>
+            {lojas.map(l => <option key={l.id} value={l.id}>{l.nome}</option>)}
+          </select>
+        </div>
+      </div>
+      {isAdm ? (
+        <div style={{ fontSize: 12.5, color: C.dim }}>Administrador vê todas as telas e todas as lojas.</div>
+      ) : (
+        <>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: C.text, cursor: 'pointer' }}>
+            <input type="checkbox" checked={todas} onChange={e => setTodas(e.target.checked)} />
+            Ver dados de <b>todas as lojas</b> {loja && !todas ? <span style={{ color: C.dim }}>(desmarcado: só a loja dela)</span> : null}
+          </label>
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <label style={lbl}>Telas que pode acessar</label>
+              <div style={{ display: 'flex', gap: 10, fontSize: 11.5 }}>
+                <button onClick={() => setMenus(TODOS_MENUS)} style={{ background: 'none', border: 'none', color: C.accent, cursor: 'pointer', padding: 0 }}>todas</button>
+                <button onClick={() => setMenus(menusPadrao(perfil))} style={{ background: 'none', border: 'none', color: C.accent, cursor: 'pointer', padding: 0 }}>padrão do cargo</button>
+                <button onClick={() => setMenus([])} style={{ background: 'none', border: 'none', color: C.dim, cursor: 'pointer', padding: 0 }}>nenhuma</button>
+              </div>
+            </div>
+            <div style={{ display: 'grid', gap: 8 }}>
+              {MENU_GRUPOS.map(g => (
+                <div key={g.label}>
+                  <div style={{ fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '.6px', color: C.dim, marginBottom: 4 }}>{g.label}</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {g.items.map(i => (
+                      <label key={i.to} style={chip(menus.includes(i.to))}>
+                        <input type="checkbox" checked={menus.includes(i.to)} onChange={() => toggle(i.to)} style={{ margin: 0 }} />
+                        {i.icon} {i.label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+      {erro && <div style={{ color: C.red, fontSize: 13 }}>{erro}</div>}
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        <button onClick={onCancel} style={{ padding: '8px 14px', background: 'transparent', color: C.dim, border: `1px solid ${C.border}`, borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>Cancelar</button>
+        <button onClick={salvar} disabled={salvando} style={{ padding: '8px 18px', background: C.accent, color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>{salvando ? 'Salvando…' : 'Salvar permissões'}</button>
+      </div>
+    </div>
+  );
+}
 function gerarSenha(): string {
   const letras = 'abcdefghjkmnpqrstuvwxyz';
   let s = '';
@@ -432,6 +528,9 @@ function gerarSenha(): string {
 }
 function UsuariosSenhas({ secret, tenant, onClose }: { secret: string; tenant: Tenant; onClose: () => void }) {
   const [lista, setLista] = useState<UsuarioAdm[] | null>(null);
+  const [lojas, setLojas] = useState<LojaAdm[]>([]);
+  const [permDe, setPermDe] = useState<string | null>(null);
+  const [recarregar, setRecarregar] = useState(0);
   const [erro, setErro] = useState('');
   const [editando, setEditando] = useState<string | null>(null);
   const [nova, setNova] = useState('');
@@ -439,9 +538,10 @@ function UsuariosSenhas({ secret, tenant, onClose }: { secret: string; tenant: T
   const [feito, setFeito] = useState<{ nome: string; email: string; senha: string } | null>(null);
 
   useEffect(() => {
-    adminRequest<UsuarioAdm[]>(`/admin/usuarios?tenant_id=${tenant.id}`, secret)
-      .then(setLista).catch(e => setErro(e instanceof Error ? e.message : 'Erro ao carregar'));
-  }, [secret, tenant.id]);
+    adminRequest<{ usuarios: UsuarioAdm[]; lojas: LojaAdm[] }>(`/admin/usuarios?tenant_id=${tenant.id}`, secret)
+      .then(r => { setLista(r.usuarios); setLojas(r.lojas); }).catch(e => setErro(e instanceof Error ? e.message : 'Erro ao carregar'));
+  }, [secret, tenant.id, recarregar]);
+  const nomeLoja = (id?: string | null) => lojas.find(l => l.id === id)?.nome;
 
   async function salvar(u: UsuarioAdm) {
     if (nova.length < 6) { setErro('A senha precisa ter no mínimo 6 caracteres.'); return; }
@@ -457,10 +557,10 @@ function UsuariosSenhas({ secret, tenant, onClose }: { secret: string; tenant: T
   const textoEnvio = feito ? `Olá, ${feito.nome}! Seu acesso foi atualizado:\nE-mail: ${feito.email}\nSenha: ${feito.senha}\nEntre em conexaooticas.com.br` : '';
 
   return (
-    <Modal title={`Usuários · ${tenant.nome}`} onClose={onClose} width={560}>
+    <Modal title={`Usuários e permissões · ${tenant.nome}`} onClose={onClose} width={640}>
       <div style={{ display: 'grid', gap: 12 }}>
         <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5 }}>
-          A senha atual não fica visível (é guardada protegida). Se a pessoa esqueceu, defina uma nova aqui e envie pra ela.
+          <b style={{ color: C.text }}>Permissões</b>: cargo, loja e quais telas cada pessoa vê. <b style={{ color: C.text }}>Trocar senha</b>: a senha atual não fica visível (é guardada protegida); se a pessoa esqueceu, defina uma nova e envie pra ela.
         </div>
         {feito && (
           <div style={{ background: C.accentDim, border: `1px solid ${C.accent}`, borderRadius: 10, padding: '12px 14px' }}>
@@ -478,13 +578,19 @@ function UsuariosSenhas({ secret, tenant, onClose }: { secret: string; tenant: T
           <div key={u.id} style={{ background: C.surfaceHi, border: `1px solid ${C.border}`, borderRadius: 10, padding: '10px 12px', opacity: u.ativo ? 1 : 0.55 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
               <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{u.nome} <span style={{ fontSize: 11, color: C.dim, fontWeight: 500 }}>· {u.perfil}{u.ativo ? '' : ' · inativo'}</span></div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{u.nome} <span style={{ fontSize: 11, color: C.dim, fontWeight: 500 }}>· {u.perfil}{u.perfil !== 'admin' && nomeLoja(u.loja_id) ? ` · ${nomeLoja(u.loja_id)}` : ''}{u.permissoes?.todas_lojas ? ' · todas as lojas' : ''}{u.permissoes?.menus ? ' · acesso personalizado' : ''}{u.ativo ? '' : ' · inativo'}</span></div>
                 <div style={{ fontSize: 12.5, color: C.dim, fontFamily: C.mono, overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.email}</div>
               </div>
-              {editando !== u.id && (
-                <button onClick={() => { setEditando(u.id); setNova(gerarSenha()); setErro(''); }} style={{ padding: '6px 12px', background: C.accent, color: '#fff', border: 'none', borderRadius: 8, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>Trocar senha</button>
+              {editando !== u.id && permDe !== u.id && (
+                <div style={{ display: 'flex', gap: 6 }}>
+                <button onClick={() => { setPermDe(u.id); setEditando(null); setErro(''); }} style={{ padding: '6px 12px', background: 'transparent', color: C.text, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>Permissões</button>
+                <button onClick={() => { setEditando(u.id); setPermDe(null); setNova(gerarSenha()); setErro(''); }} style={{ padding: '6px 12px', background: C.accent, color: '#fff', border: 'none', borderRadius: 8, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>Trocar senha</button>
+                </div>
               )}
             </div>
+            {permDe === u.id && (
+              <EditorPermissoes secret={secret} u={u} lojas={lojas} onCancel={() => setPermDe(null)} onSaved={() => { setPermDe(null); setRecarregar(n => n + 1); }} />
+            )}
             {editando === u.id && (
               <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
                 <input style={{ ...inp, flex: 1, minWidth: 140, fontFamily: C.mono }} value={nova} onChange={e => setNova(e.target.value)} placeholder="nova senha (mín. 6)" autoFocus />
@@ -748,7 +854,7 @@ export default function Admin() {
                           <td style={{ padding: '13px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                             <button onClick={() => entrarComoCliente(t)} style={{ padding: '6px 12px', background: C.accent, color: '#fff', border: 'none', borderRadius: 8, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', marginRight: 6 }}>Entrar</button>
                             <button onClick={() => setEditar(t)} style={{ padding: '6px 12px', background: C.surfaceHi, color: C.text, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', marginRight: 6 }}>Licença</button>
-                            <button onClick={() => setSenhas(t)} title="Ver usuários e trocar senha" style={{ padding: '6px 12px', background: C.surfaceHi, color: C.text, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', marginRight: 6 }}>Senhas</button>
+                            <button onClick={() => setSenhas(t)} title="Usuários, permissões e senhas" style={{ padding: '6px 12px', background: C.surfaceHi, color: C.text, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', marginRight: 6 }}>Usuários</button>
                             <button onClick={() => setUnir(t)} title="Juntar com a conta do outro sistema (Óticas + Vision)" style={{ padding: '6px 12px', background: C.surfaceHi, color: C.text, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', marginRight: 6 }}>Unir</button>
                             <button onClick={() => excluirCliente(t)} style={{ padding: '6px 10px', background: 'transparent', color: C.red, border: `1px solid ${C.redDim}`, borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>Excluir</button>
                           </td>

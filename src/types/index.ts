@@ -19,6 +19,7 @@ export interface Usuario {
   email: string;
   perfil: 'admin' | 'vendedor' | 'caixa' | 'marketing' | 'digitador' | 'financeiro';
   ativo: boolean;
+  permissoes?: { menus?: string[] | null; todas_lojas?: boolean } | null;
 }
 
 export interface Cliente {

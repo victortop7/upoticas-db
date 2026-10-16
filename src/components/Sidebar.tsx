@@ -1,52 +1,13 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
-
-const NAV_GERAL = [
-  { to: '/dashboard', label: 'Painel', icon: '◉' },
-  { to: '/clientes', label: 'Clientes', icon: '👤' },
-  { to: '/os', label: 'Ordens de Serviço', icon: '🔧' },
-  { to: '/vendas', label: 'Vendas', icon: '🛒' },
-  { to: '/crm', label: 'Funil CRM', icon: '🎯' },
-  { to: '/relatorios', label: 'Relatórios', icon: '📊' },
-];
-
-const NAV_FINANCEIRO = [
-  { to: '/financeiro/caixa', label: 'Caixa', icon: '💵' },
-  { to: '/faturamento', label: 'Faturamento', icon: '🧾' },
-  { to: '/financeiro/contas-pagar', label: 'Contas a Pagar', icon: '📤' },
-  { to: '/financeiro/contas-receber', label: 'Contas a Receber', icon: '📥' },
-  { to: '/carnes', label: 'Carnês / Boletos', icon: '🧾' },
-  { to: '/financeiro/fluxo', label: 'Fluxo Financeiro', icon: '📈' },
-  { to: '/financeiro/contas', label: 'Contas', icon: '🏦' },
-  { to: '/bancario', label: 'Controle Bancário', icon: '🏛️' },
-];
-
-const NAV_MARKETING = [
-  { to: '/marketing/campanhas', label: 'Campanhas', icon: '📢' },
-  { to: '/marketing/aniversariantes', label: 'Aniversariantes', icon: '🎂' },
-  { to: '/marketing/modelos', label: 'Modelos', icon: '💬' },
-  { to: '/marketing/historico', label: 'Histórico', icon: '📋' },
-];
-
-const NAV_CADASTROS = [
-  { to: '/fornecedores', label: 'Fornecedores', icon: '🏭' },
-  { to: '/medicos', label: 'Médicos / Oftalmos', icon: '👨‍⚕️' },
-  { to: '/produtos', label: 'Produtos / Serviços', icon: '📦' },
-  { to: '/estoque', label: 'Estoque', icon: '🗂️' },
-];
-
-const NAV_CONFIG = [
-  { to: '/vendedores', label: 'Vendedores', icon: '🏆' },
-  { to: '/lojas', label: 'Lojas & Acessos', icon: '🏬' },
-  { to: '/usuarios', label: 'Usuários', icon: '👥' },
-  { to: '/configuracoes', label: 'Configurações', icon: '⚙️' },
-];
+import { MENU_GRUPOS, menusDo } from '../lib/permissoes';
 
 export default function Sidebar() {
   const { tenant, usuario, logout } = useAuth();
   const navigate = useNavigate();
   const { dark, toggle } = useTheme();
+  const liberados = menusDo(usuario);
 
   async function handleLogout() {
     await logout();
@@ -92,35 +53,8 @@ export default function Sidebar() {
 
       {/* Nav */}
       <nav style={{ flex: 1, padding: '12px 8px', overflowY: 'auto', overflowX: 'hidden' }}>
-        {usuario?.perfil === 'marketing' ? (
-          /* Menu restrito para marketing */
-          <div>
-            <p style={{ fontSize: '10px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', padding: '0 8px', margin: '8px 0 4px' }}>
-              Menu
-            </p>
-            {[
-              { to: '/vendas', label: 'Vendas', icon: '🛒' },
-              { to: '/crm', label: 'Funil CRM', icon: '🎯' },
-            ].map(item => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                style={({ isActive }) => ({
-                  display: 'flex', alignItems: 'center', gap: '10px',
-                  padding: '8px 10px', borderRadius: '8px', marginBottom: '2px',
-                  fontSize: '13px', fontWeight: isActive ? '600' : '400',
-                  color: isActive ? 'var(--primary)' : 'var(--text-dim)',
-                  background: isActive ? 'var(--primary-dim)' : 'transparent',
-                  textDecoration: 'none', transition: 'all 0.15s',
-                })}
-              >
-                <span style={{ fontSize: '15px' }}>{item.icon}</span>
-                {item.label}
-              </NavLink>
-            ))}
-          </div>
-        ) : (
-          /* Menu completo para admin/vendedor/caixa */
+        {(
+          /* Menu conforme as permissões do usuário */
           <>
             <button
               onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }))}
@@ -137,13 +71,8 @@ export default function Sidebar() {
               </span>
               <kbd style={{ fontSize: '10px', padding: '1px 5px', borderRadius: '3px', background: 'var(--surface)', border: '1px solid var(--border)', fontFamily: 'var(--mono)' }}>⌃K</kbd>
             </button>
-            {([
-              { label: 'Menu', items: [...NAV_GERAL, ...(usuario?.perfil !== 'admin' ? [{ to: '/vendedores', label: 'Ranking', icon: '🏆' }] : [])] },
-              ...(usuario?.perfil === 'admin' ? [{ label: 'Financeiro', items: NAV_FINANCEIRO }] : []),
-              { label: 'Marketing', items: NAV_MARKETING },
-              { label: 'Cadastros', items: usuario?.perfil === 'admin' ? NAV_CADASTROS : [] },
-              { label: 'Sistema', items: usuario?.perfil === 'admin' ? NAV_CONFIG : [] },
-            ]).filter(g => g.items.length > 0).map(({ label, items }) => (
+            {MENU_GRUPOS.map(g => ({ label: g.label, items: g.items.filter(i => liberados.includes(i.to)).map(i => (i.to === '/vendedores' && usuario?.perfil !== 'admin') ? { ...i, label: 'Ranking' } : i) }))
+              .filter(g => g.items.length > 0).map(({ label, items }) => (
               <div key={label}>
                 <p style={{ fontSize: '10px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', padding: '0 8px', margin: '8px 0 4px' }}>
                   {label}
