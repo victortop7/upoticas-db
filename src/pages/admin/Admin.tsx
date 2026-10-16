@@ -419,6 +419,85 @@ function EditarLicenca({ secret, tenant, onClose, onSaved }: { secret: string; t
   );
 }
 
+/* ─────────────── USUÁRIOS E SENHAS ─────────────── */
+type UsuarioAdm = { id: string; nome: string; email: string; perfil: string; ativo: number };
+function gerarSenha(): string {
+  const letras = 'abcdefghjkmnpqrstuvwxyz';
+  let s = '';
+  for (let i = 0; i < 4; i++) s += letras[Math.floor(Math.random() * letras.length)];
+  return s + String(Math.floor(1000 + Math.random() * 9000));
+}
+function UsuariosSenhas({ secret, tenant, onClose }: { secret: string; tenant: Tenant; onClose: () => void }) {
+  const [lista, setLista] = useState<UsuarioAdm[] | null>(null);
+  const [erro, setErro] = useState('');
+  const [editando, setEditando] = useState<string | null>(null);
+  const [nova, setNova] = useState('');
+  const [salvando, setSalvando] = useState(false);
+  const [feito, setFeito] = useState<{ nome: string; email: string; senha: string } | null>(null);
+
+  useEffect(() => {
+    adminRequest<UsuarioAdm[]>(`/admin/usuarios?tenant_id=${tenant.id}`, secret)
+      .then(setLista).catch(e => setErro(e instanceof Error ? e.message : 'Erro ao carregar'));
+  }, [secret, tenant.id]);
+
+  async function salvar(u: UsuarioAdm) {
+    if (nova.length < 6) { setErro('A senha precisa ter no mínimo 6 caracteres.'); return; }
+    setSalvando(true); setErro('');
+    try {
+      await adminRequest('/admin/senha', secret, { method: 'POST', body: JSON.stringify({ usuario_id: u.id, nova_senha: nova }) });
+      setFeito({ nome: u.nome, email: u.email, senha: nova });
+      setEditando(null); setNova('');
+    } catch (e) { setErro(e instanceof Error ? e.message : 'Erro ao trocar a senha'); }
+    setSalvando(false);
+  }
+
+  const textoEnvio = feito ? `Olá, ${feito.nome}! Seu acesso foi atualizado:\nE-mail: ${feito.email}\nSenha: ${feito.senha}\nEntre em conexaooticas.com.br` : '';
+
+  return (
+    <Modal title={`Usuários · ${tenant.nome}`} onClose={onClose} width={560}>
+      <div style={{ display: 'grid', gap: 12 }}>
+        <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5 }}>
+          A senha atual não fica visível (é guardada protegida). Se a pessoa esqueceu, defina uma nova aqui e envie pra ela.
+        </div>
+        {feito && (
+          <div style={{ background: C.accentDim, border: `1px solid ${C.accent}`, borderRadius: 10, padding: '12px 14px' }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 6 }}>✅ Senha de {feito.nome} alterada</div>
+            <div style={{ fontFamily: C.mono, fontSize: 13, color: C.text, lineHeight: 1.7 }}>E-mail: {feito.email}<br />Senha: <b>{feito.senha}</b></div>
+            <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+              <button onClick={() => navigator.clipboard?.writeText(textoEnvio)} style={{ padding: '7px 12px', background: C.surfaceHi, color: C.text, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>📋 Copiar</button>
+              <a href={`https://wa.me/?text=${encodeURIComponent(textoEnvio)}`} target="_blank" rel="noopener noreferrer" style={{ padding: '7px 12px', background: '#25D366', color: '#fff', borderRadius: 8, fontSize: 12.5, fontWeight: 700, textDecoration: 'none' }}>Enviar no WhatsApp</a>
+            </div>
+          </div>
+        )}
+        {!lista && !erro && <div style={{ color: C.dim, fontSize: 13 }}>Carregando…</div>}
+        {lista && lista.length === 0 && <div style={{ color: C.dim, fontSize: 13 }}>Nenhum usuário nesta conta.</div>}
+        {lista?.map(u => (
+          <div key={u.id} style={{ background: C.surfaceHi, border: `1px solid ${C.border}`, borderRadius: 10, padding: '10px 12px', opacity: u.ativo ? 1 : 0.55 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{u.nome} <span style={{ fontSize: 11, color: C.dim, fontWeight: 500 }}>· {u.perfil}{u.ativo ? '' : ' · inativo'}</span></div>
+                <div style={{ fontSize: 12.5, color: C.dim, fontFamily: C.mono, overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.email}</div>
+              </div>
+              {editando !== u.id && (
+                <button onClick={() => { setEditando(u.id); setNova(gerarSenha()); setErro(''); }} style={{ padding: '6px 12px', background: C.accent, color: '#fff', border: 'none', borderRadius: 8, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>Trocar senha</button>
+              )}
+            </div>
+            {editando === u.id && (
+              <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+                <input style={{ ...inp, flex: 1, minWidth: 140, fontFamily: C.mono }} value={nova} onChange={e => setNova(e.target.value)} placeholder="nova senha (mín. 6)" autoFocus />
+                <button onClick={() => setNova(gerarSenha())} title="Gerar outra" style={{ padding: '0 12px', background: 'transparent', color: C.dim, border: `1px solid ${C.border}`, borderRadius: 8, cursor: 'pointer' }}>🎲</button>
+                <button onClick={() => salvar(u)} disabled={salvando} style={{ padding: '0 16px', background: C.accent, color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>{salvando ? '…' : 'Salvar'}</button>
+                <button onClick={() => { setEditando(null); setNova(''); }} style={{ padding: '0 12px', background: 'transparent', color: C.dim, border: `1px solid ${C.border}`, borderRadius: 8, cursor: 'pointer' }}>Cancelar</button>
+              </div>
+            )}
+          </div>
+        ))}
+        {erro && <div style={{ color: C.red, fontSize: 13 }}>{erro}</div>}
+      </div>
+    </Modal>
+  );
+}
+
 /* ─────────────── UNIR CONTAS ─────────────── */
 function UnirContas({ secret, tenant, todos, onClose, onSaved }: { secret: string; tenant: Tenant; todos: Tenant[]; onClose: () => void; onSaved: () => void }) {
   const outras = todos.filter(t => t.id !== tenant.id && t.ativo);
@@ -500,6 +579,7 @@ export default function Admin() {
   const [editar, setEditar] = useState<Tenant | null>(null);
   const [unir, setUnir] = useState<Tenant | null>(null);
   const [escolher, setEscolher] = useState<Tenant | null>(null);
+  const [senhas, setSenhas] = useState<Tenant | null>(null);
 
   const carregar = useCallback(async (s: string) => {
     setLoading(true);
@@ -665,6 +745,7 @@ export default function Admin() {
                           <td style={{ padding: '13px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                             <button onClick={() => entrarComoCliente(t)} style={{ padding: '6px 12px', background: C.accent, color: '#fff', border: 'none', borderRadius: 8, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', marginRight: 6 }}>Entrar</button>
                             <button onClick={() => setEditar(t)} style={{ padding: '6px 12px', background: C.surfaceHi, color: C.text, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', marginRight: 6 }}>Licença</button>
+                            <button onClick={() => setSenhas(t)} title="Ver usuários e trocar senha" style={{ padding: '6px 12px', background: C.surfaceHi, color: C.text, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', marginRight: 6 }}>Senhas</button>
                             <button onClick={() => setUnir(t)} title="Juntar com a conta do outro sistema (Óticas + Vision)" style={{ padding: '6px 12px', background: C.surfaceHi, color: C.text, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', marginRight: 6 }}>Unir</button>
                             <button onClick={() => excluirCliente(t)} style={{ padding: '6px 10px', background: 'transparent', color: C.red, border: `1px solid ${C.redDim}`, borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>Excluir</button>
                           </td>
@@ -739,6 +820,7 @@ export default function Admin() {
           </div>
         </Modal>
       )}
+      {senhas && <UsuariosSenhas secret={secret} tenant={senhas} onClose={() => setSenhas(null)} />}
       {unir && <UnirContas secret={secret} tenant={unir} todos={tenants} onClose={() => setUnir(null)} onSaved={() => { setUnir(null); carregar(secret); }} />}
       {editar && <EditarLicenca secret={secret} tenant={editar} onClose={() => setEditar(null)} onSaved={() => { setEditar(null); carregar(secret); }} />}
     </div>

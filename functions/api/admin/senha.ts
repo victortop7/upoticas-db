@@ -12,17 +12,17 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   if (!isAdmin(request, env)) return json({ error: 'Não autorizado' }, 401);
 
   try {
-    const body = await request.json() as { email?: string; nova_senha?: string };
+    const body = await request.json() as { email?: string; usuario_id?: string; nova_senha?: string };
     const email = (body.email || '').trim().toLowerCase();
     const nova = body.nova_senha || '';
-    if (!email) return json({ error: 'Email obrigatório' }, 400);
+    if (!email && !body.usuario_id) return json({ error: 'Email obrigatório' }, 400);
     if (nova.length < 6) return json({ error: 'A nova senha deve ter pelo menos 6 caracteres' }, 400);
 
     const usuario = await env.DB.prepare(
       `SELECT u.id, u.nome, u.email, u.tenant_id, t.nome AS tenant_nome
        FROM usuarios u LEFT JOIN tenants t ON t.id = u.tenant_id
-       WHERE u.email = ?`
-    ).bind(email).first<{ id: string; nome: string; email: string; tenant_id: string; tenant_nome: string | null }>();
+       WHERE ${body.usuario_id ? 'u.id = ?' : 'lower(trim(u.email)) = ?'}`
+    ).bind(body.usuario_id || email).first<{ id: string; nome: string; email: string; tenant_id: string; tenant_nome: string | null }>();
 
     if (!usuario) return json({ error: 'Nenhum usuário encontrado com esse email' }, 404);
 
