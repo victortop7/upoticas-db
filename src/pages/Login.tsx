@@ -20,9 +20,12 @@ export default function Login() {
     setErro('');
     setLoading(true);
     try {
-      const data = await login(email, senha);
+      const data = await login(email, senha, 'otica');
       setAuth(data);
-      navigate(data.tenant?.tipo === 'lab' ? homeLab(data.usuario?.perfil) : '/dashboard');
+      const sis = data.tenant?.sistemas;
+      const vaiLab = sis ? (!sis.includes('otica') && sis.includes('lab')) : data.tenant?.tipo === 'lab';
+      if (sis && !sis.includes('otica') && !sis.includes('lab') && sis.includes('vision')) navigate('/vision');
+      else navigate(vaiLab ? homeLab(data.usuario?.perfil) : '/dashboard');
     } catch (err: unknown) {
       setErro(err instanceof Error ? err.message : 'Erro ao entrar');
     } finally {

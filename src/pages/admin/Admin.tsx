@@ -30,6 +30,7 @@ const C = {
 };
 
 interface Tenant {
+  sistemas?: string[] | null;
   id: string;
   nome: string;
   email: string;
@@ -198,8 +199,37 @@ const inp: React.CSSProperties = { width: '100%', padding: '10px 12px', backgrou
 const lbl: React.CSSProperties = { fontSize: 12, fontWeight: 600, color: C.dim, marginBottom: 6, display: 'block' };
 
 /* ─────────────── NOVO CLIENTE ─────────────── */
+const SISTEMAS_OPC: { id: string; nome: string }[] = [
+  { id: 'otica', nome: 'Connect Óticas' },
+  { id: 'vision', nome: 'Connect Vision' },
+  { id: 'lab', nome: 'Connect LAB' },
+];
+function nomesSistemas(t: { sistemas?: string[] | null; tipo: string }): string {
+  const lista = t.sistemas && t.sistemas.length ? t.sistemas : [t.tipo];
+  return SISTEMAS_OPC.filter(o => lista.includes(o.id)).map(o => o.nome.replace('Connect ', '')).join(' + ');
+}
+function SistemasCheck({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
+  return (
+    <div>
+      <label style={lbl}>Sistemas liberados (mesmo e-mail e senha)</label>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {SISTEMAS_OPC.map(o => {
+          const on = value.includes(o.id);
+          return (
+            <label key={o.id} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13.5, color: on ? C.text : C.dim, padding: '8px 12px', border: `1px solid ${on ? C.accent : C.border}`, background: on ? C.accentDim : 'transparent', borderRadius: 9 }}>
+              <input type="checkbox" checked={on} onChange={e => onChange(e.target.checked ? [...value, o.id] : value.filter(x => x !== o.id))} />
+              {o.nome}
+            </label>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function NovoCliente({ secret, onClose, onSaved }: { secret: string; onClose: () => void; onSaved: () => void }) {
   const [f, setF] = useState({ nome: '', responsavel: '', email: '', senha: '', tipo: 'otica', plano: 'trial', dias_trial: '14', licenca_expira: '', dispositivos: '1', valor: '' });
+  const [sistemas, setSistemas] = useState<string[]>(['otica']);
   const [erro, setErro] = useState('');
   const [saving, setSaving] = useState(false);
   const set = (k: string, v: string) => setF(p => ({ ...p, [k]: v }));
@@ -208,16 +238,17 @@ function NovoCliente({ secret, onClose, onSaved }: { secret: string; onClose: ()
     setErro('');
     if (!f.nome.trim() || !f.email.trim() || !f.senha) { setErro('Preencha nome, e-mail e senha.'); return; }
     if (f.senha.length < 6) { setErro('A senha precisa ter no mínimo 6 caracteres.'); return; }
+    if (!sistemas.length) { setErro('Marque pelo menos um sistema.'); return; }
     setSaving(true);
     try {
       await adminRequest('/admin/clientes', secret, {
         method: 'POST',
         body: JSON.stringify({
           nome: f.nome, responsavel: f.responsavel || f.nome, email: f.email, senha: f.senha,
-          tipo: f.tipo, plano: f.plano,
+          tipo: f.tipo, plano: f.plano, sistemas,
           dias_trial: f.plano === 'trial' ? Number(f.dias_trial) || 14 : undefined,
           licenca_expira: (f.plano === 'mensal' || f.plano === 'anual') ? (f.licenca_expira || null) : null,
-          dispositivos_limite: f.tipo === 'vision' ? (Number(f.dispositivos) || 1) : 1,
+          dispositivos_limite: sistemas.includes('vision') ? (Number(f.dispositivos) || 1) : 1,
           valor_mensal: Number(String(f.valor).replace(',', '.')) || 0,
         }),
       });
@@ -241,15 +272,16 @@ function NovoCliente({ secret, onClose, onSaved }: { secret: string; onClose: ()
             <input style={inp} value={f.responsavel} onChange={e => set('responsavel', e.target.value)} placeholder="Nome do titular" />
           </div>
           <div>
-            <label style={lbl}>Tipo de sistema</label>
-            <select style={inp} value={f.tipo} onChange={e => set('tipo', e.target.value)}>
+            <label style={lbl}>Sistema principal</label>
+            <select style={inp} value={f.tipo} onChange={e => { set('tipo', e.target.value); setSistemas(s => s.includes(e.target.value) ? s : [...s, e.target.value]); }}>
               <option value="otica">Connect Óticas</option>
               <option value="lab">Connect LAB</option>
               <option value="vision">Connect Vision</option>
             </select>
           </div>
         </div>
-        {f.tipo === 'vision' && (
+        <SistemasCheck value={sistemas} onChange={setSistemas} />
+        {sistemas.includes('vision') && (
           <div style={{ maxWidth: 200 }}>
             <label style={lbl}>Limite de dispositivos (tablets)</label>
             <input style={inp} type="number" min={1} value={f.dispositivos} onChange={e => set('dispositivos', e.target.value)} />
@@ -313,10 +345,12 @@ function EditarLicenca({ secret, tenant, onClose, onSaved }: { secret: string; t
   const [ativo, setAtivo] = useState(!!tenant.ativo);
   const [dispositivos, setDispositivos] = useState(String(tenant.dispositivos_limite ?? 1));
   const [valor, setValor] = useState(tenant.valor_mensal ? String(tenant.valor_mensal).replace('.', ',') : '');
+  const [sistemas, setSistemas] = useState<string[]>(tenant.sistemas && tenant.sistemas.length ? tenant.sistemas : [tenant.tipo]);
   const [saving, setSaving] = useState(false);
   const [erro, setErro] = useState('');
 
   async function salvar() {
+    if (!sistemas.length) { setErro('Marque pelo menos um sistema.'); return; }
     setSaving(true); setErro('');
     try {
       await adminRequest('/admin/licencas', secret, {
@@ -327,6 +361,7 @@ function EditarLicenca({ secret, tenant, onClose, onSaved }: { secret: string; t
           bloqueado, ativo,
           dispositivos_limite: Number(dispositivos) || 1,
           valor_mensal: Number(String(valor).replace(',', '.')) || 0,
+          sistemas,
         }),
       });
       onSaved();
@@ -354,6 +389,7 @@ function EditarLicenca({ secret, tenant, onClose, onSaved }: { secret: string; t
             <input style={inp} type="date" value={licenca} onChange={e => setLicenca(e.target.value)} />
           </div>
         )}
+        <SistemasCheck value={sistemas} onChange={setSistemas} />
         <div>
           <label style={lbl}>Limite de dispositivos (Connect Vision)</label>
           <input style={inp} type="number" min={1} value={dispositivos} onChange={e => setDispositivos(e.target.value)} />
@@ -552,7 +588,7 @@ export default function Admin() {
                             </button>
                             <div style={{ fontSize: 12.5, color: C.dim, fontFamily: C.mono }}>{t.email}</div>
                           </td>
-                          <td style={{ padding: '13px 16px', fontSize: 13, color: C.dim }}>{t.tipo === 'lab' ? 'Connect LAB' : t.tipo === 'vision' ? 'Connect Vision' : 'Connect Óticas'}</td>
+                          <td style={{ padding: '13px 16px', fontSize: 13, color: C.dim }}>{nomesSistemas(t)}</td>
                           <td style={{ padding: '13px 16px', fontSize: 13, textTransform: 'capitalize' }}>{t.plano}</td>
                           <td style={{ padding: '13px 16px', fontSize: 13, fontFamily: C.mono, color: t.valor_mensal ? C.text : C.dim }}>{t.valor_mensal ? `R$ ${Number(t.valor_mensal).toFixed(2).replace('.', ',')}` : '—'}</td>
                           <td style={{ padding: '13px 16px' }}>

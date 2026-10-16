@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Outlet, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import SemAcesso from './SemAcesso';
 import LabAltF1 from './LabAltF1';
 import PixLicenca from './PixLicenca';
 import { applyLabTheme } from '../lib/labTheme';
@@ -151,7 +152,10 @@ export default function LabLayout() {
   }
 
   if (!usuario) return <Navigate to="/lab/login" replace />;
-  if (tenant?.tipo !== 'lab') return <Navigate to="/dashboard" replace />;
+  if (tenant?.sistemas ? !tenant.sistemas.includes('lab') : tenant?.tipo !== 'lab') {
+    if (tenant?.sistemas) return <SemAcesso sistema="lab" login="/lab/login" />;
+    return <Navigate to="/dashboard" replace />;
+  }
 
   // ── Permissões por perfil ──
   const perfil = usuario.perfil;

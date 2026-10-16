@@ -10,8 +10,8 @@ export async function getMe(): Promise<AuthState | null> {
   }
 }
 
-export async function login(email: string, senha: string): Promise<AuthState> {
-  return api.post<AuthState>('/auth/login', { email, senha });
+export async function login(email: string, senha: string, sistema?: 'otica' | 'lab' | 'vision'): Promise<AuthState> {
+  return api.post<AuthState>('/auth/login', { email, senha, sistema });
 }
 
 export async function register(data: {

@@ -2,7 +2,8 @@ export interface Tenant {
   id: string;
   nome: string;
   email: string;
-  tipo: 'otica' | 'lab';
+  tipo: 'otica' | 'lab' | 'vision';
+  sistemas?: Sistema[] | null; // null = não configurado (libera tudo)
   plano: 'trial' | 'basico' | 'pro';
   trial_expira?: string;
   licenca_expira?: string;
@@ -93,4 +94,9 @@ export interface AuthState {
   token: string | null;
   usuario: Usuario | null;
   tenant: Tenant | null;
+}
+
+export type Sistema = 'otica' | 'lab' | 'vision';
+export function temSistema(t: { sistemas?: Sistema[] | null } | null | undefined, s: Sistema): boolean {
+  return !t?.sistemas || t.sistemas.includes(s);
 }

@@ -1,15 +1,17 @@
 import type { Env } from '../../lib/types';
 import { requireAuthBasic, json } from '../../lib/auth-middleware';
+import { ensureSistemas, parseSistemas } from '../../lib/sistemas';
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   const auth = await requireAuthBasic(request, env);
   if (auth instanceof Response) return auth;
 
   try {
+    await ensureSistemas(env.DB);
     const usuario = await env.DB.prepare(
       `SELECT u.id, u.tenant_id, u.nome, u.email, u.perfil, u.ativo,
               t.nome as tenant_nome, t.tipo as tenant_tipo, t.plano,
-              t.trial_expira, t.ativo as tenant_ativo,
+              t.trial_expira, t.ativo as tenant_ativo, t.sistemas,
               COALESCE(t.bloqueado, 0) as bloqueado,
               t.licenca_expira
        FROM usuarios u JOIN tenants t ON t.id = u.tenant_id WHERE u.id = ?`
@@ -37,6 +39,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
         licenca_expira: usuario.licenca_expira,
         bloqueado: Boolean(usuario.bloqueado),
         ativo: Boolean(usuario.tenant_ativo),
+        sistemas: parseSistemas(usuario.sistemas),
       },
     });
   } catch (err) {

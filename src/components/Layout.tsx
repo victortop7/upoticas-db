@@ -3,6 +3,8 @@ import Sidebar from './Sidebar';
 import BuscaGlobal from './BuscaGlobal';
 import PixLicenca from './PixLicenca';
 import { useAuth } from '../hooks/useAuth';
+import SemAcesso from './SemAcesso';
+import { temSistema } from '../types';
 
 // WhatsApp do suporte para renovação (troque pelo número oficial)
 const SUPORTE_WHATSAPP = '5585991507887';
@@ -79,6 +81,7 @@ export default function Layout() {
   }
 
   if (!usuario) return <Navigate to="/login" replace />;
+  if (!temSistema(tenant, 'otica')) return <SemAcesso sistema="otica" login="/login" />;
 
   const licenca = avaliarLicenca(tenant);
 

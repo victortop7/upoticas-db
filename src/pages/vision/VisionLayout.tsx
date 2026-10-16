@@ -5,6 +5,8 @@ import PixModal from '../../components/PixModal';
 import { api } from '../../lib/api';
 import { getDeviceId } from '../../lib/device';
 import ForcarPaisagem from '../../components/ForcarPaisagem';
+import SemAcesso from '../../components/SemAcesso';
+import { temSistema } from '../../types';
 
 const INATIVIDADE_MS = 30 * 60 * 1000; // 30 minutos
 const AVISO_DIAS = 3; // aviso sutil a partir de 3 dias antes de vencer
@@ -62,6 +64,7 @@ export default function VisionLayout() {
     const reset = () => {
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(async () => {
+        if (document.hidden) { reset(); return; }
         await logout();
         navigate('/vision/login', { replace: true });
       }, INATIVIDADE_MS);
@@ -85,6 +88,7 @@ export default function VisionLayout() {
   }
 
   if (!usuario) return <Navigate to="/vision/login" replace />;
+  if (!temSistema(tenant, 'vision')) return <SemAcesso sistema="vision" login="/vision/login" />;
 
   // Status da licença.
   // dias >= 1: dentro da validade. dias 0 e -1: carência (mostra o Pix, pode continuar). dias <= -2: bloqueia.

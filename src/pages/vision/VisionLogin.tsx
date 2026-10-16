@@ -65,7 +65,7 @@ export default function VisionLogin() {
     e?.preventDefault();
     setErro(''); setLoading(true);
     try {
-      const data = await login(email, senha);
+      const data = await login(email, senha, 'vision');
       setAuth(data);
       if (lembrar) localStorage.setItem(CRED_KEY, JSON.stringify({ email, senha }));
       else localStorage.removeItem(CRED_KEY);

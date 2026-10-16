@@ -1,5 +1,6 @@
 import type { Env } from '../../../lib/types';
 import { json } from '../../../lib/auth-middleware';
+import { ensureSistemas, parseSistemas, normalizarSistemas } from '../../../lib/sistemas';
 
 function isAdmin(request: Request, env: Env): boolean {
   const auth = request.headers.get('authorization') || '';
@@ -12,6 +13,7 @@ async function ensureColumns(env: Env) {
   try { await env.DB.prepare('ALTER TABLE tenants ADD COLUMN dispositivos_limite INTEGER DEFAULT 1').run(); } catch {}
   try { await env.DB.prepare("ALTER TABLE tenants ADD COLUMN dispositivo_modo TEXT DEFAULT 'bloquear'").run(); } catch {}
   try { await env.DB.prepare('ALTER TABLE tenants ADD COLUMN valor_mensal REAL').run(); } catch {}
+  await ensureSistemas(env.DB);
 }
 
 // GET /api/admin/licencas — lista todos os tenants
@@ -25,7 +27,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
               COALESCE(bloqueado, 0) as bloqueado,
               COALESCE(dispositivos_limite, 1) as dispositivos_limite,
               COALESCE(dispositivo_modo, 'bloquear') as dispositivo_modo,
-              valor_mensal,
+              valor_mensal, sistemas,
               trial_expira, licenca_expira, created_at
        FROM tenants ORDER BY created_at DESC`
     ).all();
@@ -33,6 +35,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
     const now = new Date().toISOString();
     const rows = (result.results as Record<string, unknown>[]).map(t => ({
       ...t,
+      sistemas: parseSistemas(t.sistemas),
       status: !t.ativo ? 'desativado'
         : t.bloqueado ? 'bloqueado'
         : t.plano === 'trial' && t.trial_expira && (t.trial_expira as string) < now ? 'trial_expirado'
@@ -80,6 +83,7 @@ export const onRequestPatch = async ({ request, env }: { request: Request; env: 
     dispositivos_limite?: number;
     dispositivo_modo?: string;
     valor_mensal?: number;
+    sistemas?: string[];
   };
 
   if (!body.id) return json({ error: 'id obrigatório' }, 400);
@@ -94,6 +98,12 @@ export const onRequestPatch = async ({ request, env }: { request: Request; env: 
   if (body.dispositivos_limite !== undefined) { updates.push('dispositivos_limite = ?'); vals.push(Math.max(1, Number(body.dispositivos_limite) || 1)); }
   if (body.dispositivo_modo !== undefined)    { updates.push('dispositivo_modo = ?');    vals.push(body.dispositivo_modo === 'rotacionar' ? 'rotacionar' : 'bloquear'); }
   if (body.valor_mensal !== undefined)        { updates.push('valor_mensal = ?');        vals.push(Math.max(0, Number(body.valor_mensal) || 0) || null); }
+
+  if (body.sistemas !== undefined) {
+    const s = normalizarSistemas(body.sistemas);
+    if (!s) return json({ error: 'Marque pelo menos um sistema' }, 400);
+    updates.push('sistemas = ?'); vals.push(s);
+  }
 
   if (!updates.length) return json({ error: 'Nada para atualizar' }, 400);
 

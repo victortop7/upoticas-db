@@ -1,6 +1,7 @@
 import type { Env } from '../../../lib/types';
 import { json } from '../../../lib/auth-middleware';
 import { hashPassword } from '../../../lib/jwt';
+import { ensureSistemas, normalizarSistemas } from '../../../lib/sistemas';
 
 function isAdmin(request: Request, env: Env): boolean {
   const auth = request.headers.get('authorization') || '';
@@ -23,6 +24,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       licenca_expira?: string | null;
       dispositivos_limite?: number;
       valor_mensal?: number;
+      sistemas?: string[];      // sistemas liberados com o mesmo login
     };
 
     if (!body.nome?.trim() || !body.email?.trim() || !body.senha) {
@@ -33,7 +35,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     }
 
     const email = body.email.toLowerCase().trim();
-    const existing = await env.DB.prepare('SELECT id FROM usuarios WHERE email = ?').bind(email).first();
+    const existing = await env.DB.prepare('SELECT id FROM usuarios WHERE lower(trim(email)) = ?').bind(email).first();
     if (existing) return json({ error: 'Este e-mail já possui uma conta' }, 409);
     const existingTenant = await env.DB.prepare('SELECT id FROM tenants WHERE email = ?').bind(email).first();
     if (existingTenant) return json({ error: 'Este e-mail já está em uso por outro cliente' }, 409);
@@ -59,11 +61,13 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     try { await env.DB.prepare('ALTER TABLE tenants ADD COLUMN licenca_expira TEXT').run(); } catch { /* já existe */ }
     try { await env.DB.prepare('ALTER TABLE tenants ADD COLUMN dispositivos_limite INTEGER DEFAULT 1').run(); } catch { /* já existe */ }
     try { await env.DB.prepare('ALTER TABLE tenants ADD COLUMN valor_mensal REAL').run(); } catch { /* já existe */ }
+    await ensureSistemas(env.DB);
+    const sistemas = normalizarSistemas(body.sistemas) || tipo;
 
     await env.DB.batch([
       env.DB.prepare(
-        'INSERT INTO tenants (id, nome, email, tipo, plano, trial_expira, licenca_expira, dispositivos_limite, valor_mensal, ativo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)'
-      ).bind(tenantId, body.nome.trim(), email, tipo, plano, trialExpira, licencaExpira, dispositivos, valorMensal || null),
+        'INSERT INTO tenants (id, nome, email, tipo, plano, trial_expira, licenca_expira, dispositivos_limite, valor_mensal, sistemas, ativo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)'
+      ).bind(tenantId, body.nome.trim(), email, tipo, plano, trialExpira, licencaExpira, dispositivos, valorMensal || null, sistemas),
 
       env.DB.prepare(
         'INSERT INTO usuarios (id, tenant_id, nome, email, senha_hash, perfil, ativo) VALUES (?, ?, ?, ?, ?, ?, 1)'
