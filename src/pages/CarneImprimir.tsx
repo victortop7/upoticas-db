@@ -8,7 +8,7 @@ interface Dados {
   carne: { id: string; descricao: string; valor_total: number; num_parcelas: number };
   parcelas: Parcela[];
   cliente: { nome: string; celular?: string; telefone?: string; cpf?: string } | null;
-  loja: { nome: string; cidade?: string; uf?: string; telefone?: string; pix_chave?: string; pix_beneficiario?: string } | null;
+  loja: { nome: string; cidade?: string; uf?: string; telefone?: string; pix_chave?: string; pix_beneficiario?: string; logo?: string | null } | null;
 }
 
 const brl = (v: number) => (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -54,9 +54,14 @@ export default function CarneImprimir() {
       <div style={{ maxWidth: 820, margin: '0 auto', padding: '24px 20px 60px' }}>
         {/* Cabeçalho */}
         <div style={{ borderBottom: '2px solid #111', paddingBottom: 12, marginBottom: 8 }}>
-          <div style={{ fontSize: 22, fontWeight: 800 }}>{loja?.nome || 'Carnê de Pagamento'}</div>
-          <div style={{ fontSize: 13, color: '#555' }}>
-            {loja?.cidade ? `${loja.cidade}${loja.uf ? '/' + loja.uf : ''}` : ''}{loja?.telefone ? ` · ${loja.telefone}` : ''}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            {loja?.logo && <img src={loja.logo} alt="" style={{ maxHeight: 64, maxWidth: 180, objectFit: 'contain' }} />}
+            <div>
+              <div style={{ fontSize: 22, fontWeight: 800 }}>{loja?.nome || 'Carnê de Pagamento'}</div>
+              <div style={{ fontSize: 13, color: '#555' }}>
+                {loja?.cidade ? `${loja.cidade}${loja.uf ? '/' + loja.uf : ''}` : ''}{loja?.telefone ? ` · ${loja.telefone}` : ''}
+              </div>
+            </div>
           </div>
           <div style={{ marginTop: 8, fontSize: 14 }}>
             <b>Cliente:</b> {cliente?.nome || '—'}{cliente?.cpf ? ` · CPF ${cliente.cpf}` : ''}<br />
@@ -70,6 +75,7 @@ export default function CarneImprimir() {
             {/* Info */}
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 6 }}>
+                {loja?.logo && <img src={loja.logo} alt="" style={{ height: 26, maxWidth: 90, objectFit: 'contain', alignSelf: 'center' }} />}
                 <span style={{ fontSize: 26, fontWeight: 800, fontFamily: 'monospace' }}>{p.numero}<span style={{ fontSize: 15, color: '#888' }}>/{carne.num_parcelas}</span></span>
                 {p.status === 'pago' && <span style={{ fontSize: 12, fontWeight: 700, color: '#16a34a', border: '1px solid #16a34a', borderRadius: 20, padding: '1px 10px' }}>PAGO</span>}
               </div>

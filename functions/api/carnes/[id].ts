@@ -19,8 +19,9 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env, params })
     carne.cliente_id
       ? env.DB.prepare('SELECT nome, celular, telefone, email, cpf FROM clientes WHERE id = ?').bind(carne.cliente_id).first()
       : Promise.resolve(null),
-    env.DB.prepare('SELECT nome, cidade, uf, telefone, cnpj, pix_chave, pix_beneficiario FROM tenants WHERE id = ?')
-      .bind(auth.tenant_id).first(),
+    env.DB.prepare('SELECT * FROM tenants WHERE id = ?')
+      .bind(auth.tenant_id).first<Record<string, unknown>>()
+      .then(t => t && ({ nome: t.nome, cidade: t.cidade, uf: t.uf, telefone: t.telefone, cnpj: t.cnpj, pix_chave: t.pix_chave, pix_beneficiario: t.pix_beneficiario, logo: t.logo || null })),
   ]);
 
   return json({ carne, parcelas: parcelas.results, cliente, loja });

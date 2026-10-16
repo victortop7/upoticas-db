@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import LogoLoja from '../components/LogoLoja';
 import { api } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 
@@ -416,6 +417,8 @@ export default function Configuracoes() {
           </div>
         )}
       </div>
+
+      <LogoLoja />
 
       {/* Pix — para os carnês/boletos */}
       <div style={{ marginTop: '16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '24px' }}>
