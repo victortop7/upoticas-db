@@ -499,6 +499,7 @@ export default function Admin() {
   const [novo, setNovo] = useState(false);
   const [editar, setEditar] = useState<Tenant | null>(null);
   const [unir, setUnir] = useState<Tenant | null>(null);
+  const [escolher, setEscolher] = useState<Tenant | null>(null);
 
   const carregar = useCallback(async (s: string) => {
     setLoading(true);
@@ -527,7 +528,12 @@ export default function Admin() {
     await adminRequest(`/admin/leads?id=${l.id}`, secret, { method: 'DELETE' });
     carregar(secret);
   }
-  async function entrarComoCliente(t: Tenant) {
+  // Conta com mais de um sistema liberado → pergunta em qual entrar
+  async function entrarComoCliente(t: Tenant, sistema?: string) {
+    const lista = t.sistemas && t.sistemas.length ? t.sistemas : [t.tipo];
+    if (!sistema && lista.length > 1) { setEscolher(t); return; }
+    const alvo = sistema || lista[0];
+    setEscolher(null);
     try {
       const res = await fetch('/api/admin/impersonate', {
         method: 'POST',
@@ -537,7 +543,8 @@ export default function Admin() {
       });
       const data = await res.json() as { tipo?: string; error?: string };
       if (!res.ok) throw new Error(data.error || 'Não foi possível entrar');
-      const dest = data.tipo === 'lab' ? '/lab/dashboard' : data.tipo === 'vision' ? '/vision' : '/dashboard';
+      void data;
+      const dest = alvo === 'lab' ? '/lab/dashboard' : alvo === 'vision' ? '/vision' : '/dashboard';
       window.location.href = dest;
     } catch (e) {
       alert(e instanceof Error ? e.message : 'Não foi possível entrar no sistema do cliente');
@@ -719,6 +726,19 @@ export default function Admin() {
       </main>
 
       {novo && <NovoCliente secret={secret} onClose={() => setNovo(false)} onSaved={() => { setNovo(false); carregar(secret); setAba('clientes'); }} />}
+      {escolher && (
+        <Modal title={`Entrar · ${escolher.nome}`} onClose={() => setEscolher(null)} width={420}>
+          <div style={{ display: 'grid', gap: 10 }}>
+            <div style={{ fontSize: 13.5, color: C.dim, marginBottom: 4 }}>Em qual sistema você quer entrar?</div>
+            {SISTEMAS_OPC.filter(o => (escolher.sistemas || [escolher.tipo]).includes(o.id)).map(o => (
+              <button key={o.id} onClick={() => entrarComoCliente(escolher, o.id)}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: C.surfaceHi, color: C.text, border: `1px solid ${C.border}`, borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: C.sans }}>
+                {o.nome} <span style={{ color: C.accent }}>→</span>
+              </button>
+            ))}
+          </div>
+        </Modal>
+      )}
       {unir && <UnirContas secret={secret} tenant={unir} todos={tenants} onClose={() => setUnir(null)} onSaved={() => { setUnir(null); carregar(secret); }} />}
       {editar && <EditarLicenca secret={secret} tenant={editar} onClose={() => setEditar(null)} onSaved={() => { setEditar(null); carregar(secret); }} />}
     </div>
