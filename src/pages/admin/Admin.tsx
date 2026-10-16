@@ -338,7 +338,7 @@ function NovoCliente({ secret, onClose, onSaved }: { secret: string; onClose: ()
 }
 
 /* ─────────────── EDITAR LICENÇA ─────────────── */
-function EditarLicenca({ secret, tenant, onClose, onSaved }: { secret: string; tenant: Tenant; onClose: () => void; onSaved: () => void }) {
+function EditarLicenca({ secret, tenant, onClose, onSaved, onSenhas }: { secret: string; tenant: Tenant; onClose: () => void; onSaved: () => void; onSenhas: () => void }) {
   const [plano, setPlano] = useState(tenant.plano);
   const [licenca, setLicenca] = useState(tenant.licenca_expira ? tenant.licenca_expira.slice(0, 10) : '');
   const [bloqueado, setBloqueado] = useState(!!tenant.bloqueado);
@@ -374,6 +374,9 @@ function EditarLicenca({ secret, tenant, onClose, onSaved }: { secret: string; t
   return (
     <Modal title={`Licença · ${tenant.nome}`} onClose={onClose}>
       <div style={{ display: 'grid', gap: 14 }}>
+        <button onClick={onSenhas} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 14px', background: C.surfaceHi, color: C.text, border: `1px solid ${C.border}`, borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: C.sans }}>
+          🔑 Usuários e senhas (trocar senha) <span style={{ color: C.accent }}>→</span>
+        </button>
         <div>
           <label style={lbl}>Plano</label>
           <select style={inp} value={plano} onChange={e => setPlano(e.target.value)}>
@@ -822,7 +825,7 @@ export default function Admin() {
       )}
       {senhas && <UsuariosSenhas secret={secret} tenant={senhas} onClose={() => setSenhas(null)} />}
       {unir && <UnirContas secret={secret} tenant={unir} todos={tenants} onClose={() => setUnir(null)} onSaved={() => { setUnir(null); carregar(secret); }} />}
-      {editar && <EditarLicenca secret={secret} tenant={editar} onClose={() => setEditar(null)} onSaved={() => { setEditar(null); carregar(secret); }} />}
+      {editar && <EditarLicenca secret={secret} tenant={editar} onSenhas={() => { setSenhas(editar); setEditar(null); }} onClose={() => setEditar(null)} onSaved={() => { setEditar(null); carregar(secret); }} />}
     </div>
   );
 }
