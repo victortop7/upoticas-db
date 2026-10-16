@@ -1,14 +1,29 @@
 import type { PagesFunction } from '@cloudflare/workers-types';
 import type { Env } from '../../../lib/types';
 import { requireAuth, json } from '../../../lib/auth-middleware';
+import { ensureRecorrentes } from '../../../lib/recorrentes';
 
 export const onRequestPut: PagesFunction<Env> = async ({ request, env, params }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;
 
   try {
+    await ensureRecorrentes(env.DB);
     const body = await request.json() as Record<string, string>;
     const now = new Date().toISOString();
+
+    // Valor final pago (juros, desconto, conta de consumo que variou)
+    if (body.acao === 'pagar' && body.valor !== undefined && parseFloat(body.valor) > 0) {
+      await env.DB.prepare('UPDATE contas_pagar SET valor = ? WHERE id = ? AND tenant_id = ?')
+        .bind(parseFloat(body.valor), params.id, auth.tenant_id).run();
+    }
+
+    // Ação: desfazer pagamento (lançou errado)
+    if (body.acao === 'reabrir') {
+      await env.DB.prepare(`UPDATE contas_pagar SET situacao = CASE WHEN data_vencimento < date('now') THEN 'vencido' ELSE 'pendente' END,
+        data_pagamento = NULL, updated_at = ? WHERE id = ? AND tenant_id = ?`).bind(now, params.id, auth.tenant_id).run();
+      return json({ success: true });
+    }
 
     // Ação: pagar
     if (body.acao === 'pagar') {
@@ -32,10 +47,13 @@ export const onRequestPut: PagesFunction<Env> = async ({ request, env, params })
     // Edição normal
     if (!body.descricao?.trim()) return json({ error: 'Descrição é obrigatória' }, 400);
     await env.DB.prepare(`
-      UPDATE contas_pagar SET descricao = ?, fornecedor = ?, categoria = ?, valor = ?, data_vencimento = ?, forma_pagamento = ?, conta_id = ?, observacao = ?, updated_at = ?
+      UPDATE contas_pagar SET descricao = ?, fornecedor = ?, fornecedor_id = ?, categoria = ?, valor = ?, data_vencimento = ?,
+        situacao = CASE WHEN situacao = 'pago' THEN 'pago' WHEN ? < date('now') THEN 'vencido' ELSE 'pendente' END,
+        data_pagamento = CASE WHEN situacao = 'pago' AND ? <> '' THEN ? ELSE data_pagamento END,
+        observacao = ?, updated_at = ?
       WHERE id = ? AND tenant_id = ?
-    `).bind(body.descricao.trim(), body.fornecedor || null, body.categoria || null, parseFloat(body.valor) || 0,
-      body.data_vencimento, body.forma_pagamento || null, body.conta_id || null, body.observacao || null, now,
+    `).bind(body.descricao.trim(), body.fornecedor || null, body.fornecedor_id || null, body.categoria || null, parseFloat(body.valor) || 0,
+      body.data_vencimento, body.data_vencimento, body.data_pagamento || '', body.data_pagamento || '', body.observacao || null, now,
       params.id, auth.tenant_id).run();
 
     return json({ success: true });

@@ -2,6 +2,10 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
+import { menusDo } from '../lib/permissoes';
+
+type ContaResumo = { id: string; descricao: string; fornecedor?: string; valor: number; data_vencimento: string; recorrente_id?: string; rec_fixa?: number };
+type ResumoPagar = { hoje: string; vencidas: { qtd: number; total: number }; proximas: { qtd: number; total: number }; contas: ContaResumo[] };
 
 interface Stats {
   totalClientes: number;
@@ -71,6 +75,12 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const vePagar = menusDo(usuario).includes('/financeiro/contas-pagar');
+  const [pagar, setPagar] = useState<ResumoPagar | null>(null);
+  useEffect(() => {
+    if (!vePagar) return;
+    api.get<ResumoPagar>('/financeiro/contas-pagar/resumo').then(setPagar).catch(() => {});
+  }, [vePagar]);
 
   useEffect(() => {
     api.get<Stats>('/dashboard/stats')
@@ -189,6 +199,39 @@ export default function Dashboard() {
           </div>
         ))}
       </div>
+
+      {/* Contas a pagar: vencidas e vencendo nos próximos 7 dias */}
+      {vePagar && pagar && pagar.contas.length > 0 && (
+        <div style={{ background: 'var(--surface)', border: `1px solid ${pagar.vencidas.qtd ? '#dc262655' : 'var(--border)'}`, borderRadius: '12px', overflow: 'hidden', marginBottom: '28px' }}>
+          <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, flexWrap: 'wrap' }}>
+              <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>📤 Contas a pagar</h3>
+              {pagar.vencidas.qtd > 0 && <span style={{ fontSize: 12.5, fontWeight: 700, color: '#dc2626', fontFamily: 'var(--mono)' }}>{pagar.vencidas.qtd} vencida{pagar.vencidas.qtd > 1 ? 's' : ''} · {formatBRL(pagar.vencidas.total)}</span>}
+              {pagar.proximas.qtd > 0 && <span style={{ fontSize: 12.5, fontWeight: 600, color: '#d97706', fontFamily: 'var(--mono)' }}>{pagar.proximas.qtd} nos próximos 7 dias · {formatBRL(pagar.proximas.total)}</span>}
+            </div>
+            <button onClick={() => navigate('/financeiro/contas-pagar')} style={{ fontSize: '12px', color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: '500' }}>Ver todas →</button>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}>
+            {pagar.contas.map(c => {
+              const venc = c.data_vencimento < pagar.hoje;
+              const hoje = c.data_vencimento === pagar.hoje;
+              return (
+                <div key={c.id} onClick={() => navigate('/financeiro/contas-pagar')} style={{ padding: '11px 20px', borderBottom: '1px solid var(--border)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 500, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {c.descricao}{c.recorrente_id ? <span title={c.rec_fixa ? 'Conta fixa' : 'Recorrente'} style={{ marginLeft: 6, fontSize: 11, color: 'var(--text-muted)' }}>🔁</span> : null}
+                    </div>
+                    <div style={{ fontSize: 11.5, fontFamily: 'var(--mono)', color: venc ? '#dc2626' : hoje ? '#d97706' : 'var(--text-muted)' }}>
+                      {venc ? 'venceu ' : hoje ? 'vence hoje · ' : 'vence '}{hoje ? '' : formatDate(c.data_vencimento)}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 13.5, fontWeight: 700, fontFamily: 'var(--mono)', color: venc ? '#dc2626' : 'var(--text)', whiteSpace: 'nowrap' }}>{formatBRL(c.valor)}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Faturamento (6 meses) + Produtos mais vendidos */}
       <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px', marginBottom: '28px' }}>

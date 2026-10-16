@@ -2,6 +2,7 @@ import type { PagesFunction } from '@cloudflare/workers-types';
 import type { Env } from '../../../lib/types';
 import { requireAuth, json } from '../../../lib/auth-middleware';
 import { ensureFinanceiroTables } from '../setup';
+import { gerarRecorrentes, ensureRecorrentes } from '../../../lib/recorrentes';
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const auth = await requireAuth(request, env);
@@ -16,28 +17,33 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const limit = 20;
   const offset = (page - 1) * limit;
 
+  // Lança as contas recorrentes/fixas que entraram no prazo (5 dias antes do vencimento)
+  try { await gerarRecorrentes(env.DB, auth.tenant_id); } catch { /* não trava a lista */ }
+
   // Auto-atualizar vencidas
   await env.DB.prepare(`
     UPDATE contas_pagar SET situacao = 'vencido'
     WHERE tenant_id = ? AND situacao = 'pendente' AND data_vencimento < date('now')
   `).bind(auth.tenant_id).run();
 
-  let where = 'WHERE tenant_id = ?';
+  let where = 'WHERE cp.tenant_id = ?';
   const params: unknown[] = [auth.tenant_id];
 
-  if (situacao) { where += ' AND situacao = ?'; params.push(situacao); }
-  if (inicio) { where += ' AND data_vencimento >= ?'; params.push(inicio); }
-  if (fim) { where += ' AND data_vencimento <= ?'; params.push(fim); }
+  if (situacao) { where += ' AND cp.situacao = ?'; params.push(situacao); }
+  if (inicio) { where += ' AND cp.data_vencimento >= ?'; params.push(inicio); }
+  if (fim) { where += ' AND cp.data_vencimento <= ?'; params.push(fim); }
 
   const [rows, count, totais] = await Promise.all([
-    env.DB.prepare(`SELECT * FROM contas_pagar ${where} ORDER BY data_vencimento ASC LIMIT ? OFFSET ?`)
+    env.DB.prepare(`SELECT cp.*, cr.fixa AS rec_fixa, cr.ativo AS rec_ativo FROM contas_pagar cp
+      LEFT JOIN contas_recorrentes cr ON cr.id = cp.recorrente_id
+      ${where} ORDER BY cp.data_vencimento ASC LIMIT ? OFFSET ?`)
       .bind(...params, limit, offset).all(),
-    env.DB.prepare(`SELECT COUNT(*) as n FROM contas_pagar ${where}`)
+    env.DB.prepare(`SELECT COUNT(*) as n FROM contas_pagar cp ${where}`)
       .bind(...params).first<{ n: number }>(),
     env.DB.prepare(`SELECT
-        COALESCE(SUM(CASE WHEN situacao IN ('pendente','vencido') THEN valor ELSE 0 END), 0) as pendente,
-        COALESCE(SUM(CASE WHEN situacao = 'pago' THEN valor ELSE 0 END), 0) as pago
-      FROM contas_pagar ${where}`)
+        COALESCE(SUM(CASE WHEN cp.situacao IN ('pendente','vencido') THEN cp.valor ELSE 0 END), 0) as pendente,
+        COALESCE(SUM(CASE WHEN cp.situacao = 'pago' THEN cp.valor ELSE 0 END), 0) as pago
+      FROM contas_pagar cp ${where}`)
       .bind(...params).first<{ pendente: number; pago: number }>(),
   ]);
 
@@ -53,6 +59,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;
   await ensureFinanceiroTables(env.DB);
+  await ensureRecorrentes(env.DB);
 
   try {
     const body = await request.json() as Record<string, string>;
@@ -63,9 +70,9 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
     await env.DB.prepare(`
-      INSERT INTO contas_pagar (id, tenant_id, descricao, fornecedor, categoria, valor, data_vencimento, situacao, forma_pagamento, conta_id, observacao, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 'pendente', ?, ?, ?, ?, ?)
-    `).bind(id, auth.tenant_id, body.descricao.trim(), body.fornecedor || null, body.categoria || null,
+      INSERT INTO contas_pagar (id, tenant_id, descricao, fornecedor, fornecedor_id, categoria, valor, data_vencimento, situacao, forma_pagamento, conta_id, observacao, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pendente', ?, ?, ?, ?, ?)
+    `).bind(id, auth.tenant_id, body.descricao.trim(), body.fornecedor || null, body.fornecedor_id || null, body.categoria || null,
       parseFloat(body.valor), body.data_vencimento, body.forma_pagamento || null,
       body.conta_id || null, body.observacao || null, now, now).run();
 
