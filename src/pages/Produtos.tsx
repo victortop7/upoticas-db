@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 
 interface Produto {
-  id: string; codigo?: string; descricao: string; grupo?: string;
+  id: string; codigo?: string; codigo_barras?: string; descricao: string; grupo?: string;
   unidade: string; preco_custo: number; preco_venda: number; margem?: number;
   fornecedor_id?: string; fornecedor_nome?: string; observacao?: string;
 }
@@ -10,7 +10,7 @@ interface Produto {
 interface ProdutosResponse { produtos: Produto[]; grupos: string[]; }
 
 const FORM_VAZIO = {
-  codigo: '', descricao: '', grupo: '', unidade: 'UN',
+  codigo: '', codigo_barras: '', descricao: '', grupo: '', unidade: 'UN',
   preco_custo: '', preco_venda: '', fornecedor_id: '', observacao: '',
 };
 
@@ -68,7 +68,7 @@ export default function Produtos() {
   function abrirEditar(p: Produto) {
     setEditando(p);
     setForm({
-      codigo: p.codigo || '', descricao: p.descricao, grupo: p.grupo || '',
+      codigo: p.codigo || '', codigo_barras: p.codigo_barras || '', descricao: p.descricao, grupo: p.grupo || '',
       unidade: p.unidade, preco_custo: String(p.preco_custo).replace('.', ','),
       preco_venda: String(p.preco_venda).replace('.', ','),
       fornecedor_id: p.fornecedor_id || '', observacao: p.observacao || '',
@@ -185,6 +185,7 @@ export default function Produtos() {
             <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>{lbl('Código')}<input value={form.codigo} onChange={e => setForm(f => ({ ...f, codigo: e.target.value }))} style={{ ...inp, fontFamily: 'var(--mono)' }} placeholder="Ex: ARM-001" /></div>
+                <div>{lbl('Código de barras')}<input value={form.codigo_barras} onChange={e => setForm(f => ({ ...f, codigo_barras: e.target.value }))} onKeyDown={e => { if (e.key === 'Enter') e.preventDefault(); }} style={{ ...inp, fontFamily: 'var(--mono)' }} placeholder="Bipe o leitor aqui" /></div>
                 <div>{lbl('Unidade')}<select value={form.unidade} onChange={e => setForm(f => ({ ...f, unidade: e.target.value }))} style={{ ...inp, fontFamily: 'inherit' }}>{UNIDADES.map(u => <option key={u} value={u}>{u}</option>)}</select></div>
                 <div style={{ gridColumn: '1 / -1' }}>{lbl('Descrição *')}<input required value={form.descricao} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} style={inp} placeholder="Nome do produto ou serviço" /></div>
                 <div style={{ gridColumn: '1 / -1' }}>{lbl('Grupo / Categoria')}<input value={form.grupo} onChange={e => setForm(f => ({ ...f, grupo: e.target.value }))} style={inp} placeholder="Ex: Armações, Lentes, Serviços..." /></div>

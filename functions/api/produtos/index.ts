@@ -1,11 +1,13 @@
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
+import { ensureCodigoBarras } from '../estoque/leitura';
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   try {
     const auth = await requireAuth(request, env);
     if (auth instanceof Response) return auth;
     const { tenant_id } = auth;
+    await ensureCodigoBarras(env.DB);
 
     const url = new URL(request.url);
     const q = url.searchParams.get('q');
@@ -20,8 +22,8 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
     const params: unknown[] = [tenant_id];
 
     if (q) {
-      query += ' AND (p.descricao LIKE ? OR p.codigo LIKE ?)';
-      params.push(`%${q}%`, `%${q}%`);
+      query += ' AND (p.descricao LIKE ? OR p.codigo LIKE ? OR p.codigo_barras = ?)';
+      params.push(`%${q}%`, `%${q}%`, q);
     }
     if (grupo) {
       query += ' AND p.grupo = ?';
@@ -51,12 +53,14 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     const body = await request.json() as Record<string, string | number>;
     if (!String(body.descricao || '').trim()) return json({ error: 'Descrição é obrigatória' }, 400);
 
+    await ensureCodigoBarras(env.DB);
     const id = crypto.randomUUID();
     await env.DB.prepare(
-      'INSERT INTO produtos (id, tenant_id, codigo, descricao, grupo, unidade, preco_custo, preco_venda, fornecedor_id, observacao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO produtos (id, tenant_id, codigo, codigo_barras, descricao, grupo, unidade, preco_custo, preco_venda, fornecedor_id, observacao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     ).bind(
       id, tenant_id,
       body.codigo || null,
+      String(body.codigo_barras || '').trim() || null,
       String(body.descricao).trim(),
       body.grupo || null,
       body.unidade || 'UN',

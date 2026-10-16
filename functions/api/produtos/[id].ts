@@ -1,5 +1,6 @@
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
+import { ensureCodigoBarras } from '../estoque/leitura';
 
 export const onRequestGet = async ({ request, env, params }: { request: Request; env: Env; params: Record<string, string> }) => {
   try {
@@ -28,10 +29,11 @@ export const onRequestPut = async ({ request, env, params }: { request: Request;
     const body = await request.json() as Record<string, string | number>;
     if (!String(body.descricao || '').trim()) return json({ error: 'Descrição é obrigatória' }, 400);
 
+    await ensureCodigoBarras(env.DB);
     await env.DB.prepare(
-      "UPDATE produtos SET codigo=?, descricao=?, grupo=?, unidade=?, preco_custo=?, preco_venda=?, fornecedor_id=?, observacao=?, updated_at=datetime('now') WHERE id=? AND tenant_id=?"
+      "UPDATE produtos SET codigo=?, codigo_barras=?, descricao=?, grupo=?, unidade=?, preco_custo=?, preco_venda=?, fornecedor_id=?, observacao=?, updated_at=datetime('now') WHERE id=? AND tenant_id=?"
     ).bind(
-      body.codigo || null, String(body.descricao).trim(),
+      body.codigo || null, String(body.codigo_barras || '').trim() || null, String(body.descricao).trim(),
       body.grupo || null, body.unidade || 'UN',
       Number(body.preco_custo) || 0, Number(body.preco_venda) || 0,
       body.fornecedor_id || null, body.observacao || null,

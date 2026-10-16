@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { api } from '../lib/api';
+import LeitorEstoque from '../components/LeitorEstoque';
 
 interface ItemEstoque {
   id: string; produto_id: string; codigo?: string; descricao: string;
@@ -22,7 +23,7 @@ function brl(v: number) { return Number(v || 0).toLocaleString('pt-BR', { style:
 function fmtDate(s: string) { const d = new Date(s); return d.toLocaleString('pt-BR'); }
 
 export default function Estoque() {
-  const [aba, setAba] = useState<'estoque' | 'movimentacoes' | 'compras'>('estoque');
+  const [aba, setAba] = useState<'estoque' | 'movimentacoes' | 'compras' | 'leitor'>('estoque');
   const [itens, setItens] = useState<ItemEstoque[]>([]);
   const [resumo, setResumo] = useState<Resumo | null>(null);
   const [movs, setMovs] = useState<Movimentacao[]>([]);
@@ -152,6 +153,7 @@ export default function Estoque() {
 
       {/* Abas */}
       <div style={{ display: 'flex', gap: '6px', marginBottom: '16px' }}>
+        {tabBtn('leitor', '▌▌▌ Leitor de código')}
         {tabBtn('estoque', 'Estoque Atual')}
         {tabBtn('movimentacoes', 'Movimentações')}
         {tabBtn('compras', `Lista de Compras${resumo && resumo.abaixo_minimo > 0 ? ` (${resumo.abaixo_minimo})` : ''}`)}
@@ -224,6 +226,8 @@ export default function Estoque() {
       )}
 
       {/* TABELA MOVIMENTAÇÕES */}
+      {aba === 'leitor' && <LeitorEstoque onMudou={loadEstoque} />}
+
       {aba === 'movimentacoes' && (
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px' }}>
           {loading ? (
