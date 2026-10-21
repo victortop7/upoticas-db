@@ -1,32 +1,44 @@
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
+import { garantirCategorias } from '../../lib/estoque';
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   try {
     const auth = await requireAuth(request, env);
     if (auth instanceof Response) return auth;
     const { tenant_id } = auth;
+    await garantirCategorias(env.DB, tenant_id);
 
     const url = new URL(request.url);
     const q = url.searchParams.get('q');
     const grupo = url.searchParams.get('grupo');
     const alerta = url.searchParams.get('alerta'); // só abaixo do mínimo
+    const categoria = url.searchParams.get('categoria_id'); // 'sem' = sem categoria
+    const sub = url.searchParams.get('subcategoria_id');
 
     let query = `
       SELECT
         e.id, e.produto_id, e.quantidade, e.quantidade_minima, e.quantidade_maxima,
         e.localizacao, e.updated_at,
-        p.codigo, p.descricao, p.grupo, p.unidade, p.preco_venda,
+        p.codigo, p.codigo_barras, p.descricao, p.grupo, p.unidade, p.preco_venda, p.preco_custo,
+        p.categoria_id, p.subcategoria_id, sc.nome AS subcategoria_nome,
         f.nome as fornecedor_nome,
         CASE WHEN e.quantidade <= e.quantidade_minima THEN 1 ELSE 0 END as abaixo_minimo
       FROM estoque e
       JOIN produtos p ON p.id = e.produto_id
       LEFT JOIN fornecedores f ON f.id = p.fornecedor_id
+      LEFT JOIN estoque_categorias sc ON sc.id = p.subcategoria_id
       WHERE e.tenant_id = ? AND p.ativo = 1
     `;
     const params: unknown[] = [tenant_id];
 
-    if (q) { query += ' AND (p.descricao LIKE ? OR p.codigo LIKE ?)'; params.push(`%${q}%`, `%${q}%`); }
+    if (q) { query += ' AND (p.descricao LIKE ? OR p.codigo LIKE ? OR p.codigo_barras = ?)'; params.push(`%${q}%`, `%${q}%`, q); }
+    let filtroCat = '';
+    const paramsCat: unknown[] = [];
+    if (categoria === 'sem') filtroCat = ' AND p.categoria_id IS NULL';
+    else if (categoria) { filtroCat = ' AND p.categoria_id = ?'; paramsCat.push(categoria); }
+    if (sub) { filtroCat += ' AND p.subcategoria_id = ?'; paramsCat.push(sub); }
+    query += filtroCat; params.push(...paramsCat);
     if (grupo) { query += ' AND p.grupo = ?'; params.push(grupo); }
     if (alerta === '1') { query += ' AND e.quantidade <= e.quantidade_minima'; }
 
@@ -38,11 +50,13 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
       SELECT
         COUNT(*) as total_itens,
         SUM(CASE WHEN e.quantidade <= e.quantidade_minima THEN 1 ELSE 0 END) as abaixo_minimo,
-        SUM(e.quantidade * p.preco_venda) as valor_total
+        SUM(e.quantidade * p.preco_venda) as valor_total,
+        SUM(e.quantidade) as pecas,
+        SUM(e.quantidade * p.preco_custo) as custo_total
       FROM estoque e
       JOIN produtos p ON p.id = e.produto_id
-      WHERE e.tenant_id = ? AND p.ativo = 1
-    `).bind(tenant_id).first<Record<string, number>>();
+      WHERE e.tenant_id = ? AND p.ativo = 1${filtroCat}
+    `).bind(tenant_id, ...paramsCat).first<Record<string, number>>();
 
     return json({ itens: result.results, resumo });
   } catch (err) {

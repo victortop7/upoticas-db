@@ -3,6 +3,7 @@ import { api } from '../lib/api';
 
 type Leitura = { id: number; codigo: string; descricao: string; tipo: 'entrada' | 'saida'; qtd: number; depois?: number; erro?: string };
 type Prod = { id: string; descricao: string; grupo?: string | null };
+type CatLeitor = { id: string; nome: string; subs: { id: string; nome: string }[] };
 
 function bip(ok: boolean) {
   try {
@@ -16,12 +17,14 @@ function bip(ok: boolean) {
 
 // Leitura contínua com leitor de código de barras (USB/Bluetooth funciona como teclado + Enter)
 // ou pela câmera do celular, quando o navegador suporta.
-export default function LeitorEstoque({ onMudou }: { onMudou: () => void }) {
+export default function LeitorEstoque({ onMudou, categorias = [] }: { onMudou: () => void; categorias?: CatLeitor[] }) {
   const [tipo, setTipo] = useState<'entrada' | 'saida'>('entrada');
   const [qtd, setQtd] = useState('1');
   const [codigo, setCodigo] = useState('');
   const [lidas, setLidas] = useState<Leitura[]>([]);
-  const [novo, setNovo] = useState<{ codigo: string; descricao: string; grupo: string; preco_venda: string; preco_custo: string } | null>(null);
+  const [novo, setNovo] = useState<{ codigo: string; descricao: string; categoria_id: string; subcategoria_id: string; preco_venda: string; preco_custo: string } | null>(null);
+  // categoria padrão do cadastro rápido: Armações (ou a primeira)
+  const catPadrao = (categorias.find(c => /arma/i.test(c.nome)) || categorias[0])?.id || '';
   const [ocupado, setOcupado] = useState(false);
   const [camera, setCamera] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -46,7 +49,7 @@ export default function LeitorEstoque({ onMudou }: { onMudou: () => void }) {
       bip(false);
       const msg = e instanceof Error ? e.message : 'Erro';
       if (/não cadastrado/i.test(msg) && tipo === 'entrada') {
-        setNovo({ codigo: c, descricao: '', grupo: 'Armações', preco_venda: '', preco_custo: '' });
+        setNovo(n => ({ codigo: c, descricao: '', categoria_id: n?.categoria_id || catPadrao, subcategoria_id: n?.subcategoria_id || '', preco_venda: '', preco_custo: '' }));
       } else {
         setLidas(l => [{ id: ++seq.current, codigo: c, descricao: '', tipo, qtd: q, erro: /não cadastrado/i.test(msg) ? 'Código não cadastrado' : msg }, ...l].slice(0, 50));
       }
@@ -129,10 +132,18 @@ export default function LeitorEstoque({ onMudou }: { onMudou: () => void }) {
         <div style={{ background: 'var(--surface)', border: '1px solid var(--amber, #f59e0b)', borderRadius: 12, padding: 18 }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>Código novo: <span style={{ fontFamily: 'var(--mono)' }}>{novo.codigo}</span></div>
           <div style={{ fontSize: 12.5, color: 'var(--text-muted)', marginBottom: 12 }}>Cadastre o produto uma vez. Nas próximas leituras ele já é reconhecido.</div>
-          <form onSubmit={e => { e.preventDefault(); if (!novo.descricao.trim()) return; registrar(novo.codigo, { novo: { descricao: novo.descricao, grupo: novo.grupo, preco_venda: parseFloat(novo.preco_venda.replace(',', '.')) || 0, preco_custo: parseFloat(novo.preco_custo.replace(',', '.')) || 0 } }); }}
-            style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 10, alignItems: 'end' }}>
+          <form onSubmit={e => { e.preventDefault(); if (!novo.descricao.trim()) return; registrar(novo.codigo, { novo: { descricao: novo.descricao, categoria_id: novo.categoria_id || undefined, subcategoria_id: novo.subcategoria_id || undefined, preco_venda: parseFloat(novo.preco_venda.replace(',', '.')) || 0, preco_custo: parseFloat(novo.preco_custo.replace(',', '.')) || 0 } }); }}
+            style={{ display: 'grid', gridTemplateColumns: '2fr 1.1fr 1.1fr 0.8fr 0.8fr', gap: 10, alignItems: 'end' }}>
             <div><label style={{ fontSize: 12, color: 'var(--text-muted)' }}>Descrição *</label><input autoFocus style={inp} value={novo.descricao} onChange={e => setNovo({ ...novo, descricao: e.target.value })} placeholder="Ex: Armação Ray-Ban RB5154 preta" /></div>
-            <div><label style={{ fontSize: 12, color: 'var(--text-muted)' }}>Grupo</label><input style={inp} value={novo.grupo} onChange={e => setNovo({ ...novo, grupo: e.target.value })} /></div>
+            <div><label style={{ fontSize: 12, color: 'var(--text-muted)' }}>Categoria</label>
+              <select style={inp} value={novo.categoria_id} onChange={e => setNovo({ ...novo, categoria_id: e.target.value, subcategoria_id: '' })}>
+                {categorias.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+              </select></div>
+            <div><label style={{ fontSize: 12, color: 'var(--text-muted)' }}>Material / sub</label>
+              <select style={inp} value={novo.subcategoria_id} onChange={e => setNovo({ ...novo, subcategoria_id: e.target.value })}>
+                <option value="">—</option>
+                {categorias.find(c => c.id === novo.categoria_id)?.subs.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
+              </select></div>
             <div><label style={{ fontSize: 12, color: 'var(--text-muted)' }}>Custo (R$)</label><input style={{ ...inp, fontFamily: 'var(--mono)' }} inputMode="decimal" value={novo.preco_custo} onChange={e => setNovo({ ...novo, preco_custo: e.target.value })} /></div>
             <div><label style={{ fontSize: 12, color: 'var(--text-muted)' }}>Venda (R$)</label><input style={{ ...inp, fontFamily: 'var(--mono)' }} inputMode="decimal" value={novo.preco_venda} onChange={e => setNovo({ ...novo, preco_venda: e.target.value })} /></div>
             <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>

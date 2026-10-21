@@ -1,5 +1,6 @@
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
+import { ensureEstoque } from '../../lib/estoque';
 
 let jaGarantiu = false;
 export async function ensureCodigoBarras(db: Env['DB']) {
@@ -42,7 +43,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     await ensureCodigoBarras(env.DB);
     const body = await request.json() as {
       codigo?: string; tipo?: string; quantidade?: number; motivo?: string;
-      novo?: { descricao?: string; grupo?: string; preco_venda?: number; preco_custo?: number };
+      novo?: { descricao?: string; grupo?: string; preco_venda?: number; preco_custo?: number; categoria_id?: string; subcategoria_id?: string };
     };
     const codigo = String(body.codigo || '').trim();
     const tipo = body.tipo === 'saida' ? 'saida' : 'entrada';
@@ -53,11 +54,17 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     if (!p) {
       if (!body.novo?.descricao?.trim()) return json({ encontrado: false, error: 'Produto não cadastrado' }, 404);
       const id = crypto.randomUUID();
+      await ensureEstoque(env.DB);
+      let grupo = body.novo.grupo?.trim() || 'Armações';
+      if (body.novo.categoria_id) {
+        const c = await env.DB.prepare('SELECT nome FROM estoque_categorias WHERE id = ? AND tenant_id = ?').bind(body.novo.categoria_id, auth.tenant_id).first<{ nome: string }>();
+        if (c) grupo = c.nome;
+      }
       await env.DB.prepare(
-        `INSERT INTO produtos (id, tenant_id, codigo, codigo_barras, descricao, grupo, unidade, preco_custo, preco_venda)
-         VALUES (?, ?, ?, ?, ?, ?, 'UN', ?, ?)`
-      ).bind(id, auth.tenant_id, codigo, codigo, body.novo.descricao.trim(), body.novo.grupo?.trim() || 'Armações',
-        Number(body.novo.preco_custo) || 0, Number(body.novo.preco_venda) || 0).run();
+        `INSERT INTO produtos (id, tenant_id, codigo, codigo_barras, descricao, grupo, unidade, preco_custo, preco_venda, categoria_id, subcategoria_id)
+         VALUES (?, ?, ?, ?, ?, ?, 'UN', ?, ?, ?, ?)`
+      ).bind(id, auth.tenant_id, codigo, codigo, body.novo.descricao.trim(), grupo,
+        Number(body.novo.preco_custo) || 0, Number(body.novo.preco_venda) || 0, body.novo.categoria_id || null, body.novo.subcategoria_id || null).run();
       p = { id, codigo, codigo_barras: codigo, descricao: body.novo.descricao.trim(), grupo: body.novo.grupo?.trim() || 'Armações', preco_venda: Number(body.novo.preco_venda) || 0 };
     }
 

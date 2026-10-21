@@ -1,5 +1,6 @@
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
+import { sincronizarEstoqueVenda } from '../../lib/estoque';
 import { ensureLojaCols, filtroLoja, lojaParaGravar } from '../../lib/lojas';
 import { normalizarLinhas, recebidoDasLinhas, formaResumo, salvarPagamentos } from '../../lib/pagamentos';
 
@@ -156,6 +157,8 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
           ).bind(crypto.randomUUID(), auth.tenant_id, id, (it.produto_id as string) || null, String(it.descricao).slice(0, 200), qtd, vu, desc, vt, now);
         });
       if (stmts.length) await env.DB.batch(stmts);
+      // dá baixa no estoque dos produtos vendidos
+      try { await sincronizarEstoqueVenda(env.DB, auth.tenant_id, id, auth.usuario_id); } catch { /* não bloqueia a venda */ }
     }
 
     // Vendas das pessoas adicionais (mesmo grupo/pagamento) — cada uma quitada (ativa)

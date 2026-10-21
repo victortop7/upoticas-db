@@ -1,6 +1,7 @@
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
 import { ensureCodigoBarras } from '../estoque/leitura';
+import { ensureEstoque } from '../../lib/estoque';
 
 export const onRequestGet = async ({ request, env, params }: { request: Request; env: Env; params: Record<string, string> }) => {
   try {
@@ -39,6 +40,14 @@ export const onRequestPut = async ({ request, env, params }: { request: Request;
       body.fornecedor_id || null, body.observacao || null,
       params.id, auth.tenant_id,
     ).run();
+
+    // categoria/subcategoria do estoque (só se o formulário mandou)
+    if (body.categoria_id !== undefined) {
+      await ensureEstoque(env.DB);
+      const cat = body.categoria_id ? await env.DB.prepare('SELECT nome FROM estoque_categorias WHERE id = ? AND tenant_id = ?').bind(body.categoria_id, auth.tenant_id).first<{ nome: string }>() : null;
+      await env.DB.prepare('UPDATE produtos SET categoria_id = ?, subcategoria_id = ?, grupo = COALESCE(?, grupo) WHERE id = ? AND tenant_id = ?')
+        .bind(body.categoria_id || null, body.categoria_id ? (body.subcategoria_id || null) : null, cat?.nome ?? null, params.id, auth.tenant_id).run();
+    }
 
     return json({ ok: true });
   } catch (err) {

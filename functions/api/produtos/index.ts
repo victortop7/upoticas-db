@@ -1,6 +1,7 @@
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
 import { ensureCodigoBarras } from '../estoque/leitura';
+import { ensureEstoque } from '../../lib/estoque';
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   try {
@@ -54,9 +55,10 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     if (!String(body.descricao || '').trim()) return json({ error: 'Descrição é obrigatória' }, 400);
 
     await ensureCodigoBarras(env.DB);
+    await ensureEstoque(env.DB);
     const id = crypto.randomUUID();
     await env.DB.prepare(
-      'INSERT INTO produtos (id, tenant_id, codigo, codigo_barras, descricao, grupo, unidade, preco_custo, preco_venda, fornecedor_id, observacao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO produtos (id, tenant_id, codigo, codigo_barras, descricao, grupo, unidade, preco_custo, preco_venda, fornecedor_id, observacao, categoria_id, subcategoria_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     ).bind(
       id, tenant_id,
       body.codigo || null,
@@ -68,6 +70,8 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       Number(body.preco_venda) || 0,
       body.fornecedor_id || null,
       body.observacao || null,
+      body.categoria_id || null,
+      body.categoria_id ? (body.subcategoria_id || null) : null,
     ).run();
 
     return json({ id }, 201);
