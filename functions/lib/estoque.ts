@@ -7,8 +7,11 @@ import type { D1Database } from '@cloudflare/workers-types';
 // estoque se já tiverem movimentação ligada (evita baixar estoque ao editar venda antiga).
 export const BAIXA_AUTO_DESDE = '2026-10-21';
 
+// Materiais que toda linha/grife de armação costuma ter
+export const MATERIAIS_PADRAO = ['Metal', 'Acetato', 'TR90', 'Parafusada', 'Clip On', 'Nylon', '360'];
+
 const PADRAO: { nome: string; icone: string; subs: string[] }[] = [
-  { nome: 'Armações', icone: '👓', subs: ['Metal', 'Acetato', 'TR90', 'Parafusada', 'Clip On', 'Nylon'] },
+  { nome: 'Armações', icone: '👓', subs: MATERIAIS_PADRAO },
   { nome: 'Óculos de Sol', icone: '🕶️', subs: [] },
   { nome: 'Limpeza', icone: '🧴', subs: [] },
   { nome: 'Acessórios', icone: '🎒', subs: [] },

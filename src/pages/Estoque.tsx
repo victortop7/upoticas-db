@@ -100,12 +100,13 @@ function NovoItem({ categorias, catInicial, subInicial, onClose, onSaved }: { ca
 // Criar / renomear / excluir categorias e subcategorias
 function GerenciarCategorias({ categorias, onClose, onMudou }: { categorias: Categoria[]; onClose: () => void; onMudou: () => void }) {
   const [nova, setNova] = useState('');
+  const [comMateriais, setComMateriais] = useState(true);
   const [novaSub, setNovaSub] = useState<Record<string, string>>({});
   const [erro, setErro] = useState('');
   async function criar(nome: string, parent_id?: string) {
     if (!nome.trim()) return;
     setErro('');
-    try { await api.post('/estoque/categorias', { nome, parent_id: parent_id || null }); setNova(''); setNovaSub(s => ({ ...s, [parent_id || '']: '' })); onMudou(); }
+    try { await api.post('/estoque/categorias', { nome, parent_id: parent_id || null, materiais_padrao: !parent_id && comMateriais }); setNova(''); setNovaSub(s => ({ ...s, [parent_id || '']: '' })); onMudou(); }
     catch (e) { setErro(e instanceof Error ? e.message : 'Erro'); }
   }
   async function renomear(id: string, atual: string) {
@@ -120,7 +121,7 @@ function GerenciarCategorias({ categorias, onClose, onMudou }: { categorias: Cat
   const mini: React.CSSProperties = { fontSize: 11.5, padding: '3px 8px', background: 'transparent', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--text-dim)', cursor: 'pointer' };
   return (
     <Janela titulo="Categorias do estoque" onClose={onClose} largura={560}>
-      <p style={{ margin: '0 0 14px', fontSize: 13, color: 'var(--text-dim)' }}>Cada categoria vira uma aba do estoque. As subcategorias separam por tipo ou material (ex.: Armações → Metal, Acetato, TR90…).</p>
+      <p style={{ margin: '0 0 14px', fontSize: 13, color: 'var(--text-dim)' }}>Cada categoria vira uma aba: use uma por <b>linha ou grife</b> (ex.: Armação Conceito, Ray-Ban, Chilli Beans). Dentro, as subcategorias são o <b>material</b> (Metal, Acetato, TR90, Nylon, Parafusada, Clip On, 360).</p>
       {erro && <div style={{ color: 'var(--red)', fontSize: 13, marginBottom: 10 }}>{erro}</div>}
       <div style={{ display: 'grid', gap: 10 }}>
         {categorias.map(c => (
@@ -148,9 +149,15 @@ function GerenciarCategorias({ categorias, onClose, onMudou }: { categorias: Cat
           </div>
         ))}
       </div>
-      <form onSubmit={e => { e.preventDefault(); criar(nova); }} style={{ display: 'flex', gap: 8, marginTop: 14 }}>
-        <input value={nova} onChange={e => setNova(e.target.value)} placeholder="Nova categoria (ex.: Lentes de contato)" style={inp} />
-        <button type="submit" style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', whiteSpace: 'nowrap' }}>+ Criar aba</button>
+      <form onSubmit={e => { e.preventDefault(); criar(nova); }} style={{ marginTop: 14, border: '1px dashed var(--border)', borderRadius: 10, padding: 12 }}>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <input value={nova} onChange={e => setNova(e.target.value)} placeholder="Nova grife / linha (ex.: Ray-Ban)" style={inp} />
+          <button type="submit" style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', whiteSpace: 'nowrap' }}>+ Criar aba</button>
+        </div>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, fontSize: 12.5, color: 'var(--text-dim)', cursor: 'pointer' }}>
+          <input type="checkbox" checked={comMateriais} onChange={e => setComMateriais(e.target.checked)} />
+          Já criar os materiais: Metal, Acetato, TR90, Parafusada, Clip On, Nylon, 360 <span style={{ color: 'var(--text-muted)' }}>(desmarque para Limpeza, Acessórios…)</span>
+        </label>
       </form>
     </Janela>
   );
@@ -257,6 +264,16 @@ export default function Estoque() {
           <button onClick={() => setNovoItem(true)} disabled={!cats?.categorias.length} style={{ padding: '9px 16px', fontSize: 13, fontWeight: 600, background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}>+ Novo item{catAtual ? ` em ${catAtual.nome}` : ''}</button>
         </div>
       </div>
+
+      {cats && cats.categorias.length > 6 && (
+        <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Ir para:</span>
+          <select style={{ ...inp, maxWidth: 280 }} value={aba?.tipo === 'cat' ? aba.id : ''} onChange={e => { if (e.target.value) { setAba({ tipo: 'cat', id: e.target.value }); setSub(''); } }}>
+            <option value="">— escolher grife / linha —</option>
+            {cats.categorias.map(c => <option key={c.id} value={c.id}>{c.nome} ({c.pecas} peças)</option>)}
+          </select>
+        </div>
+      )}
 
       {/* Abas: uma por categoria + ferramentas */}
       <div style={{ display: 'flex', gap: 2, borderBottom: '1px solid var(--border)', marginBottom: 16, overflowX: 'auto' }}>

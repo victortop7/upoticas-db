@@ -32,32 +32,77 @@ export default function LeitorEstoque({ onMudou, categorias = [] }: { onMudou: (
   const seq = useRef(0);
   const temCamera = typeof window !== 'undefined' && 'BarcodeDetector' in window;
 
-  useEffect(() => { if (!novo) inputRef.current?.focus(); }, [novo, tipo]);
+  // Modo lote: grife + material + preços definidos uma vez; código novo é cadastrado sozinho
+  const [lote, setLote] = useState({ ativo: false, categoria_id: '', subcategoria_id: '', preco_custo: '', preco_venda: '', nome: '' });
+  const loteRef = useRef(lote);
+  loteRef.current = lote;
+  const [pendentes, setPendentes] = useState(0);
+  const fila = useRef<{ c: string; extra?: Record<string, unknown>; tipo: 'entrada' | 'saida'; q: number }[]>([]);
+  const rodando = useRef(false);
+  const contarModelos = useRef(new Set<string>());
 
+  useEffect(() => { if (!novo) inputRef.current?.focus(); }, [novo, tipo]);
+  useEffect(() => { if (!lote.categoria_id && catPadrao) setLote(l => ({ ...l, categoria_id: catPadrao })); }, [catPadrao, lote.categoria_id]);
+
+  const catLote = categorias.find(c => c.id === lote.categoria_id);
+  const subLote = catLote?.subs.find(s => s.id === lote.subcategoria_id);
+  const num = (s: string) => parseFloat(String(s).replace(',', '.')) || 0;
+
+  async function processar() {
+    if (rodando.current) return;
+    rodando.current = true;
+    setOcupado(true);
+    while (fila.current.length) {
+      const { c, extra, tipo: t, q } = fila.current.shift()!;
+      setPendentes(fila.current.length);
+      try {
+        let r: { produto: Prod; depois: number };
+        try {
+          r = await api.post<{ produto: Prod; depois: number }>('/estoque/leitura', { codigo: c, tipo: t, quantidade: q, ...extra });
+        } catch (e) {
+          const L = loteRef.current;
+          const cat = categorias.find(x => x.id === L.categoria_id);
+          // lote ligado: cadastra o código novo com a grife/material/preço do lote e já dá entrada
+          if (/não cadastrado/i.test(e instanceof Error ? e.message : '') && t === 'entrada' && L.ativo && cat) {
+            const sub = cat.subs.find(s => s.id === L.subcategoria_id);
+            const descricao = [L.nome.trim() || cat.nome, sub?.nome, c].filter(Boolean).join(' ');
+            r = await api.post<{ produto: Prod; depois: number }>('/estoque/leitura', {
+              codigo: c, tipo: t, quantidade: q,
+              novo: { descricao, categoria_id: cat.id, subcategoria_id: sub?.id, preco_custo: num(L.preco_custo), preco_venda: num(L.preco_venda) },
+            });
+            contarModelos.current.add(c);
+          } else throw e;
+        }
+        bip(true);
+        setLidas(l => [{ id: ++seq.current, codigo: c, descricao: r.produto.descricao, tipo: t, qtd: q, depois: r.depois }, ...l].slice(0, 200));
+        setNovo(null);
+      } catch (e) {
+        bip(false);
+        const msg = e instanceof Error ? e.message : 'Erro';
+        if (/não cadastrado/i.test(msg) && t === 'entrada') {
+          // sem lote: para a fila e abre o cadastro rápido deste código
+          fila.current = [];
+          setNovo(n => ({ codigo: c, descricao: '', categoria_id: n?.categoria_id || catPadrao, subcategoria_id: n?.subcategoria_id || '', preco_venda: '', preco_custo: '' }));
+        } else {
+          setLidas(l => [{ id: ++seq.current, codigo: c, descricao: '', tipo: t, qtd: q, erro: /não cadastrado/i.test(msg) ? 'Código não cadastrado' : msg.replace(/\s*\(HTTP \d+\)$/, '') }, ...l].slice(0, 200));
+        }
+      }
+    }
+    setPendentes(0);
+    rodando.current = false;
+    setOcupado(false);
+    onMudou();
+    inputRef.current?.focus();
+  }
+
+  // Bipou: entra na fila (leituras rápidas seguidas não se perdem)
   async function registrar(cod: string, extra?: Record<string, unknown>) {
     const c = cod.trim();
-    if (!c || ocupado) return;
-    setOcupado(true);
-    const q = Math.max(1, parseInt(qtd) || 1);
-    try {
-      const r = await api.post<{ produto: Prod; depois: number }>('/estoque/leitura', { codigo: c, tipo, quantidade: q, ...extra });
-      bip(true);
-      setLidas(l => [{ id: ++seq.current, codigo: c, descricao: r.produto.descricao, tipo, qtd: q, depois: r.depois }, ...l].slice(0, 50));
-      setNovo(null);
-      onMudou();
-    } catch (e) {
-      bip(false);
-      const msg = e instanceof Error ? e.message : 'Erro';
-      if (/não cadastrado/i.test(msg) && tipo === 'entrada') {
-        setNovo(n => ({ codigo: c, descricao: '', categoria_id: n?.categoria_id || catPadrao, subcategoria_id: n?.subcategoria_id || '', preco_venda: '', preco_custo: '' }));
-      } else {
-        setLidas(l => [{ id: ++seq.current, codigo: c, descricao: '', tipo, qtd: q, erro: /não cadastrado/i.test(msg) ? 'Código não cadastrado' : msg }, ...l].slice(0, 50));
-      }
-    } finally {
-      setOcupado(false);
-      setCodigo('');
-      inputRef.current?.focus();
-    }
+    setCodigo('');
+    if (!c) return;
+    fila.current.push({ c, extra, tipo, q: Math.max(1, parseInt(qtd) || 1) });
+    setPendentes(fila.current.length);
+    processar();
   }
 
   // Câmera (Chrome no Android / alguns desktops)
@@ -110,19 +155,50 @@ export default function LeitorEstoque({ onMudou, categorias = [] }: { onMudou: (
         <form onSubmit={e => { e.preventDefault(); registrar(codigo); }} style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
           <div style={{ flex: 1, minWidth: 220 }}>
             <label style={{ fontSize: 12, color: 'var(--text-muted)' }}>Bipe o código de barras</label>
-            <input ref={inputRef} value={codigo} onChange={e => setCodigo(e.target.value)} disabled={!!novo}
+            <input ref={inputRef} value={codigo} onChange={e => setCodigo(e.target.value)} disabled={!!novo && !lote.ativo}
               style={{ ...inp, fontSize: 20, fontFamily: 'var(--mono)', padding: '12px 14px', borderColor: cor }} placeholder="▌▌▌ ▌▌ ▌▌▌" autoComplete="off" />
           </div>
           <div style={{ width: 90 }}>
             <label style={{ fontSize: 12, color: 'var(--text-muted)' }}>Qtd por bipe</label>
             <input type="number" min={1} value={qtd} onChange={e => setQtd(e.target.value)} style={{ ...inp, fontFamily: 'var(--mono)', padding: '12px 10px', fontSize: 16 }} />
           </div>
-          <button type="submit" disabled={ocupado || !codigo.trim()} style={{ padding: '13px 18px', fontSize: 14, fontWeight: 700, background: cor, color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', opacity: ocupado || !codigo.trim() ? 0.6 : 1 }}>OK</button>
+          <button type="submit" disabled={!codigo.trim()} style={{ padding: '13px 18px', fontSize: 14, fontWeight: 700, background: cor, color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', opacity: !codigo.trim() ? 0.6 : 1 }}>{ocupado && pendentes ? `… ${pendentes}` : 'OK'}</button>
           {temCamera && (
             <button type="button" onClick={() => setCamera(c => !c)} style={{ padding: '13px 14px', fontSize: 14, fontWeight: 600, background: camera ? 'var(--primary)' : 'var(--surface-alt)', color: camera ? '#fff' : 'var(--text)', border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer' }}>📷 {camera ? 'Fechar câmera' : 'Câmera'}</button>
           )}
         </form>
         {camera && <video ref={videoRef} muted playsInline style={{ marginTop: 12, width: '100%', maxWidth: 420, borderRadius: 10, background: '#000' }} />}
+
+        {tipo === 'entrada' && categorias.length > 0 && (
+          <div style={{ marginTop: 14, border: `1px solid ${lote.ativo ? '#16a34a' : 'var(--border)'}`, background: lote.ativo ? 'rgba(22,163,74,.06)' : 'transparent', borderRadius: 10, padding: '12px 14px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 700, color: 'var(--text)', cursor: 'pointer' }}>
+              <input type="checkbox" checked={lote.ativo} onChange={e => { setLote(l => ({ ...l, ativo: e.target.checked })); contarModelos.current.clear(); inputRef.current?.focus(); }} />
+              📦 Entrada de mercadoria em lote
+              <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-muted)' }}>— escolha grife e material uma vez e bipe a caixa toda</span>
+            </label>
+            {lote.ativo && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1.1fr 0.8fr 0.8fr 1.4fr', gap: 10, marginTop: 10, alignItems: 'end' }}>
+                <div><label style={{ fontSize: 12, color: 'var(--text-muted)' }}>Grife / linha</label>
+                  <select style={inp} value={lote.categoria_id} onChange={e => setLote(l => ({ ...l, categoria_id: e.target.value, subcategoria_id: '' }))}>
+                    {categorias.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+                  </select></div>
+                <div><label style={{ fontSize: 12, color: 'var(--text-muted)' }}>Material</label>
+                  <select style={inp} value={lote.subcategoria_id} onChange={e => setLote(l => ({ ...l, subcategoria_id: e.target.value }))}>
+                    <option value="">—</option>
+                    {catLote?.subs.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
+                  </select></div>
+                <div><label style={{ fontSize: 12, color: 'var(--text-muted)' }}>Custo R$</label><input inputMode="decimal" style={{ ...inp, fontFamily: 'var(--mono)' }} value={lote.preco_custo} onChange={e => setLote(l => ({ ...l, preco_custo: e.target.value }))} /></div>
+                <div><label style={{ fontSize: 12, color: 'var(--text-muted)' }}>Venda R$</label><input inputMode="decimal" style={{ ...inp, fontFamily: 'var(--mono)' }} value={lote.preco_venda} onChange={e => setLote(l => ({ ...l, preco_venda: e.target.value }))} /></div>
+                <div><label style={{ fontSize: 12, color: 'var(--text-muted)' }}>Nome base (opcional)</label><input style={inp} value={lote.nome} onChange={e => setLote(l => ({ ...l, nome: e.target.value }))} placeholder={catLote?.nome || ''} /></div>
+                <div style={{ gridColumn: '1 / -1', fontSize: 12, color: 'var(--text-dim)' }}>
+                  Código já cadastrado: soma +{Math.max(1, parseInt(qtd) || 1)}. Código novo: cadastra como <b style={{ fontFamily: 'var(--mono)' }}>{[lote.nome.trim() || catLote?.nome, subLote?.nome, '<código>'].filter(Boolean).join(' ')}</b> e já dá entrada.
+                  {contarModelos.current.size > 0 && <> · <b>{contarModelos.current.size}</b> modelo(s) novo(s) neste lote.</>}
+                  {' '}Depois dá pra ajustar o nome de cada um em Produtos.
+                </div>
+              </div>
+            )}
+          </div>
+        )}
         <div style={{ marginTop: 10, fontSize: 12, color: 'var(--text-muted)' }}>
           Deixe o cursor no campo e vá bipando: cada leitura já {tipo === 'entrada' ? 'soma' : 'tira'} no estoque. Código que ainda não existe abre o cadastro rápido{tipo === 'saida' ? ' (só na Entrada)' : ''}.
         </div>
