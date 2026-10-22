@@ -8,8 +8,8 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
   if (auth instanceof Response) return auth;
   try {
     await garantirCategorias(env.DB, auth.tenant_id);
-    const cats = await env.DB.prepare('SELECT id, nome, parent_id, icone, ordem FROM estoque_categorias WHERE tenant_id = ? ORDER BY ordem, nome')
-      .bind(auth.tenant_id).all<{ id: string; nome: string; parent_id: string | null; icone: string | null; ordem: number }>();
+    const cats = await env.DB.prepare("SELECT id, nome, parent_id, icone, ordem, COALESCE(modo, 'modelo') AS modo, ncm FROM estoque_categorias WHERE tenant_id = ? ORDER BY ordem, nome")
+      .bind(auth.tenant_id).all<{ id: string; nome: string; parent_id: string | null; icone: string | null; ordem: number; modo: string; ncm: string | null }>();
     const tot = await env.DB.prepare(
       `SELECT p.categoria_id, p.subcategoria_id, COUNT(*) AS itens, SUM(e.quantidade) AS pecas,
               SUM(CASE WHEN e.quantidade <= e.quantidade_minima THEN 1 ELSE 0 END) AS baixo
@@ -36,7 +36,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   if (auth instanceof Response) return auth;
   try {
     await garantirCategorias(env.DB, auth.tenant_id);
-    const b = await request.json() as { nome?: string; parent_id?: string | null; icone?: string; materiais_padrao?: boolean };
+    const b = await request.json() as { nome?: string; parent_id?: string | null; icone?: string; materiais_padrao?: boolean; modo?: string; ncm?: string };
     const nome = (b.nome || '').trim();
     if (!nome) return json({ error: 'Informe o nome' }, 400);
     if (b.parent_id) {
@@ -49,8 +49,9 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     const ord = await env.DB.prepare(`SELECT COALESCE(MAX(ordem), -1) + 1 AS o FROM estoque_categorias WHERE tenant_id = ? AND COALESCE(parent_id, '') = ?`)
       .bind(auth.tenant_id, b.parent_id || '').first<{ o: number }>();
     const id = crypto.randomUUID();
-    const stmts = [env.DB.prepare('INSERT INTO estoque_categorias (id, tenant_id, nome, parent_id, icone, ordem) VALUES (?, ?, ?, ?, ?, ?)')
-      .bind(id, auth.tenant_id, nome, b.parent_id || null, b.icone || null, ord?.o ?? 0)];
+    const modo = b.modo === 'quantidade' ? 'quantidade' : 'modelo';
+    const stmts = [env.DB.prepare('INSERT INTO estoque_categorias (id, tenant_id, nome, parent_id, icone, ordem, modo, ncm) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
+      .bind(id, auth.tenant_id, nome, b.parent_id || null, b.icone || null, ord?.o ?? 0, modo, (b.ncm || '').replace(/\D/g, '') || null)];
     // grife/linha nova de armação: já cria Metal, Acetato, TR90… dentro
     if (!b.parent_id && b.materiais_padrao) {
       MATERIAIS_PADRAO.forEach((m, i) => stmts.push(env.DB.prepare('INSERT INTO estoque_categorias (id, tenant_id, nome, parent_id, ordem) VALUES (?, ?, ?, ?, ?)')

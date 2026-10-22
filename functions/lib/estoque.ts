@@ -31,6 +31,12 @@ export async function ensureEstoque(db: D1Database) {
     try { await db.prepare(`ALTER TABLE produtos ADD COLUMN ${c}`).run(); } catch { /* já existe */ }
   }
   try { await db.prepare('ALTER TABLE estoque_movimentacoes ADD COLUMN venda_id TEXT').run(); } catch { /* já existe */ }
+  // modo da categoria: 'modelo' (cada peça com código/preço) ou 'quantidade' (só conta por material)
+  for (const c of ["modo TEXT NOT NULL DEFAULT 'modelo'", 'ncm TEXT']) {
+    try { await db.prepare(`ALTER TABLE estoque_categorias ADD COLUMN ${c}`).run(); } catch { /* já existe */ }
+  }
+  // produto "genérico" que representa um material inteiro no modo quantidade
+  try { await db.prepare('ALTER TABLE produtos ADD COLUMN generico INTEGER NOT NULL DEFAULT 0').run(); } catch { /* já existe */ }
   try { await db.prepare('CREATE INDEX IF NOT EXISTS idx_estmov_venda ON estoque_movimentacoes(tenant_id, venda_id)').run(); } catch { /* ok */ }
   jaGarantiu = true;
 }

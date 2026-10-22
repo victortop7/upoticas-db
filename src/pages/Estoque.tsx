@@ -5,7 +5,7 @@ import LeitorEstoque from '../components/LeitorEstoque';
 interface ItemEstoque {
   id: string; produto_id: string; codigo?: string; codigo_barras?: string; descricao: string;
   grupo?: string; unidade: string; preco_venda: number; preco_custo: number;
-  categoria_id?: string | null; subcategoria_id?: string | null; subcategoria_nome?: string | null;
+  categoria_id?: string | null; subcategoria_id?: string | null; subcategoria_nome?: string | null; generico?: number;
   quantidade: number; quantidade_minima: number; quantidade_maxima?: number;
   localizacao?: string; fornecedor_nome?: string; abaixo_minimo: number;
 }
@@ -16,7 +16,85 @@ interface Movimentacao {
   motivo?: string; documento?: string; fornecedor_nome?: string; usuario_nome?: string; created_at: string;
 }
 export interface Sub { id: string; nome: string; itens: number; pecas: number; baixo: number }
-export interface Categoria { id: string; nome: string; icone?: string | null; itens: number; pecas: number; baixo: number; subs: Sub[] }
+export interface Categoria { id: string; nome: string; icone?: string | null; itens: number; pecas: number; baixo: number; subs: Sub[]; modo?: 'modelo' | 'quantidade'; ncm?: string | null }
+
+// Modo "por quantidade": um cartão por material, só com o contador
+function PainelQuantidade({ cat, itens, onMudou }: { cat: Categoria; itens: ItemEstoque[]; onMudou: () => void }) {
+  const [acao, setAcao] = useState<{ sub: string; tipo: 'entrada' | 'saida' | 'ajuste' } | null>(null);
+  const [qtd, setQtd] = useState('');
+  const [preco, setPreco] = useState('');
+  const [doc, setDoc] = useState('');
+  const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState('');
+  const linhas = cat.subs.length ? cat.subs.map(s => ({ id: s.id, nome: s.nome })) : [{ id: '', nome: cat.nome }];
+  const itemDe = (subId: string) => itens.find(i => i.generico && (i.subcategoria_id || '') === subId);
+  const total = linhas.reduce((s, l) => s + (itemDe(l.id)?.quantidade || 0), 0);
+
+  async function confirmar() {
+    if (!acao) return;
+    setSalvando(true); setErro('');
+    try {
+      await api.post('/estoque/quantidade', {
+        categoria_id: cat.id, subcategoria_id: acao.sub || null, tipo: acao.tipo, quantidade: num(qtd),
+        ...(preco.trim() ? { preco_venda: num(preco) } : {}), documento: doc || undefined,
+      });
+      setAcao(null); setQtd(''); setPreco(''); setDoc('');
+      onMudou();
+    } catch (e) { setErro(e instanceof Error ? e.message : 'Erro'); }
+    setSalvando(false);
+  }
+  const cores = { entrada: 'var(--green)', saida: 'var(--red)', ajuste: 'var(--amber)' } as const;
+
+  return (
+    <div>
+      <div style={{ fontSize: 13, color: 'var(--text-dim)', marginBottom: 12 }}>
+        Controle <b>por quantidade</b>: sem código nem preço por peça. Total em {cat.nome}: <b style={{ fontFamily: 'var(--mono)', color: 'var(--text)' }}>{total}</b> peça(s).
+        Na venda, a vendedora escolhe <b>"{cat.nome} {linhas[0].id ? linhas[0].nome : ''}"</b> e digita o valor — o estoque baixa sozinho.
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: 12 }}>
+        {linhas.map(l => {
+          const it = itemDe(l.id);
+          const q = it?.quantidade ?? 0;
+          const aberto = acao && acao.sub === l.id;
+          const baixo = it && it.quantidade <= it.quantidade_minima && it.quantidade_minima > 0;
+          return (
+            <div key={l.id || 'unico'} style={{ background: 'var(--surface)', border: `1px solid ${aberto ? cores[acao!.tipo] : baixo || q < 0 ? 'var(--red)' : 'var(--border)'}`, borderRadius: 12, padding: '14px 16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{l.nome}</span>
+                {it?.preco_venda ? <span style={{ fontSize: 11.5, fontFamily: 'var(--mono)', color: 'var(--text-muted)' }}>{brl(it.preco_venda)}</span> : null}
+              </div>
+              <div style={{ fontSize: 34, fontWeight: 800, fontFamily: 'var(--mono)', color: q < 0 || baixo ? 'var(--red)' : q === 0 ? 'var(--text-muted)' : 'var(--text)', margin: '4px 0 10px' }}>{q}</div>
+              {!aberto ? (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
+                  {(['entrada', 'saida', 'ajuste'] as const).map(t => (
+                    <button key={t} onClick={() => { setAcao({ sub: l.id, tipo: t }); setQtd(''); setPreco(''); setDoc(''); setErro(''); }}
+                      style={{ padding: '7px 4px', fontSize: 12, fontWeight: 600, borderRadius: 7, cursor: 'pointer', border: `1px solid ${cores[t]}`, background: 'transparent', color: cores[t] }}>
+                      {t === 'entrada' ? '+ Entrada' : t === 'saida' ? '− Saída' : 'Contar'}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <form onSubmit={e => { e.preventDefault(); confirmar(); }} style={{ display: 'grid', gap: 6 }}>
+                  <input autoFocus type="number" min={acao!.tipo === 'ajuste' ? 0 : 1} required value={qtd} onChange={e => setQtd(e.target.value)} style={{ ...inp, fontFamily: 'var(--mono)', fontSize: 16 }}
+                    placeholder={acao!.tipo === 'ajuste' ? 'Quantas tem na loja?' : acao!.tipo === 'entrada' ? 'Quantas chegaram?' : 'Quantas saíram?'} />
+                  {acao!.tipo === 'entrada' && <>
+                    <input value={doc} onChange={e => setDoc(e.target.value)} style={inp} placeholder="NF / fornecedor (opcional)" />
+                    <input inputMode="decimal" value={preco} onChange={e => setPreco(e.target.value)} style={{ ...inp, fontFamily: 'var(--mono)' }} placeholder={`Preço de venda padrão ${it?.preco_venda ? '(' + brl(it.preco_venda) + ')' : '(opcional)'}`} />
+                  </>}
+                  {erro && <div style={{ fontSize: 12, color: 'var(--red)' }}>{erro}</div>}
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <button type="button" onClick={() => setAcao(null)} style={{ flex: 1, padding: 7, fontSize: 12, background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: 7, cursor: 'pointer' }}>Cancelar</button>
+                    <button type="submit" disabled={salvando} style={{ flex: 1.4, padding: 7, fontSize: 12, fontWeight: 700, background: cores[acao!.tipo], color: '#fff', border: 'none', borderRadius: 7, cursor: 'pointer' }}>{salvando ? '...' : 'Confirmar'}</button>
+                  </div>
+                </form>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 interface RespCat { categorias: Categoria[]; sem_categoria: { itens: number; pecas: number; baixo: number } }
 
 const TIPO_LABEL: Record<string, string> = { entrada: 'Entrada', saida: 'Saída', ajuste: 'Ajuste' };
@@ -101,12 +179,13 @@ function NovoItem({ categorias, catInicial, subInicial, onClose, onSaved }: { ca
 function GerenciarCategorias({ categorias, onClose, onMudou }: { categorias: Categoria[]; onClose: () => void; onMudou: () => void }) {
   const [nova, setNova] = useState('');
   const [comMateriais, setComMateriais] = useState(true);
+  const [modoNovo, setModoNovo] = useState<'quantidade' | 'modelo'>('quantidade');
   const [novaSub, setNovaSub] = useState<Record<string, string>>({});
   const [erro, setErro] = useState('');
   async function criar(nome: string, parent_id?: string) {
     if (!nome.trim()) return;
     setErro('');
-    try { await api.post('/estoque/categorias', { nome, parent_id: parent_id || null, materiais_padrao: !parent_id && comMateriais }); setNova(''); setNovaSub(s => ({ ...s, [parent_id || '']: '' })); onMudou(); }
+    try { await api.post('/estoque/categorias', { nome, parent_id: parent_id || null, materiais_padrao: !parent_id && comMateriais, modo: modoNovo }); setNova(''); setNovaSub(s => ({ ...s, [parent_id || '']: '' })); onMudou(); }
     catch (e) { setErro(e instanceof Error ? e.message : 'Erro'); }
   }
   async function renomear(id: string, atual: string) {
@@ -158,6 +237,10 @@ function GerenciarCategorias({ categorias, onClose, onMudou }: { categorias: Cat
           <input type="checkbox" checked={comMateriais} onChange={e => setComMateriais(e.target.checked)} />
           Já criar os materiais: Metal, Acetato, TR90, Parafusada, Clip On, Nylon, 360 <span style={{ color: 'var(--text-muted)' }}>(desmarque para Limpeza, Acessórios…)</span>
         </label>
+        <div style={{ display: 'flex', gap: 14, marginTop: 6, fontSize: 12.5, color: 'var(--text-dim)' }}>
+          <label style={{ display: 'flex', gap: 6, alignItems: 'center', cursor: 'pointer' }}><input type="radio" checked={modoNovo === 'quantidade'} onChange={() => setModoNovo('quantidade')} /> 🔢 Só quantidade (linha própria)</label>
+          <label style={{ display: 'flex', gap: 6, alignItems: 'center', cursor: 'pointer' }}><input type="radio" checked={modoNovo === 'modelo'} onChange={() => setModoNovo('modelo')} /> 🏷️ Por modelo, com código e preço (grifes)</label>
+        </div>
       </form>
     </Janela>
   );
@@ -249,7 +332,7 @@ export default function Estoque() {
     </button>
   );
   const chip = (on: boolean): React.CSSProperties => ({ padding: '5px 12px', fontSize: 12.5, fontWeight: 500, borderRadius: 20, cursor: 'pointer', border: `1px solid ${on ? 'var(--primary)' : 'var(--border)'}`, background: on ? 'var(--primary)' : 'var(--surface)', color: on ? '#fff' : 'var(--text-dim)' });
-  const listaEstoque = aba && (aba.tipo === 'cat' || aba.tipo === 'sem' || aba.tipo === 'compras');
+  const listaEstoque = aba && ((aba.tipo === 'cat' && catAtual?.modo !== 'quantidade') || aba.tipo === 'sem' || aba.tipo === 'compras');
   const totalBaixo = cats ? cats.categorias.reduce((s, c) => s + c.baixo, 0) + cats.sem_categoria.baixo : 0;
 
   return (
@@ -261,7 +344,7 @@ export default function Estoque() {
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={() => setGerenciar(true)} style={{ padding: '9px 14px', fontSize: 13, background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer' }}>⚙️ Categorias</button>
-          <button onClick={() => setNovoItem(true)} disabled={!cats?.categorias.length} style={{ padding: '9px 16px', fontSize: 13, fontWeight: 600, background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}>+ Novo item{catAtual ? ` em ${catAtual.nome}` : ''}</button>
+          {catAtual?.modo !== 'quantidade' && <button onClick={() => setNovoItem(true)} disabled={!cats?.categorias.length} style={{ padding: '9px 16px', fontSize: 13, fontWeight: 600, background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}>+ Novo item{catAtual ? ` em ${catAtual.nome}` : ''}</button>}
         </div>
       </div>
 
@@ -277,7 +360,7 @@ export default function Estoque() {
 
       {/* Abas: uma por categoria + ferramentas */}
       <div style={{ display: 'flex', gap: 2, borderBottom: '1px solid var(--border)', marginBottom: 16, overflowX: 'auto' }}>
-        {cats?.categorias.map(c => tabBtn({ tipo: 'cat', id: c.id }, <>{c.icone || '📦'} {c.nome} <span style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--text-muted)' }}>{c.pecas}</span></>, c.baixo))}
+        {cats?.categorias.map(c => tabBtn({ tipo: 'cat', id: c.id }, <>{c.icone || (c.modo === 'quantidade' ? '🔢' : '📦')} {c.nome} <span style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--text-muted)' }}>{c.pecas}</span></>, c.baixo))}
         {cats && cats.sem_categoria.itens > 0 && tabBtn({ tipo: 'sem' }, <>❔ Sem categoria <span style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--text-muted)' }}>{cats.sem_categoria.itens}</span></>)}
         <span style={{ width: 1, background: 'var(--border)', margin: '8px 6px' }} />
         {tabBtn({ tipo: 'leitor' }, '▌▌▌ Leitor')}
@@ -286,7 +369,26 @@ export default function Estoque() {
       </div>
 
       {/* Subcategorias da aba */}
-      {aba?.tipo === 'cat' && catAtual && (catAtual.subs.length > 0) && (
+      {aba?.tipo === 'cat' && catAtual && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap', fontSize: 12.5, color: 'var(--text-muted)' }}>
+          <span>Controle desta aba:</span>
+          {(['quantidade', 'modelo'] as const).map(m => (
+            <button key={m} onClick={async () => { if ((catAtual.modo || 'modelo') === m) return; await api.put(`/estoque/categorias/${catAtual.id}`, { modo: m }); recarregar(); }}
+              style={{ padding: '4px 11px', fontSize: 12, borderRadius: 20, cursor: 'pointer', border: `1px solid ${(catAtual.modo || 'modelo') === m ? 'var(--primary)' : 'var(--border)'}`, background: (catAtual.modo || 'modelo') === m ? 'var(--primary-dim)' : 'transparent', color: (catAtual.modo || 'modelo') === m ? 'var(--primary)' : 'var(--text-dim)' }}>
+              {m === 'quantidade' ? '🔢 Só quantidade' : '🏷️ Por modelo (código/preço)'}
+            </button>
+          ))}
+          <span style={{ marginLeft: 8 }}>NCM p/ nota:</span>
+          <input defaultValue={catAtual.ncm || ''} key={catAtual.id + (catAtual.ncm || '')} placeholder="ex.: 90031900" inputMode="numeric"
+            onBlur={async e => { const v = e.target.value.replace(/\D/g, ''); if (v !== (catAtual.ncm || '')) { await api.put(`/estoque/categorias/${catAtual.id}`, { ncm: v || null }); loadCats(); } }}
+            style={{ ...inp, width: 120, padding: '4px 8px', fontSize: 12, fontFamily: 'var(--mono)' }} />
+        </div>
+      )}
+      {aba?.tipo === 'cat' && catAtual && catAtual.modo === 'quantidade' && (
+        <div style={{ marginBottom: 18 }}><PainelQuantidade cat={catAtual} itens={itens} onMudou={recarregar} /></div>
+      )}
+
+      {aba?.tipo === 'cat' && catAtual && catAtual.modo !== 'quantidade' && (catAtual.subs.length > 0) && (
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14, alignItems: 'center' }}>
           <button style={chip(!sub)} onClick={() => setSub('')}>Todas <span style={{ fontFamily: 'var(--mono)', opacity: .8 }}>{catAtual.pecas}</span></button>
           {catAtual.subs.map(s => (

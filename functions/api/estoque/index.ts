@@ -21,7 +21,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
         e.id, e.produto_id, e.quantidade, e.quantidade_minima, e.quantidade_maxima,
         e.localizacao, e.updated_at,
         p.codigo, p.codigo_barras, p.descricao, p.grupo, p.unidade, p.preco_venda, p.preco_custo,
-        p.categoria_id, p.subcategoria_id, sc.nome AS subcategoria_nome,
+        p.categoria_id, p.subcategoria_id, sc.nome AS subcategoria_nome, COALESCE(p.generico, 0) AS generico,
         f.nome as fornecedor_nome,
         CASE WHEN e.quantidade <= e.quantidade_minima THEN 1 ELSE 0 END as abaixo_minimo
       FROM estoque e

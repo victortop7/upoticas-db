@@ -55,12 +55,25 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     }
 
     // Itens: usa os itens da venda; se não houver, uma linha única com o total
-    let itensVenda: { descricao: string; quantidade: number; valor_unitario: number; codigo?: string }[] = [];
+    let itensVenda: { descricao: string; quantidade: number; valor_unitario: number; codigo?: string; ncm?: string | null }[] = [];
     try {
       const r = await env.DB.prepare(
         'SELECT descricao, quantidade, valor_unitario, produto_id FROM venda_itens WHERE venda_id = ? AND tenant_id = ?'
       ).bind(body.venda_id, tenant_id).all<{ descricao: string; quantidade: number; valor_unitario: number; produto_id: string | null }>();
       itensVenda = (r.results || []).map(it => ({ descricao: it.descricao, quantidade: Number(it.quantidade) || 1, valor_unitario: Number(it.valor_unitario) || 0 }));
+      // código do produto e NCM da categoria do estoque (quando cadastrados) — mesma ordem dos itens
+      try {
+        const extra = await env.DB.prepare(
+          `SELECT COALESCE(NULLIF(p.codigo, ''), NULLIF(p.codigo_barras, '')) AS codigo, COALESCE(sc.ncm, c.ncm) AS ncm
+           FROM venda_itens i LEFT JOIN produtos p ON p.id = i.produto_id
+           LEFT JOIN estoque_categorias c ON c.id = p.categoria_id
+           LEFT JOIN estoque_categorias sc ON sc.id = p.subcategoria_id
+           WHERE i.venda_id = ? AND i.tenant_id = ?`
+        ).bind(body.venda_id, tenant_id).all<{ codigo: string | null; ncm: string | null }>();
+        if ((extra.results || []).length === itensVenda.length) {
+          (extra.results || []).forEach((e, i) => { itensVenda[i].codigo = e.codigo || undefined; itensVenda[i].ncm = e.ncm; });
+        }
+      } catch { /* colunas de estoque ainda não existem */ }
     } catch { /* sem tabela de itens */ }
 
     if (itensVenda.length === 0) {
@@ -73,6 +86,8 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       unidade: 'UN',
       quantidade: it.quantidade,
       valor: it.valor_unitario,
+      tipo: 'P',
+      ...(it.ncm && it.ncm.length === 8 ? { classificacaoFiscal: `${it.ncm.slice(0, 4)}.${it.ncm.slice(4, 6)}.${it.ncm.slice(6)}` } : {}),
     }));
 
     const naturezaId = tenant?.bling_natureza_id ? Number(tenant.bling_natureza_id) : null;
