@@ -1,6 +1,7 @@
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
 import { sincronizarEstoqueVenda } from '../../lib/estoque';
+import { aplicarFluxoReceber } from '../../lib/crmFluxo';
 import { ensurePagamentos, normalizarLinhas, recebidoDasLinhas, formaResumo, salvarPagamentos } from '../../lib/pagamentos';
 
 export const onRequestGet = async ({ request, env, params }: { request: Request; env: Env; params: Record<string, string> }) => {
@@ -112,6 +113,9 @@ export const onRequestPut = async ({ request, env, params }: { request: Request;
     // estoque acompanha a venda (itens mudados, cancelada, reativada)
     try { await sincronizarEstoqueVenda(env.DB, auth.tenant_id, params.id, auth.usuario_id); } catch { /* não bloqueia */ }
 
+    // Saída de A Receber pela regra única do funil (quitou -> sai; 20 dias -> Pós-venda)
+    try { await aplicarFluxoReceber(env.DB, auth.tenant_id); } catch { /* não bloqueia */ }
+
     // Ao quitar o saldo, avança o card CRM:
     //  - A Receber  → Pós-venda (venda concluída/recebida)
     //  - Óculos Pendente → Óculos Pronto (fluxo de produção)
@@ -123,8 +127,7 @@ export const onRequestPut = async ({ request, env, params }: { request: Request;
         ).bind(clienteId, auth.tenant_id).first<{ id: string; estagio: string }>();
 
         if (card) {
-          const destino = card.estagio === 'a_receber' ? 'pos_venda'
-            : card.estagio === 'oculos_pendente' ? 'oculos_pronto' : null;
+          const destino = card.estagio === 'oculos_pendente' ? 'oculos_pronto' : null;
           if (destino) {
             await env.DB.prepare(
               `UPDATE crm_cards SET estagio = ?, updated_at = datetime('now') WHERE id = ? AND tenant_id = ?`

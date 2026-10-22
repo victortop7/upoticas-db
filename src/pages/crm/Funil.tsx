@@ -16,6 +16,8 @@ interface Card {
   ultima_entrega?: string; ultima_venda?: string; total_os: number;
   total_gasto: number; valor_pendente: number; updated_at: string;
   saldo_venda_pendente?: number;
+  carne_vencido?: number;
+  quitado_em?: string | null;
   venda_pendente_id?: string;
   os_pendente_id?: string;
 }
@@ -364,7 +366,7 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
             <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>{card.nome}</span>
           </button>
           <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-            {aniv && <span style={{ fontSize: '10px', fontWeight: '600', color: '#d97706', background: 'rgba(217,119,6,0.1)', padding: '1px 6px', borderRadius: '10px' }}>{aniv}</span>}
+            {aniv && <span style={{ fontSize: '10px', fontWeight: '600', color: '#d97706', background: 'rgba(217,119,6,0.1)', padding: '1px 6px', borderRadius: '4px' }}>{aniv}</span>}
             <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: priorCor[prioridade] }} title={`Prioridade: ${prioridade}`} />
           </div>
         </div>
@@ -373,12 +375,18 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
         {temFone && <p style={{ margin: '0 0 4px', fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--mono)' }}>{fone}</p>}
 
         <div style={{ display: 'flex', gap: '6px', marginTop: '6px', flexWrap: 'wrap' }}>
-          {card.total_os > 0 && <span style={{ fontSize: '10px', background: 'rgba(37,99,235,0.08)', color: '#2563eb', padding: '1px 6px', borderRadius: '10px' }}>{card.total_os} OS</span>}
-          {card.total_gasto > 0 && <span style={{ fontSize: '10px', background: 'rgba(22,163,74,0.08)', color: '#16a34a', padding: '1px 6px', borderRadius: '10px' }}>{brl(card.total_gasto)}</span>}
-          {card.valor_pendente > 0 && <span style={{ fontSize: '10px', background: 'rgba(220,38,38,0.1)', color: '#dc2626', padding: '1px 6px', borderRadius: '10px', fontWeight: '600' }}>{brl(card.valor_pendente)}</span>}
-          {(card.saldo_venda_pendente || 0) > 0 && <span style={{ fontSize: '10px', background: 'rgba(245,158,11,0.12)', color: '#d97706', padding: '1px 6px', borderRadius: '10px', fontWeight: '600' }}>{brl(card.saldo_venda_pendente!)}</span>}
+          {card.total_os > 0 && <span style={{ fontSize: '10px', background: 'rgba(37,99,235,0.08)', color: '#2563eb', padding: '1px 6px', borderRadius: '4px' }}>{card.total_os} OS</span>}
+          {card.total_gasto > 0 && <span style={{ fontSize: '10px', background: 'rgba(22,163,74,0.08)', color: '#16a34a', padding: '1px 6px', borderRadius: '4px' }}>{brl(card.total_gasto)}</span>}
+          {card.valor_pendente > 0 && <span style={{ fontSize: '10px', background: 'rgba(220,38,38,0.1)', color: '#dc2626', padding: '1px 6px', borderRadius: '4px', fontWeight: '600' }}>{brl(card.valor_pendente)}</span>}
+          {(card.saldo_venda_pendente || 0) > 0 && <span style={{ fontSize: '10px', background: 'rgba(245,158,11,0.12)', color: '#d97706', padding: '1px 6px', borderRadius: '4px', fontWeight: '600' }}>{brl(card.saldo_venda_pendente!)}</span>}
+          {(card.carne_vencido || 0) > 0 && <span title="Parcelas de carnê vencidas" style={{ fontSize: '10px', background: 'rgba(220,38,38,0.1)', color: '#dc2626', padding: '1px 6px', borderRadius: '4px', fontWeight: '600' }}>carnê vencido {brl(card.carne_vencido!)}</span>}
           {ultimaAtiv && <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{diasAtras(ultimaAtiv)}</span>}
         </div>
+        {card.quitado_em && (card.estagio === 'oculos_pendente' || card.estagio === 'oculos_pronto') && (() => {
+          const dias = Math.floor((Date.now() - new Date(card.quitado_em + 'T12:00:00').getTime()) / 86_400_000);
+          const faltam = Math.max(0, 20 - dias);
+          return <p style={{ margin: '5px 0 0', fontSize: '10.5px', color: '#16a34a' }}>Quitado em {card.quitado_em.split('-').reverse().join('/')} · Pós-venda {faltam ? `em ${faltam} dia${faltam > 1 ? 's' : ''}` : 'hoje'}</p>;
+        })()}
 
         {card.notas && !expandido && (
           <p style={{ margin: '6px 0 0', fontSize: '11px', color: 'var(--text-dim)', fontStyle: 'italic', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{card.notas}</p>

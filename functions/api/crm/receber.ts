@@ -1,6 +1,7 @@
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
 import { ensurePagamentos } from '../../lib/pagamentos';
+import { aplicarFluxoReceber } from '../../lib/crmFluxo';
 
 // POST /api/crm/receber
 // Registra um recebimento (parcial ou total) contra uma VENDA ou uma OS.
@@ -96,17 +97,9 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
         `).bind(clienteId, auth.tenant_id, clienteId, auth.tenant_id)
           .first<{ os_pend: number; venda_pend: number }>();
 
-        const totalPend = (pend?.os_pend || 0) + (pend?.venda_pend || 0);
-        if (totalPend <= 0) {
-          const card = await env.DB.prepare(
-            'SELECT id, estagio FROM crm_cards WHERE cliente_id = ? AND tenant_id = ?'
-          ).bind(clienteId, auth.tenant_id).first<{ id: string; estagio: string }>();
-          if (card && card.estagio === 'a_receber') {
-            await env.DB.prepare(
-              `UPDATE crm_cards SET estagio = 'pos_venda', updated_at = datetime('now') WHERE id = ? AND tenant_id = ?`
-            ).bind(card.id, auth.tenant_id).run();
-          }
-        }
+        void pend;
+        // quitou? o fluxo tira de A Receber agora e conta 20 dias até o Pós-venda
+        await aplicarFluxoReceber(env.DB, auth.tenant_id);
       } catch { /* card pode não existir */ }
     }
 
