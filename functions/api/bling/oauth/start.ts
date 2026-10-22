@@ -4,7 +4,7 @@ import { requireAuthBasic, json } from '../../../lib/auth-middleware';
 import { signJWT } from '../../../lib/jwt';
 import { blingAuthorizeUrl } from '../../../lib/bling';
 
-// GET /api/bling/oauth/start — devolve a URL de autorização do Bling (o front redireciona).
+// GET /api/bling/oauth/start: devolve a URL de autorização do Bling (o front redireciona).
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const auth = await requireAuthBasic(request, env);
   if (auth instanceof Response) return auth;

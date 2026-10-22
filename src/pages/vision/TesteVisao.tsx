@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// Encolhe o conteúdo para caber na altura/largura disponível (sem rolar) — celular e tablet
+// Encolhe o conteúdo para caber na altura/largura disponível (sem rolar): celular e tablet
 function AutoFit({ children, dep }: { children: React.ReactNode; dep: unknown }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
@@ -51,7 +51,7 @@ const SNELLEN = [
 
 function denom(ac: string) { return parseInt(ac.split('/')[1], 10); }
 function statusAcuidade(ac: string | null): { txt: string; cor: string } {
-  if (!ac) return { txt: '—', cor: '#94a3b8' };
+  if (!ac) return { txt: '-', cor: '#94a3b8' };
   const d = denom(ac);
   if (d <= 25) return { txt: 'Ótima', cor: VERDE };
   if (d <= 40) return { txt: 'Boa', cor: AMBAR };
@@ -115,7 +115,7 @@ function PlacaIshihara({ numero, size = 260 }: { numero: number; size?: number }
 
 // ─── Componentes de UI ────────────────────────────────────────────────────────
 const cardStyle: React.CSSProperties = {
-  background: '#fff', borderRadius: 20, padding: '30px 34px',
+  background: '#fff', borderRadius: 6, padding: '30px 34px',
   boxShadow: '0 16px 50px rgba(20,40,90,0.14)', border: '1px solid rgba(30,58,138,0.08)',
   width: '100%', maxWidth: 560,
 };
@@ -216,7 +216,7 @@ export default function TesteVisao() {
         }}>MENU</button>
       </div>
 
-      {/* Conteúdo — auto-ajusta para caber sem rolar */}
+      {/* Conteúdo · auto-ajusta para caber sem rolar */}
       <AutoFit dep={`${step}-${placaIdx}`}>
 
         {/* ── DADOS INICIAIS ── */}
@@ -305,7 +305,7 @@ export default function TesteVisao() {
           <>
             <Titulo>VISÃO DE CORES</Titulo>
             <p style={{ fontSize: 16, color: '#334155', textAlign: 'center', margin: '-6px 0 2px' }}>
-              Placa {placaIdx + 1} de {CORES_NUMS.length} — que número você enxerga?
+              Placa {placaIdx + 1} de {CORES_NUMS.length} · que número você enxerga?
             </p>
             <PlacaIshihara numero={CORES_NUMS[placaIdx]} />
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, maxWidth: 360, width: '100%' }}>
@@ -408,7 +408,7 @@ function AcuidadeView({ olho, olhoCobrir, valor, onSelect, onContinuar }: {
 }) {
   return (
     <>
-      <Titulo>ACUIDADE — OLHO {olho}</Titulo>
+      <Titulo>ACUIDADE · OLHO {olho}</Titulo>
       <p style={{ fontSize: 16, color: '#334155', textAlign: 'center', margin: '-6px 0 4px', maxWidth: 520 }}>
         Cubra o olho <b style={{ color: VERMELHO }}>{olhoCobrir}</b> e leia com o olho <b style={{ color: VERDE }}>{olho}</b>.
         Toque na <b>menor linha</b> que conseguir ler.
@@ -480,9 +480,9 @@ function ResultadoView({ nome, acDir, acEsq, astigNormal, respCores, onReiniciar
         {nome ? <>Olá, <b>{nome}</b>! </> : null}Resumo indicativo do seu teste:
       </p>
       <div style={{ ...cardStyle, maxWidth: 560, padding: '24px 26px' }}>
-        <LinhaResultado rotulo="Olho direito" valor={acDir ?? '—'} status={sDir.txt} cor={sDir.cor} />
-        <LinhaResultado rotulo="Olho esquerdo" valor={acEsq ?? '—'} status={sEsq.txt} cor={sEsq.cor} />
-        <LinhaResultado rotulo="Astigmatismo" valor={astigNormal === null ? '—' : astigNormal ? 'Sem sinais' : 'Sinais presentes'} status={astigNormal ? 'Normal' : astigNormal === false ? 'Atenção' : '—'} cor={astigNormal ? VERDE : astigNormal === false ? AMBAR : '#94a3b8'} />
+        <LinhaResultado rotulo="Olho direito" valor={acDir ?? '-'} status={sDir.txt} cor={sDir.cor} />
+        <LinhaResultado rotulo="Olho esquerdo" valor={acEsq ?? '-'} status={sEsq.txt} cor={sEsq.cor} />
+        <LinhaResultado rotulo="Astigmatismo" valor={astigNormal === null ? '-' : astigNormal ? 'Sem sinais' : 'Sinais presentes'} status={astigNormal ? 'Normal' : astigNormal === false ? 'Atenção' : '-'} cor={astigNormal ? VERDE : astigNormal === false ? AMBAR : '#94a3b8'} />
         <LinhaResultado rotulo="Visão de cores" valor={`${acertosCores}/${CORES_NUMS.length} placas`} status={coresStatus.txt} cor={coresStatus.cor} ultimo />
       </div>
 
@@ -520,7 +520,7 @@ function LinhaResultado({ rotulo, valor, status, cor, ultimo }: { rotulo: string
       <span style={{ fontSize: 15.5, color: '#475569', fontWeight: 600 }}>{rotulo}</span>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 14, color: '#334155' }}>{valor}</span>
-        <span style={{ fontSize: 12.5, fontWeight: 700, color: '#fff', background: cor, borderRadius: 999, padding: '3px 12px' }}>{status}</span>
+        <span style={{ fontSize: 12.5, fontWeight: 700, color: '#fff', background: cor, borderRadius: 6, padding: '3px 12px' }}>{status}</span>
       </div>
     </div>
   );

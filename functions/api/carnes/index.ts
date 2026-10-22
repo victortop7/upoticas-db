@@ -33,7 +33,7 @@ function addMonths(ymd: string, n: number): string {
   return dt.toISOString().split('T')[0];
 }
 
-// GET /api/carnes — lista os carnês com resumo
+// GET /api/carnes: lista os carnês com resumo
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;
@@ -51,7 +51,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   return json(r.results);
 };
 
-// POST /api/carnes — cria um carnê e gera as parcelas com Pix
+// POST /api/carnes: cria um carnê e gera as parcelas com Pix
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;

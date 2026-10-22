@@ -44,8 +44,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       const g = mapa.get(key);
       const valor = Number(r.valor_final) || 0;
       g.vendas.push({
-        numero: r.numero, data: r.created_at, cliente: r.cliente_nome || '—',
-        forma: r.forma_pagamento || '—', valor, situacao: r.situacao,
+        numero: r.numero, data: r.created_at, cliente: r.cliente_nome || '-',
+        forma: r.forma_pagamento || '-', valor, situacao: r.situacao,
         saldo: Number(r.saldo_restante) || 0,
       });
       g.total += valor;

@@ -7,7 +7,7 @@ function redir(origin: string, status: string): Response {
   return new Response(null, { status: 302, headers: { Location: `${origin}/configuracoes?bling=${status}` } });
 }
 
-// GET /api/bling/oauth/callback — o Bling redireciona aqui com ?code=&state=
+// GET /api/bling/oauth/callback: o Bling redireciona aqui com ?code=&state=
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const url = new URL(request.url);
   const origin = url.origin;

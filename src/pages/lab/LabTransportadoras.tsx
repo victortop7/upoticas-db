@@ -90,7 +90,7 @@ export default function LabTransportadoras() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
           <button onClick={() => setModo('lista')} style={{ background: 'none', border: 'none', color: R.dim, cursor: 'pointer', fontSize: '20px' }}>←</button>
           <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: R.txt }}>
-            {modo === 'novo' ? 'Nova Transportadora' : `Editar — ${sel?.nome}`}
+            {modo === 'novo' ? 'Nova Transportadora' : `Editar · ${sel?.nome}`}
           </h1>
         </div>
 
@@ -126,7 +126,7 @@ export default function LabTransportadoras() {
             <div style={{ width: '100px' }}>
               <label style={LBL}>Estado</label>
               <select value={form.estado ?? ''} onChange={e => set('estado', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
-                <option value="">—</option>
+                <option value="">-</option>
                 {ESTADOS_BR.map(uf => <option key={uf} value={uf}>{uf}</option>)}
               </select>
             </div>
@@ -197,12 +197,12 @@ export default function LabTransportadoras() {
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                   <td style={{ padding: '10px 12px', fontFamily: "'Courier New', monospace", fontSize: '12px', color: R.dim }}>{String(t.codigo).padStart(2, '0')}</td>
                   <td style={{ padding: '10px 12px', fontSize: '13px', fontWeight: '600', color: R.txt }}>{t.nome}</td>
-                  <td style={{ padding: '10px 12px', fontSize: '12px', color: R.dim }}>{t.nome_reduzido ?? '—'}</td>
-                  <td style={{ padding: '10px 12px', fontSize: '12px', color: R.dim }}>{[t.cidade, t.estado].filter(Boolean).join('/') || '—'}</td>
-                  <td style={{ padding: '10px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{t.cnpj ?? '—'}</td>
-                  <td style={{ padding: '10px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{t.telefone ?? '—'}</td>
+                  <td style={{ padding: '10px 12px', fontSize: '12px', color: R.dim }}>{t.nome_reduzido ?? '-'}</td>
+                  <td style={{ padding: '10px 12px', fontSize: '12px', color: R.dim }}>{[t.cidade, t.estado].filter(Boolean).join('/') || '-'}</td>
+                  <td style={{ padding: '10px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{t.cnpj ?? '-'}</td>
+                  <td style={{ padding: '10px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{t.telefone ?? '-'}</td>
                   <td style={{ padding: '10px 12px' }}>
-                    <button onClick={e => { e.stopPropagation(); excluir(t.id); }} style={{ fontSize: '12px', color: '#cc0000', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
+                    <button onClick={e => { e.stopPropagation(); excluir(t.id); }} style={{ fontSize: '12px', color: '#cc0000', background: 'none', border: 'none', cursor: 'pointer' }}>Excluir</button>
                   </td>
                 </tr>
               ))}

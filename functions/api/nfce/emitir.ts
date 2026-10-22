@@ -18,7 +18,7 @@ function blingErro(obj: any): string {
   return partes.length ? partes.join(' · ') : JSON.stringify(e).slice(0, 300);
 }
 
-// POST /api/nfce/emitir { venda_id } — cria e emite a NF-e da venda no Bling.
+// POST /api/nfce/emitir { venda_id }: cria e emite a NF-e da venda no Bling.
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
   try {
     const auth = await requireAuth(request, env);
@@ -61,7 +61,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
         'SELECT descricao, quantidade, valor_unitario, produto_id FROM venda_itens WHERE venda_id = ? AND tenant_id = ?'
       ).bind(body.venda_id, tenant_id).all<{ descricao: string; quantidade: number; valor_unitario: number; produto_id: string | null }>();
       itensVenda = (r.results || []).map(it => ({ descricao: it.descricao, quantidade: Number(it.quantidade) || 1, valor_unitario: Number(it.valor_unitario) || 0 }));
-      // código do produto e NCM da categoria do estoque (quando cadastrados) — mesma ordem dos itens
+      // código do produto e NCM da categoria do estoque (quando cadastrados): mesma ordem dos itens
       try {
         const extra = await env.DB.prepare(
           `SELECT COALESCE(NULLIF(p.codigo, ''), NULLIF(p.codigo_barras, '')) AS codigo, COALESCE(sc.ncm, c.ncm) AS ncm
@@ -130,7 +130,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     const enviarResp = await blingFetch(env, tenant_id, `/nfe/${notaId}/enviar`, { method: 'POST' });
     const enviar = await enviarResp.json().catch(() => ({})) as Record<string, any>;
     if (!enviarResp.ok) {
-      // Nota criada mas não autorizada — guarda o rascunho e devolve o motivo
+      // Nota criada mas não autorizada: guarda o rascunho e devolve o motivo
       await env.DB.prepare("UPDATE vendas SET nfce_status='rascunho', nfce_bling_id=?, updated_at=datetime('now') WHERE id=? AND tenant_id=?")
         .bind(String(notaId), body.venda_id, tenant_id).run();
       return json({ error: `NF-e criada, mas a SEFAZ recusou: ${blingErro(enviar)}`, detalhe: enviar?.error || enviar }, 400);

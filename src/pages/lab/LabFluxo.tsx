@@ -32,12 +32,12 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 function fmtDate(s: string | null) {
-  if (!s) return '—';
+  if (!s) return '-';
   const [y, m, d] = s.slice(0, 10).split('-');
   return `${d}/${m}/${y}`;
 }
 function fmtDt(s: string | null) {
-  if (!s) return '—';
+  if (!s) return '-';
   return s.slice(0, 16).replace('T', ' ');
 }
 function today() { return new Date().toISOString().split('T')[0]; }
@@ -85,7 +85,7 @@ export default function LabFluxo() {
       .finally(() => setLoadingOrdens(false));
   }, []);
 
-  // move a OS para outra etapa (drag & drop) — otimista + persiste
+  // move a OS para outra etapa (drag & drop): otimista + persiste
   async function mover(ordId: string, setor: string) {
     const novoStatus = setor === 'entregue' ? 'entregue' : setor === 'pronto' ? 'pronto' : 'em_producao';
     setOrdens(prev => prev.map(o => o.id === ordId ? { ...o, setor_atual: setor, status: novoStatus, setor_desde: null } : o));
@@ -280,7 +280,7 @@ export default function LabFluxo() {
                       <div style={{ flex: 1, overflowY: 'auto', padding: '8px', display: 'flex', flexDirection: 'column', gap: '7px' }}>
                         {col.length === 0 ? (
                           <div style={{ padding: '18px 8px', textAlign: 'center', fontSize: '11px', color: R.dim, border: '1px dashed var(--lab-bdr)', borderRadius: '7px' }}>
-                            {isOver ? 'Soltar aqui' : '—'}
+                            {isOver ? 'Soltar aqui' : '-'}
                           </div>
                         ) : col.map(o => (
                           <div key={o.id} draggable
@@ -334,18 +334,18 @@ export default function LabFluxo() {
               {ordemSel && (
                 <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '10px', padding: '14px' }}>
                   <div style={{ fontSize: '11px', fontWeight: '700', color: R.txt, marginBottom: '10px' }}>
-                    OS #{String(ordemSel.numero).padStart(4, '0')} — {ordemSel.otica_nome}
+                    OS #{String(ordemSel.numero).padStart(4, '0')} · {ordemSel.otica_nome}
                   </div>
                   {[
                     ['OS', String(ordemSel.numero).padStart(4, '0')],
-                    ['C/Interno', ordemSel.cont_interno ?? '—'],
-                    ['Ref.', ordemSel.ref_otica ?? '—'],
-                    ['Caixa', ordemSel.caixa ?? '—'],
+                    ['C/Interno', ordemSel.cont_interno ?? '-'],
+                    ['Ref.', ordemSel.ref_otica ?? '-'],
+                    ['Caixa', ordemSel.caixa ?? '-'],
                     ['Entrada', fmtDt(ordemSel.created_at)],
                     ['Previsão', fmtDate(ordemSel.previsao_entrega)],
-                    ['Lente', ordemSel.tipo_lente ?? '—'],
-                    ['Marca', ordemSel.marca_material ?? '—'],
-                    ['Operador', ordemSel.vendedor ?? '—'],
+                    ['Lente', ordemSel.tipo_lente ?? '-'],
+                    ['Marca', ordemSel.marca_material ?? '-'],
+                    ['Operador', ordemSel.vendedor ?? '-'],
                     ['Status', ordemSel.status.replace('_', ' ')],
                   ].map(([l, v]) => (
                     <div key={l} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
@@ -364,7 +364,7 @@ export default function LabFluxo() {
                     <div key={f.id} style={{ padding: '7px 0', borderBottom: '1px solid var(--lab-bdr)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>
                         <div style={{ fontSize: '12px', fontWeight: '600', color: R.txt }}>{f.setor}</div>
-                        <div style={{ fontSize: '10px', color: R.dim }}>{f.operador ?? '—'} · {f.maquina ?? '—'}</div>
+                        <div style={{ fontSize: '10px', color: R.dim }}>{f.operador ?? '-'} · {f.maquina ?? '-'}</div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
                         <div style={{ fontSize: '10px', fontFamily: "'Courier New', monospace", color: R.dim }}>{f.inicio_hora} {fmtDate(f.inicio_data)}</div>
@@ -470,11 +470,11 @@ export default function LabFluxo() {
         const stAtual = STS.find(s => s.v === ord.status);
         const etapasDet = FLUXOS[flowOf(ord)];
         const etapaAtual = cardStage(ord, etapasDet);
-        const fmtNum = (v: any) => (v == null || isNaN(Number(v))) ? '—' : (Number(v) >= 0 ? '+' : '') + Number(v).toFixed(2).replace('.', ',');
+        const fmtNum = (v: any) => (v == null || isNaN(Number(v))) ? '-' : (Number(v) >= 0 ? '+' : '') + Number(v).toFixed(2).replace('.', ',');
         const Row = ({ k, v }: { k: string; v: any }) => (
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', padding: '1.5px 0' }}>
             <span style={{ fontSize: '11px', color: R.dim, fontWeight: '600' }}>{k}</span>
-            <span style={{ fontSize: '12px', color: R.txt, fontFamily: "'Courier New', monospace", textAlign: 'right' }}>{v ?? '—'}</span>
+            <span style={{ fontSize: '12px', color: R.txt, fontFamily: "'Courier New', monospace", textAlign: 'right' }}>{v ?? '-'}</span>
           </div>
         );
         return (
@@ -485,18 +485,18 @@ export default function LabFluxo() {
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontFamily: "'Courier New', monospace", fontSize: '18px', fontWeight: '700', color: R.txt }}>OS #{String(ord.numero).padStart(4, '0')}</span>
-                    {stAtual && <span style={{ fontSize: '11px', fontWeight: '600', color: stAtual.c, background: `${stAtual.c}20`, padding: '2px 9px', borderRadius: '20px' }}>{stAtual.l}</span>}
+                    {stAtual && <span style={{ fontSize: '11px', fontWeight: '600', color: stAtual.c, background: `${stAtual.c}20`, padding: '2px 9px', borderRadius: '6px' }}>{stAtual.l}</span>}
                   </div>
                   <div style={{ fontSize: '12px', color: R.dim, marginTop: '2px', maxWidth: '360px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ord.otica_nome}</div>
                 </div>
-                <button onClick={fecharDetalhe} style={{ background: 'none', border: 'none', color: R.dim, fontSize: '22px', cursor: 'pointer', lineHeight: 1 }}>✕</button>
+                <button onClick={fecharDetalhe} style={{ background: 'none', border: 'none', color: R.dim, fontSize: '22px', cursor: 'pointer', lineHeight: 1 }}>×</button>
               </div>
 
               <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '11px' }}>
-                {/* mover pela esteira — etapas do funil */}
+                {/* mover pela esteira · etapas do funil */}
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '5px' }}>
-                    <span style={{ fontSize: '10px', fontWeight: '700', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Mover para Etapa — {flowOf(ord) === 'progressiva' ? 'Progressiva' : 'Visão Simples'}</span>
+                    <span style={{ fontSize: '10px', fontWeight: '700', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Mover para Etapa · {flowOf(ord) === 'progressiva' ? 'Progressiva' : 'Visão Simples'}</span>
                     {ord.status !== 'cancelado'
                       ? <button onClick={cancelarDetalhe} style={{ background: 'none', border: 'none', color: '#cc0000', fontSize: '10.5px', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar OS</button>
                       : <span style={{ fontSize: '10.5px', fontWeight: '700', color: '#cc0000' }}>CANCELADA</span>}
@@ -506,7 +506,7 @@ export default function LabFluxo() {
                       const ativo = etapaAtual === et.key && ord.status !== 'cancelado';
                       return (
                         <button key={et.key} disabled={ativo} onClick={() => moverDetalhe(et.key)}
-                          style={{ padding: '5px 11px', fontSize: '11px', fontWeight: '600', borderRadius: '20px', cursor: ativo ? 'default' : 'pointer', fontFamily: 'inherit', display: 'inline-flex', alignItems: 'center', gap: '5px',
+                          style={{ padding: '5px 11px', fontSize: '11px', fontWeight: '600', borderRadius: '6px', cursor: ativo ? 'default' : 'pointer', fontFamily: 'inherit', display: 'inline-flex', alignItems: 'center', gap: '5px',
                             background: ativo ? et.color : 'transparent', color: ativo ? '#fff' : R.dim, border: `1px solid ${ativo ? et.color : 'var(--lab-bdr)'}` }}>
                           <LabIcon name={et.icon} size={13} />{et.label}
                         </button>
@@ -515,9 +515,9 @@ export default function LabFluxo() {
                   </div>
                 </div>
 
-                {/* histórico do fluxo — o que foi feito */}
+                {/* histórico do fluxo · o que foi feito */}
                 <div>
-                  <div style={{ fontSize: '10px', fontWeight: '700', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '5px' }}>Histórico do Fluxo — o que foi feito</div>
+                  <div style={{ fontSize: '10px', fontWeight: '700', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '5px' }}>Histórico do Fluxo · o que foi feito</div>
                   {detLoading ? (
                     <div style={{ fontSize: '12px', color: R.dim, padding: '8px 0' }}>Carregando...</div>
                   ) : detHist.length === 0 ? (
@@ -594,12 +594,12 @@ export default function LabFluxo() {
                         {[
                           ['ESF Longe', fmtNum(od?.esf_longe), fmtNum(oe?.esf_longe)],
                           ['CIL Longe', fmtNum(od?.cil_longe), fmtNum(oe?.cil_longe)],
-                          ['Eixo', od?.eixo_longe ?? '—', oe?.eixo_longe ?? '—'],
+                          ['Eixo', od?.eixo_longe ?? '-', oe?.eixo_longe ?? '-'],
                           ['Adição', fmtNum(od?.adicao), fmtNum(oe?.adicao)],
                           ['ESF Perto', fmtNum(od?.esf_perto), fmtNum(oe?.esf_perto)],
-                          ['DNP', od?.dnp ?? '—', oe?.dnp ?? '—'],
-                          ['ALT', od?.alt ?? '—', oe?.alt ?? '—'],
-                          ['Prisma', od?.prisma ?? '—', oe?.prisma ?? '—'],
+                          ['DNP', od?.dnp ?? '-', oe?.dnp ?? '-'],
+                          ['ALT', od?.alt ?? '-', oe?.alt ?? '-'],
+                          ['Prisma', od?.prisma ?? '-', oe?.prisma ?? '-'],
                         ].map(([l, d, e]) => (
                           <tr key={l as string} style={{ borderBottom: '1px solid var(--lab-bdr)' }}>
                             <td style={{ padding: '3px 12px', fontSize: '11px', color: R.dim, fontWeight: '600' }}>{l}</td>

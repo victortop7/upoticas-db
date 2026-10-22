@@ -65,7 +65,7 @@ export const onRequestDelete = async ({ request, env, params }: { request: Reque
   }
 };
 
-// PUT — edição COMPLETA da OS (dados + receita + armação + produtos). Vale para qualquer status.
+// PUT: edição COMPLETA da OS (dados + receita + armação + produtos). Vale para qualquer status.
 export const onRequestPut = async ({ request, env, params }: { request: Request; env: Env; params: Record<string, string> }) => {
   try {
     const auth = await requireAuth(request, env);

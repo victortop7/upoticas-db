@@ -3,7 +3,7 @@ import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
 import { ensureLojaCols, filtroLoja } from '../../lib/lojas';
 
-// Regras de comissão são por LOJA (tenant), por forma de pagamento — guardadas como JSON.
+// Regras de comissão são por LOJA (tenant), por forma de pagamento: guardadas como JSON.
 async function ensureCol(env: Env) {
   try { await env.DB.prepare('ALTER TABLE tenants ADD COLUMN comissao_regras TEXT').run(); } catch { /* já existe */ }
 }

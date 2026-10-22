@@ -14,7 +14,7 @@ const STATUS_FLOW = [
 ];
 
 function fmt(v: number | null | undefined, sinal = true): string {
-  if (v == null || isNaN(Number(v))) return '—';
+  if (v == null || isNaN(Number(v))) return '-';
   const n = Number(v);
   return (sinal && n >= 0 ? '+' : '') + n.toFixed(2).replace('.', ',');
 }
@@ -73,9 +73,9 @@ export default function LabOrdemDetalhe() {
     const assunto = `Ordem de Serviço #${num} - ${ordem.otica_nome ?? ''}`;
     const corpo = [
       `Ordem de Serviço #${num}`,
-      `Ótica: ${ordem.otica_nome ?? '—'}`,
+      `Ótica: ${ordem.otica_nome ?? '-'}`,
       `Status: ${STATUS_FLOW.find(s => s.value === ordem.status)?.label ?? ordem.status}`,
-      `Previsão: ${ordem.previsao_entrega ?? '—'}`,
+      `Previsão: ${ordem.previsao_entrega ?? '-'}`,
       `Total: R$ ${Number(ordem.total ?? 0).toFixed(2).replace('.', ',')}`,
       '',
       'PDF da OS em anexo (baixe pelo botão "Baixar PDF" e anexe a este e-mail).',
@@ -99,8 +99,8 @@ export default function LabOrdemDetalhe() {
     return (
       <tr style={{ borderBottom: '1px solid var(--lab-bdr)' }}>
         <td style={{ padding: '8px 12px', fontSize: '11px', fontWeight: '600', color: R.dim, textTransform: 'uppercase' }}>{label}</td>
-        <td style={{ padding: '8px 12px', fontSize: '13px', fontFamily: "'Courier New', monospace", color: R.txt, textAlign: 'center' }}>{d || '—'}</td>
-        <td style={{ padding: '8px 12px', fontSize: '13px', fontFamily: "'Courier New', monospace", color: R.txt, textAlign: 'center' }}>{e || '—'}</td>
+        <td style={{ padding: '8px 12px', fontSize: '13px', fontFamily: "'Courier New', monospace", color: R.txt, textAlign: 'center' }}>{d || '-'}</td>
+        <td style={{ padding: '8px 12px', fontSize: '13px', fontFamily: "'Courier New', monospace", color: R.txt, textAlign: 'center' }}>{e || '-'}</td>
       </tr>
     );
   }
@@ -117,7 +117,7 @@ export default function LabOrdemDetalhe() {
                 OS #{String(ordem.numero).padStart(4, '0')}
               </h1>
               {statusAtual && (
-                <span style={{ fontSize: '12px', fontWeight: '600', color: statusAtual.color, background: `${statusAtual.color}18`, padding: '3px 10px', borderRadius: '20px' }}>
+                <span style={{ fontSize: '12px', fontWeight: '600', color: statusAtual.color, background: `${statusAtual.color}18`, padding: '3px 10px', borderRadius: '6px' }}>
                   {statusAtual.label}
                 </span>
               )}
@@ -130,28 +130,28 @@ export default function LabOrdemDetalhe() {
             onClick={() => navigate(`/lab/ordens/${id}/editar`)}
             style={{ padding: '9px 16px', fontSize: '13px', fontWeight: '700', background: R.accent, color: '#fff', border: `1px solid ${R.accent}`, borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}
           >
-            ✏️ Editar OS
+            Editar OS
           </button>
           <Link
             to={`/lab/ordens/${id}/imprimir`}
             target="_blank"
             style={{ padding: '9px 16px', fontSize: '13px', fontWeight: '600', background: 'transparent', color: R.dim, border: '1px solid var(--lab-bdr)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'none', display: 'inline-block' }}
           >
-            🖨️ Imprimir
+            Imprimir
           </Link>
           <Link
             to={`/lab/ordens/${id}/imprimir`}
             target="_blank"
             style={{ padding: '9px 16px', fontSize: '13px', fontWeight: '600', background: R.accent2, color: '#fff', border: `1px solid ${R.accent2}`, borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'none', display: 'inline-block' }}
-            title="Abre a visualização de impressão — escolha 'Salvar como PDF' no destino"
+            title="Abre a visualização de impressão · escolha 'Salvar como PDF' no destino"
           >
-            ⬇ Baixar PDF
+            Baixar PDF
           </Link>
           <button
             onClick={() => setEmailOpen(o => !o)}
             style={{ padding: '9px 16px', fontSize: '13px', fontWeight: '600', background: emailOpen ? R.alt : 'transparent', color: R.txt, border: '1px solid var(--lab-bdr)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}
           >
-            ✉ E-mail
+            E-mail
           </button>
           <button
             onClick={() => setConfirmarExcluir(true)}
@@ -187,7 +187,7 @@ export default function LabOrdemDetalhe() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '12px', width: '360px', overflow: 'hidden' }}>
             <div style={{ background: 'rgba(200,0,0,0.12)', borderBottom: '1px solid #cc0000', padding: '14px 18px' }}>
-              <div style={{ fontSize: '14px', fontWeight: '700', color: '#cc0000' }}>⚠ Excluir Ordem de Serviço</div>
+              <div style={{ fontSize: '14px', fontWeight: '700', color: '#cc0000' }}>Excluir Ordem de Serviço</div>
             </div>
             <div style={{ padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ fontSize: '14px', color: R.txt, lineHeight: 1.6 }}>
@@ -214,11 +214,11 @@ export default function LabOrdemDetalhe() {
         </div>
       )}
 
-      {/* Mover pela esteira — etapas do funil */}
+      {/* Mover pela esteira · etapas do funil */}
       <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '12px', padding: '16px 20px', marginBottom: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
           <span style={{ fontSize: '12px', color: R.dim, fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            Mover para Etapa — {flowOf(ordemFlow) === 'progressiva' ? 'Progressiva' : 'Visão Simples'}
+            Mover para Etapa · {flowOf(ordemFlow) === 'progressiva' ? 'Progressiva' : 'Visão Simples'}
           </span>
           {ordem.status !== 'cancelado'
             ? <button disabled={updatingStatus} onClick={() => changeStatus('cancelado')} style={{ background: 'none', border: 'none', color: '#cc0000', fontSize: '12px', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit', opacity: updatingStatus ? 0.5 : 1 }}>Cancelar OS</button>
@@ -233,7 +233,7 @@ export default function LabOrdemDetalhe() {
                 disabled={updatingStatus || ativo}
                 onClick={() => moverEtapa(et.key)}
                 style={{
-                  padding: '7px 16px', fontSize: '12px', fontWeight: '600', borderRadius: '20px', cursor: ativo ? 'default' : 'pointer', fontFamily: 'inherit',
+                  padding: '7px 16px', fontSize: '12px', fontWeight: '600', borderRadius: '6px', cursor: ativo ? 'default' : 'pointer', fontFamily: 'inherit',
                   display: 'inline-flex', alignItems: 'center', gap: '6px',
                   background: ativo ? et.color : 'transparent',
                   color: ativo ? '#fff' : R.dim,
@@ -253,18 +253,18 @@ export default function LabOrdemDetalhe() {
         <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '12px', padding: '20px' }}>
           <div style={{ fontSize: '13px', fontWeight: '700', color: R.txt, marginBottom: '12px' }}>Informações</div>
           {[
-            { label: 'Tipo', value: ordem.tipo ?? '—' },
+            { label: 'Tipo', value: ordem.tipo ?? '-' },
             { label: 'Ótica', value: ordem.otica_nome },
-            { label: 'Ref. Ótica', value: ordem.ref_otica ?? '—' },
-            { label: 'Cont. Interno', value: ordem.cont_interno ?? '—' },
-            { label: 'Caixa', value: ordem.caixa ?? '—' },
-            { label: 'Operador', value: ordem.vendedor ?? '—' },
-            { label: 'Médico', value: ordem.medico ?? '—' },
-            { label: 'Previsão', value: ordem.previsao_entrega ?? '—' },
-            { label: 'Cond. Pgto', value: ordem.condicao_pgto ?? '—' },
-            { label: 'Sinal/Entrada', value: ordem.sinal ? `R$ ${Number(ordem.sinal).toFixed(2).replace('.',',')}` : '—' },
-            { label: 'Rota', value: ordem.rota ?? '—' },
-            { label: 'Gravura', value: ordem.texto_gravura ?? '—' },
+            { label: 'Ref. Ótica', value: ordem.ref_otica ?? '-' },
+            { label: 'Cont. Interno', value: ordem.cont_interno ?? '-' },
+            { label: 'Caixa', value: ordem.caixa ?? '-' },
+            { label: 'Operador', value: ordem.vendedor ?? '-' },
+            { label: 'Médico', value: ordem.medico ?? '-' },
+            { label: 'Previsão', value: ordem.previsao_entrega ?? '-' },
+            { label: 'Cond. Pgto', value: ordem.condicao_pgto ?? '-' },
+            { label: 'Sinal/Entrada', value: ordem.sinal ? `R$ ${Number(ordem.sinal).toFixed(2).replace('.',',')}` : '-' },
+            { label: 'Rota', value: ordem.rota ?? '-' },
+            { label: 'Gravura', value: ordem.texto_gravura ?? '-' },
           ].map(item => (
             <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
               <span style={{ fontSize: '12px', color: R.dim, fontWeight: '600' }}>{item.label}</span>
@@ -277,19 +277,19 @@ export default function LabOrdemDetalhe() {
         <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '12px', padding: '20px' }}>
           <div style={{ fontSize: '13px', fontWeight: '700', color: R.txt, marginBottom: '12px' }}>Armação</div>
           {armacao ? [
-            { label: 'Tipo', value: armacao.tipo_material ?? armacao.material ?? '—' },
-            { label: 'Shape', value: armacao.shape ?? '—' },
-            { label: 'Largura', value: armacao.largura ? `${armacao.largura} mm` : '—' },
-            { label: 'Altura', value: armacao.altura ? `${armacao.altura} mm` : '—' },
-            { label: 'Ponte', value: armacao.ponte ? `${armacao.ponte} mm` : '—' },
-            { label: 'Maior Diag.', value: armacao.maior_diagonal ? `${armacao.maior_diagonal} mm` : '—' },
-            { label: 'Diâmetro Final', value: armacao.diametro_final ? `${armacao.diametro_final} mm` : '—' },
-            { label: 'Tipo Lente', value: armacao.tipo_lente ?? '—' },
-            { label: 'Marca/Material', value: armacao.marca_material ?? '—' },
-            { label: 'O/D', value: armacao.lente_od ?? '—' },
-            { label: 'O/E', value: armacao.lente_oe ?? '—' },
+            { label: 'Tipo', value: armacao.tipo_material ?? armacao.material ?? '-' },
+            { label: 'Shape', value: armacao.shape ?? '-' },
+            { label: 'Largura', value: armacao.largura ? `${armacao.largura} mm` : '-' },
+            { label: 'Altura', value: armacao.altura ? `${armacao.altura} mm` : '-' },
+            { label: 'Ponte', value: armacao.ponte ? `${armacao.ponte} mm` : '-' },
+            { label: 'Maior Diag.', value: armacao.maior_diagonal ? `${armacao.maior_diagonal} mm` : '-' },
+            { label: 'Diâmetro Final', value: armacao.diametro_final ? `${armacao.diametro_final} mm` : '-' },
+            { label: 'Tipo Lente', value: armacao.tipo_lente ?? '-' },
+            { label: 'Marca/Material', value: armacao.marca_material ?? '-' },
+            { label: 'O/D', value: armacao.lente_od ?? '-' },
+            { label: 'O/E', value: armacao.lente_oe ?? '-' },
             { label: 'Estojo', value: armacao.estojo ? 'Sim' : 'Não' },
-            { label: 'Info', value: armacao.informacoes ?? '—' },
+            { label: 'Info', value: armacao.informacoes ?? '-' },
           ].map(item => (
             <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
               <span style={{ fontSize: '12px', color: R.dim, fontWeight: '600' }}>{item.label}</span>
@@ -313,12 +313,12 @@ export default function LabOrdemDetalhe() {
           <tbody>
             <RxRow label="ESF Longe" od={fmt(od?.esf_longe)} oe={fmt(oe?.esf_longe)} />
             <RxRow label="CIL Longe" od={fmt(od?.cil_longe)} oe={fmt(oe?.cil_longe)} />
-            <RxRow label="EIXO" od={od?.eixo_longe ?? '—'} oe={oe?.eixo_longe ?? '—'} />
+            <RxRow label="EIXO" od={od?.eixo_longe ?? '-'} oe={oe?.eixo_longe ?? '-'} />
             <RxRow label="Adição" od={fmt(od?.adicao)} oe={fmt(oe?.adicao)} />
             <RxRow label="ESF Perto" od={fmt(od?.esf_perto)} oe={fmt(oe?.esf_perto)} />
-            <RxRow label="DNP" od={od?.dnp ?? '—'} oe={oe?.dnp ?? '—'} />
-            <RxRow label="ALT" od={od?.alt ?? '—'} oe={oe?.alt ?? '—'} />
-            <RxRow label="Prisma" od={od?.prisma ?? '—'} oe={oe?.prisma ?? '—'} />
+            <RxRow label="DNP" od={od?.dnp ?? '-'} oe={oe?.dnp ?? '-'} />
+            <RxRow label="ALT" od={od?.alt ?? '-'} oe={oe?.alt ?? '-'} />
+            <RxRow label="Prisma" od={od?.prisma ?? '-'} oe={oe?.prisma ?? '-'} />
           </tbody>
         </table>
       </div>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { api } from '../lib/api';
 import type { OrdemServico, Cliente } from '../types';
 import ClienteModal from './ClienteModal';
+import Icone from './Icone';
 
 interface Props {
   os: OrdemServico | null;
@@ -39,13 +40,13 @@ const EMPTY = {
   data_entrega: '', medico: '', observacao: '',
 };
 
-// Cabeçalho de seção — definido no módulo (identidade estável entre renders,
+// Cabeçalho de seção: definido no módulo (identidade estável entre renders,
 // senão os inputs perdem o foco a cada tecla digitada)
 function Section({ icon, title, children }: { icon: string; title: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: '22px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid var(--border)' }}>
-        <span style={{ fontSize: '16px' }}>{icon}</span>
+        <Icone nome={icon} size={16} color="var(--text-muted)" />
         <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '700', color: 'var(--text)' }}>{title}</h3>
       </div>
       {children}
@@ -192,7 +193,7 @@ export default function OSModal({ os, onClose, onSaved, clienteInicial }: Props)
               {os ? `OS #${String(os.numero).padStart(4, '0')}` : 'Nova OS'}
             </h2>
             <p style={{ margin: '2px 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
-              {os ? 'Editando ordem de serviço' : 'Preencha os dados da OS'} — tudo em uma tela
+              {os ? 'Editando ordem de serviço' : 'Preencha os dados da OS'} · tudo em uma tela
             </p>
           </div>
           <button onClick={onClose} style={{
@@ -202,11 +203,11 @@ export default function OSModal({ os, onClose, onSaved, clienteInicial }: Props)
           }}>×</button>
         </div>
 
-        {/* Conteúdo — tudo em uma tela só */}
+        {/* Conteúdo · tudo em uma tela só */}
         <form onSubmit={handleSubmit} style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
 
           {/* === CLIENTE & DADOS === */}
-          <Section icon="👤" title="Cliente & Dados">
+          <Section icon="clientes" title="Cliente & Dados">
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
               <div>
                 <label style={labelStyle}>Tipo</label>
@@ -242,7 +243,7 @@ export default function OSModal({ os, onClose, onSaved, clienteInicial }: Props)
                 borderRadius: '8px', padding: '10px 14px', fontSize: '13px', marginBottom: '12px',
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               }}>
-                <span><span style={{ fontWeight: '600', color: 'var(--primary)' }}>✓ {clienteSelecionado.nome}</span>
+                <span><span style={{ fontWeight: '600', color: 'var(--primary)' }}>{clienteSelecionado.nome}</span>
                 {clienteSelecionado.celular && <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--mono)', marginLeft: '8px' }}>{clienteSelecionado.celular}</span>}</span>
                 <button type="button" onClick={() => { set('cliente_id', ''); setBuscaCliente(''); loadClientes(''); }} style={{ fontSize: '12px', color: 'var(--text-dim)', background: 'none', border: 'none', cursor: 'pointer' }}>trocar</button>
               </div>
@@ -288,7 +289,7 @@ export default function OSModal({ os, onClose, onSaved, clienteInicial }: Props)
           </Section>
 
           {/* === RECEITA (GRAU) === */}
-          <Section icon="👓" title="Receita (Grau)">
+          <Section icon="oculos" title="Receita (Grau)">
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '400px' }}>
                 <thead>
@@ -316,7 +317,7 @@ export default function OSModal({ os, onClose, onSaved, clienteInicial }: Props)
                             style={{ ...monoInput, padding: '7px 6px' }}
                             value={(form as any)[field]}
                             onChange={e => set(field, e.target.value)}
-                            placeholder="—"
+                            placeholder="-"
                           />
                         </td>
                       ))}
@@ -328,21 +329,21 @@ export default function OSModal({ os, onClose, onSaved, clienteInicial }: Props)
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginTop: '14px' }}>
               <div>
                 <label style={labelStyle}>DP (mm)</label>
-                <input type="number" step="0.1" style={monoInput} value={form.dp} onChange={e => set('dp', e.target.value)} placeholder="—" />
+                <input type="number" step="0.1" style={monoInput} value={form.dp} onChange={e => set('dp', e.target.value)} placeholder="-" />
               </div>
               <div>
                 <label style={labelStyle}>Altura</label>
-                <input type="number" step="0.1" style={monoInput} value={form.altura} onChange={e => set('altura', e.target.value)} placeholder="—" />
+                <input type="number" step="0.1" style={monoInput} value={form.altura} onChange={e => set('altura', e.target.value)} placeholder="-" />
               </div>
               <div>
                 <label style={labelStyle}>Adição</label>
-                <input type="number" step="0.25" style={monoInput} value={form.adicao} onChange={e => set('adicao', e.target.value)} placeholder="—" />
+                <input type="number" step="0.25" style={monoInput} value={form.adicao} onChange={e => set('adicao', e.target.value)} placeholder="-" />
               </div>
             </div>
           </Section>
 
           {/* === PRODUTOS === */}
-          <Section icon="🛍️" title="Produtos">
+          <Section icon="sacola" title="Produtos">
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               <div>
                 <label style={labelStyle}>Armação</label>
@@ -356,7 +357,7 @@ export default function OSModal({ os, onClose, onSaved, clienteInicial }: Props)
           </Section>
 
           {/* === FINANCEIRO === */}
-          <Section icon="💰" title="Financeiro">
+          <Section icon="dinheiro" title="Financeiro">
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
               <div>
                 <label style={labelStyle}>Valor Total (R$)</label>

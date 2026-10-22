@@ -11,10 +11,10 @@ export const BAIXA_AUTO_DESDE = '2026-10-21';
 export const MATERIAIS_PADRAO = ['Metal', 'Acetato', 'TR90', 'Parafusada', 'Clip On', 'Nylon', '360'];
 
 const PADRAO: { nome: string; icone: string; subs: string[] }[] = [
-  { nome: 'Armações', icone: '👓', subs: MATERIAIS_PADRAO },
-  { nome: 'Óculos de Sol', icone: '🕶️', subs: [] },
-  { nome: 'Limpeza', icone: '🧴', subs: [] },
-  { nome: 'Acessórios', icone: '🎒', subs: [] },
+  { nome: 'Armações', icone: '', subs: MATERIAIS_PADRAO },
+  { nome: 'Óculos de Sol', icone: '', subs: [] },
+  { nome: 'Limpeza', icone: '', subs: [] },
+  { nome: 'Acessórios', icone: '', subs: [] },
 ];
 
 let jaGarantiu = false;
@@ -103,7 +103,7 @@ export async function sincronizarEstoqueVenda(db: D1Database, tenant: string, ve
     const antes = Number(atual?.quantidade ?? 0);
     const depois = antes - delta; // pode ficar negativo: mostra que faltou dar entrada
     const tipo = delta > 0 ? 'saida' : 'entrada';
-    const motivo = delta > 0 ? `Venda #${numero}` : (opts?.excluindo || venda?.situacao === 'cancelada' ? `Estorno — venda #${numero} cancelada` : `Ajuste da venda #${numero}`);
+    const motivo = delta > 0 ? `Venda #${numero}` : (opts?.excluindo || venda?.situacao === 'cancelada' ? `Estorno · venda #${numero} cancelada` : `Ajuste da venda #${numero}`);
     await db.batch([
       atual
         ? db.prepare("UPDATE estoque SET quantidade = ?, updated_at = datetime('now') WHERE tenant_id = ? AND produto_id = ?").bind(depois, tenant, pid)

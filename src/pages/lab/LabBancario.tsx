@@ -13,7 +13,7 @@ interface ContaBancaria { codigo: string; nome: string; }
 
 function brl(v: number) { return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 function fmtDate(s: string | null) {
-  if (!s) return '—';
+  if (!s) return '-';
   const [y, m, d] = s.slice(0, 10).split('-');
   return `${d}/${m}/${y}`;
 }
@@ -75,7 +75,7 @@ export default function LabBancario() {
         <h2 style={{ margin: 0, fontSize: '17px', fontWeight: '700', color: R.txt, marginRight: '8px' }}>Controle Bancário</h2>
         <select value={contaSel} onChange={e => setContaSel(e.target.value)} style={{ ...INP, width: '200px', fontFamily: "'Montserrat', sans-serif" }}>
           <option value="">Todas as contas</option>
-          {contas.map(c => <option key={c.codigo} value={c.codigo}>{c.codigo} — {c.nome}</option>)}
+          {contas.map(c => <option key={c.codigo} value={c.codigo}>{c.codigo} · {c.nome}</option>)}
         </select>
         <input type="date" value={dataIni} onChange={e => setDataIni(e.target.value)} style={{ ...INP, width: '135px' }} />
         <span style={{ fontSize: '11px', color: R.dim }}>até</span>
@@ -88,7 +88,7 @@ export default function LabBancario() {
       {/* Filtros tipo + saldo */}
       <div style={{ padding: '8px 20px', borderBottom: '1px solid var(--lab-bdr)', display: 'flex', gap: '8px', alignItems: 'center' }}>
         {[['', 'Todos'], ['C', 'Créditos'], ['D', 'Débitos']].map(([v, l]) => (
-          <button key={v} onClick={() => setTipoFiltro(v)} style={{ padding: '4px 12px', fontSize: '11px', fontWeight: '600', borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${tipoFiltro === v ? '#b8b4ac' : 'var(--lab-bdr)'}`, background: tipoFiltro === v ? 'var(--lab-alt)' : 'transparent', color: tipoFiltro === v ? '#000' : '#666' }}>{l}</button>
+          <button key={v} onClick={() => setTipoFiltro(v)} style={{ padding: '4px 12px', fontSize: '11px', fontWeight: '600', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${tipoFiltro === v ? '#b8b4ac' : 'var(--lab-bdr)'}`, background: tipoFiltro === v ? 'var(--lab-alt)' : 'transparent', color: tipoFiltro === v ? '#000' : '#666' }}>{l}</button>
         ))}
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '20px', fontSize: '12px', fontFamily: "'Courier New', monospace" }}>
           <span style={{ color: R.accent }}>Entradas: <b>{brl(entradas)}</b></span>
@@ -116,10 +116,10 @@ export default function LabBancario() {
                     onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                     <td style={{ padding: '9px 12px', fontFamily: "'Courier New', monospace", fontSize: '12px', color: R.dim }}>#{String(l.numero).padStart(4,'0')}</td>
                     <td style={{ padding: '9px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim, whiteSpace: 'nowrap' }}>{fmtDate(l.data_movimento)}</td>
-                    <td style={{ padding: '9px 12px', fontSize: '12px', color: R.dim }}>{l.conta_codigo} — {l.conta_nome}</td>
+                    <td style={{ padding: '9px 12px', fontSize: '12px', color: R.dim }}>{l.conta_codigo} · {l.conta_nome}</td>
                     <td style={{ padding: '9px 12px', fontSize: '13px', color: R.txt, maxWidth: '240px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.descricao}</td>
                     <td style={{ padding: '9px 12px' }}>
-                      <span style={{ fontSize: '11px', fontWeight: '700', color: l.tipo === 'C' ? R.accent : '#cc0000', background: l.tipo === 'C' ? 'rgba(0,102,0,0.15)' : 'rgba(200,0,0,0.12)', padding: '2px 8px', borderRadius: '20px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: '700', color: l.tipo === 'C' ? R.accent : '#cc0000', background: l.tipo === 'C' ? 'rgba(0,102,0,0.15)' : 'rgba(200,0,0,0.12)', padding: '2px 8px', borderRadius: '6px' }}>
                         {l.tipo === 'C' ? '▲ Crédito' : '▼ Débito'}
                       </span>
                     </td>
@@ -144,7 +144,7 @@ export default function LabBancario() {
                   <label style={LBL}>Conta *</label>
                   <select value={novaForm.conta_codigo} onChange={e => setNovaForm(f => ({ ...f, conta_codigo: e.target.value }))} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
                     <option value="">Selecionar conta...</option>
-                    {contas.map(c => <option key={c.codigo} value={c.codigo}>{c.codigo} — {c.nome}</option>)}
+                    {contas.map(c => <option key={c.codigo} value={c.codigo}>{c.codigo} · {c.nome}</option>)}
                   </select>
                 </div>
                 <div>
@@ -161,7 +161,7 @@ export default function LabBancario() {
                 <div><label style={LBL}>Data Movimento *</label><input type="date" value={novaForm.data_movimento} onChange={e => setNovaForm(f => ({ ...f, data_movimento: e.target.value }))} style={INP} /></div>
                 <div><label style={LBL}>Forma Pgto</label>
                   <select value={novaForm.forma_pgto} onChange={e => setNovaForm(f => ({ ...f, forma_pgto: e.target.value }))} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
-                    <option value="">—</option>
+                    <option value="">-</option>
                     {['Dinheiro','PIX','Transferência','Boleto','Cheque','Cartão','Depósito'].map(x => <option key={x} value={x}>{x}</option>)}
                   </select>
                 </div>

@@ -17,12 +17,12 @@ const FORMAS = ['Dinheiro','Pix','Crédito','Débito','Transferência','Boleto',
 const CATEGORIAS = ['Aluguel','Água','Luz / Energia','Internet / Telefone','Contabilidade','Fornecedor','Funcionários','Impostos','Serviços','Equipamentos','Marketing','Outros'];
 // Atalhos de contas fixas: preenchem descrição e categoria e já marcam "repetir todo mês"
 const FIXAS = [
-  { icon: '🏠', nome: 'Aluguel', cat: 'Aluguel' },
-  { icon: '💧', nome: 'Água', cat: 'Água' },
-  { icon: '💡', nome: 'Luz', cat: 'Luz / Energia' },
-  { icon: '🌐', nome: 'Internet', cat: 'Internet / Telefone' },
-  { icon: '📞', nome: 'Telefone', cat: 'Internet / Telefone' },
-  { icon: '📑', nome: 'Contabilidade', cat: 'Contabilidade' },
+  { icon: '', nome: 'Aluguel', cat: 'Aluguel' },
+  { icon: '', nome: 'Água', cat: 'Água' },
+  { icon: '', nome: 'Luz', cat: 'Luz / Energia' },
+  { icon: '', nome: 'Internet', cat: 'Internet / Telefone' },
+  { icon: '', nome: 'Telefone', cat: 'Internet / Telefone' },
+  { icon: '', nome: 'Contabilidade', cat: 'Contabilidade' },
 ];
 const AJUSTES = [
   { v: 'manter', l: 'Manter a data' },
@@ -31,7 +31,7 @@ const AJUSTES = [
 ];
 
 function brl(v: number) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
-function fmtDate(s?: string | null) { if (!s) return '—'; const [y,m,d] = s.split('T')[0].split('-'); return `${d}/${m}/${y}`; }
+function fmtDate(s?: string | null) { if (!s) return '-'; const [y,m,d] = s.split('T')[0].split('-'); return `${d}/${m}/${y}`; }
 function diaSemana(s: string) { const d = new Date(`${s}T12:00:00`); return ['dom','seg','ter','qua','qui','sex','sáb'][d.getDay()]; }
 
 const inp: React.CSSProperties = { width: '100%', padding: '8px 10px', fontSize: '14px', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--surface)', color: 'var(--text)', outline: 'none', boxSizing: 'border-box' };
@@ -69,7 +69,7 @@ function CampoFornecedor({ nome, fornecedores, onChange }: { nome: string; forne
       <datalist id="lista-fornecedores">
         {fornecedores.map(f => <option key={f.id} value={f.nome}>{f.fantasia && f.fantasia !== f.nome ? f.fantasia : ''}</option>)}
       </datalist>
-      {nome.trim() && <div style={{ fontSize: 11, marginTop: 3, color: doCadastro ? '#16a34a' : 'var(--text-muted)' }}>{doCadastro ? '✓ do cadastro de fornecedores' : 'avulso (não está no cadastro)'}</div>}
+      {nome.trim() && <div style={{ fontSize: 11, marginTop: 3, color: doCadastro ? '#16a34a' : 'var(--text-muted)' }}>{doCadastro ? 'do cadastro de fornecedores' : 'avulso (não está no cadastro)'}</div>}
     </div>
   );
 }
@@ -109,7 +109,7 @@ function ModalConta({ conta, fornecedores, onClose, onSaved }: { conta: ContaPag
               {FIXAS.map(f => (
                 <button type="button" key={f.nome} onClick={() => { setForm(x => ({ ...x, descricao: f.nome, categoria: f.cat })); setRepetir(true); setFixa(true); }}
                   style={{ padding: '6px 10px', fontSize: 12.5, borderRadius: 8, cursor: 'pointer', border: `1px solid ${form.descricao === f.nome ? 'var(--primary)' : 'var(--border)'}`, background: form.descricao === f.nome ? 'var(--primary-dim)' : 'var(--surface-alt)', color: 'var(--text)' }}>
-                  {f.icon} {f.nome}
+                  {f.nome}
                 </button>
               ))}
             </div>
@@ -120,7 +120,7 @@ function ModalConta({ conta, fornecedores, onClose, onSaved }: { conta: ContaPag
           <CampoFornecedor nome={form.fornecedor} fornecedores={fornecedores} onChange={(n, id) => setForm(f => ({ ...f, fornecedor: n, fornecedor_id: id }))} />
           <div><label style={lbl}>Categoria</label>
             <select style={inp} value={form.categoria} onChange={e => set('categoria', e.target.value)}>
-              <option value="">—</option>{CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
+              <option value="">-</option>{CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
               {form.categoria && !CATEGORIAS.includes(form.categoria) && <option value={form.categoria}>{form.categoria}</option>}
             </select>
           </div>
@@ -129,7 +129,7 @@ function ModalConta({ conta, fornecedores, onClose, onSaved }: { conta: ContaPag
           <div><label style={lbl}>Valor (R$) *</label><input type="number" step="0.01" min="0" style={{ ...inp, fontFamily: 'var(--mono)' }} value={form.valor} onChange={e => set('valor', e.target.value)} placeholder="0,00" /></div>
           <div><label style={lbl}>{repetir ? '1º vencimento *' : 'Vencimento *'}</label><input type="date" style={{ ...inp, fontFamily: 'var(--mono)' }} value={form.data_vencimento} onChange={e => set('data_vencimento', e.target.value)} /></div>
         </div>
-        {fimDeSemana && !repetir && <div style={{ fontSize: 12, color: '#d97706', marginBottom: 8 }}>⚠️ Essa data cai num {diaSemana(form.data_vencimento) === 'sáb' ? 'sábado' : 'domingo'}.</div>}
+        {fimDeSemana && !repetir && <div style={{ fontSize: 12, color: '#d97706', marginBottom: 8 }}>Essa data cai num {diaSemana(form.data_vencimento) === 'sáb' ? 'sábado' : 'domingo'}.</div>}
         {conta?.situacao === 'pago' && (
           <div style={{ marginTop: 8, marginBottom: 6, maxWidth: 220 }}><label style={lbl}>Data do pagamento</label><input type="date" style={{ ...inp, fontFamily: 'var(--mono)' }} value={form.data_pagamento} onChange={e => set('data_pagamento', e.target.value)} /></div>
         )}
@@ -138,7 +138,7 @@ function ModalConta({ conta, fornecedores, onClose, onSaved }: { conta: ContaPag
           <div style={{ marginTop: 10, marginBottom: 14, background: 'var(--surface-alt)', border: `1px solid ${repetir ? 'var(--primary)' : 'var(--border)'}`, borderRadius: 10, padding: '12px 14px' }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 600, color: 'var(--text)', cursor: 'pointer' }}>
               <input type="checkbox" checked={repetir} onChange={e => { setRepetir(e.target.checked); if (!e.target.checked) setFixa(false); }} />
-              🔁 Repetir todo mês (conta recorrente)
+              Repetir todo mês (conta recorrente)
             </label>
             {repetir && (
               <div style={{ marginTop: 10, display: 'grid', gap: 10 }}>
@@ -160,7 +160,7 @@ function ModalConta({ conta, fornecedores, onClose, onSaved }: { conta: ContaPag
         )}
         {conta?.recorrente_id && (
           <div style={{ fontSize: 12, color: 'var(--text-muted)', margin: '8px 0 12px', lineHeight: 1.5 }}>
-            🔁 Esta conta é de uma recorrência. A alteração vale só para este mês. Para mudar os próximos meses, use a aba <b>Recorrentes e fixas</b>.
+            Esta conta é de uma recorrência. A alteração vale só para este mês. Para mudar os próximos meses, use a aba <b>Recorrentes e fixas</b>.
           </div>
         )}
         <div style={{ marginBottom: '14px', marginTop: 8 }}><label style={lbl}>Observação</label><textarea style={{ ...inp, minHeight: '56px', resize: 'vertical' }} value={form.observacao} onChange={e => set('observacao', e.target.value)} /></div>
@@ -203,7 +203,7 @@ function PagarModal({ conta, contas, onClose, onSaved }: { conta: ContaPagar; co
           </div>
           <div><label style={lbl}>Saiu de qual conta</label>
             <select style={inp} value={form.conta_id} onChange={e => setForm(f => ({ ...f, conta_id: e.target.value }))}>
-              <option value="">— Nenhuma —</option>
+              <option value="">Nenhuma</option>
               {contas.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
             </select>
           </div>
@@ -211,7 +211,7 @@ function PagarModal({ conta, contas, onClose, onSaved }: { conta: ContaPagar; co
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', paddingTop: '10px', borderTop: '1px solid var(--border)' }}>
           <button type="button" onClick={onClose} style={{ padding: '9px 18px', fontSize: '14px', background: 'var(--surface-alt)', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer' }}>Cancelar</button>
           <button type="submit" disabled={saving} style={{ padding: '9px 20px', fontSize: '14px', fontWeight: '600', background: '#16a34a', color: 'white', border: 'none', borderRadius: '8px', cursor: saving ? 'default' : 'pointer' }}>
-            {saving ? '...' : '✓ Confirmar pagamento'}
+            {saving ? '...' : 'Confirmar pagamento'}
           </button>
         </div>
       </form>
@@ -236,7 +236,7 @@ function ModalRecorrente({ rec, fornecedores, onClose, onSaved }: { rec: Recorre
           <CampoFornecedor nome={f.fornecedor} fornecedores={fornecedores} onChange={(n, id) => setF(x => ({ ...x, fornecedor: n, fornecedor_id: id }))} />
           <div><label style={lbl}>Categoria</label>
             <select style={inp} value={f.categoria} onChange={e => setF(x => ({ ...x, categoria: e.target.value }))}>
-              <option value="">—</option>{CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
+              <option value="">-</option>{CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
         </div>
@@ -313,7 +313,7 @@ export default function ContasPagar() {
     load();
   }
 
-  const filterBtn = (active: boolean): React.CSSProperties => ({ padding: '6px 14px', fontSize: '12px', fontWeight: '500', border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`, borderRadius: '20px', cursor: 'pointer', background: active ? 'var(--primary)' : 'var(--surface)', color: active ? 'white' : 'var(--text-dim)' });
+  const filterBtn = (active: boolean): React.CSSProperties => ({ padding: '6px 14px', fontSize: '12px', fontWeight: '500', border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`, borderRadius: '6px', cursor: 'pointer', background: active ? 'var(--primary)' : 'var(--surface)', color: active ? 'white' : 'var(--text-dim)' });
   const abaBtn = (on: boolean): React.CSSProperties => ({ padding: '9px 16px', fontSize: 14, fontWeight: 600, background: 'none', border: 'none', borderBottom: `2px solid ${on ? 'var(--primary)' : 'transparent'}`, color: on ? 'var(--text)' : 'var(--text-muted)', cursor: 'pointer' });
   const btn = (bg: string, color: string): React.CSSProperties => ({ padding: '5px 10px', fontSize: '12px', marginRight: '6px', background: bg, color, border: '1px solid transparent', borderRadius: '6px', cursor: 'pointer' });
   const fixasAtivas = recs.filter(r => r.ativo);
@@ -330,7 +330,7 @@ export default function ContasPagar() {
 
       <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid var(--border)', marginBottom: 20 }}>
         <button style={abaBtn(aba === 'contas')} onClick={() => setAba('contas')}>Contas</button>
-        <button style={abaBtn(aba === 'recorrentes')} onClick={() => setAba('recorrentes')}>🔁 Recorrentes e fixas {recs.length ? `(${recs.length})` : ''}</button>
+        <button style={abaBtn(aba === 'recorrentes')} onClick={() => setAba('recorrentes')}>Recorrentes e fixas {recs.length ? `(${recs.length})` : ''}</button>
       </div>
 
       {aba === 'contas' && (<>
@@ -374,18 +374,18 @@ export default function ContasPagar() {
                     <td style={{ padding: '12px 16px' }}>
                       <div style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text)' }}>
                         {c.descricao}
-                        {c.recorrente_id && <span style={{ marginLeft: 8, fontSize: 10.5, fontWeight: 600, padding: '2px 7px', borderRadius: 10, background: 'var(--primary-dim)', color: 'var(--primary)' }}>🔁 {c.rec_fixa ? 'Fixa' : 'Recorrente'}</span>}
+                        {c.recorrente_id && <span style={{ marginLeft: 8, fontSize: 10.5, fontWeight: 600, padding: '2px 7px', borderRadius: 10, background: 'var(--primary-dim)', color: 'var(--primary)' }}>{c.rec_fixa ? 'Fixa' : 'Recorrente'}</span>}
                       </div>
                       {c.categoria && <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{c.categoria}</div>}
                     </td>
-                    <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>{c.fornecedor || '—'}</td>
+                    <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>{c.fornecedor || '-'}</td>
                     <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', color: c.situacao === 'vencido' ? '#dc2626' : 'var(--text-dim)', whiteSpace: 'nowrap' }}>
                       {fmtDate(c.data_vencimento)} <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{diaSemana(c.data_vencimento)}</span>
                       {c.data_pagamento && <div style={{ fontSize: '11px', color: '#16a34a' }}>Pago: {fmtDate(c.data_pagamento)}</div>}
                     </td>
                     <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '600', color: 'var(--text)' }}>{brl(c.valor)}</td>
                     <td style={{ padding: '12px 16px' }}>
-                      <span style={{ padding: '3px 9px', borderRadius: '20px', fontSize: '12px', fontWeight: '500', background: sc.bg, color: sc.color }}>{SIT_LABEL[c.situacao]}</span>
+                      <span style={{ padding: '3px 9px', borderRadius: '6px', fontSize: '12px', fontWeight: '500', background: sc.bg, color: sc.color }}>{SIT_LABEL[c.situacao]}</span>
                     </td>
                     <td style={{ padding: '12px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                       {c.situacao !== 'pago'
@@ -434,13 +434,13 @@ export default function ContasPagar() {
                       <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)' }}>{r.descricao} {r.fixa ? <span style={{ fontSize: 10.5, fontWeight: 600, padding: '2px 7px', borderRadius: 10, background: 'var(--primary-dim)', color: 'var(--primary)' }}>Fixa</span> : null} {!r.ativo && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>· pausada</span>}</div>
                       {r.categoria && <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{r.categoria}</div>}
                     </td>
-                    <td style={{ padding: '12px 16px', fontSize: 13, color: 'var(--text-dim)' }}>{r.fornecedor || '—'}</td>
+                    <td style={{ padding: '12px 16px', fontSize: 13, color: 'var(--text-dim)' }}>{r.fornecedor || '-'}</td>
                     <td style={{ padding: '12px 16px', fontSize: 13, fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>
                       dia {r.dia}
                       {r.ajuste_fds !== 'manter' && <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'inherit' }}>fim de semana → {r.ajuste_fds === 'antes' ? 'sexta' : 'segunda'}</div>}
                     </td>
                     <td style={{ padding: '12px 16px', fontSize: 13, fontWeight: 600, fontFamily: 'var(--mono)', color: 'var(--text)' }}>{brl(r.valor)}</td>
-                    <td style={{ padding: '12px 16px', fontSize: 13, fontFamily: 'var(--mono)', color: 'var(--text-dim)', whiteSpace: 'nowrap' }}>{r.proximo_vencimento ? `${fmtDate(r.proximo_vencimento)} ${diaSemana(r.proximo_vencimento)}` : '—'}</td>
+                    <td style={{ padding: '12px 16px', fontSize: 13, fontFamily: 'var(--mono)', color: 'var(--text-dim)', whiteSpace: 'nowrap' }}>{r.proximo_vencimento ? `${fmtDate(r.proximo_vencimento)} ${diaSemana(r.proximo_vencimento)}` : '-'}</td>
                     <td style={{ padding: '12px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                       <button onClick={() => setEditRec(r)} style={btn('var(--primary-dim)', 'var(--primary)')}>Editar</button>
                       <button onClick={() => pausar(r)} style={btn('var(--surface-alt)', 'var(--text-dim)')}>{r.ativo ? 'Pausar' : 'Retomar'}</button>

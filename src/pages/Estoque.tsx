@@ -49,7 +49,7 @@ function PainelQuantidade({ cat, itens, onMudou }: { cat: Categoria; itens: Item
     <div>
       <div style={{ fontSize: 13, color: 'var(--text-dim)', marginBottom: 12 }}>
         Controle <b>por quantidade</b>: sem código nem preço por peça. Total em {cat.nome}: <b style={{ fontFamily: 'var(--mono)', color: 'var(--text)' }}>{total}</b> peça(s).
-        Na venda, a vendedora escolhe <b>"{cat.nome} {linhas[0].id ? linhas[0].nome : ''}"</b> e digita o valor — o estoque baixa sozinho.
+        Na venda, a vendedora escolhe <b>"{cat.nome} {linhas[0].id ? linhas[0].nome : ''}"</b> e digita o valor · o estoque baixa sozinho.
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: 12 }}>
         {linhas.map(l => {
@@ -147,7 +147,7 @@ function NovoItem({ categorias, catInicial, subInicial, onClose, onSaved }: { ca
           </div>
           <div><label style={lbl}>{cat?.subs.length ? 'Material / subcategoria' : 'Subcategoria'}</label>
             <select style={inp} value={f.subcategoria_id} onChange={e => set('subcategoria_id', e.target.value)} disabled={!cat?.subs.length}>
-              <option value="">{cat?.subs.length ? '— Escolher —' : '— nenhuma —'}</option>
+              <option value="">{cat?.subs.length ? 'Escolher' : 'nenhuma'}</option>
               {cat?.subs.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
             </select>
           </div>
@@ -206,7 +206,7 @@ function GerenciarCategorias({ categorias, onClose, onMudou }: { categorias: Cat
         {categorias.map(c => (
           <div key={c.id} style={{ border: '1px solid var(--border)', borderRadius: 10, padding: '10px 12px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-              <b style={{ color: 'var(--text)', fontSize: 14 }}>{c.icone || '📦'} {c.nome} <span style={{ fontSize: 11.5, fontWeight: 400, color: 'var(--text-muted)' }}>· {c.itens} modelo(s)</span></b>
+              <b style={{ color: 'var(--text)', fontSize: 14 }}>{c.nome} <span style={{ fontSize: 11.5, fontWeight: 400, color: 'var(--text-muted)' }}>· {c.itens} modelo(s)</span></b>
               <span style={{ display: 'flex', gap: 6 }}>
                 <button style={mini} onClick={() => renomear(c.id, c.nome)}>Renomear</button>
                 <button style={{ ...mini, color: 'var(--red)' }} onClick={() => excluir(c.id, c.nome)}>Excluir</button>
@@ -214,9 +214,9 @@ function GerenciarCategorias({ categorias, onClose, onMudou }: { categorias: Cat
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
               {c.subs.map(s => (
-                <span key={s.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12.5, padding: '3px 4px 3px 10px', borderRadius: 20, background: 'var(--surface-alt)', border: '1px solid var(--border)', color: 'var(--text)' }}>
+                <span key={s.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12.5, padding: '3px 4px 3px 10px', borderRadius: 6, background: 'var(--surface-alt)', border: '1px solid var(--border)', color: 'var(--text)' }}>
                   {s.nome}
-                  <button title="Renomear" onClick={() => renomear(s.id, s.nome)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 11 }}>✎</button>
+                  <button title="Renomear" onClick={() => renomear(s.id, s.nome)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 11 }}>Renomear</button>
                   <button title="Excluir" onClick={() => excluir(s.id, s.nome)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--red)', fontSize: 12 }}>×</button>
                 </span>
               ))}
@@ -238,8 +238,8 @@ function GerenciarCategorias({ categorias, onClose, onMudou }: { categorias: Cat
           Já criar os materiais: Metal, Acetato, TR90, Parafusada, Clip On, Nylon, 360 <span style={{ color: 'var(--text-muted)' }}>(desmarque para Limpeza, Acessórios…)</span>
         </label>
         <div style={{ display: 'flex', gap: 14, marginTop: 6, fontSize: 12.5, color: 'var(--text-dim)' }}>
-          <label style={{ display: 'flex', gap: 6, alignItems: 'center', cursor: 'pointer' }}><input type="radio" checked={modoNovo === 'quantidade'} onChange={() => setModoNovo('quantidade')} /> 🔢 Só quantidade (linha própria)</label>
-          <label style={{ display: 'flex', gap: 6, alignItems: 'center', cursor: 'pointer' }}><input type="radio" checked={modoNovo === 'modelo'} onChange={() => setModoNovo('modelo')} /> 🏷️ Por modelo, com código e preço (grifes)</label>
+          <label style={{ display: 'flex', gap: 6, alignItems: 'center', cursor: 'pointer' }}><input type="radio" checked={modoNovo === 'quantidade'} onChange={() => setModoNovo('quantidade')} /> Só quantidade (linha própria)</label>
+          <label style={{ display: 'flex', gap: 6, alignItems: 'center', cursor: 'pointer' }}><input type="radio" checked={modoNovo === 'modelo'} onChange={() => setModoNovo('modelo')} /> Por modelo, com código e preço (grifes)</label>
         </div>
       </form>
     </Janela>
@@ -331,7 +331,7 @@ export default function Estoque() {
       {alerta > 0 && <span style={{ fontSize: 10.5, fontWeight: 700, background: 'var(--red)', color: '#fff', borderRadius: 10, padding: '1px 6px' }}>{alerta}</span>}
     </button>
   );
-  const chip = (on: boolean): React.CSSProperties => ({ padding: '5px 12px', fontSize: 12.5, fontWeight: 500, borderRadius: 20, cursor: 'pointer', border: `1px solid ${on ? 'var(--primary)' : 'var(--border)'}`, background: on ? 'var(--primary)' : 'var(--surface)', color: on ? '#fff' : 'var(--text-dim)' });
+  const chip = (on: boolean): React.CSSProperties => ({ padding: '5px 12px', fontSize: 12.5, fontWeight: 500, borderRadius: 6, cursor: 'pointer', border: `1px solid ${on ? 'var(--primary)' : 'var(--border)'}`, background: on ? 'var(--primary)' : 'var(--surface)', color: on ? '#fff' : 'var(--text-dim)' });
   const listaEstoque = aba && ((aba.tipo === 'cat' && catAtual?.modo !== 'quantidade') || aba.tipo === 'sem' || aba.tipo === 'compras');
   const totalBaixo = cats ? cats.categorias.reduce((s, c) => s + c.baixo, 0) + cats.sem_categoria.baixo : 0;
 
@@ -343,7 +343,7 @@ export default function Estoque() {
           <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-dim)' }}>Separado por categoria. Cada venda dá baixa sozinha.</p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => setGerenciar(true)} style={{ padding: '9px 14px', fontSize: 13, background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer' }}>⚙️ Categorias</button>
+          <button onClick={() => setGerenciar(true)} style={{ padding: '9px 14px', fontSize: 13, background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer' }}>Categorias</button>
           {catAtual?.modo !== 'quantidade' && <button onClick={() => setNovoItem(true)} disabled={!cats?.categorias.length} style={{ padding: '9px 16px', fontSize: 13, fontWeight: 600, background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}>+ Novo item{catAtual ? ` em ${catAtual.nome}` : ''}</button>}
         </div>
       </div>
@@ -352,7 +352,7 @@ export default function Estoque() {
         <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Ir para:</span>
           <select style={{ ...inp, maxWidth: 280 }} value={aba?.tipo === 'cat' ? aba.id : ''} onChange={e => { if (e.target.value) { setAba({ tipo: 'cat', id: e.target.value }); setSub(''); } }}>
-            <option value="">— escolher grife / linha —</option>
+            <option value="">escolher grife / linha</option>
             {cats.categorias.map(c => <option key={c.id} value={c.id}>{c.nome} ({c.pecas} peças)</option>)}
           </select>
         </div>
@@ -360,8 +360,8 @@ export default function Estoque() {
 
       {/* Abas: uma por categoria + ferramentas */}
       <div style={{ display: 'flex', gap: 2, borderBottom: '1px solid var(--border)', marginBottom: 16, overflowX: 'auto' }}>
-        {cats?.categorias.map(c => tabBtn({ tipo: 'cat', id: c.id }, <>{c.icone || (c.modo === 'quantidade' ? '🔢' : '📦')} {c.nome} <span style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--text-muted)' }}>{c.pecas}</span></>, c.baixo))}
-        {cats && cats.sem_categoria.itens > 0 && tabBtn({ tipo: 'sem' }, <>❔ Sem categoria <span style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--text-muted)' }}>{cats.sem_categoria.itens}</span></>)}
+        {cats?.categorias.map(c => tabBtn({ tipo: 'cat', id: c.id }, <>{c.nome} <span style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--text-muted)' }}>{c.pecas}</span></>, c.baixo))}
+        {cats && cats.sem_categoria.itens > 0 && tabBtn({ tipo: 'sem' }, <>Sem categoria <span style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--text-muted)' }}>{cats.sem_categoria.itens}</span></>)}
         <span style={{ width: 1, background: 'var(--border)', margin: '8px 6px' }} />
         {tabBtn({ tipo: 'leitor' }, '▌▌▌ Leitor')}
         {tabBtn({ tipo: 'mov' }, 'Movimentações')}
@@ -374,8 +374,8 @@ export default function Estoque() {
           <span>Controle desta aba:</span>
           {(['quantidade', 'modelo'] as const).map(m => (
             <button key={m} onClick={async () => { if ((catAtual.modo || 'modelo') === m) return; await api.put(`/estoque/categorias/${catAtual.id}`, { modo: m }); recarregar(); }}
-              style={{ padding: '4px 11px', fontSize: 12, borderRadius: 20, cursor: 'pointer', border: `1px solid ${(catAtual.modo || 'modelo') === m ? 'var(--primary)' : 'var(--border)'}`, background: (catAtual.modo || 'modelo') === m ? 'var(--primary-dim)' : 'transparent', color: (catAtual.modo || 'modelo') === m ? 'var(--primary)' : 'var(--text-dim)' }}>
-              {m === 'quantidade' ? '🔢 Só quantidade' : '🏷️ Por modelo (código/preço)'}
+              style={{ padding: '4px 11px', fontSize: 12, borderRadius: 6, cursor: 'pointer', border: `1px solid ${(catAtual.modo || 'modelo') === m ? 'var(--primary)' : 'var(--border)'}`, background: (catAtual.modo || 'modelo') === m ? 'var(--primary-dim)' : 'transparent', color: (catAtual.modo || 'modelo') === m ? 'var(--primary)' : 'var(--text-dim)' }}>
+              {m === 'quantidade' ? 'Só quantidade' : 'Por modelo (código/preço)'}
             </button>
           ))}
           <span style={{ marginLeft: 8 }}>NCM p/ nota:</span>
@@ -428,7 +428,7 @@ export default function Estoque() {
             <div style={{ padding: 48, textAlign: 'center', color: 'var(--text-muted)', fontSize: 14 }}>Carregando...</div>
           ) : itens.length === 0 ? (
             <div style={{ padding: 48, textAlign: 'center', color: 'var(--text-muted)', fontSize: 14 }}>
-              {aba?.tipo === 'compras' ? 'Nada abaixo do mínimo. 👍' : <>Nenhum item aqui ainda. <button onClick={() => setNovoItem(true)} style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: 14 }}>Cadastrar o primeiro</button></>}
+              {aba?.tipo === 'compras' ? 'Nada abaixo do mínimo.' : <>Nenhum item aqui ainda. <button onClick={() => setNovoItem(true)} style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: 14 }}>Cadastrar o primeiro</button></>}
             </div>
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -446,20 +446,20 @@ export default function Estoque() {
                     <tr key={item.id} style={{ borderBottom: '1px solid var(--border)' }}>
                       <td style={{ padding: '10px 14px' }}>
                         <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text)' }}>{item.descricao}</div>
-                        <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--text-muted)' }}>{[item.codigo, item.codigo_barras].filter(Boolean).join(' · ') || '—'}</div>
+                        <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--text-muted)' }}>{[item.codigo, item.codigo_barras].filter(Boolean).join(' · ') || '-'}</div>
                       </td>
                       <td style={{ padding: '10px 14px' }}>
                         {aba?.tipo === 'cat'
-                          ? (item.subcategoria_nome ? <span style={{ fontSize: 11.5, background: 'var(--accent-dim)', color: 'var(--accent)', padding: '2px 8px', borderRadius: 20 }}>{item.subcategoria_nome}</span> : <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>—</span>)
-                          : <span style={{ fontSize: 12, color: 'var(--text-dim)' }}>{item.grupo || '—'}</span>}
+                          ? (item.subcategoria_nome ? <span style={{ fontSize: 11.5, background: 'var(--accent-dim)', color: 'var(--accent)', padding: '2px 8px', borderRadius: 6 }}>{item.subcategoria_nome}</span> : <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>-</span>)
+                          : <span style={{ fontSize: 12, color: 'var(--text-dim)' }}>{item.grupo || '-'}</span>}
                       </td>
                       <td style={{ padding: '10px 14px', textAlign: 'right' }}>
-                        <span style={{ fontSize: 16, fontWeight: 800, fontFamily: 'var(--mono)', color: corQtd }} title={item.quantidade < 0 ? 'Vendeu mais do que tinha registrado — dê entrada' : ''}>{item.quantidade}</span>
+                        <span style={{ fontSize: 16, fontWeight: 800, fontFamily: 'var(--mono)', color: corQtd }} title={item.quantidade < 0 ? 'Vendeu mais do que tinha registrado · dê entrada' : ''}>{item.quantidade}</span>
                       </td>
                       <td style={{ padding: '10px 14px', fontSize: 13, fontFamily: 'var(--mono)', color: 'var(--text-dim)', textAlign: 'right' }}>{item.quantidade_minima}</td>
                       <td style={{ padding: '10px 14px', fontSize: 13, fontFamily: 'var(--mono)', color: 'var(--text-dim)', textAlign: 'right' }}>{brl(item.preco_custo)}</td>
                       <td style={{ padding: '10px 14px', fontSize: 13, fontFamily: 'var(--mono)', color: 'var(--text)', textAlign: 'right' }}>{brl(item.preco_venda)}</td>
-                      <td style={{ padding: '10px 14px', fontSize: 12, color: 'var(--text-muted)' }}>{item.localizacao || '—'}</td>
+                      <td style={{ padding: '10px 14px', fontSize: 12, color: 'var(--text-muted)' }}>{item.localizacao || '-'}</td>
                       <td style={{ padding: '10px 14px', whiteSpace: 'nowrap', textAlign: 'right' }}>
                         <button onClick={() => { setItemSel(item); setMovForm({ tipo: 'entrada', quantidade: '', motivo: '', documento: '', preco_unitario: '' }); setErroMov(''); }}
                           style={{ fontSize: 11.5, fontWeight: 600, padding: '4px 10px', background: 'var(--accent-dim)', color: 'var(--accent)', border: 'none', borderRadius: 6, cursor: 'pointer', marginRight: 6 }}>+/− Mov.</button>
@@ -501,12 +501,12 @@ export default function Estoque() {
                       {m.produto_codigo && <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--text-muted)' }}>{m.produto_codigo}</div>}
                     </td>
                     <td style={{ padding: '10px 14px' }}>
-                      <span style={{ fontSize: 11, fontWeight: 600, color: TIPO_COLOR[m.tipo], background: `${TIPO_COLOR[m.tipo]}18`, padding: '3px 8px', borderRadius: 20 }}>{TIPO_LABEL[m.tipo] ?? m.tipo}</span>
+                      <span style={{ fontSize: 11, fontWeight: 600, color: TIPO_COLOR[m.tipo], background: `${TIPO_COLOR[m.tipo]}18`, padding: '3px 8px', borderRadius: 6 }}>{TIPO_LABEL[m.tipo] ?? m.tipo}</span>
                     </td>
                     <td style={{ padding: '10px 14px', fontSize: 14, fontWeight: 700, fontFamily: 'var(--mono)', color: TIPO_COLOR[m.tipo] }}>{m.tipo === 'entrada' ? '+' : m.tipo === 'saida' ? '−' : ''}{m.quantidade}</td>
                     <td style={{ padding: '10px 14px', fontSize: 12, fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{m.quantidade_anterior} → {m.quantidade_nova}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 12, color: 'var(--text-dim)' }}>{m.motivo || m.documento ? <>{m.motivo}{m.documento && m.documento !== m.motivo ? ` • ${m.documento}` : ''}</> : '—'}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 12, color: 'var(--text-dim)' }}>{m.usuario_nome || '—'}</td>
+                    <td style={{ padding: '10px 14px', fontSize: 12, color: 'var(--text-dim)' }}>{m.motivo || m.documento ? <>{m.motivo}{m.documento && m.documento !== m.motivo ? ` • ${m.documento}` : ''}</> : '-'}</td>
+                    <td style={{ padding: '10px 14px', fontSize: 12, color: 'var(--text-dim)' }}>{m.usuario_nome || '-'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -560,7 +560,7 @@ export default function Estoque() {
             {(cats.categorias.find(c => c.id === moverPara.categoria_id)?.subs.length || 0) > 0 && (
               <div><label style={lbl}>Material / subcategoria</label>
                 <select style={inp} value={moverPara.subcategoria_id} onChange={e => setMoverPara(m => ({ ...m, subcategoria_id: e.target.value }))}>
-                  <option value="">— nenhuma —</option>
+                  <option value="">nenhuma</option>
                   {cats.categorias.find(c => c.id === moverPara.categoria_id)?.subs.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
                 </select>
               </div>

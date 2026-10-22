@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
 import { menusDo } from '../lib/permissoes';
+import Icone from '../components/Icone';
 
 type ContaResumo = { id: string; descricao: string; fornecedor?: string; valor: number; data_vencimento: string; recorrente_id?: string; rec_fixa?: number };
 type ResumoPagar = { hoje: string; vencidas: { qtd: number; total: number }; proximas: { qtd: number; total: number }; contas: ContaResumo[] };
@@ -99,7 +100,7 @@ export default function Dashboard() {
       value: loading ? '...' : formatBRL(stats?.vendasMes || 0),
       color: 'var(--primary)',
       bg: 'rgba(37,99,235,0.06)',
-      icon: '💰',
+      icon: 'dinheiro',
       sub: loading ? null : varLabel,
       subColor: v == null ? 'var(--text-muted)' : v >= 0 ? '#16a34a' : '#dc2626',
       onClick: () => navigate('/vendas'),
@@ -109,7 +110,7 @@ export default function Dashboard() {
       value: loading ? '...' : formatBRL(stats?.ticketMedio || 0),
       color: '#0891b2',
       bg: 'rgba(8,145,178,0.06)',
-      icon: '🎯',
+      icon: 'crm',
       sub: loading ? null : `${stats?.numVendasMes || 0} venda${stats?.numVendasMes !== 1 ? 's' : ''} no mês`,
       subColor: 'var(--text-muted)',
       onClick: () => navigate('/vendas'),
@@ -119,7 +120,7 @@ export default function Dashboard() {
       value: loading ? '...' : formatBRL(stats?.aReceber || 0),
       color: '#d97706',
       bg: 'rgba(245,158,11,0.06)',
-      icon: '⏳',
+      icon: 'relogio',
       sub: loading ? null : `${stats?.aReceberQtd || 0} venda${stats?.aReceberQtd !== 1 ? 's' : ''} pendente${stats?.aReceberQtd !== 1 ? 's' : ''}`,
       subColor: 'var(--text-muted)',
       onClick: () => navigate('/vendas'),
@@ -129,7 +130,7 @@ export default function Dashboard() {
       value: loading ? '...' : String(stats?.osAberto || 0),
       color: '#7c3aed',
       bg: 'rgba(124,58,237,0.06)',
-      icon: '🔧',
+      icon: 'os',
       sub: loading ? null : `${stats?.osPronta || 0} pronta${stats?.osPronta !== 1 ? 's' : ''} p/ entrega`,
       subColor: 'var(--text-muted)',
       onClick: () => navigate('/os'),
@@ -139,7 +140,7 @@ export default function Dashboard() {
       value: loading ? '...' : String(stats?.totalClientes || 0),
       color: '#16a34a',
       bg: 'rgba(34,197,94,0.06)',
-      icon: '👤',
+      icon: 'clientes',
       sub: null,
       subColor: 'var(--text-muted)',
       onClick: () => navigate('/clientes'),
@@ -154,7 +155,7 @@ export default function Dashboard() {
           Painel
         </h1>
         <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-dim)' }}>
-          Bem-vindo, {usuario?.nome} — {tenant?.nome}
+          Bem-vindo, {usuario?.nome} · {tenant?.nome}
         </p>
       </div>
 
@@ -186,7 +187,7 @@ export default function Dashboard() {
                 width: '32px', height: '32px', borderRadius: '8px',
                 background: card.bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '16px',
-              }}>{card.icon}</span>
+              }}><Icone nome={card.icon} size={17} color={card.color} /></span>
             </div>
             <p style={{ margin: 0, fontSize: '26px', fontWeight: '700', color: card.color, fontFamily: 'var(--mono)' }}>
               {card.value}
@@ -205,7 +206,7 @@ export default function Dashboard() {
         <div style={{ background: 'var(--surface)', border: `1px solid ${pagar.vencidas.qtd ? '#dc262655' : 'var(--border)'}`, borderRadius: '12px', overflow: 'hidden', marginBottom: '28px' }}>
           <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, flexWrap: 'wrap' }}>
-              <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>📤 Contas a pagar</h3>
+              <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>Contas a pagar</h3>
               {pagar.vencidas.qtd > 0 && <span style={{ fontSize: 12.5, fontWeight: 700, color: '#dc2626', fontFamily: 'var(--mono)' }}>{pagar.vencidas.qtd} vencida{pagar.vencidas.qtd > 1 ? 's' : ''} · {formatBRL(pagar.vencidas.total)}</span>}
               {pagar.proximas.qtd > 0 && <span style={{ fontSize: 12.5, fontWeight: 600, color: '#d97706', fontFamily: 'var(--mono)' }}>{pagar.proximas.qtd} nos próximos 7 dias · {formatBRL(pagar.proximas.total)}</span>}
             </div>
@@ -219,7 +220,7 @@ export default function Dashboard() {
                 <div key={c.id} onClick={() => navigate('/financeiro/contas-pagar')} style={{ padding: '11px 20px', borderBottom: '1px solid var(--border)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', gap: 10 }}>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontSize: 13.5, fontWeight: 500, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {c.descricao}{c.recorrente_id ? <span title={c.rec_fixa ? 'Conta fixa' : 'Recorrente'} style={{ marginLeft: 6, fontSize: 11, color: 'var(--text-muted)' }}>🔁</span> : null}
+                      {c.descricao}{c.recorrente_id ? <span title={c.rec_fixa ? 'Conta fixa' : 'Recorrente'} style={{ marginLeft: 6, color: 'var(--text-muted)', verticalAlign: '-2px' }}><Icone nome="repetir" size={12} /></span> : null}
                     </div>
                     <div style={{ fontSize: 11.5, fontFamily: 'var(--mono)', color: venc ? '#dc2626' : hoje ? '#d97706' : 'var(--text-muted)' }}>
                       {venc ? 'venceu ' : hoje ? 'vence hoje · ' : 'vence '}{hoje ? '' : formatDate(c.data_vencimento)}
@@ -239,7 +240,7 @@ export default function Dashboard() {
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
           <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
             <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>
-              Faturamento — últimos 6 meses
+              Faturamento · últimos 6 meses
             </h3>
           </div>
           <div style={{ padding: '20px' }}>
@@ -371,7 +372,7 @@ export default function Dashboard() {
             <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>
               Aniversariantes (7 dias)
             </h3>
-            <span style={{ fontSize: '18px' }}>🎂</span>
+            <Icone nome="aniversario" size={17} color="var(--text-muted)" />
           </div>
           <div>
             {loading ? (
@@ -418,7 +419,7 @@ export default function Dashboard() {
           border: '1px solid rgba(37,99,235,0.2)', borderRadius: '10px',
           padding: '14px 20px', display: 'flex', alignItems: 'center', gap: '12px',
         }}>
-          <span style={{ fontSize: '20px' }}>📋</span>
+          <Icone nome="lista" size={18} color="var(--primary)" />
           <span style={{ fontSize: '14px', color: 'var(--text)' }}>
             <strong style={{ color: 'var(--primary)' }}>{stats?.osHoje}</strong> nova{stats?.osHoje !== 1 ? 's' : ''} OS abertas hoje
           </span>

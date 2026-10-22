@@ -3,7 +3,7 @@ import type { Env } from '../../../lib/types';
 import { requireAuth, json } from '../../../lib/auth-middleware';
 import { listarTitulos, type FiltroTitulos } from '../../../lib/receber';
 
-// GET /api/financeiro/receber — Contas a Receber integrado (carnês + saldo das vendas + manuais)
+// GET /api/financeiro/receber: Contas a Receber integrado (carnês + saldo das vendas + manuais)
 //   ?situacao=aberto|vencido|pendente|recebido|todos &inicio&fim (vencimento) &q &bairro &cidade &endereco &origem &cliente_id
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const auth = await requireAuth(request, env);

@@ -34,7 +34,7 @@ function licenseBlock(error: string, blocked = false, expired = false): Response
   });
 }
 
-// Valida JWT sem checar licença — usado em /auth/me para o frontend sempre receber o status
+// Valida JWT sem checar licença: usado em /auth/me para o frontend sempre receber o status
 export async function requireAuthBasic(request: Request, env: Env): Promise<AuthData | Response> {
   const cookie = request.headers.get('cookie') || '';
   const match = cookie.match(/up_token=([^;]+)/);
@@ -112,7 +112,7 @@ export async function requireAuth(request: Request, env: Env): Promise<AuthData 
       return licenseBlock('Licença expirada. Renove para continuar usando o sistema.', false, true);
     }
   } catch {
-    // Colunas novas ainda não existem — permite acesso (migração pendente)
+    // Colunas novas ainda não existem: permite acesso (migração pendente)
   }
 
   await carregarLoja(env, auth);

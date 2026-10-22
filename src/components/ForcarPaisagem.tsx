@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 
 // Bloqueia o uso em modo retrato (em pé) em telas de celular, pedindo para girar.
-// No app nativo Android já é travado em landscape — isto cobre o navegador/web.
+// No app nativo Android já é travado em landscape: isto cobre o navegador/web.
 export default function ForcarPaisagem() {
-  // Bloqueia qualquer tela em pé (retrato) — celular e tablet. O app é só deitado.
+  // Bloqueia qualquer tela em pé (retrato): celular e tablet. O app é só deitado.
   const emPe = () => typeof window !== 'undefined'
     && window.innerHeight > window.innerWidth;
   const [retrato, setRetrato] = useState(emPe);

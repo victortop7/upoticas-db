@@ -1,7 +1,7 @@
 import type { Env } from '../../../lib/types';
 import { requireAuth, json } from '../../../lib/auth-middleware';
 
-// GET /api/lab/bancario/contas — retorna bancos cadastrados em configurações
+// GET /api/lab/bancario/contas: retorna bancos cadastrados em configurações
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   try {
     const auth = await requireAuth(request, env);

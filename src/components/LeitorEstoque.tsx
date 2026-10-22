@@ -148,7 +148,7 @@ export default function LeitorEstoque({ onMudou, categorias = [] }: { onMudou: (
         <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
           {(['entrada', 'saida'] as const).map(t => (
             <button key={t} onClick={() => setTipo(t)} style={{ flex: 1, minWidth: 140, padding: '12px', fontSize: 15, fontWeight: 700, borderRadius: 10, cursor: 'pointer', border: `2px solid ${t === tipo ? (t === 'entrada' ? '#16a34a' : '#dc2626') : 'var(--border)'}`, background: t === tipo ? (t === 'entrada' ? 'rgba(22,163,74,.12)' : 'rgba(220,38,38,.12)') : 'transparent', color: t === tipo ? (t === 'entrada' ? '#16a34a' : '#dc2626') : 'var(--text-muted)' }}>
-              {t === 'entrada' ? '⬇️ Entrada (chegou)' : '⬆️ Baixa (saiu)'}
+              {t === 'entrada' ? 'Entrada (chegou)' : 'Baixa (saiu)'}
             </button>
           ))}
         </div>
@@ -164,7 +164,7 @@ export default function LeitorEstoque({ onMudou, categorias = [] }: { onMudou: (
           </div>
           <button type="submit" disabled={!codigo.trim()} style={{ padding: '13px 18px', fontSize: 14, fontWeight: 700, background: cor, color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', opacity: !codigo.trim() ? 0.6 : 1 }}>{ocupado && pendentes ? `… ${pendentes}` : 'OK'}</button>
           {temCamera && (
-            <button type="button" onClick={() => setCamera(c => !c)} style={{ padding: '13px 14px', fontSize: 14, fontWeight: 600, background: camera ? 'var(--primary)' : 'var(--surface-alt)', color: camera ? '#fff' : 'var(--text)', border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer' }}>📷 {camera ? 'Fechar câmera' : 'Câmera'}</button>
+            <button type="button" onClick={() => setCamera(c => !c)} style={{ padding: '13px 14px', fontSize: 14, fontWeight: 600, background: camera ? 'var(--primary)' : 'var(--surface-alt)', color: camera ? '#fff' : 'var(--text)', border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer' }}>{camera ? 'Fechar câmera' : 'Câmera'}</button>
           )}
         </form>
         {camera && <video ref={videoRef} muted playsInline style={{ marginTop: 12, width: '100%', maxWidth: 420, borderRadius: 10, background: '#000' }} />}
@@ -173,8 +173,8 @@ export default function LeitorEstoque({ onMudou, categorias = [] }: { onMudou: (
           <div style={{ marginTop: 14, border: `1px solid ${lote.ativo ? '#16a34a' : 'var(--border)'}`, background: lote.ativo ? 'rgba(22,163,74,.06)' : 'transparent', borderRadius: 10, padding: '12px 14px' }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 700, color: 'var(--text)', cursor: 'pointer' }}>
               <input type="checkbox" checked={lote.ativo} onChange={e => { setLote(l => ({ ...l, ativo: e.target.checked })); contarModelos.current.clear(); inputRef.current?.focus(); }} />
-              📦 Entrada de mercadoria em lote
-              <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-muted)' }}>— escolha grife e material uma vez e bipe a caixa toda</span>
+              Entrada de mercadoria em lote
+              <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-muted)' }}>· escolha grife e material uma vez e bipe a caixa toda</span>
             </label>
             {lote.ativo && (
               <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1.1fr 0.8fr 0.8fr 1.4fr', gap: 10, marginTop: 10, alignItems: 'end' }}>
@@ -184,7 +184,7 @@ export default function LeitorEstoque({ onMudou, categorias = [] }: { onMudou: (
                   </select></div>
                 <div><label style={{ fontSize: 12, color: 'var(--text-muted)' }}>Material</label>
                   <select style={inp} value={lote.subcategoria_id} onChange={e => setLote(l => ({ ...l, subcategoria_id: e.target.value }))}>
-                    <option value="">—</option>
+                    <option value="">-</option>
                     {catLote?.subs.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
                   </select></div>
                 <div><label style={{ fontSize: 12, color: 'var(--text-muted)' }}>Custo R$</label><input inputMode="decimal" style={{ ...inp, fontFamily: 'var(--mono)' }} value={lote.preco_custo} onChange={e => setLote(l => ({ ...l, preco_custo: e.target.value }))} /></div>
@@ -217,7 +217,7 @@ export default function LeitorEstoque({ onMudou, categorias = [] }: { onMudou: (
               </select></div>
             <div><label style={{ fontSize: 12, color: 'var(--text-muted)' }}>Material / sub</label>
               <select style={inp} value={novo.subcategoria_id} onChange={e => setNovo({ ...novo, subcategoria_id: e.target.value })}>
-                <option value="">—</option>
+                <option value="">-</option>
                 {categorias.find(c => c.id === novo.categoria_id)?.subs.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
               </select></div>
             <div><label style={{ fontSize: 12, color: 'var(--text-muted)' }}>Custo (R$)</label><input style={{ ...inp, fontFamily: 'var(--mono)' }} inputMode="decimal" value={novo.preco_custo} onChange={e => setNovo({ ...novo, preco_custo: e.target.value })} /></div>
@@ -242,7 +242,7 @@ export default function LeitorEstoque({ onMudou, categorias = [] }: { onMudou: (
         ) : lidas.map(l => (
           <div key={l.id} style={{ padding: '9px 16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 13, background: l.erro ? 'rgba(220,38,38,.06)' : 'transparent' }}>
             <div style={{ minWidth: 0 }}>
-              <div style={{ color: l.erro ? '#dc2626' : 'var(--text)', fontWeight: 500 }}>{l.erro ? `⚠️ ${l.erro}` : l.descricao}</div>
+              <div style={{ color: l.erro ? '#dc2626' : 'var(--text)', fontWeight: 500 }}>{l.erro ? `${l.erro}` : l.descricao}</div>
               <div style={{ fontFamily: 'var(--mono)', fontSize: 11.5, color: 'var(--text-muted)' }}>{l.codigo}</div>
             </div>
             {!l.erro && (

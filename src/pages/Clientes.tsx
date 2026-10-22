@@ -4,6 +4,7 @@ import { api } from '../lib/api';
 import type { Cliente } from '../types';
 import ClienteModal from '../components/ClienteModal';
 import ClienteHistoricoModal from '../components/ClienteHistoricoModal';
+import Icone from '../components/Icone';
 
 interface ClientesResponse {
   clientes: Cliente[];
@@ -78,7 +79,7 @@ export default function Clientes() {
   }
 
   function fmtData(iso?: string) {
-    if (!iso) return '—';
+    if (!iso) return '-';
     const s = iso.slice(0, 10);
     const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     return m ? `${m[3]}/${m[2]}/${m[1]}` : s;
@@ -169,7 +170,7 @@ export default function Clientes() {
 
       {/* Filtro por data da compra */}
       <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '20px', padding: '12px 14px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px' }}>
-        <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-dim)' }}>🛍️ Data da compra:</span>
+        <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-dim)' }}>Data da compra:</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <label style={{ fontSize: '12px', color: 'var(--text-muted)' }}>De</label>
           <input type="date" value={dataInicio} onChange={e => { setDataInicio(e.target.value); setPage(1); }} style={{
@@ -187,7 +188,7 @@ export default function Clientes() {
           background: 'var(--amber-dim)', color: 'var(--amber)',
           border: '1px solid transparent', borderRadius: '8px', cursor: 'pointer',
         }}>
-          🔄 Comprou há +1 ano
+          Comprou há +1 ano
         </button>
         {filtroDataAtivo && (
           <button type="button" onClick={limparFiltroData} style={{
@@ -241,19 +242,19 @@ export default function Clientes() {
                   {c.apelido && <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{c.apelido}</div>}
                 </td>
                 <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)', fontFamily: 'var(--mono)' }}>
-                  {c.cpf || '—'}
+                  {c.cpf || '-'}
                 </td>
                 <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)', fontFamily: 'var(--mono)' }}>
-                  {c.celular || c.telefone || '—'}
+                  {c.celular || c.telefone || '-'}
                 </td>
                 <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>
-                  {c.email || '—'}
+                  {c.email || '-'}
                 </td>
                 <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>
-                  {c.cidade ? `${c.cidade}${c.uf ? `/${c.uf}` : ''}` : '—'}
+                  {c.cidade ? `${c.cidade}${c.uf ? `/${c.uf}` : ''}` : '-'}
                 </td>
-                <td style={{ padding: '12px 16px', fontSize: '13px', fontFamily: 'var(--mono)', whiteSpace: 'nowrap', color: anos1MaisAtras(c.data_compra) ? 'var(--amber)' : 'var(--text-dim)' }} title={anos1MaisAtras(c.data_compra) ? 'Mais de 1 ano — candidato a reativação' : ''}>
-                  {fmtData(c.data_compra)}{anos1MaisAtras(c.data_compra) ? ' 🔄' : ''}
+                <td style={{ padding: '12px 16px', fontSize: '13px', fontFamily: 'var(--mono)', whiteSpace: 'nowrap', color: anos1MaisAtras(c.data_compra) ? 'var(--amber)' : 'var(--text-dim)' }} title={anos1MaisAtras(c.data_compra) ? 'Mais de 1 ano · candidato a reativação' : ''}>
+                  {fmtData(c.data_compra)}{anos1MaisAtras(c.data_compra) ? <span style={{ marginLeft: 5, verticalAlign: '-2px' }}><Icone nome="reativar" size={12} /></span> : null}
                 </td>
                 <td style={{ padding: '12px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                   <button onClick={() => setFunilCliente(c)} title="Colocar este cliente no funil do CRM (escolher a etapa)" style={{
@@ -318,7 +319,7 @@ export default function Clientes() {
           <div onClick={e => e.stopPropagation()} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, width: 360, maxWidth: '100%', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }}>
             <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
               <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>Colocar no funil</div>
-              <div style={{ fontSize: 13, color: 'var(--text-dim)', marginTop: 2 }}>{funilCliente.nome} — escolha a etapa:</div>
+              <div style={{ fontSize: 13, color: 'var(--text-dim)', marginTop: 2 }}>{funilCliente.nome} · escolha a etapa:</div>
             </div>
             <div style={{ padding: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
               {estagios.length === 0 && <div style={{ padding: 16, textAlign: 'center', color: 'var(--text-dim)', fontSize: 13 }}>Carregando etapas…</div>}

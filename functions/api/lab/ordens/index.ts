@@ -74,7 +74,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       ).bind(tenant_id, body.otica_id, refOtica).first<{ numero: number }>();
       if (dup) {
         return json({
-          error: `A referência "${refOtica}" já foi usada por esta ótica na OS #${dup.numero}. Cada ótica não pode repetir a mesma referência — confira ou use outra.`,
+          error: `A referência "${refOtica}" já foi usada por esta ótica na OS #${dup.numero}. Cada ótica não pode repetir a mesma referência · confira ou use outra.`,
           code: 'REF_DUPLICADA',
           ref: refOtica,
           os_existente: dup.numero,

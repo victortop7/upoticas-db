@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, lazy, Suspense, type ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-// Carrega o 3D (Three.js) só quando a aba Espessura abre — mantém o app leve.
+// Carrega o 3D (Three.js) só quando a aba Espessura abre: mantém o app leve.
 const LenteEspessura3D = lazy(() => import('../../components/LenteEspessura3D'));
 
 type Tab = 'superficie' | 'visao' | 'fotossensivel' | 'espessura' | 'simulacao';
@@ -27,11 +27,11 @@ const TRATAMENTOS = [
 ];
 
 const AMBIENTES = [
-  { id: 'noite',   label: 'Noite',   emoji: '🌙' },
-  { id: 'chuva',   label: 'Chuva',   emoji: '🌧️' },
-  { id: 'sol',     label: 'Sol',     emoji: '☀️' },
-  { id: 'tela',    label: 'Tela',    emoji: '💻' },
-  { id: 'leitura', label: 'Leitura', emoji: '📖' },
+  { id: 'noite',   label: 'Noite',   emoji: '' },
+  { id: 'chuva',   label: 'Chuva',   emoji: '' },
+  { id: 'sol',     label: 'Sol',     emoji: '' },
+  { id: 'tela',    label: 'Tela',    emoji: '' },
+  { id: 'leitura', label: 'Leitura', emoji: '' },
 ];
 
 const SCENE_BG: Record<string, string> = {
@@ -55,74 +55,74 @@ type Effect = { semFilter: string; comFilter: string; description: string };
 
 const EFFECTS: Record<string, Record<string, Effect>> = {
   ar: {
-    noite:   { semFilter: 'brightness(.72) contrast(1.22)', comFilter: 'brightness(1.08) contrast(.98) saturate(1.08)', description: 'Reflexos de faróis eliminados — visão noturna segura' },
+    noite:   { semFilter: 'brightness(.72) contrast(1.22)', comFilter: 'brightness(1.08) contrast(.98) saturate(1.08)', description: 'Reflexos de faróis eliminados · visão noturna segura' },
     chuva:   { semFilter: 'brightness(.76) contrast(1.15) blur(.35px)', comFilter: 'brightness(.94)', description: 'Reflexos do asfalto molhado eliminados completamente' },
-    sol:     { semFilter: 'brightness(.82) contrast(1.28) saturate(.78)', comFilter: 'brightness(1.0) contrast(1.05)', description: 'Reflexos em vidros e superfícies — eliminados' },
-    tela:    { semFilter: 'brightness(.76) contrast(1.22)', comFilter: 'brightness(1.02) contrast(.98)', description: 'Reflexo da tela eliminado — 99,9% de transmissão de luz' },
-    leitura: { semFilter: 'brightness(.8) contrast(1.14)', comFilter: 'brightness(1.04) contrast(1.0)', description: 'Reflexo do papel eliminado — leitura sem esforço' },
+    sol:     { semFilter: 'brightness(.82) contrast(1.28) saturate(.78)', comFilter: 'brightness(1.0) contrast(1.05)', description: 'Reflexos em vidros e superfícies · eliminados' },
+    tela:    { semFilter: 'brightness(.76) contrast(1.22)', comFilter: 'brightness(1.02) contrast(.98)', description: 'Reflexo da tela eliminado · 99,9% de transmissão de luz' },
+    leitura: { semFilter: 'brightness(.8) contrast(1.14)', comFilter: 'brightness(1.04) contrast(1.0)', description: 'Reflexo do papel eliminado · leitura sem esforço' },
   },
   az: {
-    noite:   { semFilter: 'hue-rotate(18deg) saturate(1.42) brightness(.84)', comFilter: 'sepia(.12) saturate(.87) brightness(1.02)', description: 'LEDs e fluorescentes filtrados — menos tensão ocular' },
-    chuva:   { semFilter: 'hue-rotate(14deg) saturate(1.3) brightness(.88)', comFilter: 'sepia(.1) saturate(.9) brightness(.98)', description: 'Céu cinza emite forte luz azul — filtrada' },
+    noite:   { semFilter: 'hue-rotate(18deg) saturate(1.42) brightness(.84)', comFilter: 'sepia(.12) saturate(.87) brightness(1.02)', description: 'LEDs e fluorescentes filtrados · menos tensão ocular' },
+    chuva:   { semFilter: 'hue-rotate(14deg) saturate(1.3) brightness(.88)', comFilter: 'sepia(.1) saturate(.9) brightness(.98)', description: 'Céu cinza emite forte luz azul · filtrada' },
     sol:     { semFilter: 'hue-rotate(8deg) saturate(1.22) brightness(.9)', comFilter: 'sepia(.08) saturate(.94) brightness(1.04)', description: 'Componente azul/UV do sol filtrada' },
-    tela:    { semFilter: 'hue-rotate(16deg) saturate(1.62) brightness(.86)', comFilter: 'sepia(.16) saturate(.8) brightness(1.12) hue-rotate(-6deg)', description: 'Luz azul nociva filtrada — menos fadiga e melhor sono' },
+    tela:    { semFilter: 'hue-rotate(16deg) saturate(1.62) brightness(.86)', comFilter: 'sepia(.16) saturate(.8) brightness(1.12) hue-rotate(-6deg)', description: 'Luz azul nociva filtrada · menos fadiga e melhor sono' },
     leitura: { semFilter: 'hue-rotate(10deg) saturate(1.26) brightness(.88)', comFilter: 'sepia(.1) saturate(.9) brightness(1.06)', description: 'Leitura prolongada sem cansaço visual' },
   },
   ft: {
-    noite:   { semFilter: 'brightness(.88)', comFilter: 'brightness(.9)', description: 'Sem UV à noite — lente totalmente clara' },
+    noite:   { semFilter: 'brightness(.88)', comFilter: 'brightness(.9)', description: 'Sem UV à noite · lente totalmente clara' },
     chuva:   { semFilter: 'brightness(1.05) saturate(.84)', comFilter: 'brightness(.68) saturate(.64) contrast(1.06)', description: 'Ativa mesmo em dias nublados com UV presente' },
-    sol:     { semFilter: 'brightness(1.38) contrast(1.22) saturate(.68)', comFilter: 'brightness(.4) contrast(1.22) saturate(.52)', description: 'Escurece automaticamente sob luz solar — proteção total' },
-    tela:    { semFilter: 'brightness(.92)', comFilter: 'brightness(.94)', description: 'Telas não emitem UV — lente permanece clara' },
+    sol:     { semFilter: 'brightness(1.38) contrast(1.22) saturate(.68)', comFilter: 'brightness(.4) contrast(1.22) saturate(.52)', description: 'Escurece automaticamente sob luz solar · proteção total' },
+    tela:    { semFilter: 'brightness(.92)', comFilter: 'brightness(.94)', description: 'Telas não emitem UV · lente permanece clara' },
     leitura: { semFilter: 'brightness(1.0)', comFilter: 'brightness(.96)', description: 'Iluminação interna: lente clara para conforto de leitura' },
   },
   ab: {
     noite:   { semFilter: 'brightness(.7) blur(.6px) contrast(1.12)', comFilter: 'brightness(1.05)', description: 'Sem riscos = sem difração dos faróis noturnos' },
-    chuva:   { semFilter: 'brightness(.76) blur(.5px)', comFilter: 'brightness(.92)', description: 'Riscos não retêm sujeira — limpeza mais fácil' },
-    sol:     { semFilter: 'brightness(.86) blur(.35px)', comFilter: 'brightness(1.0)', description: 'Areia e poeira não arranhão — campo e praia' },
-    tela:    { semFilter: 'brightness(.78) blur(.4px)', comFilter: 'brightness(1.02)', description: 'Superfície dura protegida — texto perfeitamente nítido' },
-    leitura: { semFilter: 'brightness(.83) blur(.5px) contrast(.88)', comFilter: 'brightness(1.06) contrast(1.02)', description: 'Arranhões eliminados — visão cristalina para leitura' },
+    chuva:   { semFilter: 'brightness(.76) blur(.5px)', comFilter: 'brightness(.92)', description: 'Riscos não retêm sujeira · limpeza mais fácil' },
+    sol:     { semFilter: 'brightness(.86) blur(.35px)', comFilter: 'brightness(1.0)', description: 'Areia e poeira não arranhão · campo e praia' },
+    tela:    { semFilter: 'brightness(.78) blur(.4px)', comFilter: 'brightness(1.02)', description: 'Superfície dura protegida · texto perfeitamente nítido' },
+    leitura: { semFilter: 'brightness(.83) blur(.5px) contrast(.88)', comFilter: 'brightness(1.06) contrast(1.02)', description: 'Arranhões eliminados · visão cristalina para leitura' },
   },
   hf: {
     noite:   { semFilter: 'brightness(.6) blur(.9px) contrast(.84)', comFilter: 'brightness(.95)', description: 'Névoa e condensação eliminadas à noite' },
-    chuva:   { semFilter: 'brightness(.62) blur(1.2px)', comFilter: 'brightness(.9)', description: 'Gotas deslizam imediatamente — visão livre na chuva' },
-    sol:     { semFilter: 'brightness(.86) contrast(.92)', comFilter: 'brightness(1.06) contrast(1.05)', description: 'Repele suor, protetor e gordura — praia e esporte' },
+    chuva:   { semFilter: 'brightness(.62) blur(1.2px)', comFilter: 'brightness(.9)', description: 'Gotas deslizam imediatamente · visão livre na chuva' },
+    sol:     { semFilter: 'brightness(.86) contrast(.92)', comFilter: 'brightness(1.06) contrast(1.05)', description: 'Repele suor, protetor e gordura · praia e esporte' },
     tela:    { semFilter: 'brightness(.84) contrast(.9)', comFilter: 'brightness(1.0)', description: 'Digitais e manchas de gordura escorregam da lente' },
-    leitura: { semFilter: 'brightness(.87) contrast(.93)', comFilter: 'brightness(1.02)', description: 'Fácil de limpar — sem marcas persistentes' },
+    leitura: { semFilter: 'brightness(.87) contrast(.93)', comFilter: 'brightness(1.02)', description: 'Fácil de limpar · sem marcas persistentes' },
   },
   uv: {
-    noite:   { semFilter: 'brightness(.95)', comFilter: 'brightness(1.0)', description: 'Sem UV à noite — proteção sem alterar a visão' },
-    chuva:   { semFilter: 'brightness(1.18) contrast(1.12) saturate(.8)', comFilter: 'brightness(.95) contrast(1.0)', description: 'UV presente mesmo nublado — bloqueado automaticamente' },
-    sol:     { semFilter: 'brightness(1.48) contrast(1.38) saturate(.52)', comFilter: 'brightness(.96) contrast(1.08)', description: 'UVA e UVB 100% bloqueados — proteção máxima da retina' },
-    tela:    { semFilter: 'brightness(.9) saturate(1.16)', comFilter: 'brightness(1.0)', description: 'Telas emitem UV mínimo — proteção preventiva' },
+    noite:   { semFilter: 'brightness(.95)', comFilter: 'brightness(1.0)', description: 'Sem UV à noite · proteção sem alterar a visão' },
+    chuva:   { semFilter: 'brightness(1.18) contrast(1.12) saturate(.8)', comFilter: 'brightness(.95) contrast(1.0)', description: 'UV presente mesmo nublado · bloqueado automaticamente' },
+    sol:     { semFilter: 'brightness(1.48) contrast(1.38) saturate(.52)', comFilter: 'brightness(.96) contrast(1.08)', description: 'UVA e UVB 100% bloqueados · proteção máxima da retina' },
+    tela:    { semFilter: 'brightness(.9) saturate(1.16)', comFilter: 'brightness(1.0)', description: 'Telas emitem UV mínimo · proteção preventiva' },
     leitura: { semFilter: 'brightness(1.06)', comFilter: 'brightness(1.0)', description: 'Iluminação UV indireta bloqueada' },
   },
   pol: {
     noite:   { semFilter: 'brightness(.7) contrast(1.28)', comFilter: 'brightness(1.06) contrast(1.06)', description: 'Reflexos horizontais das luzes eliminados' },
     chuva:   { semFilter: 'brightness(.74) contrast(1.22)', comFilter: 'brightness(.95) saturate(1.16)', description: 'Reflexos do asfalto molhado completamente eliminados' },
-    sol:     { semFilter: 'brightness(.8) contrast(1.32) saturate(.68)', comFilter: 'brightness(1.0) contrast(1.12) saturate(1.22)', description: 'Reflexos horizontais eliminados — cores vibrantes' },
-    tela:    { semFilter: 'brightness(.85) contrast(1.1)', comFilter: 'brightness(1.02)', description: 'Reflexos de telas LCD — comportamento normal com polarizado' },
-    leitura: { semFilter: 'brightness(.83) contrast(1.12)', comFilter: 'brightness(1.02) contrast(1.02) saturate(1.06)', description: 'Reflexos de papel eliminados — leitura ao ar livre' },
+    sol:     { semFilter: 'brightness(.8) contrast(1.32) saturate(.68)', comFilter: 'brightness(1.0) contrast(1.12) saturate(1.22)', description: 'Reflexos horizontais eliminados · cores vibrantes' },
+    tela:    { semFilter: 'brightness(.85) contrast(1.1)', comFilter: 'brightness(1.02)', description: 'Reflexos de telas LCD · comportamento normal com polarizado' },
+    leitura: { semFilter: 'brightness(.83) contrast(1.12)', comFilter: 'brightness(1.02) contrast(1.02) saturate(1.06)', description: 'Reflexos de papel eliminados · leitura ao ar livre' },
   },
   ae: {
-    noite:   { semFilter: 'brightness(.8) blur(.3px) contrast(.9)', comFilter: 'brightness(1.02)', description: 'Poeira e partículas repelidas — visão nítida à noite' },
-    chuva:   { semFilter: 'brightness(.78) blur(.25px)', comFilter: 'brightness(.92)', description: 'Estática eliminada — sem acúmulo em dias úmidos' },
-    sol:     { semFilter: 'brightness(.86) contrast(.93) blur(.22px)', comFilter: 'brightness(1.0)', description: 'Superfície anti-estática limpa — sem poeira' },
-    tela:    { semFilter: 'brightness(.78) blur(.35px)', comFilter: 'brightness(1.02)', description: 'Campos elétricos repelidos — lente sempre limpa' },
-    leitura: { semFilter: 'brightness(.83) blur(.28px) contrast(.9)', comFilter: 'brightness(1.04)', description: 'Zero partículas na lente — foco total na leitura' },
+    noite:   { semFilter: 'brightness(.8) blur(.3px) contrast(.9)', comFilter: 'brightness(1.02)', description: 'Poeira e partículas repelidas · visão nítida à noite' },
+    chuva:   { semFilter: 'brightness(.78) blur(.25px)', comFilter: 'brightness(.92)', description: 'Estática eliminada · sem acúmulo em dias úmidos' },
+    sol:     { semFilter: 'brightness(.86) contrast(.93) blur(.22px)', comFilter: 'brightness(1.0)', description: 'Superfície anti-estática limpa · sem poeira' },
+    tela:    { semFilter: 'brightness(.78) blur(.35px)', comFilter: 'brightness(1.02)', description: 'Campos elétricos repelidos · lente sempre limpa' },
+    leitura: { semFilter: 'brightness(.83) blur(.28px) contrast(.9)', comFilter: 'brightness(1.04)', description: 'Zero partículas na lente · foco total na leitura' },
   },
   ed: {
-    noite:   { semFilter: 'brightness(.88) saturate(.85)', comFilter: 'brightness(.96) sepia(.22) saturate(1.18) hue-rotate(-8deg)', description: 'Estética dourada elegante — identidade visual única' },
+    noite:   { semFilter: 'brightness(.88) saturate(.85)', comFilter: 'brightness(.96) sepia(.22) saturate(1.18) hue-rotate(-8deg)', description: 'Estética dourada elegante · identidade visual única' },
     chuva:   { semFilter: 'brightness(.74) saturate(.8)', comFilter: 'brightness(.88) sepia(.2) saturate(1.12)', description: 'Tonalidade dourada vibrante mesmo em dias nublados' },
-    sol:     { semFilter: 'brightness(.9) saturate(.88)', comFilter: 'brightness(1.0) sepia(.28) saturate(1.22) hue-rotate(-10deg)', description: 'Brilho dourado ao sol — estilo e proteção' },
+    sol:     { semFilter: 'brightness(.9) saturate(.88)', comFilter: 'brightness(1.0) sepia(.28) saturate(1.22) hue-rotate(-10deg)', description: 'Brilho dourado ao sol · estilo e proteção' },
     tela:    { semFilter: 'brightness(.86) saturate(.82)', comFilter: 'brightness(.98) sepia(.18) saturate(1.08)', description: 'Toque dourado premium na sua visão digital' },
-    leitura: { semFilter: 'brightness(.9) saturate(.86)', comFilter: 'brightness(1.02) sepia(.24) saturate(1.15) hue-rotate(-8deg)', description: 'Leitura com estilo — tonalidade quente e aconchegante' },
+    leitura: { semFilter: 'brightness(.9) saturate(.86)', comFilter: 'brightness(1.02) sepia(.24) saturate(1.15) hue-rotate(-8deg)', description: 'Leitura com estilo · tonalidade quente e aconchegante' },
   },
   lr: {
-    noite:   { semFilter: 'brightness(.74) blur(.4px) contrast(.88)', comFilter: 'brightness(1.0)', description: 'Gorduras e óleos repelidos — visão nítida à noite' },
-    chuva:   { semFilter: 'brightness(.7) blur(.5px)', comFilter: 'brightness(.92)', description: 'Sem marcas de chuva e gordura — lente sempre limpa' },
+    noite:   { semFilter: 'brightness(.74) blur(.4px) contrast(.88)', comFilter: 'brightness(1.0)', description: 'Gorduras e óleos repelidos · visão nítida à noite' },
+    chuva:   { semFilter: 'brightness(.7) blur(.5px)', comFilter: 'brightness(.92)', description: 'Sem marcas de chuva e gordura · lente sempre limpa' },
     sol:     { semFilter: 'brightness(.84) blur(.35px) contrast(.9)', comFilter: 'brightness(1.0)', description: 'Protetor solar e óleos escorregam da lente' },
-    tela:    { semFilter: 'brightness(.76) blur(.45px)', comFilter: 'brightness(1.02)', description: 'Digitais e gordura eliminadas — tela perfeitamente visível' },
-    leitura: { semFilter: 'brightness(.8) blur(.38px) contrast(.88)', comFilter: 'brightness(1.04)', description: 'Zero marcas de dedos — leitura sem distração' },
+    tela:    { semFilter: 'brightness(.76) blur(.45px)', comFilter: 'brightness(1.02)', description: 'Digitais e gordura eliminadas · tela perfeitamente visível' },
+    leitura: { semFilter: 'brightness(.8) blur(.38px) contrast(.88)', comFilter: 'brightness(1.04)', description: 'Zero marcas de dedos · leitura sem distração' },
   },
 };
 
@@ -234,13 +234,13 @@ function SequenciaLente({ tipo, onSimular }: { tipo: 'campos' | 'adicao'; onSimu
         />
       ))}
 
-      {/* Botão Animar — canto inferior esquerdo */}
+      {/* Botão Animar · canto inferior esquerdo */}
       <button onClick={() => setAuto(a => !a)} style={{
         position: 'absolute', bottom: 90, left: 16, zIndex: 11,
         display: 'flex', alignItems: 'center', gap: 8,
         background: auto ? cor : 'rgba(0,0,0,.7)',
         border: `1px solid ${auto ? cor : 'rgba(255,255,255,0.15)'}`,
-        borderRadius: 999, padding: '7px 14px 7px 11px', cursor: 'pointer',
+        borderRadius: 6, padding: '7px 14px 7px 11px', cursor: 'pointer',
         WebkitTapHighlightColor: 'transparent',
       }}>
         {auto
@@ -252,7 +252,7 @@ function SequenciaLente({ tipo, onSimular }: { tipo: 'campos' | 'adicao'; onSimu
       </button>
       </div>
 
-      {/* Painel de níveis — ao lado (não sobrepõe a imagem) */}
+      {/* Painel de níveis · ao lado (não sobrepõe a imagem) */}
       <div style={{
         display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: 12, paddingBottom: 92,
         background: '#0d0d12', borderLeft: '1px solid #1f1f28',
@@ -317,8 +317,8 @@ function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimula
     digital:      '/lentes%20convencionais%20e%20digitais/digital.jpg',
   };
   const DEMO_FOTOS = {
-    com: '/lentes/digital-balao.jpg',          // digital — nítida
-    sem: '/lentes/convencional-balao.jpg',     // convencional — periferia embaçada
+    com: '/lentes/digital-balao.jpg',          // digital: nítida
+    sem: '/lentes/convencional-balao.jpg',     // convencional: periferia embaçada
   };
 
   function move(clientX: number) {
@@ -341,7 +341,7 @@ function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimula
       style={{ flex: 1, position: 'relative', overflow: 'hidden', cursor: tipo === 'demonstracao' ? 'col-resize' : 'default', userSelect: 'none', minWidth: 0 }}
     >
       {tipo !== 'demonstracao' ? (
-        /* Foto full-screen — contain para não cortar textos da imagem */
+        /* Foto full-screen: contain para não cortar textos da imagem */
         <img
           key={tipo}
           src={FOTOS[tipo]}
@@ -355,13 +355,13 @@ function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimula
       ) : (
         /* Comparador DIGITAL × CONVENCIONAL */
         <>
-          {/* CONVENCIONAL — base (direita) */}
+          {/* CONVENCIONAL · base (direita) */}
           <img
             src={DEMO_FOTOS.sem}
             draggable={false}
             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: fit, objectPosition: 'center', pointerEvents: 'none' }}
           />
-          {/* DIGITAL — overlay esquerda */}
+          {/* DIGITAL · overlay esquerda */}
           <img
             src={DEMO_FOTOS.com}
             draggable={false}
@@ -389,17 +389,17 @@ function Superficie({ initialDemo, onSimular }: { initialDemo?: string; onSimula
 
           {/* Labels */}
           <div style={{ position: 'absolute', bottom: 64, left: 16, fontSize: 11, color: '#e2e8f0', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
-            ✓ DIGITAL
+            DIGITAL
           </div>
           <div style={{ position: 'absolute', bottom: 64, right: 16, fontSize: 11, color: '#9ca3af', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
-            ✗ CONVENCIONAL
+            CONVENCIONAL
           </div>
 
         </>
       )}
       </div>
 
-      {/* Toggle — coluna lateral (não sobrepõe a imagem) */}
+      {/* Toggle · coluna lateral (não sobrepõe a imagem) */}
       <div
         style={{ display: 'flex', flexDirection: 'column', gap: 8, justifyContent: 'center', background: '#0d0d12', borderLeft: '1px solid #1f1f28', width: 180, flexShrink: 0, padding: '12px 10px', zIndex: 10 }}
       >
@@ -450,7 +450,7 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
   const containerRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
 
-  // Demonstração automática — divisor desliza sozinho de um lado ao outro
+  // Demonstração automática: divisor desliza sozinho de um lado ao outro
   useEffect(() => {
     if (!autoDemo) return;
     let frame: number;
@@ -547,7 +547,7 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
           <div style={{ position: 'absolute', inset: 0, background: SCENE_BG[ambiente], filter: effect.semFilter }} />
         )}
 
-        {/* COM overlay — lado esquerdo */}
+        {/* COM overlay · lado esquerdo */}
         {useRealPhoto ? (
           <img
             src={realPhoto!.com}
@@ -558,7 +558,7 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
           <div style={{ position: 'absolute', inset: 0, background: SCENE_BG[ambiente], filter: effect.comFilter, clipPath: `inset(0 ${100 - divX}% 0 0)` }} />
         )}
 
-        {/* SVG de defeito no lado SEM (direito) — só quando não usa foto real */}
+        {/* SVG de defeito no lado SEM (direito) · só quando não usa foto real */}
         {!useRealPhoto && semSvg && (
           <div style={{ position: 'absolute', inset: 0, clipPath: `inset(0 0 0 ${divX}%)`, pointerEvents: 'none' }}>
             {semSvg}
@@ -594,7 +594,7 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
             display: 'flex', alignItems: 'center', gap: 8,
             background: autoDemo ? trObj.cor : 'rgba(0,0,0,.7)',
             border: `1px solid ${autoDemo ? trObj.cor : 'rgba(255,255,255,0.15)'}`,
-            borderRadius: 999, padding: '7px 14px 7px 11px', cursor: 'pointer',
+            borderRadius: 6, padding: '7px 14px 7px 11px', cursor: 'pointer',
             transition: 'all .15s', WebkitTapHighlightColor: 'transparent',
           }}
         >
@@ -610,15 +610,15 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
 
         {/* Labels + Descrição */}
         <div style={{ position: 'absolute', bottom: 64, left: 16, fontSize: 11, color: '#e2e8f0', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
-          ✓ COM {trObj.label.toUpperCase()}
+          COM {trObj.label.toUpperCase()}
         </div>
         <div style={{ position: 'absolute', bottom: 64, right: 16, fontSize: 11, color: '#9ca3af', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
-          ✗ SEM
+          SEM
         </div>
 
       </div>
 
-      {/* Painel de tratamentos — ao lado (não sobrepõe a imagem) */}
+      {/* Painel de tratamentos · ao lado (não sobrepõe a imagem) */}
       <div
         style={{
           display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: 12, paddingBottom: 92,
@@ -682,7 +682,7 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
                   transition: 'background .15s',
                   WebkitTapHighlightColor: 'transparent',
                 }}>
-                  <span style={{ fontSize: 13 }}>{a.emoji}</span>
+
                   <span style={{
                     fontSize: 10.5, fontWeight: ambiente === a.id ? 700 : 400,
                     fontFamily: 'var(--sans)', letterSpacing: '.05em',
@@ -698,17 +698,17 @@ function Visao({ initialDemo, onSimular }: { initialDemo?: string; onSimular?: (
   );
 }
 
-// ─── Polarizado — módulo próprio (2 cenas: Peixe / Estrada) ────────────────────
+// ─── Polarizado: módulo próprio (2 cenas: Peixe / Estrada) ────────────────────
 const POL_COR = '#f97316';
 const POL_CENAS: Record<'peixe' | 'estrada', { label: string; emoji: string; com: string; sem: string; desc: string }> = {
   peixe: {
-    label: 'Peixe', emoji: '🐟',
+    label: 'Peixe', emoji: '',
     com: '/tratamento%20polarizado/agua-com.jpg',
     sem: '/tratamento%20polarizado/agua-sem.jpg',
     desc: 'Sem o polarizado o reflexo da água esconde os peixes. Com ele você enxerga sob a superfície.',
   },
   estrada: {
-    label: 'Estrada', emoji: '🛣️',
+    label: 'Estrada', emoji: '',
     com: '/tratamento%20polarizado/estrada-com.jpg',
     sem: '/tratamento%20polarizado/estrada-sem.jpg',
     desc: 'Elimina o ofuscamento do asfalto e dos faróis, deixando a estrada nítida e segura.',
@@ -767,7 +767,7 @@ function Polarizado({ onSimular }: { onSimular?: (efeito: string) => void }) {
         {/* SEM base */}
         <img src={c.sem} draggable={false}
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: fit, objectPosition: 'center', pointerEvents: 'none' }} />
-        {/* COM overlay — lado esquerdo */}
+        {/* COM overlay · lado esquerdo */}
         <img src={c.com} draggable={false}
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: fit, objectPosition: 'center', clipPath: `inset(0 ${100 - divX}% 0 0)`, pointerEvents: 'none' }} />
 
@@ -800,7 +800,7 @@ function Polarizado({ onSimular }: { onSimular?: (efeito: string) => void }) {
             display: 'flex', alignItems: 'center', gap: 8,
             background: autoDemo ? POL_COR : 'rgba(0,0,0,.7)',
             border: `1px solid ${autoDemo ? POL_COR : 'rgba(255,255,255,0.15)'}`,
-            borderRadius: 999, padding: '7px 14px 7px 11px', cursor: 'pointer',
+            borderRadius: 6, padding: '7px 14px 7px 11px', cursor: 'pointer',
             transition: 'all .15s', WebkitTapHighlightColor: 'transparent',
           }}
         >
@@ -816,15 +816,15 @@ function Polarizado({ onSimular }: { onSimular?: (efeito: string) => void }) {
 
         {/* Labels */}
         <div style={{ position: 'absolute', bottom: 64, left: 16, fontSize: 11, color: '#e2e8f0', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
-          ✓ COM POLARIZADO
+          COM POLARIZADO
         </div>
         <div style={{ position: 'absolute', bottom: 64, right: 16, fontSize: 11, color: '#9ca3af', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
-          ✗ SEM
+          SEM
         </div>
 
       </div>
 
-      {/* Painel de cenas — ao lado (não sobrepõe a imagem) */}
+      {/* Painel de cenas · ao lado (não sobrepõe a imagem) */}
       <div
         style={{
           display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: 12, paddingBottom: 92,
@@ -844,7 +844,7 @@ function Polarizado({ onSimular }: { onSimular?: (efeito: string) => void }) {
                 transition: 'background .15s', WebkitTapHighlightColor: 'transparent',
               }}>
                 <div style={{ width: 3, height: 18, borderRadius: 2, flexShrink: 0, background: ativo ? POL_COR : 'transparent', transition: 'background .15s' }} />
-                <span style={{ fontSize: 15 }}>{o.emoji}</span>
+
                 <span style={{
                   fontSize: 14, fontWeight: ativo ? 700 : 400,
                   fontFamily: 'var(--sans)', letterSpacing: '.07em', textTransform: 'uppercase',
@@ -873,7 +873,7 @@ function Polarizado({ onSimular }: { onSimular?: (efeito: string) => void }) {
   );
 }
 
-// ─── Fotossensível — módulo próprio (comparador COM/SEM) ──────────────────────
+// ─── Fotossensível: módulo próprio (comparador COM/SEM) ──────────────────────
 const FOTO_COR = '#8b5cf6';
 const FOTO_PHOTO = { com: '/tratamento-fotossensivel/com.jpg', sem: '/tratamento-fotossensivel/sem.jpg' };
 
@@ -924,7 +924,7 @@ function Fotossensivel({ onSimular }: { onSimular?: (efeito: string) => void }) 
         {/* SEM base */}
         <img src={FOTO_PHOTO.sem} draggable={false}
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: fit, objectPosition: 'center', pointerEvents: 'none' }} />
-        {/* COM overlay — lado esquerdo */}
+        {/* COM overlay · lado esquerdo */}
         <img src={FOTO_PHOTO.com} draggable={false}
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: fit, objectPosition: 'center', clipPath: `inset(0 ${100 - divX}% 0 0)`, pointerEvents: 'none' }} />
 
@@ -957,7 +957,7 @@ function Fotossensivel({ onSimular }: { onSimular?: (efeito: string) => void }) 
             display: 'flex', alignItems: 'center', gap: 8,
             background: autoDemo ? FOTO_COR : 'rgba(0,0,0,.7)',
             border: `1px solid ${autoDemo ? FOTO_COR : 'rgba(255,255,255,0.15)'}`,
-            borderRadius: 999, padding: '7px 14px 7px 11px', cursor: 'pointer',
+            borderRadius: 6, padding: '7px 14px 7px 11px', cursor: 'pointer',
             transition: 'all .15s', WebkitTapHighlightColor: 'transparent',
           }}
         >
@@ -973,13 +973,13 @@ function Fotossensivel({ onSimular }: { onSimular?: (efeito: string) => void }) 
 
         {/* Labels */}
         <div style={{ position: 'absolute', bottom: 64, left: 16, fontSize: 11, color: '#e2e8f0', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
-          ✓ COM FOTOSSENSÍVEL
+          COM FOTOSSENSÍVEL
         </div>
         <div style={{ position: 'absolute', bottom: 64, right: 16, fontSize: 11, color: '#9ca3af', fontFamily: 'var(--mono)', background: 'rgba(0,0,0,.7)', padding: '4px 10px', borderRadius: 6, letterSpacing: '.08em', pointerEvents: 'none' }}>
-          ✗ SEM
+          SEM
         </div>
 
-        {/* Painel lateral direito — Simular */}
+        {/* Painel lateral direito · Simular */}
         {SIMULACAO_ATIVA && (
         <div
           onMouseDown={e => e.stopPropagation()}
@@ -1008,7 +1008,7 @@ function Fotossensivel({ onSimular }: { onSimular?: (efeito: string) => void }) 
   );
 }
 
-// ─── Espessura — simulador interativo (grau × índice, dados reais) ────────────
+// ─── Espessura: simulador interativo (grau × índice, dados reais) ────────────
 // Espessura em mm (borda p/ negativo, centro p/ positivo). Lente esférica CR-39, Ø65mm.
 // Modelo linear calibrado à tabela real: espessura(mm) = a + b·|grau|. CR-39 Ø65mm.
 const ESP_MODEL: Record<'negativo' | 'positivo', Record<string, { a: number; b: number }>> = {
@@ -1167,7 +1167,7 @@ function Espessura() {
             cor={tint} edgeCor={cor} zoom={zoom} />
         </Suspense>
 
-        {/* Leitura principal (topo) — dois visores: OD e OE */}
+        {/* Leitura principal (topo) · dois visores: OD e OE */}
         <div style={{ position: 'absolute', top: 14, left: 0, right: 0, textAlign: 'center', pointerEvents: 'none' }}>
           <div style={{ display: 'inline-flex', gap: 10, background: 'rgba(6,10,20,0.78)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 16, padding: '9px 16px', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', boxShadow: '0 4px 24px rgba(0,0,0,.35)' }}>
             {[{ sig: 'OD', e: eOD }, { sig: 'OE', e: eOE }].map(({ sig, e }) => (
@@ -1185,14 +1185,14 @@ function Espessura() {
           </div>
           <div style={{ minHeight: 22, marginTop: 5 }}>
             {indice !== '1.56' && (
-              <span style={{ fontSize: 12, color: cor, fontWeight: 700, fontFamily: 'var(--mono)', background: 'rgba(6,10,20,0.85)', padding: '4px 11px', borderRadius: 999, border: `1px solid ${cor}`, boxShadow: '0 2px 12px rgba(0,0,0,.35)' }}>
+              <span style={{ fontSize: 12, color: cor, fontWeight: 700, fontFamily: 'var(--mono)', background: 'rgba(6,10,20,0.85)', padding: '4px 11px', borderRadius: 6, border: `1px solid ${cor}`, boxShadow: '0 2px 12px rgba(0,0,0,.35)' }}>
                 ▼ até {reducao}% mais fina que a 1.56
               </span>
             )}
           </div>
         </div>
 
-        {/* Rótulos OD/OE + cotas — cantos inferiores */}
+        {/* Rótulos OD/OE + cotas · cantos inferiores */}
         {[
           { sig: 'OD', lbl: 'Olho Direito', e: eOD, pos: { left: 18 } as React.CSSProperties },
           { sig: 'OE', lbl: 'Olho Esquerdo', e: eOE, pos: { right: 18, bottom: 84 } as React.CSSProperties },
@@ -1212,8 +1212,8 @@ function Espessura() {
           </div>
         ))}
 
-        {/* Dica girar — pill escura p/ ler sobre a grade clara */}
-        <div style={{ position: 'absolute', top: 12, right: 14, fontSize: 10.5, color: '#b7c0d2', fontFamily: 'var(--mono)', display: 'flex', alignItems: 'center', gap: 5, pointerEvents: 'none', background: 'rgba(6,10,20,0.7)', padding: '5px 10px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.1)' }}>
+        {/* Dica girar · pill escura p/ ler sobre a grade clara */}
+        <div style={{ position: 'absolute', top: 12, right: 14, fontSize: 10.5, color: '#b7c0d2', fontFamily: 'var(--mono)', display: 'flex', alignItems: 'center', gap: 5, pointerEvents: 'none', background: 'rgba(6,10,20,0.7)', padding: '5px 10px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.1)' }}>
           <span style={{ fontSize: 13 }}>↻</span> arraste para girar
         </div>
       </div>
@@ -1235,9 +1235,9 @@ function Espessura() {
   );
 }
 
-// ─── Simulação — modo CÂMERA contextual (1 efeito por vez) ─────────────────────
+// ─── Simulação: modo CÂMERA contextual (1 efeito por vez) ─────────────────────
 const EFEITO_SIM: Record<string, { label: string; cor: string; filtro: string; campo?: boolean; desc: string }> = {
-  ar:  { label: 'Anti-Reflexo',   cor: '#3b82f6', filtro: 'brightness(1.06) contrast(1.05)', desc: 'Sem reflexos — visão limpa e nítida' },
+  ar:  { label: 'Anti-Reflexo',   cor: '#3b82f6', filtro: 'brightness(1.06) contrast(1.05)', desc: 'Sem reflexos · visão limpa e nítida' },
   az:  { label: 'Luz Azul',       cor: '#8b5cf6', filtro: 'sepia(.30) saturate(.85) hue-rotate(-12deg) brightness(1.03)', desc: 'Filtra a luz azul de telas e LEDs' },
   ab:  { label: 'Anti-Abrasivo',  cor: '#22c55e', filtro: 'contrast(1.08) brightness(1.03)', desc: 'Superfície protegida contra riscos' },
   ae:  { label: 'Anti-Estático',  cor: '#ec4899', filtro: 'brightness(1.04) contrast(1.03)', desc: 'Repele poeira e partículas' },
@@ -1310,14 +1310,14 @@ function Simulacao({ efeito, onVoltar }: { efeito: string; onVoltar?: () => void
           position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
           background: 'rgba(0,0,0,.8)', borderRadius: 14, padding: '18px 24px', maxWidth: 320,
           textAlign: 'center', color: '#e5e7eb', fontSize: 13, lineHeight: 1.5,
-        }}>📷 {erro}</div>
+        }}>{erro}</div>
       )}
 
-      {/* Voltar — topo esquerdo */}
+      {/* Voltar · topo esquerdo */}
       <button onClick={() => onVoltar?.()} style={{
         position: 'absolute', top: 16, left: 16, zIndex: 12,
         display: 'flex', alignItems: 'center', gap: 4,
-        background: 'rgba(0,0,0,.6)', border: 'none', borderRadius: 999,
+        background: 'rgba(0,0,0,.6)', border: 'none', borderRadius: 6,
         padding: '8px 14px 8px 10px', cursor: 'pointer', color: '#fff',
         fontSize: 12, fontWeight: 700, WebkitTapHighlightColor: 'transparent',
       }}>
@@ -1336,10 +1336,10 @@ function Simulacao({ efeito, onVoltar }: { efeito: string; onVoltar?: () => void
       </div>
 
       {/* Toggle COM / SEM (canto inferior esquerdo) */}
-      <div style={{ position: 'absolute', bottom: 90, left: 16, display: 'flex', background: 'rgba(0,0,0,.6)', borderRadius: 999, padding: 3, zIndex: 11 }}>
+      <div style={{ position: 'absolute', bottom: 90, left: 16, display: 'flex', background: 'rgba(0,0,0,.6)', borderRadius: 6, padding: 3, zIndex: 11 }}>
         {([{ v: true, l: 'Com' }, { v: false, l: 'Sem' }] as const).map(o => (
           <button key={String(o.v)} onClick={() => setCom(o.v)} style={{
-            padding: '7px 18px', borderRadius: 999, border: 'none', cursor: 'pointer',
+            padding: '7px 18px', borderRadius: 6, border: 'none', cursor: 'pointer',
             background: com === o.v ? ef.cor : 'transparent',
             color: com === o.v ? '#fff' : 'rgba(255,255,255,.6)',
             fontSize: 11, fontWeight: 700, fontFamily: 'var(--mono)', letterSpacing: '.06em', textTransform: 'uppercase',
@@ -1398,7 +1398,7 @@ export default function Demonstracoes() {
       {tab === 'espessura' && <Espessura />}
       {tab === 'simulacao' && <Simulacao efeito={simEfeito} onVoltar={() => setTab(prevTab)} />}
 
-      {/* Extras popup — lista de simulações */}
+      {/* Extras popup · lista de simulações */}
       {showExtras && (
         <div
           onClick={e => e.stopPropagation()}
@@ -1439,7 +1439,7 @@ export default function Demonstracoes() {
         </div>
       )}
 
-      {/* Bottom nav — canto inferior direito (tab bar iOS) */}
+      {/* Bottom nav · canto inferior direito (tab bar iOS) */}
       <div style={{
         position: 'fixed', bottom: 16, right: 16,
         background: 'rgba(28,28,30,0.74)',

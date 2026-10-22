@@ -27,7 +27,7 @@ function etapaDe(setor: string): { label: string; icon: IconName; color: string 
   const k = (setor || '').toLowerCase().trim();
   const e = TODAS.find(x => x.key === k || x.label.toLowerCase() === k);
   if (e) return { label: e.label, icon: e.icon, color: e.color };
-  return { label: setor || '—', icon: 'flow', color: '#6b7280' };
+  return { label: setor || '-', icon: 'flow', color: '#6b7280' };
 }
 
 function parseDt(data: string | null, hora: string | null): Date | null {
@@ -36,15 +36,15 @@ function parseDt(data: string | null, hora: string | null): Date | null {
   return isNaN(d.getTime()) ? null : d;
 }
 function fmtData(s: string | null) {
-  if (!s) return '—';
+  if (!s) return '-';
   return s.slice(0, 10).split('-').reverse().join('/');
 }
 function fmtGrau(v: Any) {
-  if (v == null || v === '' || isNaN(Number(v))) return '—';
+  if (v == null || v === '' || isNaN(Number(v))) return '-';
   const n = Number(v);
   return (n > 0 ? '+' : '') + n.toFixed(2).replace('.', ',');
 }
-function val(v: Any) { return (v == null || v === '') ? '—' : String(v); }
+function val(v: Any) { return (v == null || v === '') ? '-' : String(v); }
 function fmtDur(min: number) {
   if (min < 60) return `${min} min`;
   const h = Math.floor(min / 60), m = min % 60;
@@ -142,7 +142,7 @@ export default function LabRastreio() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
               <div>
                 <div style={{ fontSize: '11px', color: R.dim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  OS <span style={{ fontFamily: "'Courier New', monospace", color: R.txt }}>#{String(ordem.numero).padStart(4, '0')}</span> · {ordem.otica_nome ?? '—'}
+                  OS <span style={{ fontFamily: "'Courier New', monospace", color: R.txt }}>#{String(ordem.numero).padStart(4, '0')}</span> · {ordem.otica_nome ?? '-'}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
                   <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '38px', height: '38px', borderRadius: '10px', background: `${etapaAtual!.color}22`, color: etapaAtual!.color }}>
@@ -208,7 +208,7 @@ export default function LabRastreio() {
                   <Item k="Cond. Pagamento" v={ordem.condicao_pgto} />
                 </div>
 
-                {/* receita — grau */}
+                {/* receita · grau */}
                 <div style={{ fontSize: '10px', fontWeight: 700, color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Receita das Lentes</div>
                 <div style={{ overflowX: 'auto', marginBottom: '12px' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '520px' }}>
@@ -232,7 +232,7 @@ export default function LabRastreio() {
                   </table>
                 </div>
 
-                {/* receita — medidas */}
+                {/* receita · medidas */}
                 <div style={{ overflowX: 'auto', marginBottom: '14px' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '420px' }}>
                     <thead><tr>

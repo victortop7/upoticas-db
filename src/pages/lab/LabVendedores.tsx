@@ -22,7 +22,7 @@ interface VendaVend {
 
 function brl(v: number) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 function fmtDia(s?: string | null) {
-  if (!s) return '—';
+  if (!s) return '-';
   const [y, m, d] = s.split('T')[0].split('-');
   return d && m && y ? `${d}/${m}/${y}` : s;
 }
@@ -137,7 +137,7 @@ export default function LabVendedores() {
                   return (
                     <div key={r.regiao}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' }}>
-                        <span style={{ fontSize: '13px', fontWeight: '600', color: R.txt }}>📍 {r.regiao}</span>
+                        <span style={{ fontSize: '13px', fontWeight: '600', color: R.txt }}>{r.regiao}</span>
                         <span style={{ fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{r.count} OS · <span style={{ color: R.accent, fontWeight: '700' }}>{brl(r.total)}</span></span>
                       </div>
                       <div style={{ height: '6px', background: R.alt, borderRadius: '3px', overflow: 'hidden' }}>
@@ -163,8 +163,8 @@ export default function LabVendedores() {
                     {vendas.map(v => (
                       <tr key={v.id} style={{ borderBottom: '1px solid var(--lab-bdr)' }}>
                         <td style={{ padding: '9px 12px', fontFamily: "'Courier New', monospace", fontSize: '12px', fontWeight: '700', color: R.txt }}>#{String(v.numero).padStart(4, '0')}</td>
-                        <td style={{ padding: '9px 12px', fontSize: '13px', color: R.txt }}>{v.otica_nome ?? '—'}</td>
-                        <td style={{ padding: '9px 12px', fontSize: '12px', color: R.dim }}>{(v.otica_cidade || v.otica_uf) ? `${v.otica_cidade ?? ''}${v.otica_uf ? '/' + v.otica_uf : ''}` : (v.rota || '—')}</td>
+                        <td style={{ padding: '9px 12px', fontSize: '13px', color: R.txt }}>{v.otica_nome ?? '-'}</td>
+                        <td style={{ padding: '9px 12px', fontSize: '12px', color: R.dim }}>{(v.otica_cidade || v.otica_uf) ? `${v.otica_cidade ?? ''}${v.otica_uf ? '/' + v.otica_uf : ''}` : (v.rota || '-')}</td>
                         <td style={{ padding: '9px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{fmtDia(v.created_at)}</td>
                         <td style={{ padding: '9px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.txt }}>{brl(v.total || 0)}</td>
                         <td style={{ padding: '9px 12px', fontSize: '12px', color: R.dim }}>{STATUS_LABEL[v.status] ?? v.status}</td>
@@ -182,7 +182,7 @@ export default function LabVendedores() {
     <div style={{ padding: '24px', maxWidth: '820px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
         <button onClick={() => setModo('lista')} style={{ background: 'none', border: 'none', color: R.dim, cursor: 'pointer', fontSize: '20px' }}>←</button>
-        <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: R.txt }}>{modo === 'novo' ? 'Novo Vendedor/Operador' : `Editar — ${sel?.nome}`}</h1>
+        <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: R.txt }}>{modo === 'novo' ? 'Novo Vendedor/Operador' : `Editar · ${sel?.nome}`}</h1>
       </div>
       {erro && <div style={{ background: 'rgba(200,0,0,0.12)', border: '1px solid #cc0000', borderRadius: '8px', padding: '10px 14px', marginBottom: '14px', fontSize: '13px', color: '#cc0000' }}>{erro}</div>}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -205,7 +205,7 @@ export default function LabVendedores() {
             <div><label style={LBL}>Complemento</label><input value={form.complemento} onChange={e => set('complemento', e.target.value)} style={INP} /></div>
             <div><label style={LBL}>Bairro</label><input value={form.bairro} onChange={e => set('bairro', e.target.value)} style={INP} /></div>
             <div><label style={LBL}>Cidade</label><input value={form.cidade} onChange={e => set('cidade', e.target.value)} style={INP} /></div>
-            <div><label style={LBL}>UF</label><select value={form.estado} onChange={e => set('estado', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}><option value="">—</option>{ESTADOS_BR.map(uf => <option key={uf} value={uf}>{uf}</option>)}</select></div>
+            <div><label style={LBL}>UF</label><select value={form.estado} onChange={e => set('estado', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}><option value="">-</option>{ESTADOS_BR.map(uf => <option key={uf} value={uf}>{uf}</option>)}</select></div>
           </div>
         </div>
         <div style={CARD}>
@@ -246,13 +246,13 @@ export default function LabVendedores() {
                     onMouseEnter={e => (e.currentTarget.style.background = R.alt)} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                     <td style={{ padding: '10px 12px', fontFamily: "'Courier New', monospace", fontSize: '12px', color: R.dim }}>{String(v.codigo).padStart(2, '0')}</td>
                     <td style={{ padding: '10px 12px', fontSize: '13px', fontWeight: '600', color: R.txt }}>{v.nome}</td>
-                    <td style={{ padding: '10px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{v.cpf_cnpj ?? '—'}</td>
-                    <td style={{ padding: '10px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{v.pct_comissao != null ? `${v.pct_comissao}%` : '—'}</td>
-                    <td style={{ padding: '10px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{v.telefone ?? '—'}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{v.cpf_cnpj ?? '-'}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{v.pct_comissao != null ? `${v.pct_comissao}%` : '-'}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{v.telefone ?? '-'}</td>
                     <td style={{ padding: '10px 12px', whiteSpace: 'nowrap', textAlign: 'right' }}>
                       <button onClick={e => { e.stopPropagation(); openDetalhe(v); }} title="Ver vendas e regiões" style={{ fontSize: '12px', color: R.accent, background: 'none', border: 'none', cursor: 'pointer', marginRight: '10px', fontWeight: '600', fontFamily: 'inherit' }}>Vendas</button>
                       <button onClick={e => { e.stopPropagation(); openEditar(v); }} title="Editar cadastro" style={{ fontSize: '12px', color: R.dim, background: 'none', border: 'none', cursor: 'pointer', marginRight: '10px', fontFamily: 'inherit' }}>Editar</button>
-                      <button onClick={e => { e.stopPropagation(); excluir(v.id); }} title="Excluir" style={{ fontSize: '12px', color: '#cc0000', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
+                      <button onClick={e => { e.stopPropagation(); excluir(v.id); }} title="Excluir" style={{ fontSize: '12px', color: '#cc0000', background: 'none', border: 'none', cursor: 'pointer' }}>Excluir</button>
                     </td>
                   </tr>
                 ))}

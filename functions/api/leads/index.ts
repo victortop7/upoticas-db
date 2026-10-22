@@ -47,16 +47,16 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
         body: JSON.stringify({
           from: 'Connect LAB <onboarding@resend.dev>',
           to: ['victormarketing093@gmail.com'],
-          subject: `🔬 Novo interesse Connect LAB — ${body.laboratorio || body.nome}`,
+          subject: `Novo interesse Connect LAB · ${body.laboratorio || body.nome}`,
           html: `
             <h2>Novo lead Connect LAB</h2>
             <table style="border-collapse:collapse;width:100%">
               <tr><td style="padding:8px;font-weight:bold">Nome</td><td style="padding:8px">${body.nome}</td></tr>
-              <tr style="background:#f9f9f9"><td style="padding:8px;font-weight:bold">Laboratório</td><td style="padding:8px">${body.laboratorio || '—'}</td></tr>
+              <tr style="background:#f9f9f9"><td style="padding:8px;font-weight:bold">Laboratório</td><td style="padding:8px">${body.laboratorio || '-'}</td></tr>
               <tr><td style="padding:8px;font-weight:bold">E-mail</td><td style="padding:8px">${body.email}</td></tr>
               <tr style="background:#f9f9f9"><td style="padding:8px;font-weight:bold">WhatsApp</td><td style="padding:8px">${body.whatsapp}</td></tr>
-              <tr><td style="padding:8px;font-weight:bold">Cidade</td><td style="padding:8px">${body.cidade || '—'}</td></tr>
-              <tr style="background:#f9f9f9"><td style="padding:8px;font-weight:bold">Mensagem</td><td style="padding:8px">${body.mensagem || '—'}</td></tr>
+              <tr><td style="padding:8px;font-weight:bold">Cidade</td><td style="padding:8px">${body.cidade || '-'}</td></tr>
+              <tr style="background:#f9f9f9"><td style="padding:8px;font-weight:bold">Mensagem</td><td style="padding:8px">${body.mensagem || '-'}</td></tr>
             </table>
             <p style="margin-top:20px;color:#666">Lead salvo em: ${new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}</p>
           `,

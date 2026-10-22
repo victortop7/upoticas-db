@@ -184,7 +184,7 @@ export default function ClienteModal({ cliente, onClose, onSaved, zIndex = 1000 
                 </div>
               </div>
               <div style={fieldStyle}>
-                <label style={labelStyle}>🛍️ Data da compra <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(para prospecção / reativação)</span></label>
+                <label style={labelStyle}>Data da compra <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(para prospecção / reativação)</span></label>
                 <input style={{ ...inputStyle, fontFamily: 'var(--mono)' }} type="date" value={form.data_compra} onChange={e => set('data_compra', e.target.value)} />
               </div>
             </>
@@ -212,7 +212,7 @@ export default function ClienteModal({ cliente, onClose, onSaved, zIndex = 1000 
                 <div style={fieldStyle}>
                   <label style={labelStyle}>UF</label>
                   <select style={inputStyle} value={form.uf} onChange={e => set('uf', e.target.value)}>
-                    <option value="">—</option>
+                    <option value="">-</option>
                     {UF_LIST.map(uf => <option key={uf} value={uf}>{uf}</option>)}
                   </select>
                 </div>

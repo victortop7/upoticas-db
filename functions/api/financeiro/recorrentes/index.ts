@@ -3,7 +3,7 @@ import type { Env } from '../../../lib/types';
 import { requireAuth, json } from '../../../lib/auth-middleware';
 import { ensureRecorrentes, gerarRecorrentes, proximoMes, ajustarFds } from '../../../lib/recorrentes';
 
-// GET /api/financeiro/recorrentes — moldes das contas recorrentes/fixas (com o próximo vencimento)
+// GET /api/financeiro/recorrentes: moldes das contas recorrentes/fixas (com o próximo vencimento)
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;
@@ -22,7 +22,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   }
 };
 
-// POST — cria o molde e já lança a primeira conta (no vencimento informado)
+// POST: cria o molde e já lança a primeira conta (no vencimento informado)
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;

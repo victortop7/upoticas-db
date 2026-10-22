@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { adminRequest } from '../../lib/api';
+import Icone from '../../components/Icone';
 
 const PIN_CORRETO = '2423';
 
@@ -29,7 +30,7 @@ function PinScreen({ onOk }: { onOk: () => void }) {
 
   function del() { setPin(p => p.slice(0, -1)); setErro(false); }
 
-  const digits = [['1','2','3'],['4','5','6'],['7','8','9'],['←','0','✓']];
+  const digits = [['1','2','3'],['4','5','6'],['7','8','9'],['←','0','']];
 
   return (
     <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--lab-bg)' }}>
@@ -68,12 +69,12 @@ function PinScreen({ onOk }: { onOk: () => void }) {
           {/* Keypad */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px' }}>
             {digits.flat().map(d => (
-              <button key={d} onClick={() => d === '←' ? del() : d === '✓' ? undefined : press(d)}
+              <button key={d} onClick={() => d === '←' ? del() : d === '' ? undefined : press(d)}
                 style={{
-                  padding: '12px', fontSize: d === '←' || d === '✓' ? '16px' : '18px',
+                  padding: '12px', fontSize: d === '←' || d === '' ? '16px' : '18px',
                   fontWeight: '700', fontFamily: "'Courier New', monospace",
                   background: d === '←' ? 'var(--lab-alt)' : 'var(--lab-alt)',
-                  color: d === '✓' ? R.dim : R.txt,
+                  color: d === '' ? R.dim : R.txt,
                   border: '2px outset var(--lab-bdr)', cursor: 'pointer',
                   lineHeight: '1',
                 }}>
@@ -158,7 +159,7 @@ const STATUS_STYLE: Record<string, { bg: string; color: string; label: string }>
 };
 
 function fmtDate(s: string | null) {
-  if (!s) return '—';
+  if (!s) return '-';
   return s.slice(0, 10).split('-').reverse().join('/');
 }
 
@@ -236,9 +237,9 @@ export default function LabAdmin() {
       });
       const d = await res.json() as { ok?: boolean; error?: string; config_restored?: number; products_updated?: number };
       if (!res.ok) throw new Error(d.error || 'Erro');
-      setRestMsg(`✅ Listas restauradas! Config: ${d.config_restored}, Produtos: ${d.products_updated}`);
+      setRestMsg(`Listas restauradas! Config: ${d.config_restored}, Produtos: ${d.products_updated}`);
     } catch (e: unknown) {
-      setRestMsg('❌ Erro: ' + (e instanceof Error ? e.message : String(e)));
+      setRestMsg('Erro: ' + (e instanceof Error ? e.message : String(e)));
     }
   }
 
@@ -459,7 +460,7 @@ export default function LabAdmin() {
     try {
       const r = await adminRequest<{ ok: boolean; usuario: { nome: string; email: string; tenant_nome: string | null } }>(
         '/admin/senha', secret, { method: 'POST', body: JSON.stringify({ email, nova_senha: senhaNova }) });
-      setSenhaMsg(`✓ Senha alterada — ${r.usuario.nome}${r.usuario.tenant_nome ? ` (${r.usuario.tenant_nome})` : ''}. Nova senha: ${senhaNova}`);
+      setSenhaMsg(`Senha alterada · ${r.usuario.nome}${r.usuario.tenant_nome ? ` (${r.usuario.tenant_nome})` : ''}. Nova senha: ${senhaNova}`);
       setSenhaNova('');
     } catch (e: unknown) {
       setSenhaMsg(`Erro: ${e instanceof Error ? e.message : 'não foi possível alterar'}`);
@@ -478,7 +479,7 @@ export default function LabAdmin() {
             <button key={a} onClick={() => setAba(a)}
               style={{ padding: '5px 14px', fontSize: '12px', fontWeight: '700', letterSpacing: '0.5px', cursor: 'pointer', fontFamily: 'inherit', textTransform: 'uppercase', border: `2px outset ${R.hdrBdr}`, background: aba === a ? R.hdr : R.alt, color: aba === a ? R.hdrTxt : R.txt }}>
               {a === 'licencas' ? `LICENÇAS (${tenants.length})`
-                : a === 'leads' ? `LEADS${novosLeads > 0 ? ` ★${novosLeads} NOVOS` : ` (${leads.length})`}`
+                : a === 'leads' ? `LEADS${novosLeads > 0 ? ` ${novosLeads} NOVOS` : ` (${leads.length})`}`
                 : a === 'codigos' ? `TESTE GRÁTIS (${codigos.filter(c => !c.usado).length})`
                 : 'ALTERAR SENHA'}
             </button>
@@ -557,7 +558,7 @@ export default function LabAdmin() {
                         title="Clique para entrar no sistema deste cliente"
                         style={{ fontSize: '12px', fontWeight: '700', color: R.accent, cursor: 'pointer', textDecoration: 'underline', display: 'inline-block' }}
                       >
-                        {impersonando === t.id ? '⏳ Entrando...' : t.nome}
+                        {impersonando === t.id ? 'Entrando...' : t.nome}
                       </div>
                       <div style={{ fontSize: '10px', color: R.dim, fontFamily: "'Courier New', monospace" }}>{t.email}</div>
                     </td>
@@ -580,7 +581,7 @@ export default function LabAdmin() {
                         </button>
                         <button onClick={() => { setRestaurarTenant(t); setRestForm({ lista1: '', lista2: '', lista3: '', restore_precos: true }); setRestMsg(''); }}
                           style={{ padding: '3px 10px', fontSize: '11px', fontWeight: '700', background: '#fff0cc', color: '#886600', border: '1px outset #ccaa44', cursor: 'pointer', fontFamily: 'inherit' }}>
-                          🔄
+                         
                         </button>
                       </div>
                     </td>
@@ -610,12 +611,12 @@ export default function LabAdmin() {
                   <tr key={l.id} style={{ background: i % 2 === 0 ? R.panel : R.alt, borderBottom: `1px solid ${R.bdr}` }}>
                     <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim, whiteSpace: 'nowrap' }}>{fmtDate(l.created_at)}</td>
                     <td style={{ padding: '7px 10px' }}>
-                      <div style={{ fontSize: '12px', fontWeight: '700', color: R.txt }}>{l.laboratorio || '—'}</div>
+                      <div style={{ fontSize: '12px', fontWeight: '700', color: R.txt }}>{l.laboratorio || '-'}</div>
                       <div style={{ fontSize: '10px', color: R.dim }}>{l.nome}</div>
                     </td>
                     <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.txt }}>{l.email}</td>
-                    <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.txt }}>{l.whatsapp || '—'}</td>
-                    <td style={{ padding: '7px 10px', fontSize: '11px', color: R.dim }}>{l.cidade || '—'}</td>
+                    <td style={{ padding: '7px 10px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.txt }}>{l.whatsapp || '-'}</td>
+                    <td style={{ padding: '7px 10px', fontSize: '11px', color: R.dim }}>{l.cidade || '-'}</td>
                     <td style={{ padding: '7px 10px' }}>
                       <span style={{ fontSize: '10px', fontWeight: '700', color: st.color, background: st.bg, padding: '2px 7px', border: `1px solid ${st.color}` }}>{st.label}</span>
                     </td>
@@ -682,16 +683,16 @@ export default function LabAdmin() {
                     <td style={{ padding: '6px 10px', fontFamily: 'monospace', fontWeight: '700', fontSize: '13px', letterSpacing: '0.5px' }}>{c.codigo}</td>
                     <td style={{ padding: '6px 10px' }}>
                       {c.usado
-                        ? <span style={{ color: R.dim, fontWeight: '700' }}>⚫ USADO</span>
-                        : <span style={{ color: R.accent, fontWeight: '700' }}>🟢 DISPONÍVEL</span>}
+                        ? <span style={{ color: R.dim, fontWeight: '700' }}>USADO</span>
+                        : <span style={{ color: R.accent, fontWeight: '700' }}>DISPONÍVEL</span>}
                     </td>
-                    <td style={{ padding: '6px 10px' }}>{c.nome_contato || '—'}</td>
-                    <td style={{ padding: '6px 10px' }}>{c.usado_por ? `${c.usado_por}${c.usado_em ? ` (${c.usado_em.slice(0, 10)})` : ''}` : '—'}</td>
-                    <td style={{ padding: '6px 10px', color: R.dim }}>{c.criado_em ? c.criado_em.slice(0, 10) : '—'}</td>
+                    <td style={{ padding: '6px 10px' }}>{c.nome_contato || '-'}</td>
+                    <td style={{ padding: '6px 10px' }}>{c.usado_por ? `${c.usado_por}${c.usado_em ? ` (${c.usado_em.slice(0, 10)})` : ''}` : '-'}</td>
+                    <td style={{ padding: '6px 10px', color: R.dim }}>{c.criado_em ? c.criado_em.slice(0, 10) : '-'}</td>
                     <td style={{ padding: '6px 10px', whiteSpace: 'nowrap' }}>
                       {!c.usado && (
                         <button onClick={() => copiarCodigo(c.codigo)} style={{ padding: '3px 10px', fontSize: '10px', fontWeight: '700', background: copiado === c.codigo ? R.accent : R.alt, color: copiado === c.codigo ? '#fff' : R.txt, border: `1px outset ${R.bdr}`, cursor: 'pointer', fontFamily: 'inherit', marginRight: '4px' }}>
-                          {copiado === c.codigo ? '✓ COPIADO' : 'COPIAR'}
+                          {copiado === c.codigo ? 'COPIADO' : 'COPIAR'}
                         </button>
                       )}
                       <button onClick={() => excluirCodigo(c.id)} style={{ padding: '3px 10px', fontSize: '10px', fontWeight: '700', background: '#ffdddd', color: '#aa0000', border: '1px outset #cc8888', cursor: 'pointer', fontFamily: 'inherit' }}>
@@ -711,13 +712,13 @@ export default function LabAdmin() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ background: R.panel, border: `2px outset ${R.bdr}`, width: '480px', maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ background: R.hdr, color: R.hdrTxt, padding: '6px 14px', fontWeight: '700', fontSize: '12px', letterSpacing: '1px', display: 'flex', justifyContent: 'space-between', position: 'sticky', top: 0 }}>
-              <span>CRIAR CONTA — {criarLead.laboratorio || criarLead.nome}</span>
-              <button onClick={() => { setCriarLead(null); setCriarSucesso(null); }} style={{ background: 'none', border: '1px solid #99ffaa', color: '#99ffaa', padding: '1px 6px', cursor: 'pointer', fontFamily: 'inherit' }}>✕</button>
+              <span>CRIAR CONTA · {criarLead.laboratorio || criarLead.nome}</span>
+              <button onClick={() => { setCriarLead(null); setCriarSucesso(null); }} style={{ background: 'none', border: '1px solid #99ffaa', color: '#99ffaa', padding: '1px 6px', cursor: 'pointer', fontFamily: 'inherit' }}>×</button>
             </div>
             <div style={{ border: `2px inset ${R.bdr}`, padding: '16px' }}>
               {criarSucesso ? (
                 <div>
-                  <div style={{ textAlign: 'center', fontSize: '28px', marginBottom: '10px' }}>✅</div>
+                  <div style={{ marginBottom: '10px', display: 'flex', justifyContent: 'center' }}><Icone nome="ok" size={28} color="#99ffaa" /></div>
                   <div style={{ fontWeight: '700', fontSize: '13px', textAlign: 'center', marginBottom: '14px', color: R.accent }}>CONTA CRIADA COM SUCESSO!</div>
                   <div style={{ background: '#f0fff0', border: '1px solid #006600', padding: '14px', fontFamily: "'Courier New', monospace", fontSize: '12px', lineHeight: '2' }}>
                     <div><b>Laboratório:</b> {criarSucesso.nome_lab}</div>
@@ -796,8 +797,8 @@ export default function LabAdmin() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ background: R.panel, border: `2px outset ${R.bdr}`, width: '420px' }}>
             <div style={{ background: 'linear-gradient(90deg,#886600,#cc9900)', color: '#fff', padding: '6px 14px', fontWeight: '700', fontSize: '12px', letterSpacing: '1px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span>🔄 RESTAURAR LISTAS — {restaurarTenant.nome}</span>
-              <button onClick={() => setRestaurarTenant(null)} style={{ background: 'none', border: '1px solid #ffe', color: '#ffe', padding: '1px 6px', cursor: 'pointer', fontFamily: 'inherit' }}>✕</button>
+              <span>RESTAURAR LISTAS · {restaurarTenant.nome}</span>
+              <button onClick={() => setRestaurarTenant(null)} style={{ background: 'none', border: '1px solid #ffe', color: '#ffe', padding: '1px 6px', cursor: 'pointer', fontFamily: 'inherit' }}>×</button>
             </div>
             <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ fontSize: '11px', color: '#555555', background: '#fffbe6', border: '1px solid #ccaa44', padding: '8px 10px' }}>
@@ -819,7 +820,7 @@ export default function LabAdmin() {
                 Restaurar preços do catálogo padrão
               </label>
               {restMsg && (
-                <div style={{ fontSize: '12px', fontWeight: '700', padding: '8px 10px', background: restMsg.startsWith('✅') ? 'var(--lab-chip-bg)' : '#ffcccc', color: restMsg.startsWith('✅') ? 'var(--lab-accent)' : '#880000', border: `1px solid ${restMsg.startsWith('✅') ? 'var(--lab-accent)' : '#880000'}` }}>
+                <div style={{ fontSize: '12px', fontWeight: '700', padding: '8px 10px', background: restMsg.startsWith('Listas restauradas') ? 'var(--lab-chip-bg)' : '#ffcccc', color: restMsg.startsWith('Listas restauradas') ? 'var(--lab-accent)' : '#880000', border: `1px solid ${restMsg.startsWith('Listas restauradas') ? 'var(--lab-accent)' : '#880000'}` }}>
                   {restMsg}
                 </div>
               )}
@@ -830,7 +831,7 @@ export default function LabAdmin() {
                 </button>
                 <button onClick={handleRestaurar}
                   style={{ flex: 2, padding: '8px', fontSize: '12px', fontWeight: '700', background: 'linear-gradient(90deg,#886600,#cc9900)', color: '#fff', border: '1px outset #cc9900', cursor: 'pointer', fontFamily: 'inherit' }}>
-                  🔄 RESTAURAR AGORA
+                  RESTAURAR AGORA
                 </button>
               </div>
             </div>
@@ -844,7 +845,7 @@ export default function LabAdmin() {
           <div style={{ background: R.panel, border: `2px outset ${R.bdr}`, width: '460px' }}>
             <div style={{ background: R.hdr, color: R.hdrTxt, padding: '6px 14px', fontWeight: '700', fontSize: '12px', letterSpacing: '1px', display: 'flex', justifyContent: 'space-between' }}>
               <span>EDITAR LICENÇA</span>
-              <button onClick={() => setEditId(null)} style={{ background: 'none', border: '1px solid #99ffaa', color: '#99ffaa', padding: '1px 6px', cursor: 'pointer', fontFamily: 'inherit' }}>✕</button>
+              <button onClick={() => setEditId(null)} style={{ background: 'none', border: '1px solid #99ffaa', color: '#99ffaa', padding: '1px 6px', cursor: 'pointer', fontFamily: 'inherit' }}>×</button>
             </div>
             <div style={{ border: `2px inset ${R.bdr}`, padding: '16px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
@@ -883,11 +884,11 @@ export default function LabAdmin() {
                   <div style={{ fontSize: '10px', fontWeight: '700', color: '#1e40af', textTransform: 'uppercase', marginBottom: '5px' }}>Ao passar do limite de tablets:</div>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', marginBottom: '3px', cursor: 'pointer' }}>
                     <input type="radio" name="dispmodo" checked={editForm.dispositivo_modo === 'bloquear'} onChange={() => setEditForm(f => ({ ...f, dispositivo_modo: 'bloquear' }))} />
-                    <b>Bloquear</b> — barra o tablet novo e pede pra pagar +R$30
+                    <b>Bloquear</b> · barra o tablet novo e pede pra pagar +R$30
                   </label>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', cursor: 'pointer' }}>
                     <input type="radio" name="dispmodo" checked={editForm.dispositivo_modo === 'rotacionar'} onChange={() => setEditForm(f => ({ ...f, dispositivo_modo: 'rotacionar' }))} />
-                    <b>Rotacionar</b> — desloga o tablet mais antigo automaticamente
+                    <b>Rotacionar</b> · desloga o tablet mais antigo automaticamente
                   </label>
                 </div>
                 <button onClick={resetarDispositivos}

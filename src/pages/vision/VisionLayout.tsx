@@ -13,7 +13,7 @@ const AVISO_DIAS = 3; // aviso sutil a partir de 3 dias antes de vencer
 const ESPECIALISTA_WA = '5585991507887';
 
 // Dias até a data YYYY-MM-DD (fim do dia, fuso SP). null se sem data.
-// floor => no dia do vencimento dias=0 (mostra Pix — carência de 2 dias); dias <= -2 (bloqueia).
+// floor => no dia do vencimento dias=0 (mostra Pix: carência de 2 dias); dias <= -2 (bloqueia).
 function diasAte(dateStr?: string): number | null {
   if (!dateStr) return null;
   const d = new Date(`${dateStr}T23:59:59-03:00`);
@@ -147,7 +147,7 @@ export default function VisionLayout() {
         </div>
       )}
 
-      {/* Bloqueio por limite de tablets (dispositivos) — só quando a conta está EM DIA.
+      {/* Bloqueio por limite de tablets (dispositivos) · só quando a conta está EM DIA.
           Se o trial/licença venceu, a prioridade é o Pix (renovar), não o aviso de tablet. */}
       {dispBloqueado && !bloqueado && !carencia && (
         <div style={{
@@ -173,7 +173,7 @@ export default function VisionLayout() {
                 boxShadow: '0 10px 28px rgba(37,211,102,0.35)',
               }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M12 2a10 10 0 0 0-8.6 15.05L2 22l5.1-1.34A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.1.8.83-3-.2-.3A8.2 8.2 0 1 1 12 20.2z" /></svg>
-              Adicionar tablet — falar com especialista
+              Adicionar tablet · falar com especialista
             </a>
             <button onClick={async () => { await logout(); navigate('/vision/login', { replace: true }); }} style={{
               display: 'block', margin: '14px auto 0', background: 'none', border: 'none', color: '#6b7280', fontSize: 13, cursor: 'pointer',
@@ -182,13 +182,13 @@ export default function VisionLayout() {
         </div>
       )}
 
-      {/* Aviso discreto — perto de vencer (canto superior direito, tom baixo) */}
+      {/* Aviso discreto · perto de vencer (canto superior direito, tom baixo) */}
       {perto && !avisoFechado && (
-        <button onClick={() => setShowPix(true)} title={`Assinatura vence ${textoDias} — toque para renovar`} style={{
+        <button onClick={() => setShowPix(true)} title={`Assinatura vence ${textoDias} · toque para renovar`} style={{
           position: 'fixed', top: 10, right: 12, zIndex: 250,
           display: 'flex', alignItems: 'center', gap: 7,
           background: 'rgba(14,16,22,0.55)', border: '1px solid rgba(245,158,11,0.22)',
-          borderRadius: 999, padding: '5px 11px', cursor: 'pointer',
+          borderRadius: 6, padding: '5px 11px', cursor: 'pointer',
           backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
           animation: 'avisoIn .3s ease', WebkitTapHighlightColor: 'transparent',
         }}>
@@ -200,12 +200,12 @@ export default function VisionLayout() {
         </button>
       )}
 
-      {/* Carência (1 dia após vencer) — QR na tela, sem X; só continua pelo botão explícito */}
+      {/* Carência (1 dia após vencer) · QR na tela, sem X; só continua pelo botão explícito */}
       {carencia && !carenciaOk && (
         <PixModal
           dismissible={false}
           titulo="Acesso expirado"
-          subtitulo={carenciaRestante <= 1 ? 'Último dia de carência — renove hoje' : `Você tem ${carenciaRestante} dias de carência — renove para não ser bloqueado`}
+          subtitulo={carenciaRestante <= 1 ? 'Último dia de carência · renove hoje' : `Você tem ${carenciaRestante} dias de carência · renove para não ser bloqueado`}
           onClose={() => { if (pixPago) window.location.reload(); else setCarenciaOk(true); }}
           onPago={() => setPixPago(true)}
           footer={
@@ -217,7 +217,7 @@ export default function VisionLayout() {
         />
       )}
 
-      {/* Bloqueio total — QR + chave Pix direto na tela, sem escapatória */}
+      {/* Bloqueio total · QR + chave Pix direto na tela, sem escapatória */}
       {bloqueado && (
         <PixModal
           dismissible={false}

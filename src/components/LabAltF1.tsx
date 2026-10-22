@@ -150,7 +150,7 @@ export default function LabAltF1({ onClose }: Props) {
         {/* Título */}
         <div style={{ background: accent, padding: '6px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ color: '#fff', fontFamily: "'Courier New', monospace", fontWeight: '700', fontSize: '13px', letterSpacing: '1px' }}>
-            🔍 PESQUISA — ALT+F1
+            PESQUISA · ALT+F1
           </span>
           <button onClick={onClose} style={{ background: 'none', border: '1px solid #66cc77', color: '#99ffaa', padding: '1px 8px', cursor: 'pointer', fontSize: '12px', fontFamily: 'inherit', borderRadius: '2px' }}>ESC</button>
         </div>
@@ -177,15 +177,15 @@ export default function LabAltF1({ onClose }: Props) {
                 <div>
                   <div style={{ fontSize: '10px', color: '#88aa88', fontFamily: "'Courier New', monospace", textTransform: 'uppercase' }}>Selecionado</div>
                   <div style={{ fontSize: '18px', fontWeight: '900', color: '#44ff44', fontFamily: "'Courier New', monospace" }}>
-                    {String(selected.codigo || selected.id || '—')}
+                    {String(selected.codigo || selected.id || '-')}
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '14px', color: 'var(--lab-hdr-txt)', fontWeight: '700' }}>{String(selected.nome || '—')}</div>
+                  <div style={{ fontSize: '14px', color: 'var(--lab-hdr-txt)', fontWeight: '700' }}>{String(selected.nome || '-')}</div>
                   {selected.nome_reduzido ? <div style={{ fontSize: '11px', color: '#88aa88' }}>{String(selected.nome_reduzido)}</div> : null}
                 </div>
                 <div style={{ marginLeft: 'auto', fontSize: '11px', color: copiado ? '#44ff44' : '#88aa88', fontFamily: "'Courier New', monospace" }}>
-                  {copiado ? '✓ CÓDIGO COPIADO!' : 'Clique para copiar'}
+                  {copiado ? 'CÓDIGO COPIADO!' : 'Clique para copiar'}
                 </div>
               </div>
             )}
@@ -235,10 +235,10 @@ export default function LabAltF1({ onClose }: Props) {
               )}
             </div>
 
-            {/* Barra de busca — "DÍGITOS DESEJADOS" */}
+            {/* Barra de busca · "DÍGITOS DESEJADOS" */}
             <div style={{ background: '#0a0a1a', borderTop: '2px solid #2a2a5e', padding: '8px 14px' }}>
               <div style={{ fontSize: '10px', color: '#6666aa', fontFamily: "'Courier New', monospace", textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>
-                Dígitos Desejados — {rows.length} resultado(s)
+                Dígitos Desejados · {rows.length} resultado(s)
               </div>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <input

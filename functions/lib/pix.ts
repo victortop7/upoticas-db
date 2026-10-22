@@ -6,7 +6,7 @@ function tlv(id: string, valor: string): string {
   return `${id}${len}${valor}`;
 }
 
-// CRC16-CCITT (polinômio 0x1021, init 0xFFFF) — exigido pelo padrão Pix
+// CRC16-CCITT (polinômio 0x1021, init 0xFFFF): exigido pelo padrão Pix
 function crc16(payload: string): string {
   let crc = 0xffff;
   for (let i = 0; i < payload.length; i++) {
@@ -36,7 +36,7 @@ export interface PixParams {
   nome: string;         // nome do recebedor (máx 25)
   cidade: string;       // cidade do recebedor (máx 15)
   valor: number;        // valor em reais
-  txid?: string;        // identificador (máx 25 alfanum) — ex: nº do carnê/parcela
+  txid?: string;        // identificador (máx 25 alfanum): ex: nº do carnê/parcela
   descricao?: string;   // descrição curta opcional
 }
 

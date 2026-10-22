@@ -94,11 +94,11 @@ export default function Medicos() {
               {lista.map(m => (
                 <tr key={m.id} style={{ borderBottom: '1px solid var(--border)' }}>
                   <td style={{ padding: '12px 16px', fontSize: '13px', fontWeight: '600', color: 'var(--text)' }}>Dr(a). {m.nome}</td>
-                  <td style={{ padding: '12px 16px', fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{m.crm || '—'}</td>
-                  <td style={{ padding: '12px 16px', fontSize: '12px', color: 'var(--text-dim)' }}>{m.especialidade || '—'}</td>
-                  <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>{m.clinica || '—'}</td>
-                  <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>{m.telefone || m.celular || '—'}</td>
-                  <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>{m.cidade && m.uf ? `${m.cidade}/${m.uf}` : m.cidade || '—'}</td>
+                  <td style={{ padding: '12px 16px', fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{m.crm || '-'}</td>
+                  <td style={{ padding: '12px 16px', fontSize: '12px', color: 'var(--text-dim)' }}>{m.especialidade || '-'}</td>
+                  <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>{m.clinica || '-'}</td>
+                  <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>{m.telefone || m.celular || '-'}</td>
+                  <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>{m.cidade && m.uf ? `${m.cidade}/${m.uf}` : m.cidade || '-'}</td>
                   <td style={{ padding: '12px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                     <button onClick={() => abrirEditar(m)} style={{ padding: '4px 10px', fontSize: '12px', marginRight: '6px', background: 'var(--primary-dim)', color: 'var(--primary)', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Editar</button>
                     <button onClick={() => excluir(m.id, m.nome)} style={{ padding: '4px 10px', fontSize: '12px', background: 'var(--red-dim)', color: 'var(--red)', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Excluir</button>
@@ -129,7 +129,7 @@ export default function Medicos() {
                 <div style={{ gridColumn: '1 / -1' }}>{lbl('E-mail')}<input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} style={inp} /></div>
                 <div style={{ gridColumn: '1 / -1' }}>{lbl('Endereço')}<input value={form.endereco} onChange={e => setForm(f => ({ ...f, endereco: e.target.value }))} style={inp} /></div>
                 <div>{lbl('Cidade')}<input value={form.cidade} onChange={e => setForm(f => ({ ...f, cidade: e.target.value }))} style={inp} /></div>
-                <div>{lbl('UF')}<select value={form.uf} onChange={e => setForm(f => ({ ...f, uf: e.target.value }))} style={{ ...inp, fontFamily: 'inherit' }}><option value="">—</option>{UF_LIST.map(u => <option key={u} value={u}>{u}</option>)}</select></div>
+                <div>{lbl('UF')}<select value={form.uf} onChange={e => setForm(f => ({ ...f, uf: e.target.value }))} style={{ ...inp, fontFamily: 'inherit' }}><option value="">-</option>{UF_LIST.map(u => <option key={u} value={u}>{u}</option>)}</select></div>
                 <div style={{ gridColumn: '1 / -1' }}>{lbl('Observação')}<input value={form.observacao} onChange={e => setForm(f => ({ ...f, observacao: e.target.value }))} style={inp} /></div>
               </div>
               <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>

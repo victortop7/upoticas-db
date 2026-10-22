@@ -160,7 +160,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
   return json(cards.results);
 };
 
-// POST /api/crm — coloca (ou recoloca) um cliente no funil, no início ("Cliente Cadastrado")
+// POST /api/crm: coloca (ou recoloca) um cliente no funil, no início ("Cliente Cadastrado")
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;

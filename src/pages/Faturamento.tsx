@@ -15,7 +15,7 @@ const SIT_LABEL: Record<string, string> = { aberta: 'Aberta', paga: 'Paga', venc
 const FORMAS = ['Dinheiro', 'Pix', 'Boleto', 'Transferência', 'Cheque', 'Crédito', 'Débito'];
 
 function brl(v: number) { return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
-function fmtDate(s?: string) { if (!s) return '—'; const [y, m, d] = s.split('T')[0].split('-'); return `${d}/${m}/${y}`; }
+function fmtDate(s?: string) { if (!s) return '-'; const [y, m, d] = s.split('T')[0].split('-'); return `${d}/${m}/${y}`; }
 
 export default function Faturamento() {
   const [aba, setAba] = useState<'faturas' | 'pendentes'>('faturas');
@@ -138,7 +138,7 @@ export default function Faturamento() {
         {aba === 'faturas' && (
           <div style={{ marginLeft: 'auto', display: 'flex', gap: '6px' }}>
             {[{ v: '', l: 'Todas' }, { v: 'aberta', l: 'Abertas' }, { v: 'paga', l: 'Pagas' }, { v: 'vencida', l: 'Vencidas' }].map(s => (
-              <button key={s.v} onClick={() => setFiltroSit(s.v)} style={{ padding: '6px 12px', fontSize: '12px', borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit', fontWeight: filtroSit === s.v ? '600' : '400', background: filtroSit === s.v ? 'var(--surface-alt)' : 'transparent', color: filtroSit === s.v ? 'var(--text)' : 'var(--text-muted)', border: filtroSit === s.v ? '1px solid var(--border-light)' : '1px solid transparent' }}>
+              <button key={s.v} onClick={() => setFiltroSit(s.v)} style={{ padding: '6px 12px', fontSize: '12px', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit', fontWeight: filtroSit === s.v ? '600' : '400', background: filtroSit === s.v ? 'var(--surface-alt)' : 'transparent', color: filtroSit === s.v ? 'var(--text)' : 'var(--text-muted)', border: filtroSit === s.v ? '1px solid var(--border-light)' : '1px solid transparent' }}>
                 {s.l}
               </button>
             ))}
@@ -170,7 +170,7 @@ export default function Faturamento() {
                       <td style={{ padding: '11px 14px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text-dim)' }}>{fmtDate(f.data_vencimento)}</td>
                       <td style={{ padding: '11px 14px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--green)' }}>{fmtDate(f.data_pagamento)}</td>
                       <td style={{ padding: '11px 14px' }}>
-                        <span style={{ fontSize: '11px', fontWeight: '600', color: SIT_COLOR[f.situacao], background: `${SIT_COLOR[f.situacao]}18`, padding: '3px 8px', borderRadius: '20px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: '600', color: SIT_COLOR[f.situacao], background: `${SIT_COLOR[f.situacao]}18`, padding: '3px 8px', borderRadius: '6px' }}>
                           {SIT_LABEL[f.situacao]}
                         </span>
                       </td>
@@ -229,7 +229,7 @@ export default function Faturamento() {
                           <td style={{ padding: '11px 14px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '600', color: 'var(--text)' }}>#{String(p.numero).padStart(4, '0')}</td>
                           <td style={{ padding: '11px 14px', fontSize: '13px', color: 'var(--text)' }}>{p.cliente_nome}</td>
                           <td style={{ padding: '11px 14px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '700', color: 'var(--text)' }}>{brl(p.valor_final)}</td>
-                          <td style={{ padding: '11px 14px', fontSize: '12px', color: 'var(--text-dim)' }}>{p.forma_pagamento || '—'}</td>
+                          <td style={{ padding: '11px 14px', fontSize: '12px', color: 'var(--text-dim)' }}>{p.forma_pagamento || '-'}</td>
                           <td style={{ padding: '11px 14px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text-dim)' }}>{fmtDate(p.created_at)}</td>
                         </tr>
                       );
@@ -274,7 +274,7 @@ export default function Faturamento() {
               <div>
                 <label style={{ fontSize: '12px', color: 'var(--text-dim)', display: 'block', marginBottom: '4px', fontWeight: '500' }}>Forma de Pagamento</label>
                 <select value={novaForm.forma_pagamento} onChange={e => setNovaForm(f => ({ ...f, forma_pagamento: e.target.value }))} style={{ ...inp, fontFamily: 'inherit' }}>
-                  <option value="">—</option>
+                  <option value="">-</option>
                   {FORMAS.map(f => <option key={f} value={f}>{f}</option>)}
                 </select>
               </div>
@@ -302,7 +302,7 @@ export default function Faturamento() {
               <button onClick={() => setModalBaixa(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '20px', cursor: 'pointer' }}>×</button>
             </div>
             <div style={{ background: 'var(--surface-alt)', borderRadius: '8px', padding: '10px 14px', marginBottom: '16px' }}>
-              <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text)' }}>Fatura #{String(faturaSel.numero).padStart(4, '0')} — {faturaSel.cliente_nome}</div>
+              <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text)' }}>Fatura #{String(faturaSel.numero).padStart(4, '0')} · {faturaSel.cliente_nome}</div>
               <div style={{ fontSize: '14px', fontFamily: 'var(--mono)', color: 'var(--green)', fontWeight: '800', marginTop: '4px' }}>{brl(faturaSel.valor_total)}</div>
             </div>
             <form onSubmit={darBaixa} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -313,14 +313,14 @@ export default function Faturamento() {
               <div>
                 <label style={{ fontSize: '12px', color: 'var(--text-dim)', display: 'block', marginBottom: '4px', fontWeight: '500' }}>Forma de Pagamento</label>
                 <select value={baixaForm.forma_pagamento} onChange={e => setBaixaForm(f => ({ ...f, forma_pagamento: e.target.value }))} style={{ ...inp, fontFamily: 'inherit' }}>
-                  <option value="">—</option>
+                  <option value="">-</option>
                   {FORMAS.map(f => <option key={f} value={f}>{f}</option>)}
                 </select>
               </div>
               <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
                 <button type="button" onClick={() => setModalBaixa(false)} style={{ flex: 1, padding: '10px', fontSize: '13px', background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
                 <button type="submit" disabled={saving} style={{ flex: 1, padding: '10px', fontSize: '13px', fontWeight: '600', background: 'var(--green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
-                  {saving ? 'Salvando...' : '✓ Confirmar Pagamento'}
+                  {saving ? 'Salvando...' : 'Confirmar Pagamento'}
                 </button>
               </div>
             </form>

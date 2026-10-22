@@ -1,7 +1,7 @@
 import type { Env } from '../../../lib/types';
 import { requireAuth, json } from '../../../lib/auth-middleware';
 
-// PATCH /api/lab/faturamento/:id — atualiza status/data_pagamento/observacoes
+// PATCH /api/lab/faturamento/:id: atualiza status/data_pagamento/observacoes
 export const onRequestPatch = async ({ request, env, params }: { request: Request; env: Env; params: { id: string } }) => {
   try {
     const auth = await requireAuth(request, env);

@@ -8,7 +8,7 @@ type Row = Record<string, unknown>;
 
 const isData = (s: string | null): s is string => !!s && /^\d{4}-\d{2}-\d{2}$/.test(s);
 
-// GET /api/lab/dashboard?de=AAAA-MM-DD&ate=AAAA-MM-DD — métricas do painel principal
+// GET /api/lab/dashboard?de=AAAA-MM-DD&ate=AAAA-MM-DD: métricas do painel principal
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   try {
     const auth = await requireAuth(request, env);

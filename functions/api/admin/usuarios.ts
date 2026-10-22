@@ -14,7 +14,7 @@ async function ensurePermissoes(env: Env) {
 
 const PERFIS = ['admin', 'vendedor', 'caixa', 'marketing', 'financeiro', 'digitador'];
 
-// GET /api/admin/usuarios?tenant_id=xxx — usuários (sem senha) + lojas da conta
+// GET /api/admin/usuarios?tenant_id=xxx: usuários (sem senha) + lojas da conta
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   if (!isAdmin(request, env)) return json({ error: 'Não autorizado' }, 401);
   const tenantId = new URL(request.url).searchParams.get('tenant_id');

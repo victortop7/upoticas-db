@@ -9,7 +9,7 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 )
 
-// Registra o service worker (habilita "Instalar como app"; não cacheia — updates seguem automáticos)
+// Registra o service worker (habilita "Instalar como app"; não cacheia: updates seguem automáticos)
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/app-sw.js').catch(() => { /* silencioso */ });

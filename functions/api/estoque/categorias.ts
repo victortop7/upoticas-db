@@ -2,7 +2,7 @@ import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
 import { garantirCategorias, MATERIAIS_PADRAO } from '../../lib/estoque';
 
-// GET /api/estoque/categorias — categorias (abas) com subcategorias e totais
+// GET /api/estoque/categorias: categorias (abas) com subcategorias e totais
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;
@@ -30,7 +30,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
   }
 };
 
-// POST { nome, parent_id?, icone? } — nova categoria (aba) ou subcategoria
+// POST { nome, parent_id?, icone? }: nova categoria (aba) ou subcategoria
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;

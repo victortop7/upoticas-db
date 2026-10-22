@@ -23,7 +23,7 @@ function brl(v: number) {
 function calcMargem(custo: string, venda: string): string {
   const c = parseFloat(custo.replace(',', '.'));
   const v = parseFloat(venda.replace(',', '.'));
-  if (!c || !v) return '—';
+  if (!c || !v) return '-';
   return ((v - c) / c * 100).toFixed(1) + '%';
 }
 
@@ -149,18 +149,18 @@ export default function Produtos() {
                 const margem = p.preco_custo > 0 ? ((p.preco_venda - p.preco_custo) / p.preco_custo * 100) : 0;
                 return (
                   <tr key={p.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td style={{ padding: '11px 14px', fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{p.codigo || '—'}</td>
+                    <td style={{ padding: '11px 14px', fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{p.codigo || '-'}</td>
                     <td style={{ padding: '11px 14px', fontSize: '13px', fontWeight: '600', color: 'var(--text)' }}>{p.descricao}</td>
                     <td style={{ padding: '11px 14px' }}>
-                      {p.grupo ? <span style={{ fontSize: '11px', background: 'var(--accent-dim)', color: 'var(--accent)', padding: '2px 8px', borderRadius: '20px', fontWeight: '600' }}>{p.grupo}</span> : <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>}
+                      {p.grupo ? <span style={{ fontSize: '11px', background: 'var(--accent-dim)', color: 'var(--accent)', padding: '2px 8px', borderRadius: '6px', fontWeight: '600' }}>{p.grupo}</span> : <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>-</span>}
                     </td>
                     <td style={{ padding: '11px 14px', fontSize: '12px', color: 'var(--text-dim)' }}>{p.unidade}</td>
                     <td style={{ padding: '11px 14px', fontSize: '13px', fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{brl(p.preco_custo)}</td>
                     <td style={{ padding: '11px 14px', fontSize: '13px', fontFamily: 'var(--mono)', fontWeight: '700', color: 'var(--text)' }}>{brl(p.preco_venda)}</td>
                     <td style={{ padding: '11px 14px', fontSize: '12px', fontFamily: 'var(--mono)', color: margem >= 30 ? 'var(--green)' : margem > 0 ? 'var(--amber)' : 'var(--text-muted)' }}>
-                      {p.preco_custo > 0 ? margem.toFixed(1) + '%' : '—'}
+                      {p.preco_custo > 0 ? margem.toFixed(1) + '%' : '-'}
                     </td>
-                    <td style={{ padding: '11px 14px', fontSize: '12px', color: 'var(--text-dim)' }}>{p.fornecedor_nome || '—'}</td>
+                    <td style={{ padding: '11px 14px', fontSize: '12px', color: 'var(--text-dim)' }}>{p.fornecedor_nome || '-'}</td>
                     <td style={{ padding: '11px 14px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                       <button onClick={() => abrirEditar(p)} style={{ padding: '4px 10px', fontSize: '12px', marginRight: '6px', background: 'var(--primary-dim)', color: 'var(--primary)', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Editar</button>
                       <button onClick={() => excluir(p.id, p.descricao)} style={{ padding: '4px 10px', fontSize: '12px', background: 'var(--red-dim)', color: 'var(--red)', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Excluir</button>
@@ -209,7 +209,7 @@ export default function Produtos() {
                 </div>
               </div>
 
-              <div>{lbl('Fornecedor')}<select value={form.fornecedor_id} onChange={e => setForm(f => ({ ...f, fornecedor_id: e.target.value }))} style={{ ...inp, fontFamily: 'inherit' }}><option value="">— Nenhum —</option>{fornecedores.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}</select></div>
+              <div>{lbl('Fornecedor')}<select value={form.fornecedor_id} onChange={e => setForm(f => ({ ...f, fornecedor_id: e.target.value }))} style={{ ...inp, fontFamily: 'inherit' }}><option value="">Nenhum</option>{fornecedores.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}</select></div>
               <div>{lbl('Observação')}<input value={form.observacao} onChange={e => setForm(f => ({ ...f, observacao: e.target.value }))} style={inp} /></div>
 
               <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>

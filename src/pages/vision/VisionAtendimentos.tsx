@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
+import Icone from '../../components/Icone';
 
 interface VisionOSRow {
   id: string;
@@ -117,7 +118,7 @@ export default function VisionAtendimentos() {
       <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px 28px' }}>
         {tab === 'atendimentos' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 1100, margin: '0 auto', width: '100%' }}>
-            {/* Filtro período — segmented iOS */}
+            {/* Filtro período · segmented iOS */}
             <div style={{
               alignSelf: 'flex-start',
               background: 'rgba(118,118,128,0.12)',
@@ -143,7 +144,7 @@ export default function VisionAtendimentos() {
               ))}
             </div>
 
-            {/* Cards stats — estilo widget iOS */}
+            {/* Cards stats · estilo widget iOS */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
               {cards.map(c => (
                 <div key={c.label} style={{
@@ -170,7 +171,7 @@ export default function VisionAtendimentos() {
               ))}
             </div>
 
-            {/* Lista — grouped list iOS */}
+            {/* Lista · grouped list iOS */}
             {loading ? (
               <div style={{ color: '#8e8e93', fontSize: 13, textAlign: 'center', padding: '24px 0' }}>Carregando…</div>
             ) : filtrado.length === 0 ? (
@@ -197,10 +198,10 @@ export default function VisionAtendimentos() {
                         fontVariantNumeric: 'tabular-nums', minWidth: 38,
                       }}>#{os.numero}</span>
                       <span style={{ fontSize: 14, color: '#1c1c1e', fontWeight: 500 }}>
-                        {os.cliente_nome ?? '—'}
+                        {os.cliente_nome ?? '-'}
                       </span>
                       <span style={{
-                        fontSize: 11, padding: '3px 10px', borderRadius: 999,
+                        fontSize: 11, padding: '3px 10px', borderRadius: 6,
                         background: os.tipo === 'venda' ? 'rgba(52,199,89,0.15)' : 'rgba(118,118,128,0.12)',
                         color: os.tipo === 'venda' ? '#248a3d' : '#8e8e93',
                         fontWeight: 600, letterSpacing: '-0.01em',
@@ -240,7 +241,7 @@ export default function VisionAtendimentos() {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 28,
               boxShadow: '0 6px 18px rgba(0,122,255,0.3)',
-            }}>👁️</div>
+            }}><Icone nome="olho" size={26} color="#fff" /></div>
             <div style={{ fontSize: 17, fontWeight: 700, color: '#1c1c1e', letterSpacing: '-0.02em' }}>Teste de Visão</div>
             <div style={{ fontSize: 13.5, color: '#8e8e93', textAlign: 'center', maxWidth: 320, lineHeight: 1.55 }}>
               O módulo de teste de visão completo (Snellen, contraste, Ishihara) estará disponível na versão V2.

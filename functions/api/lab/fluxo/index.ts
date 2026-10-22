@@ -27,7 +27,7 @@ async function ensureTable(env: Env) {
   try { await env.DB.prepare('ALTER TABLE lab_ordens ADD COLUMN setor_atual TEXT').run(); } catch {}
 }
 
-// GET /api/lab/fluxo — fila de produção (OSes ativas)
+// GET /api/lab/fluxo: fila de produção (OSes ativas)
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   try {
     const auth = await requireAuth(request, env);
@@ -77,7 +77,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
   }
 };
 
-// POST /api/lab/fluxo — lançar entrada/saída de setor
+// POST /api/lab/fluxo: lançar entrada/saída de setor
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
   try {
     const auth = await requireAuth(request, env);

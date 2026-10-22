@@ -91,7 +91,7 @@ export default function App() {
           <Route path="/relatorios/exportar/imprimir" element={<RelatorioExportarImprimir />} />
           <Route path="/financeiro/cobranca/imprimir" element={<CobrancaImprimir />} />
           <Route path="/licenca-bloqueada" element={<LicencaBloqueada />} />
-          {/* Painel administrativo — sistema próprio, fora do Connect LAB */}
+          {/* Painel administrativo · sistema próprio, fora do Connect LAB */}
           <Route path="/admin" element={<Admin />} />
           <Route path="/lab/admin" element={<Navigate to="/admin" replace />} />
           <Route element={<Layout />}>

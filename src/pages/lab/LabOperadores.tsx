@@ -97,7 +97,7 @@ export default function LabOperadores() {
 
       {showForm && (
         <form onSubmit={handleSalvar} style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
-          <div style={{ fontSize: '13px', fontWeight: '700', color: R.txt, marginBottom: '16px' }}>{editId ? `Editar Operador — ${email}` : 'Novo Operador'}</div>
+          <div style={{ fontSize: '13px', fontWeight: '700', color: R.txt, marginBottom: '16px' }}>{editId ? `Editar Operador · ${email}` : 'Novo Operador'}</div>
 
           {erro && (
             <div style={{ background: 'rgba(200,0,0,0.12)', border: '1px solid #cc0000', borderRadius: '8px', padding: '10px 14px', marginBottom: '14px', fontSize: '13px', color: '#cc0000' }}>
@@ -111,7 +111,7 @@ export default function LabOperadores() {
               <input value={nome} onChange={e => setNome(e.target.value)} required style={INP} placeholder="Nome completo" />
             </div>
             <div>
-              <label style={{ fontSize: '11px', fontWeight: '600', color: R.dim, display: 'block', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>E-mail {editId ? '(login — não editável)' : '*'}</label>
+              <label style={{ fontSize: '11px', fontWeight: '600', color: R.dim, display: 'block', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>E-mail {editId ? '(login · não editável)' : '*'}</label>
               <input type="email" value={email} onChange={e => setEmail(e.target.value)} required={!editId} disabled={!!editId} style={{ ...INP, opacity: editId ? 0.6 : 1, cursor: editId ? 'not-allowed' : 'text' }} placeholder="email@exemplo.com" />
             </div>
           </div>
@@ -173,13 +173,13 @@ export default function LabOperadores() {
                   <td style={{ padding: '12px 16px', fontSize: '13px', color: R.txt, fontWeight: '600', whiteSpace: 'nowrap' }}>{op.nome}</td>
                   <td style={{ padding: '12px 16px', fontSize: '13px', color: R.dim, fontFamily: "'Courier New', monospace" }}>{op.email}</td>
                   <td style={{ padding: '12px 16px' }}>
-                    <span style={{ fontSize: '11px', fontWeight: '700', padding: '2px 9px', borderRadius: '20px', background: `${perfilCor(op.perfil)}1e`, color: perfilCor(op.perfil), border: `1px solid ${perfilCor(op.perfil)}55` }}>
+                    <span style={{ fontSize: '11px', fontWeight: '700', padding: '2px 9px', borderRadius: '6px', background: `${perfilCor(op.perfil)}1e`, color: perfilCor(op.perfil), border: `1px solid ${perfilCor(op.perfil)}55` }}>
                       {perfilLabel(op.perfil)}
                     </span>
                   </td>
                   <td style={{ padding: '12px 16px' }}>
                     <span style={{
-                      fontSize: '11px', fontWeight: '600', padding: '2px 8px', borderRadius: '20px',
+                      fontSize: '11px', fontWeight: '600', padding: '2px 8px', borderRadius: '6px',
                       background: op.ativo ? 'rgba(0,102,0,0.15)' : 'rgba(200,0,0,0.12)',
                       color: op.ativo ? R.accent : '#cc0000',
                     }}>

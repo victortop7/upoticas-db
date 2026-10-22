@@ -58,7 +58,7 @@ export default function LabFornecedores() {
       {/* Header */}
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'10px', flexWrap:'wrap', gap:'6px' }}>
         <div style={{ background:R.hdr, color:R.hdrTxt, padding:'5px 14px', fontSize:'13px', fontWeight:'700', letterSpacing:'1px', border:`2px outset ${R.hdrBdr}` }}>
-          FORNECEDORES/OFTALMOS — {filtradas.length} cadastrado(s)
+          FORNECEDORES/OFTALMOS · {filtradas.length} cadastrado(s)
         </div>
         <div style={{ display:'flex', gap:'6px', alignItems:'center' }}>
           <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar por nome ou CNPJ..." style={{ ...INP, width:'220px' }} />
@@ -90,12 +90,12 @@ export default function LabFornecedores() {
                   style={{ background: i%2===0 ? R.panel : R.alt, cursor:'pointer', borderBottom:`1px solid ${R.bdr}` }}
                   onMouseEnter={e => (e.currentTarget.style.background = R.accent)}
                   onMouseLeave={e => (e.currentTarget.style.background = i%2===0 ? R.panel : R.alt)}>
-                  <td style={{ padding:'7px 12px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.dim }}>{f.codigo||'—'}</td>
+                  <td style={{ padding:'7px 12px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.dim }}>{f.codigo||'-'}</td>
                   <td style={{ padding:'7px 12px', fontSize:'12px', fontWeight:'700', color:R.txt }}>{f.nome}</td>
-                  <td style={{ padding:'7px 12px', fontSize:'11px', color:R.txt }}>{f.fantasia||'—'}</td>
-                  <td style={{ padding:'7px 12px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt }}>{f.cnpj||'—'}</td>
-                  <td style={{ padding:'7px 12px', fontSize:'11px', color:R.txt }}>{f.telefone||'—'}</td>
-                  <td style={{ padding:'7px 12px', fontSize:'11px', color:R.txt }}>{f.cidade && f.uf ? `${f.cidade}/${f.uf}` : f.cidade||'—'}</td>
+                  <td style={{ padding:'7px 12px', fontSize:'11px', color:R.txt }}>{f.fantasia||'-'}</td>
+                  <td style={{ padding:'7px 12px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt }}>{f.cnpj||'-'}</td>
+                  <td style={{ padding:'7px 12px', fontSize:'11px', color:R.txt }}>{f.telefone||'-'}</td>
+                  <td style={{ padding:'7px 12px', fontSize:'11px', color:R.txt }}>{f.cidade && f.uf ? `${f.cidade}/${f.uf}` : f.cidade||'-'}</td>
                 </tr>
               ))}
             </tbody>
@@ -109,7 +109,7 @@ export default function LabFornecedores() {
           <div style={{ background:R.panel, border:`2px outset ${R.bdr}`, width:'100%', maxWidth:'500px', maxHeight:'90vh', overflowY:'auto' }}>
             <div style={{ background:R.hdr, color:R.hdrTxt, padding:'6px 14px', fontSize:'12px', fontWeight:'700', letterSpacing:'1px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
               <span>{editando ? 'ALTERAR FORNECEDOR' : 'INCLUIR FORNECEDOR'}</span>
-              <button onClick={() => setModal(false)} style={{ background:'none', border:'1px solid #99ffaa', color:'#99ffaa', padding:'1px 6px', cursor:'pointer', fontFamily:'inherit', fontWeight:'700' }}>✕</button>
+              <button onClick={() => setModal(false)} style={{ background:'none', border:'1px solid #99ffaa', color:'#99ffaa', padding:'1px 6px', cursor:'pointer', fontFamily:'inherit', fontWeight:'700' }}>×</button>
             </div>
             <div style={{ padding:'16px' }}>
               {erro && <div style={{ background:'var(--lab-chip-bg)', border:'1px solid var(--lab-chip-bdr)', padding:'6px 10px', marginBottom:'10px', fontSize:'11px', color:'var(--lab-chip-txt)', fontWeight:'700' }}>{erro}</div>}

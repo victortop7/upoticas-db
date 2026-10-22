@@ -20,7 +20,7 @@ async function acharProduto(env: Env, tenant: string, codigo: string): Promise<P
   ).bind(tenant, codigo, codigo, codigo).first<Produto>();
 }
 
-// GET /api/estoque/leitura?codigo=789... — acha o produto pelo código de barras (ou código interno)
+// GET /api/estoque/leitura?codigo=789...: acha o produto pelo código de barras (ou código interno)
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;
@@ -33,7 +33,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
   return json({ encontrado: true, produto: p, quantidade: e?.quantidade ?? 0 });
 };
 
-// POST /api/estoque/leitura — bipou: dá entrada ou baixa
+// POST /api/estoque/leitura: bipou: dá entrada ou baixa
 //   { codigo, tipo: 'entrada'|'saida', quantidade?: 1, motivo?, novo?: { descricao, grupo, preco_venda, preco_custo } }
 // Se o código não existe e vier "novo", cadastra o produto com esse código de barras antes.
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {

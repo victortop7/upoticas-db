@@ -8,7 +8,7 @@ function isAdmin(request: Request, env: Env): boolean {
   return !!env.ADMIN_SECRET && auth.replace(/^Bearer\s+/i, '').trim() === env.ADMIN_SECRET.trim();
 }
 
-// POST /api/admin/clientes — cria um novo cliente (tenant + usuário admin) direto, sem lead
+// POST /api/admin/clientes: cria um novo cliente (tenant + usuário admin) direto, sem lead
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
   if (!isAdmin(request, env)) return json({ error: 'Não autorizado' }, 401);
 

@@ -1,7 +1,7 @@
 import type { Env } from '../../../lib/types';
 import { requireAuth, json } from '../../../lib/auth-middleware';
 
-// GET /lab/vendedores/:id — dados do vendedor + vendas (OS) e regiões que ele fez
+// GET /lab/vendedores/:id: dados do vendedor + vendas (OS) e regiões que ele fez
 export const onRequestGet = async ({ request, env, params }: { request: Request; env: Env; params: Record<string, string> }) => {
   try {
     const auth = await requireAuth(request, env);

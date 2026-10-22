@@ -106,7 +106,7 @@ function UsuarioModal({ usuario, lojas, onClose, onSaved }: ModalProps) {
             <div style={{ marginBottom: '14px' }}>
               <label style={labelStyle}>Loja {form.perfil === 'vendedor' || form.perfil === 'caixa' ? '(só vê a própria loja)' : ''}</label>
               <select style={inputStyle} value={form.loja_id} onChange={e => set('loja_id', e.target.value)}>
-                <option value="">— Todas as lojas —</option>
+                <option value="">Todas as lojas</option>
                 {lojas.map(l => <option key={l.id} value={l.id}>{l.nome}</option>)}
               </select>
               {lojas.length === 0 && <p style={{ margin: '6px 0 0', fontSize: '11px', color: '#d97706' }}>Nenhuma loja cadastrada ainda. Crie em “Lojas” primeiro.</p>}
@@ -210,12 +210,12 @@ export default function Usuarios() {
                   </td>
                   <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)', fontFamily: 'var(--mono)' }}>{u.email}</td>
                   <td style={{ padding: '12px 16px' }}>
-                    <span style={{ padding: '3px 9px', borderRadius: '20px', fontSize: '12px', fontWeight: '500', background: pc.bg, color: pc.color }}>
+                    <span style={{ padding: '3px 9px', borderRadius: '6px', fontSize: '12px', fontWeight: '500', background: pc.bg, color: pc.color }}>
                       {PERFIL_LABEL[u.perfil]}
                     </span>
                   </td>
                   <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>
-                    {u.perfil === 'admin' ? 'Todas' : (lojaNome(u.loja_id) || '—')}
+                    {u.perfil === 'admin' ? 'Todas' : (lojaNome(u.loja_id) || '-')}
                   </td>
                   <td style={{ padding: '12px 16px' }}>
                     <span style={{ fontSize: '12px', fontWeight: '500', color: u.ativo ? '#16a34a' : '#dc2626' }}>

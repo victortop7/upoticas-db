@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { api } from '../../lib/api';
 import { whatsappLink, foneValido, aplicarVariaveis } from '../../lib/whatsapp';
 import { useAuth } from '../../hooks/useAuth';
+import Icone from '../../components/Icone';
 
 interface Estagio {
   id: string; key: string; label: string; icon: string; color: string;
@@ -60,14 +61,13 @@ function proximoAniversario(dataNasc?: string) {
   const aniv = new Date(hoje.getFullYear(), parseInt(m) - 1, parseInt(d));
   if (aniv < hoje) aniv.setFullYear(hoje.getFullYear() + 1);
   const diff = Math.ceil((aniv.getTime() - hoje.getTime()) / 86400000);
-  if (diff === 0) return '🎂 Hoje!';
-  if (diff <= 7) return `🎂 Em ${diff} dias`;
+  if (diff === 0) return 'Hoje!';
+  if (diff <= 7) return `Em ${diff} dias`;
   return null;
 }
 
 // ─── Modal de Configuração de Estágios ───────────────────────────────────────
 const CORES = ['#64748b','#2563eb','#16a34a','#dc2626','#d97706','#7c3aed','#ea580c','#b45309','#0891b2','#be185d'];
-const ICONES = ['🆕','📞','💰','💳','🎂','👥','🔄','⭐','📌','🏆','🎯','💡','🔔','✅','❤️','🌟'];
 
 function ConfigModal({ estagios, onClose, onSaved }: {
   estagios: Estagio[];
@@ -75,14 +75,14 @@ function ConfigModal({ estagios, onClose, onSaved }: {
   onSaved: () => void;
 }) {
   const [lista, setLista] = useState<Estagio[]>([...estagios].sort((a, b) => a.ordem - b.ordem));
-  const [novo, setNovo] = useState({ label: '', icon: '📌', color: '#64748b' });
+  const [novo, setNovo] = useState({ label: '', icon: '', color: '#64748b' });
   const [salvando, setSalvando] = useState<string | null>(null);
   const [adicionando, setAdicionando] = useState(false);
 
   async function salvarEstagio(e: Estagio) {
     setSalvando(e.id);
     try {
-      await api.put(`/crm/estagios/${e.id}`, { label: e.label, icon: e.icon, color: e.color, ordem: e.ordem });
+      await api.put(`/crm/estagios/${e.id}`, { label: e.label, icon: '', color: e.color, ordem: e.ordem });
     } finally { setSalvando(null); }
   }
 
@@ -98,7 +98,7 @@ function ConfigModal({ estagios, onClose, onSaved }: {
     setAdicionando(true);
     try {
       await api.post('/crm/estagios', novo);
-      setNovo({ label: '', icon: '📌', color: '#64748b' });
+      setNovo({ label: '', icon: '', color: '#64748b' });
       onSaved();
     } finally { setAdicionando(false); }
   }
@@ -111,7 +111,7 @@ function ConfigModal({ estagios, onClose, onSaved }: {
     const atualizada = nova.map((e, i) => ({ ...e, ordem: i }));
     setLista(atualizada);
     // Salva ordens automaticamente
-    atualizada.forEach(e => api.put(`/crm/estagios/${e.id}`, { label: e.label, icon: e.icon, color: e.color, ordem: e.ordem }).catch(() => {}));
+    atualizada.forEach(e => api.put(`/crm/estagios/${e.id}`, { label: e.label, icon: '', color: e.color, ordem: e.ordem }).catch(() => {}));
   }
 
   function atualizar(id: string, campo: keyof Estagio, valor: string) {
@@ -149,11 +149,6 @@ function ConfigModal({ estagios, onClose, onSaved }: {
                   <button onClick={() => moverOrdem(idx, 1)} disabled={idx === lista.length - 1} style={{ padding: '1px 5px', fontSize: '10px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '4px', cursor: idx === lista.length - 1 ? 'default' : 'pointer', opacity: idx === lista.length - 1 ? 0.3 : 1 }}>▼</button>
                 </div>
 
-                {/* Ícone seletor */}
-                <select value={e.icon} onChange={ev => atualizar(e.id, 'icon', ev.target.value)}
-                  style={{ ...inp, width: '64px', fontSize: '16px', textAlign: 'center', padding: '6px 4px' }}>
-                  {ICONES.map(ic => <option key={ic} value={ic}>{ic}</option>)}
-                </select>
 
                 {/* Nome */}
                 <input value={e.label} onChange={ev => atualizar(e.id, 'label', ev.target.value)}
@@ -174,10 +169,10 @@ function ConfigModal({ estagios, onClose, onSaved }: {
                   background: salvando === e.id ? 'var(--primary-dim)' : 'var(--primary)',
                   color: salvando === e.id ? 'var(--primary)' : 'white',
                   border: 'none', borderRadius: '6px', cursor: 'pointer', whiteSpace: 'nowrap',
-                }}>{salvando === e.id ? '...' : '✓ Salvar'}</button>
+                }}>{salvando === e.id ? '...' : 'Salvar'}</button>
 
                 {/* Excluir */}
-                <button onClick={() => excluir(e)} style={{ padding: '6px 8px', fontSize: '12px', background: 'var(--red-dim)', color: 'var(--red)', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>✕</button>
+                <button onClick={() => excluir(e)} style={{ padding: '6px 8px', fontSize: '12px', background: 'var(--red-dim)', color: 'var(--red)', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Excluir</button>
               </div>
             </div>
           ))}
@@ -186,10 +181,6 @@ function ConfigModal({ estagios, onClose, onSaved }: {
           <div style={{ background: 'rgba(37,99,235,0.04)', border: '1px dashed var(--border)', borderRadius: '10px', padding: '14px' }}>
             <p style={{ margin: '0 0 10px', fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase' }}>+ Novo estágio personalizado</p>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-              <select value={novo.icon} onChange={e => setNovo(n => ({ ...n, icon: e.target.value }))}
-                style={{ ...inp, width: '64px', fontSize: '16px', textAlign: 'center', padding: '6px 4px' }}>
-                {ICONES.map(ic => <option key={ic} value={ic}>{ic}</option>)}
-              </select>
               <input value={novo.label} onChange={e => setNovo(n => ({ ...n, label: e.target.value }))}
                 style={{ ...inp, flex: 1, minWidth: '120px' }} placeholder="Nome do novo estágio" />
               <div style={{ display: 'flex', gap: '3px', flexWrap: 'wrap', maxWidth: '80px' }}>
@@ -243,7 +234,7 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
   const estagio = estagios.find(e => e.key === card.estagio);
   const priorCor: Record<string, string> = { alta: '#dc2626', normal: '#64748b', baixa: '#94a3b8' };
 
-  // Fonte do saldo a receber: prioriza venda pendente; senão usa a OS em aberto (💳)
+  // Fonte do saldo a receber: prioriza venda pendente; senão usa a OS em aberto ()
   const saldoVenda = card.saldo_venda_pendente || 0;
   const saldoOS = card.valor_pendente || 0;
   const usarVenda = !!card.venda_pendente_id && saldoVenda > 0;
@@ -333,7 +324,7 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
             {/* Saldo restante pós pagamento */}
             {recebidoNum > 0 && (
               <div style={{ marginBottom: '14px', padding: '10px 14px', borderRadius: '8px', background: novoSaldo === 0 ? 'rgba(22,163,74,0.1)' : 'rgba(100,116,139,0.08)', border: `1px solid ${novoSaldo === 0 ? 'rgba(22,163,74,0.3)' : 'var(--border)'}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '12px', color: novoSaldo === 0 ? '#16a34a' : 'var(--text-dim)', fontWeight: '600' }}>{novoSaldo === 0 ? '✅ Quitado!' : 'Saldo restante'}</span>
+                <span style={{ fontSize: '12px', color: novoSaldo === 0 ? '#16a34a' : 'var(--text-dim)', fontWeight: '600' }}>{novoSaldo === 0 ? 'Quitado!' : 'Saldo restante'}</span>
                 <span style={{ fontSize: '15px', fontWeight: '700', fontFamily: 'var(--mono)', color: novoSaldo === 0 ? '#16a34a' : 'var(--text-dim)' }}>{brl(novoSaldo)}</span>
               </div>
             )}
@@ -352,7 +343,7 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
             <div style={{ display: 'flex', gap: '8px' }}>
               <button onClick={() => setFinalizarOpen(false)} style={{ flex: 1, padding: '10px', fontSize: '14px', background: 'var(--surface-alt)', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer' }}>Cancelar</button>
               <button onClick={handleFinalizar} disabled={finalizando || recebidoNum <= 0} style={{ flex: 2, padding: '10px', fontSize: '14px', fontWeight: '700', background: recebidoNum <= 0 ? 'var(--surface-alt)' : '#f59e0b', color: recebidoNum <= 0 ? 'var(--text-muted)' : 'white', border: 'none', borderRadius: '8px', cursor: recebidoNum <= 0 ? 'default' : 'pointer' }}>
-                {finalizando ? 'Salvando...' : novoSaldo === 0 ? '✅ Confirmar e Finalizar' : '💰 Registrar Pagamento'}
+                {finalizando ? 'Salvando...' : novoSaldo === 0 ? 'Confirmar e Finalizar' : 'Registrar Pagamento'}
               </button>
             </div>
           </div>
@@ -378,30 +369,30 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
           </div>
         </div>
 
-        {card.cidade && <p style={{ margin: '0 0 3px', fontSize: '11px', color: 'var(--text-muted)' }}>📍 {card.cidade}{card.uf ? `/${card.uf}` : ''}</p>}
+        {card.cidade && <p style={{ margin: '0 0 3px', fontSize: '11px', color: 'var(--text-muted)' }}>{card.cidade}{card.uf ? `/${card.uf}` : ''}</p>}
         {temFone && <p style={{ margin: '0 0 4px', fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--mono)' }}>{fone}</p>}
 
         <div style={{ display: 'flex', gap: '6px', marginTop: '6px', flexWrap: 'wrap' }}>
           {card.total_os > 0 && <span style={{ fontSize: '10px', background: 'rgba(37,99,235,0.08)', color: '#2563eb', padding: '1px 6px', borderRadius: '10px' }}>{card.total_os} OS</span>}
           {card.total_gasto > 0 && <span style={{ fontSize: '10px', background: 'rgba(22,163,74,0.08)', color: '#16a34a', padding: '1px 6px', borderRadius: '10px' }}>{brl(card.total_gasto)}</span>}
-          {card.valor_pendente > 0 && <span style={{ fontSize: '10px', background: 'rgba(220,38,38,0.1)', color: '#dc2626', padding: '1px 6px', borderRadius: '10px', fontWeight: '600' }}>💳 {brl(card.valor_pendente)}</span>}
-          {(card.saldo_venda_pendente || 0) > 0 && <span style={{ fontSize: '10px', background: 'rgba(245,158,11,0.12)', color: '#d97706', padding: '1px 6px', borderRadius: '10px', fontWeight: '600' }}>👓 {brl(card.saldo_venda_pendente!)}</span>}
+          {card.valor_pendente > 0 && <span style={{ fontSize: '10px', background: 'rgba(220,38,38,0.1)', color: '#dc2626', padding: '1px 6px', borderRadius: '10px', fontWeight: '600' }}>{brl(card.valor_pendente)}</span>}
+          {(card.saldo_venda_pendente || 0) > 0 && <span style={{ fontSize: '10px', background: 'rgba(245,158,11,0.12)', color: '#d97706', padding: '1px 6px', borderRadius: '10px', fontWeight: '600' }}>{brl(card.saldo_venda_pendente!)}</span>}
           {ultimaAtiv && <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{diasAtras(ultimaAtiv)}</span>}
         </div>
 
         {card.notas && !expandido && (
-          <p style={{ margin: '6px 0 0', fontSize: '11px', color: 'var(--text-dim)', fontStyle: 'italic', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>💬 {card.notas}</p>
+          <p style={{ margin: '6px 0 0', fontSize: '11px', color: 'var(--text-dim)', fontStyle: 'italic', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{card.notas}</p>
         )}
 
         {podeReceber && (
           <button onClick={abrirModalFinalizar} style={{ width: '100%', marginTop: '8px', padding: '7px', fontSize: '12px', fontWeight: '700', background: 'rgba(245,158,11,0.15)', color: '#d97706', border: '1px solid rgba(245,158,11,0.4)', borderRadius: '7px', cursor: 'pointer' }}>
-            {`💰 Receber Pagamento — ${brl(saldo)}`}
+            {`Receber Pagamento · ${brl(saldo)}`}
           </button>
         )}
 
         {card.estagio === 'oculos_pronto' && (
           <button onClick={handleEntregar} disabled={finalizando} style={{ width: '100%', marginTop: '8px', padding: '7px', fontSize: '12px', fontWeight: '700', background: 'rgba(22,163,74,0.15)', color: '#16a34a', border: '1px solid rgba(22,163,74,0.4)', borderRadius: '7px', cursor: 'pointer' }}>
-            {finalizando ? 'Salvando...' : '✅ Marcar como Entregue → Pós-Venda'}
+            {finalizando ? 'Salvando...' : 'Marcar como Entregue → Pós-Venda'}
           </button>
         )}
 
@@ -423,7 +414,7 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
                   <button key={e.key} onClick={() => { onMover(card.id, e.key); setMovMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '7px 10px', fontSize: '13px', background: 'none', border: 'none', borderRadius: '6px', cursor: 'pointer', color: 'var(--text-dim)', textAlign: 'left' }}
                     onMouseEnter={e2 => (e2.currentTarget.style.background = 'var(--surface-alt)')}
                     onMouseLeave={e2 => (e2.currentTarget.style.background = 'none')}>
-                    <span>{e.icon}</span> {e.label}
+                    <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 2, background: e.color, marginRight: 6 }} />{e.label}
                   </button>
                 ))}
               </div>
@@ -496,12 +487,12 @@ function MarketingView() {
     <div style={{ padding: '32px' }}>
       <div style={{ marginBottom: '28px' }}>
         <h1 style={{ margin: '0 0 4px', fontSize: '22px', fontWeight: '600', color: 'var(--text)' }}>Minhas Vendas da Semana</h1>
-        <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-dim)' }}>Segunda a Sábado — semana atual</p>
+        <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-dim)' }}>Segunda a Sábado · semana atual</p>
       </div>
 
       {/* Total */}
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '14px', padding: '24px 28px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
-        <div style={{ width: '52px', height: '52px', borderRadius: '14px', background: 'rgba(37,99,235,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>🛒</div>
+        <div style={{ width: '52px', height: '52px', borderRadius: '14px', background: 'rgba(37,99,235,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icone nome="vendas" size={24} color="var(--primary)" /></div>
         <div>
           <p style={{ margin: 0, fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total da semana</p>
           <p style={{ margin: '4px 0 0', fontSize: '36px', fontWeight: '800', color: 'var(--primary)', fontFamily: 'var(--mono)', letterSpacing: '-1px' }}>{loading ? '...' : totalSemana}</p>
@@ -576,7 +567,7 @@ export default function Funil() {
 
   useEffect(() => { load(); }, [load]);
 
-  // Marketing vê a visão de vendas da semana (após os hooks — Regras dos Hooks)
+  // Marketing vê a visão de vendas da semana (após os hooks: Regras dos Hooks)
   if (usuario?.perfil === 'marketing') return <MarketingView />;
 
   async function mover(id: string, key: string) {
@@ -614,7 +605,7 @@ export default function Funil() {
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar cliente..." style={{ padding: '8px 12px', fontSize: '13px', width: '200px', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--surface)', color: 'var(--text)', outline: 'none' }} />
           <button onClick={() => setConfigOpen(true)} style={{ padding: '8px 14px', fontSize: '13px', fontWeight: '500', background: 'var(--surface)', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            ⚙️ Estágios
+            Estágios
           </button>
           <button onClick={load} style={{ padding: '8px 14px', fontSize: '13px', background: 'var(--surface)', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer' }}>↺</button>
         </div>
@@ -631,7 +622,7 @@ export default function Funil() {
               <div key={estagio.key} onDragOver={e => onDragOver(e, estagio.key)} onDrop={() => onDrop(estagio.key)} style={{ width: '240px', flexShrink: 0, display: 'flex', flexDirection: 'column', background: isOver ? `${estagio.color}10` : 'var(--surface-alt)', border: `1px solid ${isOver ? estagio.color : 'var(--border)'}`, borderRadius: '12px', transition: 'border-color 0.15s, background 0.15s' }}>
                 <div style={{ padding: '12px 14px 10px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                    <span style={{ fontSize: '16px' }}>{estagio.icon}</span>
+                    <span style={{ width: 9, height: 9, borderRadius: 2, background: estagio.color, flexShrink: 0 }} />
                     <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text)' }}>{estagio.label}</span>
                   </div>
                   <span style={{ fontSize: '11px', fontWeight: '700', minWidth: '22px', height: '22px', borderRadius: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: colCards.length > 0 ? estagio.color : 'var(--surface)', color: colCards.length > 0 ? 'white' : 'var(--text-muted)' }}>

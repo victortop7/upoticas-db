@@ -17,7 +17,7 @@ interface Ordem {
 
 function brl(v: number) { return Number(v||0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' }); }
 function fmtDate(s: string | null) {
-  if (!s) return '—';
+  if (!s) return '-';
   return s.slice(0,10).split('-').reverse().join('/');
 }
 function today() { return new Date().toISOString().slice(0,10); }
@@ -74,7 +74,7 @@ export default function LabRelatorios() {
       } else if (r.length === 1) {
         navigate(`/lab/ordens/${r[0].id}`);
       } else if (r.length > 0) {
-        // Múltiplos resultados — mostra drill-down da primeira ótica encontrada
+        // Múltiplos resultados: mostra drill-down da primeira ótica encontrada
         setErroBuscaOS(`${r.length} OS encontradas. Refine o número.`);
       } else {
         setErroBuscaOS(`OS #${num.padStart(4,'0')} não encontrada`);
@@ -138,20 +138,20 @@ export default function LabRelatorios() {
       .resumo .valor { font-size: 15px; font-weight: 900; }
       @media print { body { padding: 8px; } }
     </style></head><body>
-    <h1>CONNECT LAB — RELATÓRIO DE FATURAMENTO</h1>
+    <h1>CONNECT LAB · RELATÓRIO DE FATURAMENTO</h1>
     <div class="sub">
-      Ótica: <strong>${otica.codigo ? otica.codigo + ' — ' : ''}${otica.nome}</strong><br>
+      Ótica: <strong>${otica.codigo ? otica.codigo + ' - ' : ''}${otica.nome}</strong><br>
       Período: ${periodo} &nbsp;|&nbsp; Total de OS: ${ordens.length}
     </div>
     ${ordens.map(o => {
       const svcs = svcMap[o.id] || [];
       const status = { aguardando:'AGUARDANDO', em_producao:'EM PRODUÇÃO', pronto:'PRONTO', entregue:'ENTREGUE', cancelado:'CANCELADO' }[o.status] || o.status;
-      const data = o.created_at ? o.created_at.slice(0,10).split('-').reverse().join('/') : '—';
-      const prev = o.previsao_entrega ? o.previsao_entrega.slice(0,10).split('-').reverse().join('/') : '—';
+      const data = o.created_at ? o.created_at.slice(0,10).split('-').reverse().join('/') : '-';
+      const prev = o.previsao_entrega ? o.previsao_entrega.slice(0,10).split('-').reverse().join('/') : '-';
       return `
       <div class="os-block">
         <div class="os-header">
-          <span>#${String(o.numero).padStart(4,'0')} — ${o.tipo || ''}</span>
+          <span>#${String(o.numero).padStart(4,'0')} · ${o.tipo || ''}</span>
           <span>${status}</span>
           <span>${brlFmt(o.total||0)}</span>
         </div>
@@ -167,7 +167,7 @@ export default function LabRelatorios() {
           <thead><tr><th>Cód.</th><th>Descrição</th><th class="num">Qtd</th><th class="num">Unit.</th><th class="num">Desc%</th><th class="num">Total</th></tr></thead>
           <tbody>
             ${svcs.map(s => `<tr>
-              <td>${s.codigo||'—'}</td>
+              <td>${s.codigo||'-'}</td>
               <td>${s.descricao||''}</td>
               <td class="num">${s.qtd||1}</td>
               <td class="num">${brlFmt(s.pv_unit||0)}</td>
@@ -213,7 +213,7 @@ export default function LabRelatorios() {
               ← VOLTAR
             </button>
             <div style={{ background:R.hdr, color:R.hdrTxt, padding:'5px 14px', fontSize:'13px', fontWeight:'700', letterSpacing:'1px', border:`2px outset ${R.hdrBdr}` }}>
-              {oticaSel.nome} — {ordens.length} OS
+              {oticaSel.nome} · {ordens.length} OS
             </div>
           </div>
           <div style={{ display:'flex', gap:'8px', alignItems:'center' }}>
@@ -222,7 +222,7 @@ export default function LabRelatorios() {
             </div>
             <button onClick={() => imprimirRelatorio(ordens, servicosPorOS, oticaSel!, `${fmtDate(dataIni)} até ${fmtDate(dataFim)}`)}
               style={{ padding:'5px 14px', fontSize:'11px', fontWeight:'700', background:R.accent2, color:'#fff', border:'1px outset #003388', cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
-              🖨️ IMPRIMIR RELATÓRIO
+              IMPRIMIR RELATÓRIO
             </button>
           </div>
         </div>
@@ -230,7 +230,7 @@ export default function LabRelatorios() {
         {/* Título de impressão */}
         <div style={{ display:'none' }} className="print-only">
           <div style={{ textAlign:'center', marginBottom:'8px', fontFamily:"'Courier New', monospace" }}>
-            <div style={{ fontSize:'16px', fontWeight:'900' }}>RELATÓRIO DE OS — {oticaSel.nome}</div>
+            <div style={{ fontSize:'16px', fontWeight:'900' }}>RELATÓRIO DE OS · {oticaSel.nome}</div>
             <div style={{ fontSize:'12px' }}>Período: {fmtDate(dataIni)} até {fmtDate(dataFim)} &nbsp;|&nbsp; Total: {ordens.length} OS</div>
           </div>
         </div>
@@ -283,11 +283,11 @@ export default function LabRelatorios() {
                       <td style={{ padding:'6px 10px' }}>
                         <span style={{ fontSize:'10px', fontWeight:'700', color:st.color, background:st.bg, padding:'2px 6px', border:`1px solid ${st.color}`, whiteSpace:'nowrap' }}>{st.label}</span>
                       </td>
-                      <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt }}>{o.ref_otica||'—'}</td>
-                      <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt }}>{o.cont_interno||'—'}</td>
-                      <td style={{ padding:'6px 10px', fontSize:'11px', color:R.txt }}>{o.vendedor||'—'}</td>
+                      <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt }}>{o.ref_otica||'-'}</td>
+                      <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt }}>{o.cont_interno||'-'}</td>
+                      <td style={{ padding:'6px 10px', fontSize:'11px', color:R.txt }}>{o.vendedor||'-'}</td>
                       <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'700', color:R.txt, textAlign:'right', whiteSpace:'nowrap' }}>
-                        {o.total > 0 ? brl(o.total) : '—'}
+                        {o.total > 0 ? brl(o.total) : '-'}
                       </td>
                       <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt, whiteSpace:'nowrap' }}>{fmtDate(o.previsao_entrega)}</td>
                       <td style={{ padding:'6px 10px' }}>
@@ -329,7 +329,7 @@ export default function LabRelatorios() {
         {buscado && (
           <button onClick={() => window.print()} className="no-print"
             style={{ padding:'5px 14px', fontSize:'11px', fontWeight:'700', background:R.accent2, color:'#fff', border:'1px outset #003388', cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
-            🖨️ IMPRIMIR RELATÓRIO
+            IMPRIMIR RELATÓRIO
           </button>
         )}
       </div>
@@ -346,11 +346,11 @@ export default function LabRelatorios() {
         />
         <button onClick={buscarPorNumero} disabled={buscandoOS}
           style={{ padding:'5px 14px', fontSize:'11px', fontWeight:'700', background:R.accent, color:'var(--lab-on-accent)', border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
-          {buscandoOS ? 'BUSCANDO...' : '🔍 IR PARA OS'}
+          {buscandoOS ? 'BUSCANDO...' : 'IR PARA OS'}
         </button>
         {erroBuscaOS && (
           <span style={{ fontSize:'11px', color:R.accent, fontWeight:'700', fontFamily:"'Courier New', monospace" }}>
-            ✕ {erroBuscaOS}
+            {erroBuscaOS}
           </span>
         )}
       </div>
@@ -369,7 +369,7 @@ export default function LabRelatorios() {
 
           <button onClick={buscarResumo} disabled={loading}
             style={{ padding:'5px 18px', fontSize:'12px', fontWeight:'700', background:R.accent, color:'var(--lab-on-accent)', border:`1px outset ${R.hdrBdr}`, cursor:loading?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase', alignSelf:'flex-end' }}>
-            {loading ? 'BUSCANDO...' : '🔍 GERAR RELATÓRIO'}
+            {loading ? 'BUSCANDO...' : 'GERAR RELATÓRIO'}
           </button>
         </div>
 
@@ -399,7 +399,7 @@ export default function LabRelatorios() {
             { label:'TOTAL DE OS', val: String(totais.total_os), sub: `de ${fmtDate(dataIni)} a ${fmtDate(dataFim)}` },
             { label:'ÓTICAS ATENDIDAS', val: String(oticas.length), sub: 'no período' },
             { label:'VALOR TOTAL', val: brl(totais.valor_total), sub: 'soma de todas as OS' },
-            { label:'TICKET MÉDIO', val: totais.total_os > 0 ? brl(totais.valor_total / totais.total_os) : '—', sub: 'por OS' },
+            { label:'TICKET MÉDIO', val: totais.total_os > 0 ? brl(totais.valor_total / totais.total_os) : '-', sub: 'por OS' },
           ].map(({ label, val, sub }) => (
             <div key={label} style={{ background:R.panel, border:`2px outset ${R.bdr}`, padding:'8px 16px', flexShrink:0 }}>
               <div style={{ fontSize:'10px', fontWeight:'700', color:R.dim, textTransform:'uppercase', letterSpacing:'0.5px' }}>{label}</div>
@@ -436,7 +436,7 @@ export default function LabRelatorios() {
                   <tr key={o.otica_id} style={{ background: i%2===0 ? R.panel : R.alt, borderBottom:`1px solid ${R.bdr}`, cursor:'pointer' }}
                     onMouseEnter={e => (e.currentTarget.style.background=R.accent)}
                     onMouseLeave={e => (e.currentTarget.style.background= i%2===0 ? R.panel : R.alt)}>
-                    <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.dim }}>{o.otica_codigo||'—'}</td>
+                    <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.dim }}>{o.otica_codigo||'-'}</td>
                     <td style={{ padding:'7px 10px', fontSize:'13px', fontWeight:'700', color:R.txt }}>{o.otica_nome}</td>
                     <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'14px', fontWeight:'900', color:R.txt }}>{o.total_os}</td>
                     <td style={{ padding:'7px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'700', color:R.accent }}>{o.entregues}</td>

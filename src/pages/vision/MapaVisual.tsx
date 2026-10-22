@@ -280,7 +280,7 @@ export default function MapaVisual() {
           ))}
         </div>
 
-        {/* Left panel — lentes list */}
+        {/* Left panel · lentes list */}
         <div style={{
           width: 190, background: '#fff',
           borderRight: '0.5px solid rgba(60,60,67,0.18)',
@@ -360,7 +360,7 @@ export default function MapaVisual() {
           </div>
         </div>
 
-        {/* Center — radar */}
+        {/* Center · radar */}
         <div style={{
           flex: 1, display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center', padding: '16px 8px',
@@ -387,7 +387,7 @@ export default function MapaVisual() {
           )}
         </div>
 
-        {/* Right — recommendations */}
+        {/* Right · recommendations */}
         <div style={{
           width: 210, background: '#fff',
           borderLeft: '0.5px solid rgba(60,60,67,0.18)',
@@ -424,7 +424,7 @@ export default function MapaVisual() {
         </div>
       </div>
 
-      {/* Bottom — drum pickers (roleta iOS) */}
+      {/* Bottom · drum pickers (roleta iOS) */}
       <div style={{
         background: 'rgba(249,249,251,0.85)',
         backdropFilter: 'blur(24px) saturate(1.6)', WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
@@ -455,7 +455,7 @@ export default function MapaVisual() {
           padding: '10px 16px', flexShrink: 0, minWidth: 130,
         }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px 20px' }}>
-            {[['ESF', esf], ['CIL', cil], ['ADD', add !== '0.00' ? add : '—'], ['DNP', dnp]].map(([k, v]) => (
+            {[['ESF', esf], ['CIL', cil], ['ADD', add !== '0.00' ? add : '-'], ['DNP', dnp]].map(([k, v]) => (
               <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
                 <span style={{ fontSize: 10, color: '#8e8e93', fontWeight: 600 }}>{k}</span>
                 <span style={{ fontSize: 12, fontWeight: 700, color: cor, fontVariantNumeric: 'tabular-nums' }}>{v}</span>
@@ -472,7 +472,7 @@ function Badge({ label }: { label: string }) {
   return (
     <span style={{
       background: 'rgba(118,118,128,0.12)',
-      borderRadius: 999, padding: '3px 11px',
+      borderRadius: 6, padding: '3px 11px',
       fontSize: 10.5, color: '#6e6e73', fontWeight: 600, letterSpacing: '-0.01em',
     }}>{label}</span>
   );

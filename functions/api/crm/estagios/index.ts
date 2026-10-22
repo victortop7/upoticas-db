@@ -34,7 +34,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const now = new Date().toISOString();
   await env.DB.prepare(
     'INSERT INTO crm_estagios (id, tenant_id, key, label, icon, color, ordem, sistema, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)'
-  ).bind(id, auth.tenant_id, key, body.label.trim(), body.icon || '📌', body.color || '#64748b', (ultimo?.max_ordem || 0) + 1, now).run();
+  ).bind(id, auth.tenant_id, key, body.label.trim(), body.icon || '', body.color || '#64748b', (ultimo?.max_ordem || 0) + 1, now).run();
 
-  return json({ id, key, label: body.label.trim(), icon: body.icon || '📌', color: body.color || '#64748b', sistema: 0 }, 201);
+  return json({ id, key, label: body.label.trim(), icon: body.icon || '', color: body.color || '#64748b', sistema: 0 }, 201);
 };

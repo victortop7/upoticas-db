@@ -38,7 +38,7 @@ export default function LoginLab() {
 
         {/* Header retro */}
         <div style={{ background: 'linear-gradient(90deg,#005500,#008800)', color: '#ccffcc', padding: '10px 16px', fontWeight: '700', fontSize: '14px', letterSpacing: '2px', textTransform: 'uppercase', border: '2px outset #007700', marginBottom: '0', textAlign: 'center' }}>
-          🔬 Connect LAB
+          Connect LAB
         </div>
         <div style={{ background: '#d4d0c8', border: '2px inset #b0aca4', padding: '28px 24px' }}>
           <div style={{ textAlign: 'center', marginBottom: '20px' }}>
@@ -75,7 +75,7 @@ export default function LoginLab() {
         </div>
 
         <div style={{ textAlign: 'center', marginTop: '14px', fontSize: '11px', color: '#666', fontFamily: "'Courier New', monospace" }}>
-          Connect LAB v1.0 — Sistema para Laboratórios Ópticos
+          Connect LAB v1.0 · Sistema para Laboratórios Ópticos
         </div>
         <div style={{ textAlign: 'center', marginTop: '10px' }}>
           <Link to="/login" style={{ fontSize: '11px', color: '#555', fontFamily: "'Courier New', monospace", textDecoration: 'none' }}>É uma ótica? Acessar o Connect Óticas →</Link>

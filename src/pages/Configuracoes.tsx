@@ -41,7 +41,7 @@ function AlterarSenhaModal({ onClose }: { onClose: () => void }) {
         </div>
         <form onSubmit={handleSubmit} style={{ padding: '20px 24px' }}>
           {ok ? (
-            <p style={{ textAlign: 'center', color: '#16a34a', fontWeight: '600', fontSize: '15px', margin: '8px 0 16px' }}>✓ Senha alterada com sucesso!</p>
+            <p style={{ textAlign: 'center', color: '#16a34a', fontWeight: '600', fontSize: '15px', margin: '8px 0 16px' }}>Senha alterada com sucesso!</p>
           ) : (
             <>
               {[
@@ -109,7 +109,7 @@ export default function Configuracoes() {
     carregarBling();
     // Retorno do OAuth do Bling (?bling=ok|erro)
     const p = new URLSearchParams(window.location.search).get('bling');
-    if (p === 'ok') { setBlingMsg('✓ Bling conectado com sucesso!'); window.history.replaceState({}, '', '/configuracoes'); }
+    if (p === 'ok') { setBlingMsg('Bling conectado com sucesso!'); window.history.replaceState({}, '', '/configuracoes'); }
     else if (p === 'erro') { setBlingMsg('Não foi possível conectar ao Bling. Tente novamente.'); window.history.replaceState({}, '', '/configuracoes'); }
   }, []);
 
@@ -263,7 +263,7 @@ export default function Configuracoes() {
           <div style={{ width: '90px' }}>
             <label style={labelStyle}>UF</label>
             <select style={inputStyle} value={form.uf} onChange={e => set('uf', e.target.value)}>
-              <option value="">—</option>
+              <option value="">-</option>
               {UF_LIST.map(uf => <option key={uf} value={uf}>{uf}</option>)}
             </select>
           </div>
@@ -278,7 +278,7 @@ export default function Configuracoes() {
           }}>
             {saving ? 'Salvando...' : 'Salvar Alterações'}
           </button>
-          {saved && <span style={{ fontSize: '13px', color: '#16a34a', fontWeight: '500' }}>✓ Salvo com sucesso</span>}
+          {saved && <span style={{ fontSize: '13px', color: '#16a34a', fontWeight: '500' }}>Salvo com sucesso</span>}
           {erro && <span style={{ fontSize: '13px', color: 'var(--red)' }}>{erro}</span>}
         </div>
       </form>
@@ -300,7 +300,7 @@ export default function Configuracoes() {
       <div style={{ marginTop: '16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
           <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '600', color: 'var(--text)' }}>NFC-e / Nota Fiscal</h3>
-          <span style={{ fontSize: '10px', fontWeight: '700', color: '#d97706', background: 'rgba(217,119,6,0.12)', padding: '2px 8px', borderRadius: '20px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          <span style={{ fontSize: '10px', fontWeight: '700', color: '#d97706', background: 'rgba(217,119,6,0.12)', padding: '2px 8px', borderRadius: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             Em breve
           </span>
         </div>
@@ -357,17 +357,17 @@ export default function Configuracoes() {
           >
             {nfceSaving ? 'Salvando...' : 'Salvar configuração NFC-e'}
           </button>
-          {nfceSaved && <span style={{ fontSize: '13px', color: 'var(--green)', fontWeight: '500' }}>✓ Salvo</span>}
+          {nfceSaved && <span style={{ fontSize: '13px', color: 'var(--green)', fontWeight: '500' }}>Salvo</span>}
         </div>
       </div>
 
-      {/* Integração Bling — emissão de NF-e */}
+      {/* Integração Bling · emissão de NF-e */}
       <div style={{ marginTop: '16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-          <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '600', color: 'var(--text)' }}>Bling — Nota Fiscal (NF-e)</h3>
+          <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '600', color: 'var(--text)' }}>Bling · Nota Fiscal (NF-e)</h3>
           {bling?.conectado
-            ? <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--green)', background: 'rgba(34,197,94,0.12)', padding: '2px 8px', borderRadius: '20px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Conectado</span>
-            : <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', background: 'var(--surface-alt)', padding: '2px 8px', borderRadius: '20px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Não conectado</span>}
+            ? <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--green)', background: 'rgba(34,197,94,0.12)', padding: '2px 8px', borderRadius: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Conectado</span>
+            : <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', background: 'var(--surface-alt)', padding: '2px 8px', borderRadius: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Não conectado</span>}
         </div>
         <p style={{ margin: '0 0 18px', fontSize: '13px', color: 'var(--text-muted)' }}>
           Conecte a conta do Bling para emitir a nota fiscal das vendas direto pelo sistema. A nota é gerada e enviada pelo próprio Bling.
@@ -388,7 +388,7 @@ export default function Configuracoes() {
           ) : (
             <button type="button" disabled={blingBusy || (bling ? !bling.configurado : false)} onClick={conectarBling}
               style={{ padding: '9px 20px', fontSize: '13px', fontWeight: '600', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', cursor: (blingBusy || (bling && !bling.configurado)) ? 'default' : 'pointer', opacity: (bling && !bling.configurado) ? 0.5 : 1 }}>
-              {blingBusy ? 'Abrindo Bling...' : '🔗 Conectar ao Bling'}
+              {blingBusy ? 'Abrindo Bling...' : 'Conectar ao Bling'}
             </button>
           )}
           {blingMsg && <span style={{ fontSize: '13px', color: bling?.conectado ? 'var(--green)' : 'var(--text-dim)', fontWeight: '500' }}>{blingMsg}</span>}
@@ -396,7 +396,7 @@ export default function Configuracoes() {
 
         {bling?.conectado && (
           <div style={{ marginTop: '18px', paddingTop: '18px', borderTop: '1px solid var(--border)' }}>
-            <label style={labelStyle}>Natureza de operação (ID no Bling) — opcional</label>
+            <label style={labelStyle}>Natureza de operação (ID no Bling) · opcional</label>
             <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
               <input
                 style={{ ...inputStyle, fontFamily: 'var(--mono)', maxWidth: '220px' }}
@@ -406,7 +406,7 @@ export default function Configuracoes() {
                 inputMode="numeric"
               />
               <button type="button" disabled={nfceSaving}
-                onClick={async () => { setNfceSaving(true); try { await api.put('/configuracoes', form); setBlingMsg('✓ Natureza salva'); } catch {} setNfceSaving(false); }}
+                onClick={async () => { setNfceSaving(true); try { await api.put('/configuracoes', form); setBlingMsg('Natureza salva'); } catch {} setNfceSaving(false); }}
                 style={{ padding: '9px 18px', fontSize: '13px', fontWeight: '600', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
                 {nfceSaving ? 'Salvando...' : 'Salvar'}
               </button>
@@ -420,10 +420,10 @@ export default function Configuracoes() {
 
       <LogoLoja />
 
-      {/* Pix — para os carnês/boletos */}
+      {/* Pix · para os carnês/boletos */}
       <div style={{ marginTop: '16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-          <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '600', color: 'var(--text)' }}>Pix — Carnês / Boletos</h3>
+          <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '600', color: 'var(--text)' }}>Pix · Carnês / Boletos</h3>
         </div>
         <p style={{ margin: '0 0 18px', fontSize: '13px', color: 'var(--text-muted)' }}>
           A chave Pix da loja usada pra gerar o QR Code de cada parcela do carnê. O pagamento cai direto na conta da loja.
@@ -456,7 +456,7 @@ export default function Configuracoes() {
             style={{ padding: '9px 20px', fontSize: '13px', fontWeight: '600', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
             {nfceSaving ? 'Salvando...' : 'Salvar chave Pix'}
           </button>
-          {pixSaved && <span style={{ fontSize: '13px', color: 'var(--green)', fontWeight: '500' }}>✓ Salvo</span>}
+          {pixSaved && <span style={{ fontSize: '13px', color: 'var(--green)', fontWeight: '500' }}>Salvo</span>}
         </div>
       </div>
 

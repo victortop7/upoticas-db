@@ -130,7 +130,7 @@ export default function Bancario() {
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px' }}>
         <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>
-            {contaAtual ? `Extrato — ${contaAtual.nome}` : 'Extrato — Todas as Contas'}
+            {contaAtual ? `Extrato · ${contaAtual.nome}` : 'Extrato · Todas as Contas'}
           </span>
           {contaAtual && (
             <span style={{ fontSize: '13px', fontFamily: 'var(--mono)', color: contaAtual.saldo_atual >= 0 ? 'var(--green)' : 'var(--red)', fontWeight: '700' }}>
@@ -157,7 +157,7 @@ export default function Bancario() {
                   <td style={{ padding: '11px 14px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text-dim)', whiteSpace: 'nowrap' }}>{fmtDate(l.data_lancamento)}</td>
                   <td style={{ padding: '11px 14px', fontSize: '12px', color: 'var(--text-dim)' }}>{l.conta_nome}</td>
                   <td style={{ padding: '11px 14px', fontSize: '13px', color: 'var(--text)' }}>{l.historico}</td>
-                  <td style={{ padding: '11px 14px', fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--text-muted)' }}>{l.documento || '—'}</td>
+                  <td style={{ padding: '11px 14px', fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--text-muted)' }}>{l.documento || '-'}</td>
                   <td style={{ padding: '11px 14px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '600', color: 'var(--red)' }}>
                     {l.tipo === 'debito' ? brl(l.valor) : ''}
                   </td>

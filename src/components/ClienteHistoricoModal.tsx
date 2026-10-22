@@ -116,7 +116,7 @@ export default function ClienteHistoricoModal({ clienteId, clienteNome, onClose 
                           {SITUACAO_LABEL[os.situacao]}
                         </span>
                       </td>
-                      <td style={{ padding: '11px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>{os.armacao_desc || '—'}</td>
+                      <td style={{ padding: '11px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>{os.armacao_desc || '-'}</td>
                       <td style={{ padding: '11px 16px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text)' }}>{brl(os.valor_total)}</td>
                       <td style={{ padding: '11px 16px', fontFamily: 'var(--mono)', fontSize: '12px', color: os.valor_restante > 0 ? '#dc2626' : 'var(--text-muted)' }}>{brl(os.valor_restante)}</td>
                     </tr>
@@ -143,7 +143,7 @@ export default function ClienteHistoricoModal({ clienteId, clienteNome, onClose 
                       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                       <td style={{ padding: '11px 16px', fontFamily: 'var(--mono)', fontSize: '12px', fontWeight: '600', color: 'var(--primary)' }}>#{String(v.numero).padStart(4,'0')}</td>
                       <td style={{ padding: '11px 16px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text-dim)' }}>{fmtDate(v.created_at)}</td>
-                      <td style={{ padding: '11px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>{PGTO[v.forma_pagamento || ''] || '—'}</td>
+                      <td style={{ padding: '11px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>{PGTO[v.forma_pagamento || ''] || '-'}</td>
                       <td style={{ padding: '11px 16px' }}>
                         <span style={{ fontSize: '12px', fontWeight: '500', color: v.situacao === 'ativa' ? '#16a34a' : '#dc2626' }}>
                           {v.situacao === 'ativa' ? 'Ativa' : 'Cancelada'}

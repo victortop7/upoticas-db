@@ -11,7 +11,7 @@ function statusDoSetor(setor: string): string {
   return 'em_producao';
 }
 
-// POST /api/lab/fluxo/mover — move a OS para uma etapa do funil (Kanban)
+// POST /api/lab/fluxo/mover: move a OS para uma etapa do funil (Kanban)
 // Fecha a saída (termino) da etapa aberta atual e abre a entrada (inicio) da nova.
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
   try {

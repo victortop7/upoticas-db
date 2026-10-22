@@ -19,7 +19,7 @@ async function ensureTable(env: Env) {
   } catch { /* ok */ }
 }
 
-// POST /api/promo/resgatar — resgata código de teste grátis (cria ou estende conta)
+// POST /api/promo/resgatar: resgata código de teste grátis (cria ou estende conta)
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
   try {
     await ensureTable(env);

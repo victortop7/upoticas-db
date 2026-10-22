@@ -129,7 +129,7 @@ export default function PixModal({ onClose, onPago, dismissible = true, titulo, 
                 <button onClick={copiar} style={{
                   background: copiado ? '#16a34a' : '#1e293b', color: '#fff', border: 'none', borderRadius: 10,
                   padding: '0 16px', fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
-                }}>{copiado ? '✓ Copiado' : 'Copiar'}</button>
+                }}>{copiado ? 'Copiado' : 'Copiar'}</button>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 18, fontSize: 13, color: '#64748b' }}>
                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#f59e0b', animation: 'pulsePix 1.4s ease-in-out infinite' }} />

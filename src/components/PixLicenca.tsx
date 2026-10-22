@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../lib/api';
+import Icone from './Icone';
 
 /* Pagamento da mensalidade via Pix (Asaas).
    Aparece nas telas de licença expirada / bloqueada.
-   Usa /api/asaas/pix (requireAuthBasic — funciona mesmo com licença vencida). */
+   Usa /api/asaas/pix (requireAuthBasic · funciona mesmo com licença vencida). */
 
 interface PixResp {
   paymentId: string;
@@ -75,7 +76,7 @@ export default function PixLicenca() {
     return (
       <div style={card}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 44 }}>✅</div>
+          <div style={{ display: 'flex', justifyContent: 'center' }}><Icone nome="ok" size={44} color="#16a34a" /></div>
           <div style={{ fontSize: 17, fontWeight: 700, color: '#16a34a', marginTop: 8 }}>Pagamento confirmado!</div>
           <div style={{ fontSize: 13, color: txtDim, marginTop: 6 }}>Liberando seu acesso…</div>
         </div>
@@ -124,7 +125,7 @@ export default function PixLicenca() {
         <input readOnly value={pix.copiaCola} onClick={e => (e.target as HTMLInputElement).select()}
           style={{ flex: 1, padding: '9px 11px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 11.5, fontFamily: 'ui-monospace, monospace', color: '#334155', minWidth: 0, boxSizing: 'border-box' }} />
         <button onClick={copiar} style={{ padding: '0 14px', background: copiado ? '#16a34a' : '#0f172a', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-          {copiado ? '✓' : 'Copiar'}
+          {copiado ? 'Copiado' : 'Copiar'}
         </button>
       </div>
       <button onClick={() => verificar(false)} disabled={verificando}

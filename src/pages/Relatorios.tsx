@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
+import Icone from '../components/Icone';
 
 interface Resumo {
   periodo: { inicio: string; fim: string };
@@ -144,7 +145,7 @@ function VendedorModal({ funcionarioId, nome, inicio, fim, isAdmin, onClose }: {
                 </div>
                 {isAdmin && (
                   <button onClick={salvarRegras} disabled={salvando} style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 600, background: salvo ? 'var(--green)' : 'var(--primary)', color: 'white', border: 'none', borderRadius: '7px', cursor: 'pointer' }}>
-                    {salvando ? '...' : salvo ? '✓ Salvo' : 'Salvar %'}
+                    {salvando ? '...' : salvo ? 'Salvo' : 'Salvar %'}
                   </button>
                 )}
               </div>
@@ -203,11 +204,11 @@ function VendedorModal({ funcionarioId, nome, inicio, fim, isAdmin, onClose }: {
                       return (
                         <tr key={v.id} style={{ borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>
                           <td style={{ ...tdMono, textAlign: 'left', color: 'var(--primary)', fontWeight: 700 }}>#{String(v.numero).padStart(4, '0')}</td>
-                          <td style={td}>{v.cliente_nome || '—'}</td>
+                          <td style={td}>{v.cliente_nome || '-'}</td>
                           <td style={{ ...tdMono, textAlign: 'left', color: 'var(--text-dim)' }}>{fmtDate(v.created_at.split('T')[0])}</td>
                           <td style={{ ...tdMono, fontWeight: 700 }}>{brl(v.valor_final)}</td>
-                          <td style={{ ...tdMono, color: v.saldo_restante > 0 ? '#dc2626' : 'var(--text-muted)' }}>{v.saldo_restante > 0 ? brl(v.saldo_restante) : '—'}</td>
-                          <td style={td}><span style={{ padding: '2px 9px', borderRadius: '20px', fontSize: '11px', fontWeight: 600, background: sc.bg, color: sc.cor }}>{sc.label}</span></td>
+                          <td style={{ ...tdMono, color: v.saldo_restante > 0 ? '#dc2626' : 'var(--text-muted)' }}>{v.saldo_restante > 0 ? brl(v.saldo_restante) : '-'}</td>
+                          <td style={td}><span style={{ padding: '2px 9px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, background: sc.bg, color: sc.cor }}>{sc.label}</span></td>
                         </tr>
                       );
                     })}
@@ -216,12 +217,12 @@ function VendedorModal({ funcionarioId, nome, inicio, fim, isAdmin, onClose }: {
               )}
             </div>
 
-            {/* Rodapé — salvar tabela de comissão (bem visível) */}
+            {/* Rodapé · salvar tabela de comissão (bem visível) */}
             {isAdmin && (
               <div style={{ padding: '14px 22px', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexShrink: 0, flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '13px', color: 'var(--text-dim)' }}>Comissão do período: <b style={{ color: 'var(--primary)', fontFamily: 'var(--mono)', fontSize: '15px' }}>{brl(comissaoTotal)}</b></span>
                 <button onClick={salvarRegras} disabled={salvando} style={{ padding: '11px 26px', fontSize: '14px', fontWeight: 700, background: salvo ? 'var(--green)' : 'var(--primary)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer' }}>
-                  {salvando ? 'Salvando...' : salvo ? '✓ Comissão salva!' : '💾 Salvar tabela de comissão'}
+                  {salvando ? 'Salvando...' : salvo ? 'Comissão salva!' : 'Salvar tabela de comissão'}
                 </button>
               </div>
             )}
@@ -265,7 +266,7 @@ export default function Relatorios() {
   const filterBtn = (active: boolean): React.CSSProperties => ({
     padding: '7px 14px', fontSize: '13px', fontWeight: '500',
     border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`,
-    borderRadius: '20px', cursor: 'pointer',
+    borderRadius: '6px', cursor: 'pointer',
     background: active ? 'var(--primary)' : 'var(--surface)',
     color: active ? 'white' : 'var(--text-dim)',
   });
@@ -278,20 +279,20 @@ export default function Relatorios() {
         <div>
           <h1 style={{ margin: '0 0 4px', fontSize: '22px', fontWeight: '600', color: 'var(--text)' }}>Relatórios</h1>
           <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-dim)' }}>
-            {data ? `${fmtDate(data.periodo.inicio)} — ${fmtDate(data.periodo.fim)}` : 'Selecione um período'}
+            {data ? `${fmtDate(data.periodo.inicio)} · ${fmtDate(data.periodo.fim)}` : 'Selecione um período'}
           </p>
         </div>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           <Link to="/relatorios/exportar" style={{ padding: '9px 18px', fontSize: '14px', fontWeight: 600, background: 'var(--primary)', color: 'white', borderRadius: '8px', textDecoration: 'none', whiteSpace: 'nowrap' }}>
-            ⚙️ Relatório personalizado / Exportar
+            Relatório personalizado / Exportar
           </Link>
           <Link to="/financeiro/contas-receber" style={{ padding: '9px 18px', fontSize: '14px', fontWeight: 600, background: 'transparent', color: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: '8px', textDecoration: 'none', whiteSpace: 'nowrap' }}>
-            🧾 Cobrança / crediário
+            Cobrança / crediário
           </Link>
           {data && (
             <a href={`/relatorios/imprimir?inicio=${data.periodo.inicio}&fim=${data.periodo.fim}`} target="_blank" rel="noreferrer"
               style={{ padding: '9px 18px', fontSize: '14px', fontWeight: 600, background: 'transparent', color: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: '8px', cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap' }}>
-              📄 PDF rápido
+              PDF rápido
             </a>
           )}
         </div>
@@ -324,7 +325,7 @@ export default function Relatorios() {
               { label: 'Faturamento (Vendas)', value: brl(data.vendas.valor), color: '#2563eb', sub: `${data.vendas.total} vendas • já pago ${brl(data.vendas.recebido)}` },
               { label: 'A Receber (Vendas)', value: brl(data.a_receber_geral.total), color: '#dc2626', sub: `${data.a_receber_geral.qtd} venda(s) em aberto` },
               { label: 'Descontos', value: brl(data.vendas.descontos), color: '#d97706', sub: 'Total concedido' },
-              { label: 'OS — Recebido', value: brl(data.os.recebido), color: '#16a34a', sub: `OS pendente: ${brl(data.os.pendente)}` },
+              { label: 'OS · Recebido', value: brl(data.os.recebido), color: '#16a34a', sub: `OS pendente: ${brl(data.os.pendente)}` },
             ].map((card, i) => (
               <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '18px 20px' }}>
                 <p style={{ margin: '0 0 8px', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{card.label}</p>
@@ -385,7 +386,7 @@ export default function Relatorios() {
             </div>
           </div>
 
-          {/* Por Vendedor — separado por perfil */}
+          {/* Por Vendedor · separado por perfil */}
           {(() => {
             const vendedores = data.por_vendedor.filter(v => v.perfil !== 'marketing');
             const marketing  = data.por_vendedor.filter(v => v.perfil === 'marketing');
@@ -410,7 +411,7 @@ export default function Relatorios() {
                       <td style={{ padding: '12px 16px', fontSize: '14px', color: 'var(--text)', fontWeight: '600' }}>{v.vendedor}</td>
                       <td style={{ padding: '12px 16px' }}>
                         <span style={{
-                          padding: '2px 8px', borderRadius: '20px', fontSize: '11px', fontWeight: '600',
+                          padding: '2px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: '600',
                           background: v.perfil === 'admin' ? 'rgba(124,58,237,0.1)' : v.perfil === 'marketing' ? 'rgba(236,72,153,0.1)' : 'rgba(37,99,235,0.1)',
                           color: v.perfil === 'admin' ? '#7c3aed' : v.perfil === 'marketing' ? '#db2777' : '#2563eb',
                         }}>
@@ -422,7 +423,7 @@ export default function Relatorios() {
                         <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '700', color: '#16a34a', textAlign: 'right' }}>{brl(v.valor_total)}</td>
                         <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '600', color: '#2563eb', textAlign: 'right' }}>{brl(v.ticket_medio)}</td>
                         <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', color: '#d97706', textAlign: 'right' }}>{brl(v.total_desconto)}</td>
-                        <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '600', color: v.a_receber > 0 ? '#dc2626' : 'var(--text-muted)', textAlign: 'right' }}>{v.a_receber > 0 ? brl(v.a_receber) : '—'}</td>
+                        <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '600', color: v.a_receber > 0 ? '#dc2626' : 'var(--text-muted)', textAlign: 'right' }}>{v.a_receber > 0 ? brl(v.a_receber) : '-'}</td>
                       </>}
                     </tr>
                   ))}
@@ -435,8 +436,8 @@ export default function Relatorios() {
                 {vendedores.length > 0 && (
                   <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden', marginBottom: '20px' }}>
                     <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '15px' }}>🛒</span>
-                      <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>Desempenho — Vendas</h3>
+                      <Icone nome="vendas" size={15} color="var(--text-muted)" />
+                      <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>Desempenho · Vendas</h3>
                     </div>
                     {tabelaRows(vendedores, ['Nome', 'Perfil', 'Qtd Vendas', 'Total Vendido', 'Ticket Médio', 'Descontos', 'A Receber'])}
                   </div>
@@ -444,8 +445,8 @@ export default function Relatorios() {
                 {marketing.length > 0 && (
                   <div style={{ background: 'var(--surface)', border: '1px solid rgba(236,72,153,0.25)', borderRadius: '12px', overflow: 'hidden', marginBottom: '20px' }}>
                     <div style={{ padding: '14px 20px', borderBottom: '1px solid rgba(236,72,153,0.15)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '15px' }}>📢</span>
-                      <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>Desempenho — Marketing</h3>
+                      <Icone nome="campanhas" size={15} color="#ec4899" />
+                      <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>Desempenho · Marketing</h3>
                       <span style={{ fontSize: '12px', color: '#db2777', marginLeft: '4px' }}>apenas contagem</span>
                     </div>
                     {tabelaRows(marketing, ['Nome', 'Perfil', 'Qtd Vendas Atribuídas'])}
@@ -478,7 +479,7 @@ export default function Relatorios() {
                       <td style={{ padding: '12px 16px', fontSize: '14px', color: 'var(--text)', fontWeight: '500' }}>{c.nome}</td>
                       <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', color: 'var(--text-dim)', textAlign: 'right' }}>{c.compras}</td>
                       <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '600', color: '#2563eb', textAlign: 'right' }}>{brl(c.total)}</td>
-                      <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '600', color: c.a_receber > 0 ? '#dc2626' : 'var(--text-muted)', textAlign: 'right' }}>{c.a_receber > 0 ? brl(c.a_receber) : '—'}</td>
+                      <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '600', color: c.a_receber > 0 ? '#dc2626' : 'var(--text-muted)', textAlign: 'right' }}>{c.a_receber > 0 ? brl(c.a_receber) : '-'}</td>
                     </tr>
                   ))}
                 </tbody>

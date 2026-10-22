@@ -2,7 +2,7 @@ import type { Env } from '../../../lib/types';
 import { requireAuth, json } from '../../../lib/auth-middleware';
 import { ensureEstoque } from '../../../lib/estoque';
 
-// PUT { nome?, icone? } — renomeia
+// PUT { nome?, icone? }: renomeia
 export const onRequestPut = async ({ request, env, params }: { request: Request; env: Env; params: Record<string, string> }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;
@@ -32,7 +32,7 @@ export const onRequestPut = async ({ request, env, params }: { request: Request;
   }
 };
 
-// DELETE — só se não tiver produto nela
+// DELETE: só se não tiver produto nela
 export const onRequestDelete = async ({ request, env, params }: { request: Request; env: Env; params: Record<string, string> }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;

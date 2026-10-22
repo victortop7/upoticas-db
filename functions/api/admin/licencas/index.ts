@@ -16,7 +16,7 @@ async function ensureColumns(env: Env) {
   await ensureSistemas(env.DB);
 }
 
-// GET /api/admin/licencas — lista todos os tenants
+// GET /api/admin/licencas: lista todos os tenants
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   if (!isAdmin(request, env)) return json({ error: 'Não autorizado' }, 401);
   try {
@@ -50,7 +50,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
   }
 };
 
-// DELETE /api/admin/licencas?id=xxx — exclui tenant e seus usuários
+// DELETE /api/admin/licencas?id=xxx: exclui tenant e seus usuários
 export const onRequestDelete = async ({ request, env }: { request: Request; env: Env }) => {
   if (!isAdmin(request, env)) return json({ error: 'Não autorizado' }, 401);
 
@@ -69,7 +69,7 @@ export const onRequestDelete = async ({ request, env }: { request: Request; env:
   }
 };
 
-// PATCH /api/admin/licencas — atualiza licença de um tenant
+// PATCH /api/admin/licencas: atualiza licença de um tenant
 export const onRequestPatch = async ({ request, env }: { request: Request; env: Env }) => {
   if (!isAdmin(request, env)) return json({ error: 'Não autorizado' }, 401);
   await ensureColumns(env);

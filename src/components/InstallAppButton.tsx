@@ -12,7 +12,7 @@ function isStandalone(): boolean {
     || (window.navigator as unknown as { standalone?: boolean }).standalone === true;
 }
 
-// Botão "Instalar aplicativo" — aparece quando o navegador permite instalar (Chrome/Edge/Android).
+// Botão "Instalar aplicativo": aparece quando o navegador permite instalar (Chrome/Edge/Android).
 // Some quando o app já está instalado. `alwaysShow` mostra instruções mesmo sem o botão nativo.
 export default function InstallAppButton({ style, label = 'Instalar aplicativo', alwaysShow = false }:
   { style?: React.CSSProperties; label?: string; alwaysShow?: boolean }) {

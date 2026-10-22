@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import Icone from '../components/Icone';
 
 export default function LicencaBloqueada() {
   const [params] = useSearchParams();
@@ -27,7 +28,7 @@ export default function LicencaBloqueada() {
           fontSize: '13px', fontWeight: '700', letterSpacing: '2px',
           border: '2px outset #007700', textAlign: 'center', textTransform: 'uppercase',
         }}>
-          UPÓTICAS — SISTEMA DE GESTÃO
+          UPÓTICAS · SISTEMA DE GESTÃO
         </div>
 
         {/* Panel */}
@@ -35,7 +36,7 @@ export default function LicencaBloqueada() {
 
           {/* Icon */}
           <div style={{ fontSize: '56px', marginBottom: '16px' }}>
-            {isBlocked ? '🔒' : '⏰'}
+            <Icone nome={isBlocked ? 'cadeado' : 'relogio'} size={52} style={{ margin: '0 auto' }} />
           </div>
 
           {/* Title */}
@@ -76,7 +77,7 @@ export default function LicencaBloqueada() {
                 letterSpacing: '0.5px',
               }}
             >
-              📱 WHATSAPP
+              WHATSAPP
             </a>
             <div style={{ marginTop: '10px', fontSize: '11px', color: '#555', fontFamily: "'Courier New', monospace" }}>
               victormarketing093@gmail.com
@@ -98,7 +99,7 @@ export default function LicencaBloqueada() {
         </div>
 
         <div style={{ textAlign: 'center', marginTop: '10px', fontSize: '10px', color: '#888', fontFamily: "'Courier New', monospace" }}>
-          UPÓTICAS LAB V1.0 — SISTEMA DE GESTÃO PARA LABORATÓRIOS ÓPTICOS
+          UPÓTICAS LAB V1.0 · SISTEMA DE GESTÃO PARA LABORATÓRIOS ÓPTICOS
         </div>
       </div>
     </div>

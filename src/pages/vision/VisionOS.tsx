@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
+import Icone from '../../components/Icone';
 
 type Tab = 'cliente' | 'receita' | 'laboratorio' | 'fechamento' | 'busca';
 type BuscaTipo = 'numero' | 'data' | 'nome' | 'cpf';
@@ -141,7 +142,7 @@ function GlassesSVG({ data }: { data: OSData }) {
   const LBL = '#8e8e93';
   return (
     <svg viewBox="0 0 720 290" width="100%" style={{ display: 'block', background: '#e9e9ee' }}>
-      {/* ── Armação (PNG do cliente — fundo transparente) ──
+      {/* ── Armação (PNG do cliente · fundo transparente) ──
            Óculos ocupa x 92→628, y 83→247 no viewBox.
            Lentes: esq x 122→329 · dir x 391→598 · ambas y 94→238 · ponte 329→391 */}
       <image
@@ -231,7 +232,7 @@ export default function VisionOS() {
   useEffect(() => {
     api.get<{ usuarios: { id: string; nome: string; ativo: number }[] }>('/usuarios')
       .then(r => setVendedores((r.usuarios || []).filter(u => u.ativo).map(u => ({ id: u.id, nome: u.nome }))))
-      .catch(() => { /* silencioso — mantém campo vazio se falhar */ });
+      .catch(() => { /* silencioso · mantém campo vazio se falhar */ });
   }, []);
 
   function set(field: keyof OSData) { return (v: string) => setData(p => ({ ...p, [field]: v })); }
@@ -702,7 +703,7 @@ export default function VisionOS() {
                 </div>
               </div>
 
-              {/* RIGHT — Lentes */}
+              {/* RIGHT · Lentes */}
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
                 <div>
                   <span style={{ fontSize: 13, fontWeight: 'bold' }}>LENTES:</span>
@@ -732,8 +733,8 @@ export default function VisionOS() {
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRight: '1px solid #d1d1d6' }}>
                 <span style={{ fontSize: 13, fontWeight: 'bold' }}>Itens Vistos:</span>
                 <div style={{ marginLeft: 'auto', display: 'flex', gap: 2 }}>
-                  {['🔍', '✕', '→'].map((ic, i) => (
-                    <button key={i} style={{ background: '#007aff', border: 'none', borderRadius: 8, padding: '5px 11px', color: '#fff', fontSize: 13, cursor: 'pointer' }}>{ic}</button>
+                  {['busca', 'fechar', 'seta'].map((ic, i) => (
+                    <button key={i} style={{ background: '#007aff', border: 'none', borderRadius: 8, padding: '5px 11px', color: '#fff', fontSize: 13, cursor: 'pointer', display: 'flex' }}><Icone nome={ic} size={14} /></button>
                   ))}
                 </div>
               </div>
@@ -742,10 +743,10 @@ export default function VisionOS() {
                 <span style={{ fontSize: 11 }}>+ Acessórios:</span>
                 <div style={{ marginLeft: 'auto', display: 'flex', gap: 2 }}>
                   {[
-                    { ic: '👁', bg: '#007aff' }, { ic: '🕶', bg: '#007aff' },
-                    { ic: '▌▌▌', bg: '#007aff' }, { ic: '✕', bg: '#ff3b30' },
+                    { ic: 'olho', bg: '#007aff' }, { ic: 'oculos', bg: '#007aff' },
+                    { ic: 'leitor', bg: '#007aff' }, { ic: 'fechar', bg: '#ff3b30' },
                   ].map(({ ic, bg }, i) => (
-                    <button key={i} style={{ background: bg, border: 'none', borderRadius: 8, padding: '5px 9px', color: '#fff', fontSize: 12, cursor: 'pointer' }}>{ic}</button>
+                    <button key={i} style={{ background: bg, border: 'none', borderRadius: 8, padding: '5px 9px', color: '#fff', fontSize: 12, cursor: 'pointer', display: 'flex' }}><Icone nome={ic} size={14} /></button>
                   ))}
                 </div>
               </div>
@@ -813,7 +814,7 @@ export default function VisionOS() {
             {/* Action buttons */}
             <div style={{ display: 'flex', background: '#f2f2f7', borderTop: '1px solid #d1d1d6', flexShrink: 0 }}>
               <div style={{ flex: 1, borderRight: '1px solid #d1d1d6', padding: '6px 10px' }}>
-                {saved && <span style={{ fontSize: 13, color: '#006600', fontWeight: 'bold' }}>✓ Salvo!</span>}
+                {saved && <span style={{ fontSize: 13, color: '#006600', fontWeight: 'bold' }}>Salvo!</span>}
               </div>
               <div style={{ flex: 1, display: 'flex', gap: 4, padding: '6px 8px', justifyContent: 'flex-end' }}>
                 <button onClick={() => setData({ ...EMPTY })} style={BTN}>Nova</button>
@@ -889,7 +890,7 @@ export default function VisionOS() {
                           <td style={{ border: '1px solid #bbb', padding: '4px 6px' }} />
                           <td style={{ border: '1px solid #bbb', padding: '4px 6px' }} />
                           <td style={{ border: '1px solid #bbb', padding: '4px 6px', whiteSpace: 'nowrap' }}>{new Date(os.created_at).toLocaleDateString('pt-BR')}</td>
-                          <td style={{ border: '1px solid #bbb', padding: '4px 6px' }}>{os.cliente_nome ?? '—'}</td>
+                          <td style={{ border: '1px solid #bbb', padding: '4px 6px' }}>{os.cliente_nome ?? '-'}</td>
                           <td style={{ border: '1px solid #bbb', padding: '4px 6px' }} />
                           <td style={{ border: '1px solid #bbb', padding: '4px 6px' }}>{os.status}</td>
                           <td style={{ border: '1px solid #bbb', padding: '4px 6px' }}>{os.tipo}</td>
@@ -925,17 +926,17 @@ export default function VisionOS() {
         padding: '4px 12px', flexShrink: 0,
       }}>
         {[
-          { icon: '≡', label: 'Menu', onClick: () => navigate('/vision') },
-          { icon: '📋', label: 'OS', onClick: () => setTab('cliente') },
-          { icon: '$', label: 'Valor', onClick: () => setTab('fechamento') },
-          { icon: '⌨', label: 'Calculadora', onClick: () => setCalcOpen(true) },
+          { icon: 'menu', label: 'Menu', onClick: () => navigate('/vision') },
+          { icon: 'lista', label: 'OS', onClick: () => setTab('cliente') },
+          { icon: 'dinheiro', label: 'Valor', onClick: () => setTab('fechamento') },
+          { icon: 'teclado', label: 'Calculadora', onClick: () => setCalcOpen(true) },
         ].map(({ icon, label, onClick }) => (
           <button key={label} onClick={onClick} style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center',
             gap: 2, padding: '3px 20px', background: 'none', border: 'none',
             cursor: 'pointer', borderRight: '1px solid #d1d1d6',
           }}>
-            <span style={{ fontSize: 18 }}>{icon}</span>
+            <Icone nome={icon} size={18} color="#333" />
             <span style={{ fontSize: 10, color: '#333', fontWeight: 'bold', letterSpacing: '.04em' }}>{label}</span>
           </button>
         ))}

@@ -3,7 +3,7 @@ import type { Env } from '../../../lib/types';
 import { requireAuth, json } from '../../../lib/auth-middleware';
 import { ensureReceber, listarTitulos } from '../../../lib/receber';
 
-// GET /api/clientes/:id/perfil — tudo do cliente: dados, vendas (cada uma separada), OS, crediário e resumo
+// GET /api/clientes/:id/perfil: tudo do cliente: dados, vendas (cada uma separada), OS, crediário e resumo
 export const onRequestGet: PagesFunction<Env> = async ({ request, env, params }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;

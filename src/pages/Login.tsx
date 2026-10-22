@@ -8,7 +8,7 @@ import { homeLab } from '../lib/labPerms';
 export default function Login() {
   const navigate = useNavigate();
   const { setAuth } = useAuth();
-  // App instalado antigo abria em /login?sistema=lab — manda pro login do LAB
+  // App instalado antigo abria em /login?sistema=lab: manda pro login do LAB
   const sistemaInicial = new URLSearchParams(window.location.search).get('sistema');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');

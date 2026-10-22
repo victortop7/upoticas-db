@@ -1,4 +1,4 @@
-// Ícones do Connect Lab — SVG de traço, herdam a cor do texto (currentColor).
+// Ícones do Connect Lab: SVG de traço, herdam a cor do texto (currentColor).
 // Substituem os emojis: ficam nítidos, alinhados e mudam de cor junto com o tema.
 
 export type IconName =

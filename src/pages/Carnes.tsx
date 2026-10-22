@@ -18,7 +18,7 @@ interface CarneDetalhe {
 }
 
 const brl = (v: number) => (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-const fmtData = (s?: string) => { if (!s) return '—'; const [y, m, d] = s.split('T')[0].split('-'); return `${d}/${m}/${y}`; };
+const fmtData = (s?: string) => { if (!s) return '-'; const [y, m, d] = s.split('T')[0].split('-'); return `${d}/${m}/${y}`; };
 
 const inp: React.CSSProperties = { width: '100%', padding: '9px 11px', fontSize: '14px', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--surface)', color: 'var(--text)', outline: 'none', boxSizing: 'border-box' };
 const lbl: React.CSSProperties = { display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '4px' };
@@ -73,7 +73,7 @@ function NovoCarne({ onClose, onSaved }: { onClose: () => void; onSaved: () => v
             <label style={lbl}>Cliente *</label>
             {clienteId ? (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(37,99,235,0.06)', border: '1px solid rgba(37,99,235,0.2)', borderRadius: 8, padding: '9px 12px' }}>
-                <span style={{ fontWeight: 600, color: 'var(--primary)' }}>✓ {clienteNome}</span>
+                <span style={{ fontWeight: 600, color: 'var(--primary)' }}>{clienteNome}</span>
                 <button onClick={() => { setClienteId(''); setClienteNome(''); }} style={{ fontSize: 12, color: 'var(--text-dim)', background: 'none', border: 'none', cursor: 'pointer' }}>trocar</button>
               </div>
             ) : (
@@ -95,7 +95,7 @@ function NovoCarne({ onClose, onSaved }: { onClose: () => void; onSaved: () => v
 
           <div style={{ marginBottom: 14 }}>
             <label style={lbl}>Descrição</label>
-            <input style={inp} value={descricao} onChange={e => setDescricao(e.target.value)} placeholder="Ex: Óculos de grau — armação + lentes" />
+            <input style={inp} value={descricao} onChange={e => setDescricao(e.target.value)} placeholder="Ex: Óculos de grau · armação + lentes" />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 12, marginBottom: 14 }}>
@@ -165,7 +165,7 @@ function CarneDetalheModal({ id, onClose, onChange }: { id: string; onClose: () 
         <div style={{ padding: '12px 22px', borderBottom: '1px solid var(--border)', display: 'flex', gap: 10 }}>
           <a href={`/carnes/${id}/imprimir`} target="_blank" rel="noreferrer"
             style={{ padding: '9px 18px', fontSize: 13, fontWeight: 700, background: 'var(--primary)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', textDecoration: 'none' }}>
-            🖨️ Imprimir / PDF do carnê
+            Imprimir / PDF do carnê
           </a>
         </div>
 
@@ -188,7 +188,7 @@ function CarneDetalheModal({ id, onClose, onChange }: { id: string; onClose: () 
                         <td style={{ padding: '10px 16px', fontFamily: 'var(--mono)', fontSize: 13, color: 'var(--text-dim)' }}>{fmtData(p.vencimento)}</td>
                         <td style={{ padding: '10px 16px', fontFamily: 'var(--mono)', fontSize: 13, fontWeight: 700, textAlign: 'right', color: 'var(--text)' }}>{brl(p.valor)}</td>
                         <td style={{ padding: '10px 16px' }}>
-                          <span style={{ padding: '2px 9px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: pago ? 'rgba(34,197,94,0.12)' : 'rgba(245,158,11,0.14)', color: pago ? '#16a34a' : '#d97706' }}>{pago ? '✓ Pago' : 'Pendente'}</span>
+                          <span style={{ padding: '2px 9px', borderRadius: 6, fontSize: 11, fontWeight: 600, background: pago ? 'rgba(34,197,94,0.12)' : 'rgba(245,158,11,0.14)', color: pago ? '#16a34a' : '#d97706' }}>{pago ? 'Pago' : 'Pendente'}</span>
                         </td>
                         <td style={{ padding: '10px 16px', textAlign: 'right' }}>
                           <button onClick={() => toggle(p)} style={{ padding: '5px 12px', fontSize: 12, fontWeight: 600, background: pago ? 'var(--surface-alt)' : 'rgba(34,197,94,0.12)', color: pago ? 'var(--text-dim)' : '#16a34a', border: '1px solid transparent', borderRadius: 6, cursor: 'pointer' }}>
@@ -253,13 +253,13 @@ export default function Carnes() {
                   onClick={() => setDetId(c.id)}
                   onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-alt)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                  <td style={{ padding: '12px 16px', fontSize: 14, color: 'var(--text)', fontWeight: 500 }}>{c.cliente_nome || '—'}</td>
+                  <td style={{ padding: '12px 16px', fontSize: 14, color: 'var(--text)', fontWeight: 500 }}>{c.cliente_nome || '-'}</td>
                   <td style={{ padding: '12px 16px', fontSize: 13, color: 'var(--text-dim)' }}>{c.descricao}</td>
                   <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: 13, fontWeight: 600, textAlign: 'right', color: 'var(--text)' }}>{brl(c.valor_total)}</td>
                   <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: 13, color: 'var(--text-dim)' }}>{c.parcelas_pagas}/{c.num_parcelas} pagas</td>
-                  <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: 13, fontWeight: 600, textAlign: 'right', color: c.saldo > 0 ? '#d97706' : '#16a34a' }}>{c.saldo > 0 ? brl(c.saldo) : '✓ quitado'}</td>
+                  <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: 13, fontWeight: 600, textAlign: 'right', color: c.saldo > 0 ? '#d97706' : '#16a34a' }}>{c.saldo > 0 ? brl(c.saldo) : 'quitado'}</td>
                   <td style={{ padding: '12px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
-                    <a href={`/carnes/${c.id}/imprimir`} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ padding: '5px 10px', fontSize: 12, marginRight: 6, color: 'var(--primary)', textDecoration: 'none', fontWeight: 600 }}>🖨️ PDF</a>
+                    <a href={`/carnes/${c.id}/imprimir`} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ padding: '5px 10px', fontSize: 12, marginRight: 6, color: 'var(--primary)', textDecoration: 'none', fontWeight: 600 }}>PDF</a>
                     <button onClick={e => { e.stopPropagation(); excluir(c.id); }} style={{ padding: '5px 10px', fontSize: 12, background: 'var(--red-dim)', color: 'var(--red)', border: 'none', borderRadius: 6, cursor: 'pointer' }}>Excluir</button>
                   </td>
                 </tr>

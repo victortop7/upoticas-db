@@ -152,7 +152,7 @@ export default function Lojas() {
               <div key={l.id} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: 18 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
-                    <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text)' }}>🏬 {l.nome}</div>
+                    <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text)' }}>{l.nome}</div>
                     {l.endereco && <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{l.endereco}</div>}
                   </div>
                   <button onClick={() => excluirLoja(l.id, l.nome)} style={{ padding: '5px 10px', fontSize: 12, background: 'var(--red-dim)', color: 'var(--red)', border: 'none', borderRadius: 6, cursor: 'pointer' }}>Remover loja</button>
@@ -167,7 +167,7 @@ export default function Lojas() {
                       {vs.map(u => (
                         <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--surface-alt)', borderRadius: 8, padding: '8px 12px' }}>
                           <div>
-                            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>👤 {u.nome}</span>
+                            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>{u.nome}</span>
                             <span style={{ fontSize: 13, color: 'var(--text-dim)', fontFamily: 'var(--mono)', marginLeft: 10 }}>{u.email}</span>
                           </div>
                           <button onClick={() => removerAcesso(u.id, u.nome)} style={{ fontSize: 12, color: 'var(--red)', background: 'none', border: 'none', cursor: 'pointer' }}>Desativar</button>
@@ -189,12 +189,12 @@ export default function Lojas() {
           <p style={{ margin: '0 0 14px', fontSize: 13, color: 'var(--text-muted)' }}>
             {imp.clientes.sem_loja > 0 || imp.vendas.sem_loja > 0
               ? <>{imp.clientes.sem_loja} cliente(s) e {imp.vendas.sem_loja} venda(s) importados ainda estão sem loja (todas as lojas enxergam). Escolha a loja dona deles e clique em Aplicar.</>
-              : <>✅ Todos os {imp.clientes.total} clientes importados já estão vinculados a uma loja.</>}
+              : <>Todos os {imp.clientes.total} clientes importados já estão vinculados a uma loja.</>}
           </p>
           {(imp.clientes.sem_loja > 0 || imp.vendas.sem_loja > 0) && (
             <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
               <select style={{ ...inp, width: 220 }} value={impLoja} onChange={e => setImpLoja(e.target.value)}>
-                <option value="">— Escolher loja —</option>
+                <option value="">Escolher loja</option>
                 {lojas.map(l => <option key={l.id} value={l.id}>{l.nome}</option>)}
               </select>
               <button onClick={aplicarImportados} disabled={impAplicando} style={{ padding: '9px 18px', fontSize: 13, fontWeight: 600, background: 'var(--primary)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer' }}>
@@ -223,7 +223,7 @@ export default function Lojas() {
                     <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{v.qtd} venda(s){v.com_loja > 0 ? ` · ${v.com_loja} já com loja` : ''}</div>
                   </div>
                   <select style={{ ...inp, width: 170 }} value={sel.loja_id} onChange={e => upd({ loja_id: e.target.value })}>
-                    <option value="">— Escolher loja —</option>
+                    <option value="">Escolher loja</option>
                     {lojas.map(l => <option key={l.id} value={l.id}>{l.nome}</option>)}
                   </select>
                   <div>

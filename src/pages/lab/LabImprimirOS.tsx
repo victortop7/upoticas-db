@@ -79,8 +79,8 @@ function OSSlip({ ordem, od, oe, armacao, servicos, tenant, via }: Props) {
             {String(tenant?.lab_nome || tenant?.nome || 'LABORATÓRIO')}
           </div>
           <div style={{ fontSize: '7.5px', color: R.dim, textTransform: 'uppercase' }}>Laboratório Óptico</div>
-          {tenant?.lab_endereco ? <div style={{ fontSize: '7.5px', color: R.txt }}>{String(tenant.lab_endereco)}{tenant?.lab_bairro ? ` — ${String(tenant.lab_bairro)}` : ''}</div> : null}
-          {(tenant?.lab_cidade || tenant?.lab_uf) ? <div style={{ fontSize: '7.5px', color: R.txt }}>{[tenant?.lab_cidade, tenant?.lab_uf].filter(Boolean).map(String).join('/')}{tenant?.lab_cep ? ` — CEP: ${String(tenant.lab_cep)}` : ''}</div> : null}
+          {tenant?.lab_endereco ? <div style={{ fontSize: '7.5px', color: R.txt }}>{String(tenant.lab_endereco)}{tenant?.lab_bairro ? ` · ${String(tenant.lab_bairro)}` : ''}</div> : null}
+          {(tenant?.lab_cidade || tenant?.lab_uf) ? <div style={{ fontSize: '7.5px', color: R.txt }}>{[tenant?.lab_cidade, tenant?.lab_uf].filter(Boolean).map(String).join('/')}{tenant?.lab_cep ? ` · CEP: ${String(tenant.lab_cep)}` : ''}</div> : null}
           {tenant?.lab_telefone ? <div style={{ fontSize: '7.5px', color: R.txt }}>Tel: {String(tenant.lab_telefone)}</div> : null}
           {tenant?.lab_cnpj ? <div style={{ fontSize: '7.5px', color: R.dim }}>CNPJ: {String(tenant.lab_cnpj)}</div> : null}
         </div>
@@ -88,7 +88,7 @@ function OSSlip({ ordem, od, oe, armacao, servicos, tenant, via }: Props) {
           <div style={{ fontSize: '13px', fontWeight: '900', letterSpacing: '1px' }}>
             SERVIÇO {String(Number(ordem.numero) || 0).padStart(6, '0')}
           </div>
-          <div style={{ fontSize: '9px' }}>USUÁRIO: {String(ordem.usuario_receita || ordem.vendedor || '—')}</div>
+          <div style={{ fontSize: '9px' }}>USUÁRIO: {String(ordem.usuario_receita || ordem.vendedor || '-')}</div>
           <div style={{ fontSize: '9px' }}>PREVISÃO ENTREGA: {fd(String(ordem.previsao_entrega || ''))}</div>
         </div>
         <div style={{ textAlign: 'center', minWidth: '80px' }}>
@@ -96,7 +96,7 @@ function OSSlip({ ordem, od, oe, armacao, servicos, tenant, via }: Props) {
             {String(Number(ordem.numero) || 0).padStart(4, '0')}
           </div>
           <div style={{ fontSize: '8px', color: R.dim, fontWeight: '700', marginTop: '1px' }}>
-            VIA {via} — OS#{String(Number(ordem.numero) || 0).padStart(4, '0')}
+            VIA {via} · OS#{String(Number(ordem.numero) || 0).padStart(4, '0')}
           </div>
         </div>
       </div>
@@ -105,7 +105,7 @@ function OSSlip({ ordem, od, oe, armacao, servicos, tenant, via }: Props) {
       <div style={{ display: 'flex', gap: '5px' }}>
         {/* Box cliente */}
         <div style={{ border: '1px solid #000', padding: '3px 5px', flex: '0 0 43%' }}>
-          <div style={{ fontSize: '10px', fontWeight: '700' }}>CLIENTE: {String(ordem.otica_nome || '—')}</div>
+          <div style={{ fontSize: '10px', fontWeight: '700' }}>CLIENTE: {String(ordem.otica_nome || '-')}</div>
           {String(ordem.otica_endereco || '') ? <div style={{ fontSize: '9px' }}>END: {String(ordem.otica_endereco)}</div> : null}
           {String(ordem.otica_bairro || '') ? <div style={{ fontSize: '9px' }}>BAIRRO: {String(ordem.otica_bairro)}</div> : null}
           <div style={{ fontSize: '9px', display: 'flex', gap: '6px' }}>
@@ -118,12 +118,12 @@ function OSSlip({ ordem, od, oe, armacao, servicos, tenant, via }: Props) {
         {/* REF + tabela */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', fontSize: '9px' }}>
-            <span>REF.CLI: <b>{String(ordem.ref_otica || '—')}</b></span>
+            <span>REF.CLI: <b>{String(ordem.ref_otica || '-')}</b></span>
             <span>ENTREGA: <b>{fd(String(ordem.previsao_entrega || ''))}</b></span>
-            <span>CONT.INT: <b>{String(ordem.cont_interno || '—')}</b></span>
+            <span>CONT.INT: <b>{String(ordem.cont_interno || '-')}</b></span>
           </div>
           <div style={{ display: 'flex', gap: '10px', fontSize: '9px' }}>
-            <span>VENDEDOR: {String(ordem.vendedor || '—')}</span>
+            <span>VENDEDOR: {String(ordem.vendedor || '-')}</span>
             <span>CONDIÇÃO PGTO: <b>{condPgto}</b></span>
           </div>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -140,7 +140,7 @@ function OSSlip({ ordem, od, oe, armacao, servicos, tenant, via }: Props) {
                 <tr key={i}>
                   <td style={TD}>{String(s.qtd || '')}</td>
                   <td style={TD}>{brl(s.valor_unit)}</td>
-                  <td style={TD}>{s.perc_desc ? Number(s.perc_desc).toFixed(2) : '—'}</td>
+                  <td style={TD}>{s.perc_desc ? Number(s.perc_desc).toFixed(2) : '-'}</td>
                   <td style={{ ...TD, fontWeight: '700' }}>{brl(s.total || s.total_liq)}</td>
                 </tr>
               ))}
@@ -230,11 +230,11 @@ function OSSlip({ ordem, od, oe, armacao, servicos, tenant, via }: Props) {
       <div style={{ border: '1px solid #000', padding: '3px 5px', fontSize: '9px' }}>
         <div style={{ fontWeight: '700', fontSize: '9px', borderBottom: '1px solid #ccc', marginBottom: '2px' }}>ARMAÇÃO</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '2px' }}>
-          <span>MATERIAL: <b>{String(armacao?.tipo_material || armacao?.material || '—')}</b></span>
-          <span>SHAPE: <b>{String(armacao?.shape || '—')}</b></span>
+          <span>MATERIAL: <b>{String(armacao?.tipo_material || armacao?.material || '-')}</b></span>
+          <span>SHAPE: <b>{String(armacao?.shape || '-')}</b></span>
           <span>ESTOJO: {armacao?.estojo ? 'Sim' : 'Não'}</span>
           <span>Ø: {nn(armacao?.diametro_final, 'mm')}</span>
-          <span>MARCA: {String(armacao?.marca_material || '—')}</span>
+          <span>MARCA: {String(armacao?.marca_material || '-')}</span>
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '2px' }}>
           <span>LARG: {nn(armacao?.largura, 'mm')}</span>
@@ -244,13 +244,13 @@ function OSSlip({ ordem, od, oe, armacao, servicos, tenant, via }: Props) {
           <span>DIÂM. FINAL: {nn(armacao?.diametro_final, 'mm')}</span>
         </div>
         <div style={{ display: 'flex', gap: '14px' }}>
-          <span>LENTE O/D: <b>{String(armacao?.lente_od || '—')}</b></span>
-          <span>LENTE O/E: <b>{String(armacao?.lente_oe || '—')}</b></span>
+          <span>LENTE O/D: <b>{String(armacao?.lente_od || '-')}</b></span>
+          <span>LENTE O/E: <b>{String(armacao?.lente_oe || '-')}</b></span>
           {ordem.texto_gravura ? <span>GRAVURA: {String(ordem.texto_gravura)}</span> : null}
         </div>
       </div>
 
-      {/* ── OBS RECEITA — cresce para preencher espaço ── */}
+      {/* ── OBS RECEITA · cresce para preencher espaço ── */}
       <div style={{ border: '1px solid #000', padding: '3px 5px', flex: 1, fontSize: '9px' }}>
         <b>OBS. RECEITA:</b> {String(ordem.observacoes || '')}
       </div>
@@ -300,7 +300,7 @@ export default function LabImprimirOS() {
       {/* LINHA DE CORTE */}
       <div style={{ margin: '0 5mm', borderTop: '1px dashed #999', height: '1mm', position: 'relative', textAlign: 'center' }}>
         <span style={{ position: 'absolute', top: '-5px', left: '50%', transform: 'translateX(-50%)', background: R.inp, padding: '0 8px', fontSize: '7px', color: '#aaa', fontWeight: '700', letterSpacing: '1px', whiteSpace: 'nowrap' }}>
-          ✂ destacar aqui
+          destacar aqui
         </span>
       </div>
 

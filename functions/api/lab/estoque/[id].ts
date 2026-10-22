@@ -42,7 +42,7 @@ export const onRequestDelete = async ({ request, env, params }: { request: Reque
   }
 };
 
-// POST /:id/movimentacao — registrar entrada ou saída
+// POST /:id/movimentacao: registrar entrada ou saída
 export const onRequestPost = async ({ request, env, params }: { request: Request; env: Env; params: Record<string, string> }) => {
   try {
     const auth = await requireAuth(request, env);

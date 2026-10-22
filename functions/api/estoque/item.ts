@@ -8,7 +8,7 @@ async function nomeCategoria(env: Env, tenant: string, id?: string | null) {
   return c?.nome ?? null;
 }
 
-// POST /api/estoque/item — cadastra o produto já dentro da categoria/subcategoria e com a quantidade inicial
+// POST /api/estoque/item: cadastra o produto já dentro da categoria/subcategoria e com a quantidade inicial
 //   { descricao, codigo?, codigo_barras?, categoria_id, subcategoria_id?, preco_custo?, preco_venda?, quantidade?, quantidade_minima?, localizacao? }
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
   const auth = await requireAuth(request, env);
@@ -45,7 +45,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   }
 };
 
-// PATCH /api/estoque/item — muda o produto de categoria/subcategoria (e opcionalmente mínimo/localização)
+// PATCH /api/estoque/item: muda o produto de categoria/subcategoria (e opcionalmente mínimo/localização)
 //   { produto_id, categoria_id, subcategoria_id?, quantidade_minima?, localizacao? }
 export const onRequestPatch = async ({ request, env }: { request: Request; env: Env }) => {
   const auth = await requireAuth(request, env);

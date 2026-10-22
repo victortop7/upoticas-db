@@ -34,7 +34,7 @@ export default function Historico() {
 
   useEffect(() => { load(); }, [load]);
 
-  const filterBtn = (active: boolean): React.CSSProperties => ({ padding: '6px 14px', fontSize: '12px', fontWeight: '500', border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`, borderRadius: '20px', cursor: 'pointer', background: active ? 'var(--primary)' : 'var(--surface)', color: active ? 'white' : 'var(--text-dim)' });
+  const filterBtn = (active: boolean): React.CSSProperties => ({ padding: '6px 14px', fontSize: '12px', fontWeight: '500', border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`, borderRadius: '6px', cursor: 'pointer', background: active ? 'var(--primary)' : 'var(--surface)', color: active ? 'white' : 'var(--text-dim)' });
 
   return (
     <div style={{ padding: '32px' }}>
@@ -71,7 +71,7 @@ export default function Historico() {
                   onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-alt)')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                   <td style={{ padding: '11px 16px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text-dim)', whiteSpace: 'nowrap' }}>{fmtDate(h.created_at)}</td>
-                  <td style={{ padding: '11px 16px', fontSize: '14px', color: 'var(--text)' }}>{h.cliente_nome || '—'}</td>
+                  <td style={{ padding: '11px 16px', fontSize: '14px', color: 'var(--text)' }}>{h.cliente_nome || '-'}</td>
                   <td style={{ padding: '11px 16px', fontFamily: 'var(--mono)', fontSize: '13px', color: 'var(--text-dim)' }}>{h.celular}</td>
                   <td style={{ padding: '11px 16px' }}>
                     <span style={{ padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: '600', background: `${t.color}18`, color: t.color }}>{t.label}</span>

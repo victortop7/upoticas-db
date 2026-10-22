@@ -53,7 +53,7 @@ const VAZIO: Dash = {
 };
 
 function fmtDataHora(s?: string | null) {
-  if (!s) return '—';
+  if (!s) return '-';
   const iso = s.replace(' ', 'T');
   const d = new Date(iso.endsWith('Z') || iso.includes('+') ? iso : iso + 'Z');
   if (isNaN(d.getTime())) return s.slice(0, 16).replace('T', ' ');
@@ -181,7 +181,7 @@ export default function LabDashboard() {
           const ativo = periodo === p.key;
           return (
             <button key={p.key} onClick={() => setPeriodo(p.key)}
-              style={{ padding: '5px 12px', fontSize: '11px', fontWeight: 700, borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit',
+              style={{ padding: '5px 12px', fontSize: '11px', fontWeight: 700, borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit',
                 background: ativo ? R.accent : 'transparent', color: ativo ? R.onAccent : R.dim,
                 border: `1px solid ${ativo ? R.accent : 'var(--lab-bdr)'}` }}>
               {p.label}
@@ -189,7 +189,7 @@ export default function LabDashboard() {
           );
         })}
         <button onClick={() => setPeriodo('custom')}
-          style={{ padding: '5px 12px', fontSize: '11px', fontWeight: 700, borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit',
+          style={{ padding: '5px 12px', fontSize: '11px', fontWeight: 700, borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit',
             background: periodo === 'custom' ? R.accent : 'transparent', color: periodo === 'custom' ? R.onAccent : R.dim,
             border: `1px solid ${periodo === 'custom' ? R.accent : 'var(--lab-bdr)'}` }}>
           Personalizado
@@ -205,7 +205,7 @@ export default function LabDashboard() {
         )}
         <span style={{ marginLeft: 'auto', fontSize: '11px', color: R.dim, fontFamily: "'Courier New', monospace" }}>
           {range.de || range.ate
-            ? `${range.de ? range.de.split('-').reverse().join('/') : '…'} — ${range.ate ? range.ate.split('-').reverse().join('/') : '…'}`
+            ? `${range.de ? range.de.split('-').reverse().join('/') : '…'} · ${range.ate ? range.ate.split('-').reverse().join('/') : '…'}`
             : 'todo o histórico'}
         </span>
       </div>
@@ -246,7 +246,7 @@ export default function LabDashboard() {
           <div style={card}>
             <div style={rotulo}>Último cliente</div>
             <div style={{ fontSize: '14px', fontWeight: 700, color: R.txt, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {d.ultimoCliente?.otica_nome ?? '—'}
+              {d.ultimoCliente?.otica_nome ?? '-'}
             </div>
             <div style={{ fontSize: '11px', color: R.dim, marginTop: '5px', fontFamily: "'Courier New', monospace" }}>
               {d.ultimoCliente ? `OS #${String(d.ultimoCliente.numero).padStart(4, '0')} · ${fmtDataHora(d.ultimoCliente.created_at)}` : 'Nenhuma OS'}
@@ -255,7 +255,7 @@ export default function LabDashboard() {
           <div style={card}>
             <div style={rotulo}>Última entrega</div>
             <div style={{ fontSize: '14px', fontWeight: 700, color: R.txt, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {d.ultimaEntrega?.otica_nome ?? '—'}
+              {d.ultimaEntrega?.otica_nome ?? '-'}
             </div>
             <div style={{ fontSize: '11px', color: R.dim, marginTop: '5px', fontFamily: "'Courier New', monospace" }}>
               {d.ultimaEntrega ? `OS #${String(d.ultimaEntrega.numero).padStart(4, '0')} · ${fmtDataHora(d.ultimaEntrega.data)}` : 'Nenhuma entrega'}
@@ -266,7 +266,7 @@ export default function LabDashboard() {
         {/* gráficos */}
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: '12px', marginBottom: '12px' }}>
 
-          {/* OS por dia — barras */}
+          {/* OS por dia · barras */}
           <div style={card}>
             <div style={rotulo}>
               Atendimentos {range.de || range.ate ? 'no período' : 'nos últimos 14 dias'}
@@ -274,7 +274,7 @@ export default function LabDashboard() {
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', height: '150px', marginTop: '10px' }}>
               {d.serie.map(s => (
-                <div key={s.dia} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', height: '100%' }} title={`${s.rotulo} — ${s.qtd} OS`}>
+                <div key={s.dia} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', height: '100%' }} title={`${s.rotulo} · ${s.qtd} OS`}>
                   <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end' }}>
                     <div style={{
                       width: '100%', height: `${(s.qtd / maxSerie) * 100}%`, minHeight: s.qtd > 0 ? '3px' : '0',
@@ -288,7 +288,7 @@ export default function LabDashboard() {
             </div>
           </div>
 
-          {/* visão simples x progressiva — rosca */}
+          {/* visão simples x progressiva · rosca */}
           <div style={card}>
             <div style={rotulo}>Tipo de lente</div>
             {totalLentes === 0 ? (
@@ -349,7 +349,7 @@ export default function LabDashboard() {
                     <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '7px 9px', background: R.alt, border: '1px solid var(--lab-bdr)', borderLeft: `3px solid ${g.cor}`, borderRadius: '6px' }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: '12px', fontWeight: 700, color: R.txt, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          <span style={{ fontFamily: "'Courier New', monospace" }}>#{String(p.numero).padStart(4, '0')}</span> · {p.otica_nome ?? '—'}
+                          <span style={{ fontFamily: "'Courier New', monospace" }}>#{String(p.numero).padStart(4, '0')}</span> · {p.otica_nome ?? '-'}
                         </div>
                         <div style={{ fontSize: '10px', color: R.dim, fontFamily: "'Courier New', monospace", marginTop: '2px' }}>
                           {p.previsao_entrega?.slice(0, 10).split('-').reverse().join('/')} · {(p.setor_atual ?? p.status).replace('_', ' ')}
@@ -385,7 +385,7 @@ export default function LabDashboard() {
       </>
       )}
 
-      {/* painel de ação da OS — mover etapa e alterar data de entrega */}
+      {/* painel de ação da OS · mover etapa e alterar data de entrega */}
       {sel && (() => {
         const etapas = FLUXOS[flowOf(sel)];
         const atual = cardStage(sel, etapas);
@@ -400,23 +400,23 @@ export default function LabDashboard() {
                   <div style={{ fontFamily: "'Courier New', monospace", fontSize: '17px', fontWeight: 800, color: R.txt }}>
                     OS #{String(sel.numero).padStart(4, '0')}
                   </div>
-                  <div style={{ fontSize: '12px', color: R.dim, marginTop: '2px' }}>{sel.otica_nome ?? '—'}</div>
+                  <div style={{ fontSize: '12px', color: R.dim, marginTop: '2px' }}>{sel.otica_nome ?? '-'}</div>
                 </div>
-                <button onClick={() => setSel(null)} style={{ background: 'none', border: 'none', color: R.dim, fontSize: '21px', cursor: 'pointer', lineHeight: 1 }}>✕</button>
+                <button onClick={() => setSel(null)} style={{ background: 'none', border: 'none', color: R.dim, fontSize: '21px', cursor: 'pointer', lineHeight: 1 }}>×</button>
               </div>
 
               <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {/* mover etapa */}
                 <div>
                   <div style={{ ...rotulo, marginBottom: '7px' }}>
-                    Mover para etapa — {flowOf(sel) === 'progressiva' ? 'Progressiva' : 'Visão Simples'}
+                    Mover para etapa · {flowOf(sel) === 'progressiva' ? 'Progressiva' : 'Visão Simples'}
                   </div>
                   <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                     {etapas.map(et => {
                       const ativo = atual === et.key;
                       return (
                         <button key={et.key} disabled={ativo || salvando} onClick={() => moverEtapa(et.key)}
-                          style={{ padding: '6px 12px', fontSize: '11px', fontWeight: 600, borderRadius: '20px', cursor: ativo ? 'default' : 'pointer', fontFamily: 'inherit',
+                          style={{ padding: '6px 12px', fontSize: '11px', fontWeight: 600, borderRadius: '6px', cursor: ativo ? 'default' : 'pointer', fontFamily: 'inherit',
                             display: 'inline-flex', alignItems: 'center', gap: '5px', opacity: salvando ? 0.6 : 1,
                             background: ativo ? et.color : 'transparent', color: ativo ? '#fff' : R.dim,
                             border: `1px solid ${ativo ? et.color : 'var(--lab-bdr)'}` }}>

@@ -32,7 +32,7 @@ export default function LabOrcamentoPanel({ oticas, produtos }: { oticas: OticaL
   const [od, setOd] = useState<OlhoRx>({ ...OLHO_INI });
   const [oe, setOe] = useState<OlhoRx>({ ...OLHO_INI });
 
-  // Itens (serviços/lentes) — estilo bet
+  // Itens (serviços/lentes): estilo bet
   const [busca, setBusca] = useState('');
   const [itens, setItens] = useState<ItemOrc[]>([]);
   const [gerando, setGerando] = useState(false);
@@ -85,14 +85,14 @@ export default function LabOrcamentoPanel({ oticas, produtos }: { oticas: OticaL
 
       const rxRow = (lbl: string, o: OlhoRx) =>
         `<tr><td style="padding:3px 6px;font-weight:700;background:${GBG};font-size:10px">${lbl}</td>
-          <td style="padding:3px 6px;text-align:center;font-family:monospace">${o.esf_l || '—'}</td>
-          <td style="padding:3px 6px;text-align:center;font-family:monospace">${o.cil_l || '—'}</td>
-          <td style="padding:3px 6px;text-align:center;font-family:monospace">${o.eixo || '—'}</td>
-          <td style="padding:3px 6px;text-align:center;font-family:monospace">${o.adic || '—'}</td>
-          <td style="padding:3px 6px;text-align:center;font-family:monospace">${o.esf_p || '—'}</td>
-          <td style="padding:3px 6px;text-align:center;font-family:monospace">${o.cil_p || '—'}</td>
-          <td style="padding:3px 6px;text-align:center;font-family:monospace">${o.dnp || '—'}</td>
-          <td style="padding:3px 6px;text-align:center;font-family:monospace">${o.alt || '—'}</td></tr>`;
+          <td style="padding:3px 6px;text-align:center;font-family:monospace">${o.esf_l || '-'}</td>
+          <td style="padding:3px 6px;text-align:center;font-family:monospace">${o.cil_l || '-'}</td>
+          <td style="padding:3px 6px;text-align:center;font-family:monospace">${o.eixo || '-'}</td>
+          <td style="padding:3px 6px;text-align:center;font-family:monospace">${o.adic || '-'}</td>
+          <td style="padding:3px 6px;text-align:center;font-family:monospace">${o.esf_p || '-'}</td>
+          <td style="padding:3px 6px;text-align:center;font-family:monospace">${o.cil_p || '-'}</td>
+          <td style="padding:3px 6px;text-align:center;font-family:monospace">${o.dnp || '-'}</td>
+          <td style="padding:3px 6px;text-align:center;font-family:monospace">${o.alt || '-'}</td></tr>`;
       const temRx = [od, oe].some(o => Object.values(o).some(v => v));
       const rxBloco = temRx ? `
         <div style="font-size:11px;font-weight:900;color:${G};margin:12px 0 4px">RECEITA</div>
@@ -112,7 +112,7 @@ export default function LabOrcamentoPanel({ oticas, produtos }: { oticas: OticaL
         </table>` : '';
 
       const linhas = itens.map(i => `<tr>
-          <td style="padding:4px 8px;font-family:monospace;font-size:10px;color:#555;border-bottom:1px solid #eee">${i.codigo || '—'}</td>
+          <td style="padding:4px 8px;font-family:monospace;font-size:10px;color:#555;border-bottom:1px solid #eee">${i.codigo || '-'}</td>
           <td style="padding:4px 8px;font-size:11px;color:#222;border-bottom:1px solid #eee">${i.descricao || 'Item'}</td>
           <td style="padding:4px 8px;text-align:center;font-family:monospace;font-size:10px;border-bottom:1px solid #eee">${i.qtd}</td>
           <td style="padding:4px 8px;text-align:right;font-family:monospace;font-size:10px;border-bottom:1px solid #eee">${brl(i.valor_unit)}</td>
@@ -120,12 +120,12 @@ export default function LabOrcamentoPanel({ oticas, produtos }: { oticas: OticaL
         </tr>`).join('');
 
       const toolbar = `<div class="noprint" style="position:sticky;top:0;display:flex;gap:8px;justify-content:flex-end;align-items:center;padding:10px 12px;background:#0f2a1c;margin:-12px -12px 12px">
-          <span style="color:#cff0d6;font-size:12px;margin-right:auto;font-weight:600">Orçamento — ${nomeCli}</span>
-          <button onclick="window.print()" style="padding:8px 16px;font-size:13px;font-weight:700;background:#16a34a;color:#fff;border:none;border-radius:8px;cursor:pointer">⬇ Baixar PDF / Imprimir</button>
+          <span style="color:#cff0d6;font-size:12px;margin-right:auto;font-weight:600">Orçamento · ${nomeCli}</span>
+          <button onclick="window.print()" style="padding:8px 16px;font-size:13px;font-weight:700;background:#16a34a;color:#fff;border:none;border-radius:8px;cursor:pointer">Baixar PDF / Imprimir</button>
           <button onclick="window.close()" style="padding:8px 14px;font-size:13px;background:transparent;color:#cff0d6;border:1px solid #2f6b45;border-radius:8px;cursor:pointer">Fechar</button>
         </div>`;
 
-      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Orçamento — ${nomeCli}</title>
+      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Orçamento · ${nomeCli}</title>
         <style>*{box-sizing:border-box}body{margin:12px;font-family:Arial,sans-serif;font-size:11px;color:#000;background:#fff}
         table{width:100%;border-collapse:collapse}
         @page{margin:8mm}@media print{body{margin:0}.noprint{display:none!important}}</style></head><body>
@@ -157,7 +157,7 @@ export default function LabOrcamentoPanel({ oticas, produtos }: { oticas: OticaL
           </div>
         </div>
         <div style="margin-top:22px;font-size:10px;color:#666;border-top:1px dashed #bbb;padding-top:10px">
-          Este é um <b>orçamento</b> — valores sujeitos a confirmação e disponibilidade. Validade de ${dias} dias a partir da emissão.
+          Este é um <b>orçamento</b> · valores sujeitos a confirmação e disponibilidade. Validade de ${dias} dias a partir da emissão.
         </div>
         </body></html>`;
 
@@ -165,7 +165,7 @@ export default function LabOrcamentoPanel({ oticas, produtos }: { oticas: OticaL
       if (!w) { setMsg('Erro: o navegador bloqueou a janela. Permita pop-ups para gerar o orçamento.'); setGerando(false); return; }
       w.document.write(html); w.document.close();
       if (auto) setTimeout(() => { try { w.print(); } catch { /* ignora */ } }, 500);
-      setMsg(`✓ Orçamento gerado com ${itens.length} item(ns).`);
+      setMsg(`Orçamento gerado com ${itens.length} item(ns).`);
     } catch (e: unknown) {
       setMsg(`Erro ao gerar: ${e instanceof Error ? e.message : 'tente novamente'}`);
     } finally { setGerando(false); }
@@ -176,7 +176,7 @@ export default function LabOrcamentoPanel({ oticas, produtos }: { oticas: OticaL
 
       {/* ===== Cliente / Ótica ===== */}
       <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '10px', padding: '16px' }}>
-        <div style={{ fontSize: '15px', fontWeight: 800, color: R.txt, marginBottom: '4px' }}>Orçamento — Simulação de Venda</div>
+        <div style={{ fontSize: '15px', fontWeight: 800, color: R.txt, marginBottom: '4px' }}>Orçamento · Simulação de Venda</div>
         <div style={{ fontSize: '12px', color: R.dim, marginBottom: '14px' }}>Busque a ótica, informe a receita e escolha os serviços e lentes. O total é simulado ao vivo.</div>
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
           <div style={{ width: '150px' }}>
@@ -185,7 +185,7 @@ export default function LabOrcamentoPanel({ oticas, produtos }: { oticas: OticaL
           </div>
           <div style={{ flex: 1, minWidth: '180px' }}>
             <label style={LBL}>Nome da ótica</label>
-            <input value={oticaNome} readOnly placeholder="—" style={{ ...INP, width: '100%', fontFamily: "'Montserrat', sans-serif", opacity: 0.9 }} />
+            <input value={oticaNome} readOnly placeholder="-" style={{ ...INP, width: '100%', fontFamily: "'Montserrat', sans-serif", opacity: 0.9 }} />
           </div>
           <div style={{ width: '150px' }}>
             <label style={LBL}>Ref. / Cliente</label>
@@ -200,7 +200,7 @@ export default function LabOrcamentoPanel({ oticas, produtos }: { oticas: OticaL
             <input type="number" min="1" value={validadeDias} onChange={e => setValidadeDias(e.target.value)} style={{ ...INP, width: '100%' }} />
           </div>
         </div>
-        {oticaErro && <div style={{ marginTop: '8px', fontSize: '12px', color: '#cc0000' }}>Ótica não encontrada — você pode usar o "Nome do cliente" à direita.</div>}
+        {oticaErro && <div style={{ marginTop: '8px', fontSize: '12px', color: '#cc0000' }}>Ótica não encontrada · você pode usar o "Nome do cliente" à direita.</div>}
       </div>
 
       {/* ===== Exame (RX) ===== */}
@@ -250,7 +250,7 @@ export default function LabOrcamentoPanel({ oticas, produtos }: { oticas: OticaL
             ) : produtosFiltrados.map(p => (
               <div key={p.id} onClick={() => addProduto(p)} style={{ padding: '8px 14px', borderBottom: '1px solid var(--lab-bdr)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
                 onMouseEnter={e => (e.currentTarget.style.background = R.alt)} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                <span style={{ fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim, width: '52px', flexShrink: 0 }}>{p.codigo || '—'}</span>
+                <span style={{ fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim, width: '52px', flexShrink: 0 }}>{p.codigo || '-'}</span>
                 <span style={{ fontSize: '13px', color: R.txt, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.nome}</span>
                 <span style={{ fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.txt, fontWeight: 700 }}>{brl(p.valor_padrao || 0)}</span>
                 <span style={{ fontSize: '16px', color: R.accent, fontWeight: 900, lineHeight: 1 }}>＋</span>
@@ -291,7 +291,7 @@ export default function LabOrcamentoPanel({ oticas, produtos }: { oticas: OticaL
                       </td>
                       <td style={{ padding: '5px 8px', textAlign: 'right', fontFamily: "'Courier New', monospace", fontSize: '12px', fontWeight: 700, color: R.txt, whiteSpace: 'nowrap' }}>{brl(i.qtd * i.valor_unit)}</td>
                       <td style={{ padding: '5px 6px', textAlign: 'center' }}>
-                        <button type="button" onClick={() => removeItem(i.produto_id)} title="Remover" style={{ fontSize: '14px', color: '#cc0000', background: 'transparent', border: 'none', cursor: 'pointer', lineHeight: 1 }}>✕</button>
+                        <button type="button" onClick={() => removeItem(i.produto_id)} title="Remover" style={{ fontSize: '14px', color: '#cc0000', background: 'transparent', border: 'none', cursor: 'pointer', lineHeight: 1 }}>Remover</button>
                       </td>
                     </tr>
                   ))}
@@ -300,7 +300,7 @@ export default function LabOrcamentoPanel({ oticas, produtos }: { oticas: OticaL
             )}
           </div>
 
-          {/* Barra bet — total ao vivo */}
+          {/* Barra bet · total ao vivo */}
           <div style={{ position: 'sticky', bottom: 0, background: 'linear-gradient(90deg, #0f2a1c, #123a24)', borderTop: `2px solid ${R.accent}`, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
               <span style={{ fontSize: '11px', color: '#9fd3b0', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total simulado</span>
@@ -308,9 +308,9 @@ export default function LabOrcamentoPanel({ oticas, produtos }: { oticas: OticaL
             </div>
             <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
               <button type="button" onClick={() => gerarOrcamento(false)} disabled={!itens.length || gerando}
-                style={{ padding: '7px 14px', fontSize: '12px', fontWeight: 700, borderRadius: '7px', cursor: (!itens.length || gerando) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: (!itens.length || gerando) ? 0.5 : 1, border: `1px solid ${R.accent}66`, background: 'transparent', color: R.accent }}>👁 Visualizar</button>
+                style={{ padding: '7px 14px', fontSize: '12px', fontWeight: 700, borderRadius: '7px', cursor: (!itens.length || gerando) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: (!itens.length || gerando) ? 0.5 : 1, border: `1px solid ${R.accent}66`, background: 'transparent', color: R.accent }}>Visualizar</button>
               <button type="button" onClick={() => gerarOrcamento(true)} disabled={!itens.length || gerando}
-                style={{ padding: '7px 14px', fontSize: '12px', fontWeight: 700, borderRadius: '7px', cursor: (!itens.length || gerando) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: (!itens.length || gerando) ? 0.5 : 1, border: 'none', background: R.accent, color: '#fff' }}>{gerando ? 'Gerando...' : '⬇ Gerar Orçamento (PDF)'}</button>
+                style={{ padding: '7px 14px', fontSize: '12px', fontWeight: 700, borderRadius: '7px', cursor: (!itens.length || gerando) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: (!itens.length || gerando) ? 0.5 : 1, border: 'none', background: R.accent, color: '#fff' }}>{gerando ? 'Gerando...' : 'Gerar Orçamento (PDF)'}</button>
             </div>
           </div>
         </div>

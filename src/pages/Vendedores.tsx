@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { api } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import Icone from '../components/Icone';
 
 interface VendedorStat {
   vendedor: string;
@@ -156,7 +157,7 @@ export default function Vendedores() {
   const filterBtn = (active: boolean): React.CSSProperties => ({
     padding: '7px 14px', fontSize: '13px', fontWeight: '500',
     border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`,
-    borderRadius: '20px', cursor: 'pointer',
+    borderRadius: '6px', cursor: 'pointer',
     background: active ? 'var(--primary)' : 'var(--surface)',
     color: active ? 'white' : 'var(--text-dim)',
   });
@@ -172,7 +173,7 @@ export default function Vendedores() {
   const totalGeral = stats.filter(v => v.perfil !== 'marketing').reduce((s, v) => s + v.valor_total, 0);
   const totalVendas = stats.filter(v => v.perfil !== 'marketing').reduce((s, v) => s + v.total_vendas, 0);
 
-  const MEDALHAS = ['🥇', '🥈', '🥉'];
+  const MEDALHAS = ['1º', '2º', '3º'];
 
   return (
     <div style={{ padding: '32px' }}>
@@ -200,7 +201,7 @@ export default function Vendedores() {
         ))}
       </div>
 
-      {/* KPIs gerais — só admin */}
+      {/* KPIs gerais · só admin */}
       {isAdmin && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px', marginBottom: '28px' }}>
           {[
@@ -271,7 +272,7 @@ export default function Vendedores() {
                     {isAdmin && (
                       <>
                         <td style={{ padding: '14px 16px' }}>
-                          <span style={{ padding: '3px 9px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', background: pc.bg, color: pc.color }}>
+                          <span style={{ padding: '3px 9px', borderRadius: '6px', fontSize: '11px', fontWeight: '600', background: pc.bg, color: pc.color }}>
                             {PERFIL_LABEL[v.perfil] || v.perfil}
                           </span>
                         </td>
@@ -301,9 +302,9 @@ export default function Vendedores() {
       {todosMarketing.length > 0 && (
         <div style={{ background: 'var(--surface)', border: '1px solid rgba(236,72,153,0.25)', borderRadius: '12px', overflow: 'hidden', marginTop: '20px' }}>
           <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(236,72,153,0.15)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '15px' }}>📢</span>
+            <Icone nome="campanhas" size={15} color="#ec4899" />
             <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '600', color: 'var(--text)' }}>
-              {isAdmin ? 'Desempenho — Marketing' : 'Ranking Marketing'}
+              {isAdmin ? 'Desempenho · Marketing' : 'Ranking Marketing'}
             </h3>
             <span style={{ fontSize: '12px', color: '#db2777', marginLeft: '4px' }}>apenas contagem</span>
           </div>
@@ -328,7 +329,7 @@ export default function Vendedores() {
                     >
                       <td style={{ padding: '14px 16px', width: '48px' }}>
                         <span style={{ fontSize: i < 3 ? '18px' : '13px', fontFamily: 'var(--mono)', color: 'var(--text-muted)' }}>
-                          {i < 3 ? ['🥇','🥈','🥉'][i] : `#${i + 1}`}
+                          {`${i + 1}º`}
                         </span>
                       </td>
                       <td style={{ padding: '14px 16px' }}>

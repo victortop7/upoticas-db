@@ -6,6 +6,7 @@ import PixLicenca from './PixLicenca';
 import { useAuth } from '../hooks/useAuth';
 import SemAcesso from './SemAcesso';
 import { temSistema } from '../types';
+import Icone from './Icone';
 
 // WhatsApp do suporte para renovação (troque pelo número oficial)
 const SUPORTE_WHATSAPP = '5585991507887';
@@ -36,10 +37,10 @@ function BloqueioOverlay({ motivo }: { motivo?: string }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(8,10,18,0.92)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 18, padding: '32px 30px', maxWidth: 420, width: '100%', textAlign: 'center', boxShadow: '0 24px 80px rgba(0,0,0,0.5)' }}>
-        <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--red-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px', fontSize: 30 }}>🔒</div>
+        <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--red-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px' }}><Icone nome="cadeado" size={28} color="var(--red)" /></div>
         <h2 style={{ margin: '0 0 8px', fontSize: 20, fontWeight: 700, color: 'var(--text)' }}>{motivo || 'Acesso expirado'}</h2>
         <p style={{ margin: '0 0 6px', fontSize: 14, color: 'var(--text-dim)', lineHeight: 1.6 }}>
-          Seus dados estão <strong style={{ color: 'var(--text)' }}>salvos e seguros</strong> — nada foi perdido. Para continuar usando o sistema, renove sua licença.
+          Seus dados estão <strong style={{ color: 'var(--text)' }}>salvos e seguros</strong> · nada foi perdido. Para continuar usando o sistema, renove sua licença.
         </p>
         <p style={{ margin: '0 0 18px', fontSize: 13, color: 'var(--text-muted)' }}>Pague pelo Pix abaixo e o acesso é liberado na hora.</p>
         <PixLicenca />
@@ -61,9 +62,9 @@ function AvisoBanner({ dias, motivo }: { dias?: number; motivo?: string }) {
     : (dias === 0 ? 'Sua licença expira hoje!' : `Sua licença expira em ${dias} dia${dias === 1 ? '' : 's'}.`);
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '8px 16px', background: 'linear-gradient(90deg, #d97706, #f59e0b)', color: 'white', fontSize: 13, fontWeight: 600, flexWrap: 'wrap' }}>
-      <span>⚠️ {texto} Renove para não perder o acesso.</span>
+      <span>{texto} Renove para não perder o acesso.</span>
       <a href={`https://wa.me/${SUPORTE_WHATSAPP}?text=${msg}`} target="_blank" rel="noopener noreferrer"
-        style={{ padding: '4px 14px', background: 'rgba(255,255,255,0.95)', color: '#b45309', borderRadius: 999, fontSize: 12, fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+        style={{ padding: '4px 14px', background: 'rgba(255,255,255,0.95)', color: '#b45309', borderRadius: 6, fontSize: 12, fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}>
         Renovar agora
       </a>
     </div>

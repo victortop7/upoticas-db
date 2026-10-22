@@ -86,14 +86,14 @@ export default function CobrancaImprimir() {
           {([['rota', 'Rota (bairro/rua)'], ['nome', 'Nome'], ['atraso', 'Mais atrasado']] as const).map(([v, l]) => (
             <button key={v} onClick={() => setOrdem(v)} style={{ padding: '6px 11px', fontSize: 12.5, borderRadius: 6, border: '1px solid #374151', cursor: 'pointer', background: ordem === v ? '#374151' : 'transparent', color: '#fff' }}>{l}</button>
           ))}
-          <button onClick={() => window.print()} style={{ marginLeft: 6, padding: '8px 18px', fontSize: 13.5, fontWeight: 700, background: '#16a34a', color: '#fff', border: 'none', borderRadius: 7, cursor: 'pointer' }}>🖨️ Imprimir</button>
+          <button onClick={() => window.print()} style={{ marginLeft: 6, padding: '8px 18px', fontSize: 13.5, fontWeight: 700, background: '#16a34a', color: '#fff', border: 'none', borderRadius: 7, cursor: 'pointer' }}>Imprimir</button>
         </div>
       </div>
 
       <div className="cb folha" style={{ background: '#fff', maxWidth: 794, margin: '20px auto', padding: '24px 28px', boxShadow: '0 2px 12px rgba(0,0,0,.12)' }}>
         <div className="hdr">
           <div>
-            <h1>Cobrança — {tenant?.nome || ''}</h1>
+            <h1>Cobrança · {tenant?.nome || ''}</h1>
             <div style={{ color: '#555', marginTop: 2 }}>{desc}</div>
           </div>
           <div style={{ textAlign: 'right' }}>
@@ -113,12 +113,12 @@ export default function CobrancaImprimir() {
           bairroAnt = bairro;
           return (
             <div key={g.chave}>
-              {novoBairro && <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.6px', margin: '10px 0 4px', color: '#333' }}>📍 {c.bairro || 'Sem bairro'}{c.cidade ? ` — ${c.cidade}` : ''}</div>}
+              {novoBairro && <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.6px', margin: '10px 0 4px', color: '#333' }}>{c.bairro || 'Sem bairro'}{c.cidade ? ` · ${c.cidade}` : ''}</div>}
               <div className="cli">
                 <div className="top">
                   <div>
-                    <div className="nome">{c.cliente_nome || '—'}{c.apelido ? <span style={{ fontWeight: 400, color: '#555' }}> ({c.apelido})</span> : null}</div>
-                    <div style={{ color: '#444' }}>{c.cpf ? `CPF ${c.cpf}` : ''}{c.celular ? `  ·  📱 ${c.celular}` : ''}{c.telefone && c.telefone !== c.celular ? `  ·  ☎ ${c.telefone}` : ''}</div>
+                    <div className="nome">{c.cliente_nome || '-'}{c.apelido ? <span style={{ fontWeight: 400, color: '#555' }}> ({c.apelido})</span> : null}</div>
+                    <div style={{ color: '#444' }}>{c.cpf ? `CPF ${c.cpf}` : ''}{c.celular ? `  ·  ${c.celular}` : ''}{c.telefone && c.telefone !== c.celular ? `  ·  ${c.telefone}` : ''}</div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div className="num" style={{ fontSize: 14, fontWeight: 800 }}>{brl(g.total)}</div>
@@ -126,7 +126,7 @@ export default function CobrancaImprimir() {
                   </div>
                 </div>
                 <div className="end">
-                  <b>Endereço:</b> {c.endereco || '—'}{c.bairro ? `, ${c.bairro}` : ''}{c.cidade ? ` — ${c.cidade}${c.uf ? '/' + c.uf : ''}` : ''}
+                  <b>Endereço:</b> {c.endereco || '-'}{c.bairro ? `, ${c.bairro}` : ''}{c.cidade ? ` · ${c.cidade}${c.uf ? '/' + c.uf : ''}` : ''}
                   {c.referencia && <><br /><b>Referência:</b> {c.referencia}</>}
                 </div>
                 <table>
@@ -135,7 +135,7 @@ export default function CobrancaImprimir() {
                     {g.titulos.map(t => (
                       <tr key={t.origem + t.id}>
                         <td>{t.venda_numero ? `Venda #${t.venda_numero}` : t.descricao}{t.origem === 'venda' ? ' (saldo)' : ''}</td>
-                        <td className="num">{t.parcela || '—'}</td>
+                        <td className="num">{t.parcela || '-'}</td>
                         <td className="num">{fmtD(t.vencimento)}</td>
                         <td className={t.dias_atraso ? 'atr' : ''}>{t.dias_atraso ? `${t.dias_atraso}d` : 'a vencer'}</td>
                         <td className="r num">{brl(t.valor)}</td>

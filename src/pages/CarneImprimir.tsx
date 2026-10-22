@@ -12,7 +12,7 @@ interface Dados {
 }
 
 const brl = (v: number) => (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-const fmtData = (s?: string) => { if (!s) return '—'; const [y, m, d] = s.split('T')[0].split('-'); return `${d}/${m}/${y}`; };
+const fmtData = (s?: string) => { if (!s) return '-'; const [y, m, d] = s.split('T')[0].split('-'); return `${d}/${m}/${y}`; };
 
 export default function CarneImprimir() {
   const { id } = useParams();
@@ -47,8 +47,8 @@ export default function CarneImprimir() {
 
       {/* Barra de ações (some na impressão) */}
       <div className="no-print" style={{ position: 'sticky', top: 0, background: '#0b132b', padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 10 }}>
-        <span style={{ color: '#fff', fontWeight: 600 }}>Carnê — {cliente?.nome || 'Cliente'}</span>
-        <button onClick={() => window.print()} style={{ padding: '9px 20px', fontSize: 14, fontWeight: 700, background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}>🖨️ Imprimir / Salvar PDF</button>
+        <span style={{ color: '#fff', fontWeight: 600 }}>Carnê · {cliente?.nome || 'Cliente'}</span>
+        <button onClick={() => window.print()} style={{ padding: '9px 20px', fontSize: 14, fontWeight: 700, background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}>Imprimir / Salvar PDF</button>
       </div>
 
       <div style={{ maxWidth: 820, margin: '0 auto', padding: '24px 20px 60px' }}>
@@ -64,8 +64,8 @@ export default function CarneImprimir() {
             </div>
           </div>
           <div style={{ marginTop: 8, fontSize: 14 }}>
-            <b>Cliente:</b> {cliente?.nome || '—'}{cliente?.cpf ? ` · CPF ${cliente.cpf}` : ''}<br />
-            <b>Referente a:</b> {carne.descricao} — <b>{carne.num_parcelas}x</b> · Total {brl(carne.valor_total)}
+            <b>Cliente:</b> {cliente?.nome || '-'}{cliente?.cpf ? ` · CPF ${cliente.cpf}` : ''}<br />
+            <b>Referente a:</b> {carne.descricao} · <b>{carne.num_parcelas}x</b> · Total {brl(carne.valor_total)}
           </div>
         </div>
 
@@ -77,7 +77,7 @@ export default function CarneImprimir() {
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 6 }}>
                 {loja?.logo && <img src={loja.logo} alt="" style={{ height: 26, maxWidth: 90, objectFit: 'contain', alignSelf: 'center' }} />}
                 <span style={{ fontSize: 26, fontWeight: 800, fontFamily: 'monospace' }}>{p.numero}<span style={{ fontSize: 15, color: '#888' }}>/{carne.num_parcelas}</span></span>
-                {p.status === 'pago' && <span style={{ fontSize: 12, fontWeight: 700, color: '#16a34a', border: '1px solid #16a34a', borderRadius: 20, padding: '1px 10px' }}>PAGO</span>}
+                {p.status === 'pago' && <span style={{ fontSize: 12, fontWeight: 700, color: '#16a34a', border: '1px solid #16a34a', borderRadius: 6, padding: '1px 10px' }}>PAGO</span>}
               </div>
               <div style={{ fontSize: 14, marginBottom: 2 }}><b>Vencimento:</b> {fmtData(p.vencimento)}</div>
               <div style={{ fontSize: 22, fontWeight: 800, color: '#0b6b3a' }}>{brl(p.valor)}</div>

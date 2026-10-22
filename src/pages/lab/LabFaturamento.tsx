@@ -8,7 +8,7 @@ interface OsItem { id: string; numero: number; ref_otica: string | null; cont_in
 
 function brl(v: number) { return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 function fmtDate(s: string | null) {
-  if (!s) return '—';
+  if (!s) return '-';
   const [y, m, d] = s.slice(0, 10).split('-');
   return `${d}/${m}/${y}`;
 }
@@ -19,7 +19,7 @@ function mesAtual() {
 
 const INP: React.CSSProperties = { padding: '7px 10px', fontSize: '13px', background: R.inp, border: '1px solid var(--lab-bdr)', borderRadius:  0, color: R.txt, outline: 'none', fontFamily: "'Courier New', monospace", width: '100%', boxSizing: 'border-box' };
 const LBL: React.CSSProperties = { fontSize: '11px', fontWeight: '600', color: R.dim, textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '4px' };
-// Status das OS (para a listagem do fechamento). Inclui as ainda em produção — cobrança adiantada.
+// Status das OS (para a listagem do fechamento). Inclui as ainda em produção: cobrança adiantada.
 const OS_STATUS: Record<string, { label: string; cor: string }> = {
   aguardando:  { label: 'Aguardando',  cor: '#886600' },
   em_producao: { label: 'Em Produção', cor: R.accent2 },
@@ -35,7 +35,7 @@ export default function LabFaturamento() {
   const navigate = useNavigate();
   const [oticas, setOticas] = useState<Otica[]>([]);
 
-  // Gerar fechamento — período
+  // Gerar fechamento: período
   const [periodoTipo, setPeriodoTipo] = useState<PeriodoTipo>('mes');
   const [refData, setRefData] = useState(hojeStr());     // dia/semana/quinzena
   const [mes, setMes] = useState(mesAtual());             // mês
@@ -86,7 +86,7 @@ export default function LabFaturamento() {
       const { ini, fim } = calcRange();
       const data = await api.get<OsItem[]>(`/lab/faturamento/os?data_ini=${ini}&data_fim=${fim}${oticaFiltro ? `&otica_id=${oticaFiltro}` : ''}`);
       setOsLista(data);
-      // Pré-marca só as prontas/entregues. As ainda em produção ficam desmarcadas —
+      // Pré-marca só as prontas/entregues. As ainda em produção ficam desmarcadas:
       // o usuário marca só se o cliente quiser pagar adiantado.
       setSel(new Set(data.filter(o => o.status === 'pronto' || o.status === 'entregue').map(o => o.id)));
     } catch { setOsLista([]); setSel(new Set()); }
@@ -123,7 +123,7 @@ export default function LabFaturamento() {
           ordem_numero: os.length === 1 ? os[0].numero : null,
         });
       }
-      setMsg(`✓ Enviado para Contas a Receber: ${grupos.size} lançamento(s) com ${escolhidas.length} OS.`);
+      setMsg(`Enviado para Contas a Receber: ${grupos.size} lançamento(s) com ${escolhidas.length} OS.`);
       setOsLista(l => l.filter(o => !sel.has(o.id)));
       setSel(new Set());
     } catch (e: unknown) {
@@ -131,7 +131,7 @@ export default function LabFaturamento() {
     } finally { setGerando(false); }
   }
 
-  // Documento do fechamento com as OS SELECIONADAS (agrupadas por ótica) — ver/imprimir/PDF
+  // Documento do fechamento com as OS SELECIONADAS (agrupadas por ótica): ver/imprimir/PDF
   async function visualizarSelecionadas(auto: boolean) {
     const escolhidas = osLista.filter(o => sel.has(o.id));
     if (!escolhidas.length) { setMsg('Erro: selecione ao menos uma OS.'); return; }
@@ -164,20 +164,20 @@ export default function LabFaturamento() {
       const linhas = os.map(o => {
         const svcs = svcPorOS[o.id] || [];
         const svcHtml = svcs.length ? svcs.map(s => `<tr style="background:#f4f2ee"><td style="padding:3px 8px 3px 26px;font-family:monospace;font-size:10px;color:#555">${s.codigo || ''}</td><td style="padding:3px 8px;font-size:10px;color:#333">${s.descricao || ''}</td><td style="padding:3px 8px;font-family:monospace;font-size:10px;text-align:center">${Number(s.qtd || 0).toFixed(2)}</td><td style="padding:3px 8px;font-family:monospace;font-size:10px;text-align:right">${mb(s.valor_unit || 0)}</td><td style="padding:3px 8px;font-family:monospace;font-size:10px;text-align:right;font-weight:700">${mb(s.total || 0)}</td></tr>`).join('') : '';
-        return `<tr style="background:${G}"><td style="padding:5px 8px;font-family:monospace;font-weight:900;color:#fff;font-size:12px">#${String(o.numero).padStart(4, '0')}</td><td colspan="2" style="padding:5px 8px;font-family:monospace;color:#cff0d6;font-size:10px">${(o.created_at || '').slice(0, 10).split('-').reverse().join('/')} · Ref: ${o.ref_otica || '—'}</td><td style="padding:5px 8px;font-size:10px;color:#cff0d6;text-align:right">Total OS</td><td style="padding:5px 8px;font-family:monospace;font-weight:900;color:#fff;text-align:right">${mb(o.total || 0)}</td></tr>${svcHtml}<tr><td colspan="5" style="height:3px;background:${GBG}"></td></tr>`;
+        return `<tr style="background:${G}"><td style="padding:5px 8px;font-family:monospace;font-weight:900;color:#fff;font-size:12px">#${String(o.numero).padStart(4, '0')}</td><td colspan="2" style="padding:5px 8px;font-family:monospace;color:#cff0d6;font-size:10px">${(o.created_at || '').slice(0, 10).split('-').reverse().join('/')} · Ref: ${o.ref_otica || '-'}</td><td style="padding:5px 8px;font-size:10px;color:#cff0d6;text-align:right">Total OS</td><td style="padding:5px 8px;font-family:monospace;font-weight:900;color:#fff;text-align:right">${mb(o.total || 0)}</td></tr>${svcHtml}<tr><td colspan="5" style="height:3px;background:${GBG}"></td></tr>`;
       }).join('');
       const subRow = umaOtica ? '' : `<tr><td colspan="4" style="padding:4px 8px;text-align:right;font-size:11px;color:#555">Subtotal ${nome}</td><td style="padding:4px 8px;text-align:right;font-family:monospace;font-weight:700">${mb(sub)}</td></tr>`;
-      const cab = umaOtica ? '' : `<tr><td colspan="5" style="padding:10px 8px 4px;font-size:13px;font-weight:900;color:${G}">${nome} — ${os.length} OS</td></tr>`;
+      const cab = umaOtica ? '' : `<tr><td colspan="5" style="padding:10px 8px 4px;font-size:13px;font-weight:900;color:${G}">${nome} · ${os.length} OS</td></tr>`;
       return cab + linhas + subRow;
     }).join('');
 
     const toolbar = `<div class="noprint" style="position:sticky;top:0;display:flex;gap:8px;justify-content:flex-end;align-items:center;padding:10px 12px;background:#0f2a1c;margin:-12px -12px 12px">
-        <span style="color:#cff0d6;font-size:12px;margin-right:auto;font-weight:600">Fechamento — ${titulo}</span>
-        <button onclick="window.print()" style="padding:8px 16px;font-size:13px;font-weight:700;background:#16a34a;color:#fff;border:none;border-radius:8px;cursor:pointer">⬇ Baixar PDF / Imprimir</button>
+        <span style="color:#cff0d6;font-size:12px;margin-right:auto;font-weight:600">Fechamento · ${titulo}</span>
+        <button onclick="window.print()" style="padding:8px 16px;font-size:13px;font-weight:700;background:#16a34a;color:#fff;border:none;border-radius:8px;cursor:pointer">Baixar PDF / Imprimir</button>
         <button onclick="window.close()" style="padding:8px 14px;font-size:13px;background:transparent;color:#cff0d6;border:1px solid #2f6b45;border-radius:8px;cursor:pointer">Fechar</button>
       </div>`;
 
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Fechamento — ${titulo}</title>
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Fechamento · ${titulo}</title>
       <style>*{box-sizing:border-box}body{margin:12px;font-family:Arial,sans-serif;font-size:11px;color:#000;background:#fff}
       table{width:100%;border-collapse:collapse}.hdr th{background:${G};color:#fff;padding:5px 8px;text-align:left;font-size:10px}
       @page{margin:8mm}@media print{body{margin:0}.noprint{display:none!important}}</style></head><body>
@@ -186,7 +186,7 @@ export default function LabFaturamento() {
         <div style="font-size:16px;font-weight:900;text-transform:uppercase;color:${G}">${titulo}</div>
         <div style="font-size:11px;color:#333;margin-top:2px">FECHAMENTO DE FATURAMENTO</div>
         <div style="font-size:10px;color:#666">Período: ${fmtDate(ini)} a ${fmtDate(fim)} &nbsp;|&nbsp; ${escolhidas.length} OS${vencimento ? ` &nbsp;|&nbsp; Vencimento: ${fmtDate(vencimento)}` : ''}</div>
-        <div style="font-size:9px;color:#aaa">Emitido em ${new Date().toLocaleString('pt-BR')} — Connect LAB</div>
+        <div style="font-size:9px;color:#aaa">Emitido em ${new Date().toLocaleString('pt-BR')} · Connect LAB</div>
       </div>
       <table><thead class="hdr"><tr><th>Nº OS</th><th>Data / Ref.</th><th style="text-align:center">Qtd</th><th style="text-align:right">V.Unit</th><th style="text-align:right">Total</th></tr></thead>
       <tbody>${secoes}</tbody></table>
@@ -223,7 +223,7 @@ export default function LabFaturamento() {
             <div style={{ display: 'flex', gap: '6px', marginBottom: '14px', flexWrap: 'wrap' }}>
               {([['dia', 'Dia'], ['semana', 'Semana'], ['quinzena', 'Quinzena'], ['mes', 'Mês'], ['personalizado', 'Personalizado']] as [PeriodoTipo, string][]).map(([v, l]) => (
                 <button key={v} onClick={() => { setPeriodoTipo(v); setOsLista([]); setSel(new Set()); }}
-                  style={{ padding: '6px 14px', fontSize: '12px', fontWeight: '700', borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${periodoTipo === v ? R.accent : 'var(--lab-bdr)'}`, background: periodoTipo === v ? R.accent : 'transparent', color: periodoTipo === v ? '#fff' : R.dim }}>
+                  style={{ padding: '6px 14px', fontSize: '12px', fontWeight: '700', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${periodoTipo === v ? R.accent : 'var(--lab-bdr)'}`, background: periodoTipo === v ? R.accent : 'transparent', color: periodoTipo === v ? '#fff' : R.dim }}>
                   {l}
                 </button>
               ))}
@@ -291,7 +291,7 @@ export default function LabFaturamento() {
               <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '10px', overflow: 'hidden' }}>
                 <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--lab-bdr)', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
                   <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar por código da ótica, referência do cliente, nº da OS..." style={{ ...INP, width: '360px', maxWidth: '100%', fontFamily: "'Montserrat', sans-serif" }} />
-                  <span style={{ fontSize: '12px', color: R.dim }}>Marque as OS que quer faturar — inclusive as <b style={{ color: R.txt }}>Em Produção</b>, se o cliente for pagar adiantado</span>
+                  <span style={{ fontSize: '12px', color: R.dim }}>Marque as OS que quer faturar · inclusive as <b style={{ color: R.txt }}>Em Produção</b>, se o cliente for pagar adiantado</span>
                 </div>
                 <div style={{ maxHeight: 'calc(100vh - 400px)', overflowY: 'auto' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -312,12 +312,12 @@ export default function LabFaturamento() {
                           <tr key={o.id} onClick={() => toggleSel(o.id)} style={{ borderBottom: '1px solid var(--lab-bdr)', cursor: 'pointer', background: on ? `${R.accent}12` : 'transparent' }}>
                             <td style={{ padding: '8px 12px', textAlign: 'center' }}><input type="checkbox" checked={on} onChange={() => toggleSel(o.id)} onClick={e => e.stopPropagation()} /></td>
                             <td style={{ padding: '8px 12px', fontFamily: "'Courier New', monospace", fontSize: '13px', fontWeight: '700', color: R.txt }}>#{String(o.numero).padStart(4, '0')}</td>
-                            <td style={{ padding: '8px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{o.otica_codigo || '—'}</td>
+                            <td style={{ padding: '8px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{o.otica_codigo || '-'}</td>
                             <td style={{ padding: '8px 12px', fontSize: '13px', color: R.txt, maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.otica_nome}</td>
-                            <td style={{ padding: '8px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{o.ref_otica || '—'}</td>
-                            <td style={{ padding: '8px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{o.cont_interno || '—'}</td>
+                            <td style={{ padding: '8px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{o.ref_otica || '-'}</td>
+                            <td style={{ padding: '8px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{o.cont_interno || '-'}</td>
                             <td style={{ padding: '8px 12px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim, whiteSpace: 'nowrap' }}>{fmtDate(o.created_at)}</td>
-                            <td style={{ padding: '8px 12px' }}>{(() => { const st = OS_STATUS[o.status] ?? { label: o.status, cor: R.dim }; return <span style={{ fontSize: '10px', fontWeight: '600', color: st.cor, background: `${st.cor}18`, padding: '2px 7px', borderRadius: '20px', whiteSpace: 'nowrap' }}>{st.label}</span>; })()}</td>
+                            <td style={{ padding: '8px 12px' }}>{(() => { const st = OS_STATUS[o.status] ?? { label: o.status, cor: R.dim }; return <span style={{ fontSize: '10px', fontWeight: '600', color: st.cor, background: `${st.cor}18`, padding: '2px 7px', borderRadius: '6px', whiteSpace: 'nowrap' }}>{st.label}</span>; })()}</td>
                             <td style={{ padding: '8px 12px', fontSize: '13px', fontFamily: "'Courier New', monospace", fontWeight: '700', color: R.txt, textAlign: 'right', whiteSpace: 'nowrap' }}>{brl(o.total)}</td>
                           </tr>
                         );
@@ -326,10 +326,10 @@ export default function LabFaturamento() {
                   </table>
                 </div>
 
-                {/* Barra "bilhete" — soma ao vivo conforme marca as OS */}
+                {/* Barra "bilhete" · soma ao vivo conforme marca as OS */}
                 <div style={{ position: 'sticky', bottom: 0, background: 'linear-gradient(90deg, #0f2a1c, #123a24)', borderTop: `2px solid ${R.accent}`, padding: '12px 18px', display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '11px', fontWeight: '700', color: '#cff0d6', textTransform: 'uppercase', letterSpacing: '0.5px', background: 'rgba(255,255,255,0.1)', padding: '4px 10px', borderRadius: '20px' }}>🧾 {qtdSel} OS</span>
+                    <span style={{ fontSize: '11px', fontWeight: '700', color: '#cff0d6', textTransform: 'uppercase', letterSpacing: '0.5px', background: 'rgba(255,255,255,0.1)', padding: '4px 10px', borderRadius: '6px' }}>{qtdSel} OS</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
                     <span style={{ fontSize: '11px', color: '#9fd3b0', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total a faturar</span>
@@ -339,9 +339,9 @@ export default function LabFaturamento() {
                     )}
                   </div>
                   <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
-                    {acaoBtn('👁 Visualizar', () => visualizarSelecionadas(false))}
-                    {acaoBtn('⬇ PDF', () => visualizarSelecionadas(true))}
-                    {acaoBtn(gerando ? 'Gerando...' : '✓ Gerar Fechamento', gerarSelecionadas, true)}
+                    {acaoBtn('Visualizar', () => visualizarSelecionadas(false))}
+                    {acaoBtn('PDF', () => visualizarSelecionadas(true))}
+                    {acaoBtn(gerando ? 'Gerando...' : 'Gerar Fechamento', gerarSelecionadas, true)}
                   </div>
                 </div>
               </div>

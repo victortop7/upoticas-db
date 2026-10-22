@@ -146,7 +146,7 @@ export default function LabFluxoScan() {
           {result ? (
             <div style={{ width: '100%', maxWidth: '480px', border: `3px outset ${result.ok ? R.accent : R.accent}` }}>
               <div style={{ background: result.ok ? R.accent : R.accent, color: '#fff', padding: '6px 14px', fontWeight: '700', fontSize: '12px', letterSpacing: '1px', textTransform: 'uppercase' }}>
-                {result.ok ? '✓ LEITURA REALIZADA COM SUCESSO' : '✕ ERRO NA LEITURA'}
+                {result.ok ? 'LEITURA REALIZADA COM SUCESSO' : 'ERRO NA LEITURA'}
               </div>
               <div style={{ padding: '16px 20px', background: result.ok ? '#f0fff0' : '#fff0f0' }}>
                 {result.ok && result.ordem ? (
@@ -201,7 +201,7 @@ export default function LabFluxoScan() {
             </div>
           )}
 
-          {/* Hidden input — barcode readers type here */}
+          {/* Hidden input · barcode readers type here */}
           <input
             ref={inputRef}
             value={buffer}
@@ -234,7 +234,7 @@ export default function LabFluxoScan() {
                     {h.otica_nome}
                   </div>
                   <div style={{ fontSize: '10px', fontWeight: '700', fontFamily: "'Courier New', monospace", color: h.mudou ? R.accent : R.dim }}>
-                    {h.mudou ? `→ ${STATUS_LABELS[h.status_novo] || h.status_novo}` : '— sem mudança'}
+                    {h.mudou ? `→ ${STATUS_LABELS[h.status_novo] || h.status_novo}` : 'sem mudança'}
                   </div>
                 </div>
               ))}

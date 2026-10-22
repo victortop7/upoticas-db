@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Icone from '../components/Icone';
 
 export default function InteresseLab() {
   const navigate = useNavigate();
@@ -56,8 +57,8 @@ export default function InteresseLab() {
 
         {enviado ? (
           /* Tela de sucesso */
-          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '48px 40px', textAlign: 'center' }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>✅</div>
+          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', padding: '48px 40px', textAlign: 'center' }}>
+            <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'center' }}><Icone nome="ok" size={46} color="#22c55e" /></div>
             <h2 style={{ margin: '0 0 12px', fontSize: '24px', fontWeight: '800' }}>Recebemos seu contato!</h2>
             <p style={{ margin: '0 0 28px', fontSize: '15px', color: '#94a3b8', lineHeight: '1.6' }}>
               Nossa equipe vai entrar em contato em breve pelo WhatsApp para agendar uma demonstração do Connect LAB.
@@ -68,7 +69,7 @@ export default function InteresseLab() {
           </div>
         ) : (
           /* Formulário */
-          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '40px' }}>
+          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', padding: '40px' }}>
             <div style={{ marginBottom: '28px' }}>
               <h1 style={{ margin: '0 0 8px', fontSize: '24px', fontWeight: '800', letterSpacing: '-0.5px' }}>Quero conhecer o Connect LAB</h1>
               <p style={{ margin: 0, fontSize: '14px', color: '#94a3b8', lineHeight: '1.6' }}>

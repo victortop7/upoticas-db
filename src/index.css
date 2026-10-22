@@ -78,9 +78,9 @@ input, select, textarea, button { font-family: var(--sans); }
 }
 .pulse-btn { animation: pulseBtn 1.2s ease-in-out infinite; }
 
-/* ─── Connect Lab — tema (claro/escuro) via variáveis ───
+/* ─── Connect Lab: tema (claro/escuro) via variáveis ───
    Trocadas de uma vez pelo atributo data-lab-theme no <html>. */
-/* Claro — "clean tech" esverdeado (mesma identidade verde, sem o bege) */
+/* Claro: "clean tech" esverdeado (mesma identidade verde, sem o bege) */
 :root {
   --lab-bg: #e7ecea;
   --lab-panel: #f5f8f7;
@@ -110,7 +110,7 @@ input, select, textarea, button { font-family: var(--sans); }
   --lab-panel-grad: linear-gradient(180deg, #ffffff, #eef3f1);
   --lab-hover: rgba(15,122,53,0.12);
 }
-/* Escuro — HUD / painel de instrumento, grafite esverdeado + verde neon */
+/* Escuro: HUD / painel de instrumento, grafite esverdeado + verde neon */
 :root[data-lab-theme="dark"] {
   --lab-bg: #0a110e;
   --lab-panel: #111a16;

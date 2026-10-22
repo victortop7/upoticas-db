@@ -5,7 +5,7 @@ async function ensureLogo(db: Env['DB']) {
   try { await db.prepare('ALTER TABLE tenants ADD COLUMN logo TEXT').run(); } catch { /* já existe */ }
 }
 
-// GET /api/configuracoes/logo — logo da loja (data URL) ou null
+// GET /api/configuracoes/logo: logo da loja (data URL) ou null
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;
@@ -14,7 +14,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
   return json({ logo: t?.logo || null });
 };
 
-// PUT { logo: "data:image/png;base64,..." | null } — só admin
+// PUT { logo: "data:image/png;base64,..." | null }: só admin
 export const onRequestPut = async ({ request, env }: { request: Request; env: Env }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;

@@ -67,7 +67,7 @@ export const onRequestDelete = async ({ request, env, params }: { request: Reque
   }
 };
 
-// PATCH /:id/preco-especial — adicionar/atualizar preço especial para um cliente
+// PATCH /:id/preco-especial: adicionar/atualizar preço especial para um cliente
 export const onRequestPatch = async ({ request, env, params }: { request: Request; env: Env; params: Record<string, string> }) => {
   try {
     const auth = await requireAuth(request, env);

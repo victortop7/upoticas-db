@@ -170,8 +170,8 @@ export default function Caixa() {
                   </span>
                 </td>
                 <td style={{ padding: '12px 16px', fontSize: '14px', color: 'var(--text)' }}>{m.descricao}</td>
-                <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>{(m as any).conta_nome || '—'}</td>
-                <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>{m.categoria || '—'}</td>
+                <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>{(m as any).conta_nome || '-'}</td>
+                <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>{m.categoria || '-'}</td>
                 <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '600', color: m.tipo === 'entrada' ? '#16a34a' : '#dc2626' }}>
                   {m.tipo === 'saida' ? '-' : ''}{brl(m.valor)}
                 </td>

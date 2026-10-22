@@ -101,7 +101,7 @@ const DEMO_ITEMS = [
   },
 ];
 
-// ─── Módulos (estilo iOS — cada app com seu gradiente) ─────────────────────
+// ─── Módulos (estilo iOS: cada app com seu gradiente) ─────────────────────
 const MODULES = [
   {
     id: 'demonstracoes',
@@ -313,7 +313,7 @@ export default function VisionHome() {
           <button onClick={sair} style={{
             marginTop: 13, display: 'inline-flex', alignItems: 'center', gap: 6,
             background: 'rgba(255,255,255,0.6)', border: '1px solid rgba(15,23,42,0.08)',
-            borderRadius: 999, padding: '5px 13px', cursor: 'pointer',
+            borderRadius: 6, padding: '5px 13px', cursor: 'pointer',
             color: '#64748b', fontSize: 11.5, fontWeight: 600, WebkitTapHighlightColor: 'transparent',
             backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
           }}>
@@ -322,7 +322,7 @@ export default function VisionHome() {
           </button>
         </div>
 
-        {/* Overlay escuro + faixa de submenu — cobre o hero inteiro */}
+        {/* Overlay escuro + faixa de submenu · cobre o hero inteiro */}
         {openSubmenu === 'demo' && (
           <>
             <div
@@ -429,7 +429,7 @@ export default function VisionHome() {
         )}
       </div>
 
-      {/* Dock estilo iOS — ícones de app */}
+      {/* Dock estilo iOS · ícones de app */}
       <div style={{
         background: 'rgba(248,250,253,0.78)',
         backdropFilter: 'blur(28px) saturate(1.6)',
@@ -502,7 +502,7 @@ export default function VisionHome() {
                   {mod.comingSoon && (
                     <div style={{
                       position: 'absolute', top: -7, right: -7,
-                      background: '#ff3b30', borderRadius: 999,
+                      background: '#ff3b30', borderRadius: 6,
                       padding: '2.5px 7px',
                       fontSize: 7.5, fontWeight: 800, color: '#fff',
                       letterSpacing: '0.05em', textTransform: 'uppercase',

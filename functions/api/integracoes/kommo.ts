@@ -66,7 +66,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     const leadId = txt(body.kommo_lead_id) || txt(body.lead_id);
     const now = new Date().toISOString();
 
-    // 3) Idempotência — não processa o mesmo lead duas vezes
+    // 3) Idempotência: não processa o mesmo lead duas vezes
     try {
       await env.DB.prepare(`CREATE TABLE IF NOT EXISTS kommo_sync (
         id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL, lead_id TEXT NOT NULL,
@@ -92,7 +92,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       rec_adicao: txt(rec.adicao), rec_dp: txt(rec.dp),
     };
 
-    // 4) Cliente — dedupe por CPF/celular/telefone
+    // 4) Cliente: dedupe por CPF/celular/telefone
     let clienteId: string | null = null;
     const conds: string[] = []; const bd: unknown[] = [tenant_id];
     if (cpf) { conds.push('(cpf IS NOT NULL AND cpf <> \'\' AND cpf = ?)'); bd.push(cpf); }

@@ -3,7 +3,7 @@ import type { Env } from '../../lib/types';
 import { requireAuthBasic, json } from '../../lib/auth-middleware';
 import { ensureBlingCols } from '../../lib/bling';
 
-// POST /api/bling/disconnect — remove os tokens do Bling da loja
+// POST /api/bling/disconnect: remove os tokens do Bling da loja
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const auth = await requireAuthBasic(request, env);
   if (auth instanceof Response) return auth;

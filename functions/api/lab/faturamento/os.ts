@@ -2,7 +2,7 @@ import type { Env } from '../../../lib/types';
 import { requireAuth, json } from '../../../lib/auth-middleware';
 
 // GET /api/lab/faturamento/os?data_ini=&data_fim=&otica_id=
-// Lista as OS do período para seleção no fechamento — inclui OS ainda em produção
+// Lista as OS do período para seleção no fechamento: inclui OS ainda em produção
 // (permite cobrar adiantado). Apenas OS canceladas ficam de fora.
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   try {

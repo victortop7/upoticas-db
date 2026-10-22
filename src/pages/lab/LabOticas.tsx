@@ -26,7 +26,7 @@ export default function LabOticas() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '6px' }}>
         <div style={{ background: R.hdr, color: R.hdrTxt, padding: '5px 14px', fontSize: '13px', fontWeight: '700', letterSpacing: '1px', border: `2px outset ${R.hdrBdr}` }}>
-          ÓTICAS CLIENTES — {filtradas.length} cadastrada(s)
+          ÓTICAS CLIENTES · {filtradas.length} cadastrada(s)
         </div>
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
           <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar por nome ou código..." style={{ ...INP, width: '220px' }} />
@@ -58,12 +58,12 @@ export default function LabOticas() {
                   style={{ background: i % 2 === 0 ? R.panel : R.alt, cursor: 'pointer', borderBottom: `1px solid ${R.bdr}` }}
                   onMouseEnter={e => (e.currentTarget.style.background = '#d0f0d0')}
                   onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 0 ? R.panel : R.alt)}>
-                  <td style={{ padding: '7px 12px', fontFamily: "'Courier New', monospace", fontSize: '11px', color: R.dim }}>{o.codigo || '—'}</td>
+                  <td style={{ padding: '7px 12px', fontFamily: "'Courier New', monospace", fontSize: '11px', color: R.dim }}>{o.codigo || '-'}</td>
                   <td style={{ padding: '7px 12px', fontSize: '12px', fontWeight: '700', color: R.txt }}>{o.nome_reduzido || o.nome}</td>
-                  <td style={{ padding: '7px 12px', fontFamily: "'Courier New', monospace", fontSize: '11px', color: R.txt }}>{o.cnpj || '—'}</td>
-                  <td style={{ padding: '7px 12px', fontSize: '11px', color: R.txt }}>{o.telefone || '—'}</td>
-                  <td style={{ padding: '7px 12px', fontSize: '11px', color: R.txt }}>{o.email || '—'}</td>
-                  <td style={{ padding: '7px 12px', fontSize: '11px', color: R.txt }}>{o.cidade && o.uf ? `${o.cidade}/${o.uf}` : o.cidade || '—'}</td>
+                  <td style={{ padding: '7px 12px', fontFamily: "'Courier New', monospace", fontSize: '11px', color: R.txt }}>{o.cnpj || '-'}</td>
+                  <td style={{ padding: '7px 12px', fontSize: '11px', color: R.txt }}>{o.telefone || '-'}</td>
+                  <td style={{ padding: '7px 12px', fontSize: '11px', color: R.txt }}>{o.email || '-'}</td>
+                  <td style={{ padding: '7px 12px', fontSize: '11px', color: R.txt }}>{o.cidade && o.uf ? `${o.cidade}/${o.uf}` : o.cidade || '-'}</td>
                   <td style={{ padding: '7px 12px' }}>
                     <span style={{ fontSize: '10px', fontWeight: '700', color: o.ativo ? 'var(--lab-chip-txt)' : '#880000', background: o.ativo ? 'var(--lab-chip-bg)' : '#ffdddd', padding: '2px 7px', border: `1px solid ${o.ativo ? 'var(--lab-chip-txt)' : '#880000'}` }}>
                       {o.ativo ? 'ATIVA' : 'INATIVA'}

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import InstallAppButton from '../components/InstallAppButton';
+import Icone from '../components/Icone';
 
 // ── Paleta clara ──
 const G = '#16a34a';       // verde (botões/acento)
@@ -37,17 +38,17 @@ const PRODUTOS = [
   },
 ];
 
-// Slides do topo — ordem: Vision → Óticas → LAB
+// Slides do topo: ordem: Vision → Óticas → LAB
 const HERO_SLIDES = [
-  { key: 'vision', nome: 'Connect Vision', cor: '#7c3aed', src: '/prints/vision-antirreflexo.jpg', cap: 'Connect Vision — simulação de anti-reflexo no atendimento' },
-  { key: 'otica', nome: 'Conexão Óticas', cor: '#16a34a', src: '/prints/otica-dashboard.jpg', cap: 'Conexão Óticas — painel de gestão da loja' },
-  { key: 'lab', nome: 'Connect LAB', cor: '#0891b2', src: '/prints/lab-funil.jpg', cap: 'Connect LAB — funil de produção do laboratório' },
+  { key: 'vision', nome: 'Connect Vision', cor: '#7c3aed', src: '/prints/vision-antirreflexo.jpg', cap: 'Connect Vision · simulação de anti-reflexo no atendimento' },
+  { key: 'otica', nome: 'Conexão Óticas', cor: '#16a34a', src: '/prints/otica-dashboard.jpg', cap: 'Conexão Óticas · painel de gestão da loja' },
+  { key: 'lab', nome: 'Connect LAB', cor: '#0891b2', src: '/prints/lab-funil.jpg', cap: 'Connect LAB · funil de produção do laboratório' },
 ];
 
-// Apps instaláveis no computador (Vision fica de fora — é app de celular/tablet)
+// Apps instaláveis no computador (Vision fica de fora: é app de celular/tablet)
 const DOWNLOADS = [
-  { key: 'otica', nome: 'Connect Óticas', cor: '#16a34a', icon: '/logo-otica.png', desc: 'Gestão da ótica — clientes, OS, vendas, estoque e financeiro.', manifest: '/manifest-otica.webmanifest' },
-  { key: 'lab', nome: 'Connect LAB', cor: '#0f7a35', icon: '/logo-lab-app.png', desc: 'Produção do laboratório — funil, surfaçagem e rastreio.', manifest: '/manifest-lab.webmanifest' },
+  { key: 'otica', nome: 'Connect Óticas', cor: '#16a34a', icon: '/logo-otica.png', desc: 'Gestão da ótica · clientes, OS, vendas, estoque e financeiro.', manifest: '/manifest-otica.webmanifest' },
+  { key: 'lab', nome: 'Connect LAB', cor: '#0f7a35', icon: '/logo-lab-app.png', desc: 'Produção do laboratório · funil, surfaçagem e rastreio.', manifest: '/manifest-lab.webmanifest' },
 ];
 
 const WHATSAPP = '5585991507887';
@@ -55,7 +56,7 @@ const WHATSAPP = '5585991507887';
 const SHOWCASE = [
   {
     tag: 'Connect Vision', cor: '#7c3aed', title: 'Mostre a diferença do anti-reflexo para o cliente',
-    desc: 'Compare, lado a lado, dirigir à noite com e sem anti-reflexo — reflexos de faróis eliminados. O cliente vê o valor da lente e decide na hora.',
+    desc: 'Compare, lado a lado, dirigir à noite com e sem anti-reflexo · reflexos de faróis eliminados. O cliente vê o valor da lente e decide na hora.',
     print: '/prints/vision-antirreflexo.jpg',
   },
   {
@@ -71,14 +72,14 @@ const SHOWCASE = [
 ];
 
 const FEATURES = [
-  { icon: '👤', title: 'Clientes & CRM', desc: 'Cadastro completo com histórico de compras, receitas e funil de relacionamento automático.' },
-  { icon: '🔧', title: 'Ordens de Serviço', desc: 'OS completa com receita oftalmológica, lentes, armações, laboratório e entrega. Impressão com um clique.' },
-  { icon: '🛒', title: 'Controle de Vendas', desc: 'Registre vendas, aplique descontos, controle formas de pagamento e acompanhe o faturamento.' },
-  { icon: '💰', title: 'Financeiro Completo', desc: 'Contas a pagar e a receber, fluxo de caixa e visão clara de clientes inadimplentes.' },
-  { icon: '📦', title: 'Estoque', desc: 'Controle de armações, lentes e acessórios. Alertas de estoque baixo e histórico de movimentações.' },
-  { icon: '📊', title: 'Painel Gerencial', desc: 'Relatórios de vendas, OS por situação, top clientes e resumo financeiro.' },
-  { icon: '🤝', title: 'CRM & Marketing', desc: 'Funil Kanban automático: pós-venda, aniversário, indicação, reativação. Mensagens no WhatsApp.' },
-  { icon: '👥', title: 'Multi-usuário', desc: 'Admin, vendedor e caixa com permissões separadas. Cada colaborador acessa só o que precisa.' },
+  { icon: 'clientes', title: 'Clientes & CRM', desc: 'Cadastro completo com histórico de compras, receitas e funil de relacionamento automático.' },
+  { icon: 'os', title: 'Ordens de Serviço', desc: 'OS completa com receita oftalmológica, lentes, armações, laboratório e entrega. Impressão com um clique.' },
+  { icon: 'vendas', title: 'Controle de Vendas', desc: 'Registre vendas, aplique descontos, controle formas de pagamento e acompanhe o faturamento.' },
+  { icon: 'dinheiro', title: 'Financeiro Completo', desc: 'Contas a pagar e a receber, fluxo de caixa e visão clara de clientes inadimplentes.' },
+  { icon: 'estoque', title: 'Estoque', desc: 'Controle de armações, lentes e acessórios. Alertas de estoque baixo e histórico de movimentações.' },
+  { icon: 'relatorios', title: 'Painel Gerencial', desc: 'Relatórios de vendas, OS por situação, top clientes e resumo financeiro.' },
+  { icon: 'crm', title: 'CRM & Marketing', desc: 'Funil Kanban automático: pós-venda, aniversário, indicação, reativação. Mensagens no WhatsApp.' },
+  { icon: 'usuarios', title: 'Multi-usuário', desc: 'Admin, vendedor e caixa com permissões separadas. Cada colaborador acessa só o que precisa.' },
 ];
 
 const FAQ = [
@@ -236,7 +237,7 @@ export default function Landing() {
         </div>
       </nav>
 
-      {/* ===== DOWNLOADS (primeiro bloco — instalação em destaque) ===== */}
+      {/* ===== DOWNLOADS (primeiro bloco · instalação em destaque) ===== */}
       <section id="downloads" style={{ borderBottom: `1px solid ${BD}`, padding: isMobile ? '40px 16px 44px' : '56px 48px 60px', background: `linear-gradient(180deg, ${GLOW}0.05), #ffffff 60%)` }}>
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '30px' }}>
@@ -245,7 +246,7 @@ export default function Landing() {
             </div>
             <h2 style={{ fontSize: isMobile ? '27px' : '38px', fontWeight: '900', margin: '0 0 14px', letterSpacing: '-1px', color: TX, lineHeight: 1.1 }}>Instale o sistema na sua área de trabalho</h2>
             <p style={{ fontSize: isMobile ? '15px' : '16px', color: TX2, margin: 0, maxWidth: '600px', marginLeft: 'auto', marginRight: 'auto', lineHeight: '1.6' }}>
-              Escolha seu sistema e crie o ícone no computador — abre com um clique, em janela própria, direto no login.
+              Escolha seu sistema e crie o ícone no computador · abre com um clique, em janela própria, direto no login.
             </p>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '18px' }}>
@@ -257,7 +258,7 @@ export default function Landing() {
                 <button onClick={() => instalarApp(d.key, d.nome)}
                   className={instalarParam === d.key && promptPronto ? 'pulse-btn' : undefined}
                   style={{ width: '100%', maxWidth: '300px', padding: '14px', fontSize: '15px', fontWeight: '700', background: `linear-gradient(135deg,${G},${G2})`, color: '#fff', border: 'none', borderRadius: '11px', cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 8px 20px ${GLOW}0.28)`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                  ⤓ {instalarParam === d.key && promptPronto ? `Instalar agora — clique` : `Instalar ${d.nome}`}
+                  ⤓ {instalarParam === d.key && promptPronto ? `Instalar agora · clique` : `Instalar ${d.nome}`}
                 </button>
                 <div style={{ fontSize: '11.5px', color: TX3, marginTop: '10px' }}>Cria o ícone na área de trabalho</div>
               </div>
@@ -294,7 +295,7 @@ export default function Landing() {
           Do balcão ao laboratório,<br />sua ótica <span style={{ background: `linear-gradient(135deg,${G},${G3})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>toda conectada</span>
         </h1>
         <p style={{ fontSize: isMobile ? '16px' : '19px', color: TX2, margin: '0 0 34px', lineHeight: '1.65', maxWidth: '640px', marginLeft: 'auto', marginRight: 'auto' }}>
-          Gestão da ótica, produção do laboratório e apresentação de lentes no atendimento — três sistemas que conversam entre si, em tempo real.
+          Gestão da ótica, produção do laboratório e apresentação de lentes no atendimento · três sistemas que conversam entre si, em tempo real.
         </p>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
           <button onClick={() => navigate('/cadastro')} style={{ padding: isMobile ? '13px 28px' : '15px 36px', fontSize: isMobile ? '15px' : '16px', fontWeight: '700', background: `linear-gradient(135deg,${G},${G2})`, color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 8px 24px ${GLOW}0.3)` }}>Começar grátis →</button>
@@ -362,7 +363,7 @@ export default function Landing() {
             <div key={p.key} style={{ background: '#fff', border: `1px solid ${BD}`, borderRadius: '18px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: CARD_SH }}>
               <div style={{ position: 'relative', borderBottom: `3px solid ${p.cor}` }}>
                 <img src={p.print} alt={p.nome} loading="lazy" style={{ width: '100%', height: '190px', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
-                <span style={{ position: 'absolute', top: '12px', left: '12px', fontSize: '11px', fontWeight: '700', color: '#fff', background: p.cor, padding: '4px 11px', borderRadius: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>{p.tag}</span>
+                <span style={{ position: 'absolute', top: '12px', left: '12px', fontSize: '11px', fontWeight: '700', color: '#fff', background: p.cor, padding: '4px 11px', borderRadius: '6px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>{p.tag}</span>
               </div>
               <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', flex: 1 }}>
                 <div style={{ fontSize: '19px', fontWeight: '800', color: TX, marginBottom: '8px' }}>{p.nome}</div>
@@ -370,7 +371,7 @@ export default function Landing() {
                 <ul style={{ margin: '0 0 18px', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '7px' }}>
                   {p.bullets.map((b, i) => (
                     <li key={i} style={{ fontSize: '13px', color: '#334155', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-                      <span style={{ color: p.cor, fontWeight: '800', flexShrink: 0 }}>✓</span>{b}
+                      <span style={{ color: p.cor, flexShrink: 0, marginTop: 1 }}><Icone nome="ok" size={15} /></span>{b}
                     </li>
                   ))}
                 </ul>
@@ -387,17 +388,17 @@ export default function Landing() {
           <div style={{ fontSize: '13px', color: G, fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '12px' }}>Tudo conectado</div>
           <h2 style={{ fontSize: isMobile ? '25px' : '34px', fontWeight: '800', margin: '0 0 14px', letterSpacing: '-0.8px', color: TX }}>Os três se conversam, em tempo real</h2>
           <p style={{ fontSize: '15px', color: TX2, margin: '0 0 40px', maxWidth: '620px', marginLeft: 'auto', marginRight: 'auto', lineHeight: '1.6' }}>
-            Uma venda no balcão vira uma OS que o laboratório produz e rastreia. Mesma base de dados, na nuvem — sem retrabalho, sem planilha no meio.
+            Uma venda no balcão vira uma OS que o laboratório produz e rastreia. Mesma base de dados, na nuvem · sem retrabalho, sem planilha no meio.
           </p>
           <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: 'stretch', justifyContent: 'center', gap: isMobile ? '0' : '8px' }}>
             {[
-              { nome: 'Connect Vision', cor: '#7c3aed', icon: '👓', passo: 'Mostra a lente e fecha no balcão' },
-              { nome: 'Conexão Óticas', cor: '#16a34a', icon: '🏪', passo: 'Registra a venda e gera a OS' },
-              { nome: 'Connect LAB', cor: '#0891b2', icon: '🔬', passo: 'Produz e rastreia até a entrega' },
+              { nome: 'Connect Vision', cor: '#7c3aed', icon: 'oculos', passo: 'Mostra a lente e fecha no balcão' },
+              { nome: 'Conexão Óticas', cor: '#16a34a', icon: 'lojas', passo: 'Registra a venda e gera a OS' },
+              { nome: 'Connect LAB', cor: '#0891b2', icon: 'laboratorio', passo: 'Produz e rastreia até a entrega' },
             ].map((n, i, arr) => (
               <div key={n.nome} style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: 'center', gap: isMobile ? '0' : '8px', flex: isMobile ? 'none' : 1 }}>
                 <div style={{ flex: 1, width: '100%', background: '#fff', border: `1px solid ${n.cor}33`, borderRadius: '16px', padding: '22px 18px', minWidth: 0, boxShadow: CARD_SH }}>
-                  <div style={{ fontSize: '30px', marginBottom: '8px' }}>{n.icon}</div>
+                  <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center', color: n.cor }}><Icone nome={n.icon} size={30} /></div>
                   <div style={{ fontSize: '15px', fontWeight: '800', color: n.cor, marginBottom: '6px' }}>{n.nome}</div>
                   <div style={{ fontSize: '13px', color: TX2, lineHeight: '1.5' }}>{n.passo}</div>
                 </div>
@@ -443,7 +444,7 @@ export default function Landing() {
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(auto-fill, minmax(260px, 1fr))', gap: '14px' }}>
           {FEATURES.map((f, i) => (
             <div key={i} style={{ background: '#fff', border: `1px solid ${BD}`, borderRadius: '16px', padding: isMobile ? '18px 14px' : '26px 24px', boxShadow: CARD_SH }}>
-              <div style={{ fontSize: isMobile ? '24px' : '30px', marginBottom: '10px' }}>{f.icon}</div>
+              <div style={{ marginBottom: '10px', color: '#2563eb' }}><Icone nome={f.icon} size={isMobile ? 24 : 28} /></div>
               <h3 style={{ margin: '0 0 6px', fontSize: isMobile ? '13px' : '16px', fontWeight: '700', color: TX }}>{f.title}</h3>
               {!isMobile && <p style={{ margin: 0, fontSize: '14px', color: TX2, lineHeight: '1.6' }}>{f.desc}</p>}
             </div>
@@ -489,7 +490,7 @@ export default function Landing() {
                 const on = fSistema === s;
                 return (
                   <button type="button" key={s} onClick={() => setFSistema(s)}
-                    style={{ padding: '8px 14px', fontSize: '13px', fontWeight: 700, borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit', background: on ? G : '#fff', color: on ? '#fff' : TX2, border: `1px solid ${on ? G : BD}` }}>
+                    style={{ padding: '8px 14px', fontSize: '13px', fontWeight: 700, borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit', background: on ? G : '#fff', color: on ? '#fff' : TX2, border: `1px solid ${on ? G : BD}` }}>
                     {s}
                   </button>
                 );

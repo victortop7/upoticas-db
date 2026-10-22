@@ -57,7 +57,7 @@ export default function Aniversariantes() {
     }).catch(() => {});
   }
 
-  const filterBtn = (active: boolean): React.CSSProperties => ({ padding: '6px 14px', fontSize: '13px', fontWeight: '500', border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`, borderRadius: '20px', cursor: 'pointer', background: active ? 'var(--primary)' : 'var(--surface)', color: active ? 'white' : 'var(--text-dim)' });
+  const filterBtn = (active: boolean): React.CSSProperties => ({ padding: '6px 14px', fontSize: '13px', fontWeight: '500', border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`, borderRadius: '6px', cursor: 'pointer', background: active ? 'var(--primary)' : 'var(--surface)', color: active ? 'white' : 'var(--text-dim)' });
 
   const comFone = clientes.filter(c => foneValido(c.celular || c.telefone));
   const semFone = clientes.filter(c => !foneValido(c.celular || c.telefone));
@@ -65,7 +65,7 @@ export default function Aniversariantes() {
   return (
     <div style={{ padding: '32px' }}>
       <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ margin: '0 0 4px', fontSize: '22px', fontWeight: '600', color: 'var(--text)' }}>Aniversariantes 🎂</h1>
+        <h1 style={{ margin: '0 0 4px', fontSize: '22px', fontWeight: '600', color: 'var(--text)' }}>Aniversariantes</h1>
         <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-dim)' }}>{clientes.length} aniversariante{clientes.length !== 1 ? 's' : ''} no período</p>
       </div>
 
@@ -126,7 +126,7 @@ export default function Aniversariantes() {
                           </td>
                           <td style={{ padding: '12px 20px', textAlign: 'center' }}>
                             <span style={{ fontSize: '15px', fontWeight: '600', fontFamily: 'var(--mono)', color: 'var(--primary)' }}>
-                              🎂 {fmtAniversario(c.data_nascimento)}
+                              {fmtAniversario(c.data_nascimento)}
                             </span>
                           </td>
                           <td style={{ padding: '12px 20px', textAlign: 'right' }}>
@@ -140,7 +140,7 @@ export default function Aniversariantes() {
                                 display: 'flex', alignItems: 'center', gap: '6px',
                               }}
                             >
-                              {enviados.has(c.id) ? '✓ Enviado' : (
+                              {enviados.has(c.id) ? 'Enviado' : (
                                 <><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M5.296 19.935l.646-2.352a9.15 9.15 0 01-1.225-4.61C4.72 7.867 8.572 4 13.28 4a8.549 8.549 0 016.073 2.513 8.633 8.633 0 012.511 6.109c-.002 4.767-3.854 8.634-8.562 8.634a8.57 8.57 0 01-4.097-1.04L5.296 19.935zm2.454-1.414l.261.155a7.11 7.11 0 003.441.893c3.938 0 7.141-3.217 7.143-7.172a7.18 7.18 0 00-2.088-5.085 7.112 7.112 0 00-5.052-2.106c-3.942 0-7.145 3.217-7.145 7.17 0 1.356.375 2.68 1.084 3.829l.169.267-.714 2.601 2.901-.552z"/></svg> WhatsApp</>
                               )}
                             </button>

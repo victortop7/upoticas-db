@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { api } from '../lib/api';
 import { whatsappLink } from '../lib/whatsapp';
 import VendaModal from '../components/VendaModal';
+import Icone from '../components/Icone';
 
 interface Venda {
   id: string;
@@ -112,7 +113,7 @@ export default function Vendas() {
   const filterBtn = (active: boolean): React.CSSProperties => ({
     padding: '6px 14px', fontSize: '12px', fontWeight: '500',
     border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`,
-    borderRadius: '20px', cursor: 'pointer',
+    borderRadius: '6px', cursor: 'pointer',
     background: active ? 'var(--primary)' : 'var(--surface)',
     color: active ? 'white' : 'var(--text-dim)',
     transition: 'all 0.15s',
@@ -201,22 +202,22 @@ export default function Vendas() {
                 >
                   <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '600', color: 'var(--primary)' }}>
                     #{String(v.numero).padStart(4, '0')}
-                    {v.grupo_venda_id && <span title="Venda em grupo (mesmo pagamento)" style={{ marginLeft: 5 }}>👥</span>}
+                    {v.grupo_venda_id && <span title="Venda em grupo (mesmo pagamento)" style={{ marginLeft: 5, verticalAlign: '-2px', color: 'var(--text-muted)' }}><Icone nome="clientes" size={13} /></span>}
                   </td>
                   <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', color: 'var(--text-dim)' }}>
                     {formatDate(v.created_at)}
                   </td>
                   <td style={{ padding: '12px 16px', fontSize: '14px', color: 'var(--text)' }}>
-                    {v.cliente_nome || <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                    {v.cliente_nome || <span style={{ color: 'var(--text-muted)' }}>-</span>}
                   </td>
                   <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>
-                    {PGTO_LABEL[v.forma_pagamento || ''] || v.forma_pagamento || '—'}
+                    {PGTO_LABEL[v.forma_pagamento || ''] || v.forma_pagamento || '-'}
                   </td>
                   <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', color: 'var(--text-dim)' }}>
                     {formatBRL(v.valor_total)}
                   </td>
                   <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', color: v.desconto > 0 ? '#d97706' : 'var(--text-muted)' }}>
-                    {v.desconto > 0 ? `-${formatBRL(v.desconto)}` : '—'}
+                    {v.desconto > 0 ? `-${formatBRL(v.desconto)}` : '-'}
                   </td>
                   <td style={{ padding: '12px 16px', fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '600', color: 'var(--text)' }}>
                     {formatBRL(v.valor_final)}
@@ -224,7 +225,7 @@ export default function Vendas() {
                   <td style={{ padding: '12px 16px' }}>
                     <span
                       onClick={v.situacao === 'pendente' ? () => alert(
-                        `Venda #${String(v.numero).padStart(4, '0')} — PENDENTE\n\n` +
+                        `Venda #${String(v.numero).padStart(4, '0')} · PENDENTE\n\n` +
                         `Total da venda: ${formatBRL(v.valor_final)}\n` +
                         `Já pago (entrada): ${formatBRL(v.valor_entrada || 0)}\n` +
                         `Falta receber: ${formatBRL(v.saldo_restante || 0)}\n\n` +
@@ -232,7 +233,7 @@ export default function Vendas() {
                       ) : undefined}
                       title={v.situacao === 'pendente' ? 'Clique para ver o valor a receber' : ''}
                       style={{
-                        padding: '3px 9px', borderRadius: '20px', fontSize: '12px', fontWeight: '500',
+                        padding: '3px 9px', borderRadius: '6px', fontSize: '12px', fontWeight: '500',
                         background: sc.bg, color: sc.color,
                         cursor: v.situacao === 'pendente' ? 'pointer' : 'default',
                       }}
@@ -253,7 +254,7 @@ export default function Vendas() {
                       border: '1px solid transparent', borderRadius: '6px', cursor: v.nfce_status === 'emitida' ? 'default' : 'pointer',
                       fontWeight: '600',
                     }} disabled={v.nfce_status === 'emitida'}>
-                      {v.nfce_status === 'emitida' ? '✓ NF-e' : 'NF-e'}
+                      {v.nfce_status === 'emitida' ? 'NF-e' : 'NF-e'}
                     </button>
                     <button onClick={() => abrirEditar(v)} style={{
                       padding: '5px 10px', fontSize: '12px', marginRight: '6px',

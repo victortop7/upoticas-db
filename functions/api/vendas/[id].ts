@@ -91,7 +91,7 @@ export const onRequestPut = async ({ request, env, params }: { request: Request;
       try { await salvarPagamentos(env.DB, auth.tenant_id, params.id, linhas!); } catch { /* não bloqueia */ }
     }
 
-    // Itens da venda — se enviados, substitui os existentes
+    // Itens da venda: se enviados, substitui os existentes
     const itens = (body as Record<string, unknown>).itens;
     if (Array.isArray(itens)) {
       try { await env.DB.prepare(`CREATE TABLE IF NOT EXISTS venda_itens (id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL, venda_id TEXT NOT NULL, produto_id TEXT, descricao TEXT NOT NULL, quantidade REAL NOT NULL DEFAULT 1, valor_unitario REAL NOT NULL DEFAULT 0, desconto REAL NOT NULL DEFAULT 0, valor_total REAL NOT NULL DEFAULT 0, created_at TEXT NOT NULL DEFAULT (datetime('now')))`).run(); } catch {}

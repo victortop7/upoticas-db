@@ -112,7 +112,7 @@ function NovaCampanhaModal({ onClose, onSaved }: { onClose: () => void; onSaved:
               <div style={{ marginBottom: '14px' }}>
                 <label style={lbl}>Usar modelo</label>
                 <select style={inp} value={form.modelo_id} onChange={e => handleModelo(e.target.value)}>
-                  <option value="">— Sem modelo (escrever agora) —</option>
+                  <option value="">Sem modelo (escrever agora)</option>
                   {modelos.map(m => <option key={m.id} value={m.id}>{m.nome}</option>)}
                 </select>
               </div>
@@ -156,7 +156,7 @@ function NovaCampanhaModal({ onClose, onSaved }: { onClose: () => void; onSaved:
                         color: enviados.has(c.id) ? '#16a34a' : 'white',
                         border: 'none', borderRadius: '6px', cursor: 'pointer',
                       }}>
-                        {enviados.has(c.id) ? '✓ Enviado' : '📱 WhatsApp'}
+                        {enviados.has(c.id) ? 'Enviado' : 'WhatsApp'}
                       </button>
                     </td>
                   </tr>
@@ -239,7 +239,7 @@ export default function Campanhas() {
                       </div>
                     </td>
                     <td style={{ padding: '12px 16px' }}>
-                      <span style={{ padding: '3px 9px', borderRadius: '20px', fontSize: '12px', fontWeight: '500', background: sc.bg, color: sc.color }}>{SIT_LABEL[c.situacao]}</span>
+                      <span style={{ padding: '3px 9px', borderRadius: '6px', fontSize: '12px', fontWeight: '500', background: sc.bg, color: sc.color }}>{SIT_LABEL[c.situacao]}</span>
                     </td>
                     <td style={{ padding: '12px 16px', textAlign: 'right' }}>
                       <button onClick={() => excluir(c.id, c.nome)} style={{ padding: '5px 10px', fontSize: '12px', background: 'var(--red-dim)', color: 'var(--red)', border: '1px solid transparent', borderRadius: '6px', cursor: 'pointer' }}>Excluir</button>

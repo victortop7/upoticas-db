@@ -35,7 +35,7 @@ const TIPOS = [
 ];
 
 const ARM_TIPOS = [
-  { value: '', label: '— Tipo' }, { value: '0', label: 'SEM ARMAÇÃO' },
+  { value: '', label: 'Tipo' }, { value: '0', label: 'SEM ARMAÇÃO' },
   { value: '1', label: 'METAL' }, { value: '2', label: 'ACETATO' },
   { value: '3', label: 'FIO DE NYLON' }, { value: '4', label: 'PARAFUSADA' },
   { value: '5', label: 'SEGURANÇA' }, { value: '6', label: 'FIO DE AÇO' },
@@ -175,8 +175,8 @@ export default function LabNovaOrdem() {
   const [etiqGarantia, setEtiqGarantia] = useState(false);
   const [fluxoLab, setFluxoLab] = useState(true);
   const [observacoes, setObservacoes] = useState('');
-  const [vendedor1Id, setVendedor1Id] = useState('');       // VENDEDOR (DA ÓTICA) — texto livre, manual
-  const [vendedorRepId, setVendedorRepId] = useState('');   // VENDEDOR (cadastrado) — auto pela ótica
+  const [vendedor1Id, setVendedor1Id] = useState('');       // VENDEDOR (DA ÓTICA): texto livre, manual
+  const [vendedorRepId, setVendedorRepId] = useState('');   // VENDEDOR (cadastrado): auto pela ótica
   const [garantiaOrigem, setGarantiaOrigem] = useState(''); // OS de origem (tipo Garantia)
 
   const isGarantia = tipo === 'G';
@@ -614,7 +614,7 @@ export default function LabNovaOrdem() {
   return (
     <form onSubmit={handleSubmit} onKeyDown={handleFormKeyDown} style={{ display: 'flex', height: '100%', overflow: 'hidden', background: R.bg, fontFamily: "'Montserrat', sans-serif" }}>
 
-      {/* ===== TIPO PANEL — mesmo estilo MÓDULOS ===== */}
+      {/* ===== TIPO PANEL · mesmo estilo MÓDULOS ===== */}
       <div style={{ width: '180px', flexShrink: 0, background: R.panel, borderRight: `2px solid ${R.border}`, display: 'flex', flexDirection: 'column' }}>
         <div style={{ background: R.hdrBg, color: R.hdrTxt, textAlign: 'center', padding: '5px 8px', fontSize: '11px', fontWeight: '700', letterSpacing: '2px', border: `2px outset ${R.hdrBorder}`, borderBottom: 'none' }}>TIPO DE OS</div>
         <div style={{ border: `2px inset ${R.border}` }}>
@@ -640,7 +640,7 @@ export default function LabNovaOrdem() {
             ))}
           </div>
           <div style={{ fontSize: '9px', color: R.dim, textAlign: 'center', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            {step === 1 ? 'ETAPA 1 — CABEÇALHO' : 'ETAPA 2 — RECEITA'}
+            {step === 1 ? 'ETAPA 1 · CABEÇALHO' : 'ETAPA 2 · RECEITA'}
           </div>
           <button type="button" onClick={() => navigate('/lab/ordens')}
             style={{ width: '100%', padding: '5px', fontSize: '11px', background: R.panelAlt, color: R.txt, border: `1px outset ${R.border}`, cursor: 'pointer', fontFamily: 'inherit', fontWeight: '700' }}>
@@ -659,12 +659,12 @@ export default function LabNovaOrdem() {
         {/* Aviso da jornada por tipo */}
         {isFreeform && (
           <div style={{ background: '#c05a1a18', border: '1px solid #c05a1a', borderRadius: '6px', padding: '7px 12px', fontSize: '12px', color: R.txt, marginBottom: '8px', fontWeight: '600' }}>
-            🪚 <b>OS Freeform</b> — surfaçagem digital. Esta OS entra no funil pelo fluxo com <b>Surfaçagem → Antirrisco → Antirreflexo</b>.
+            <b>OS Freeform</b> · surfaçagem digital. Esta OS entra no funil pelo fluxo com <b>Surfaçagem → Antirrisco → Antirreflexo</b>.
           </div>
         )}
         {isGarantia && (
           <div style={{ background: 'rgba(200,0,0,0.10)', border: '1px solid #cc0000', borderRadius: '6px', padding: '8px 12px', fontSize: '12px', color: R.txt, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-            <span style={{ fontWeight: 700, color: '#cc0000' }}>🛡 OS de Garantia — refação sem cobrança (total R$ 0,00)</span>
+            <span style={{ fontWeight: 700, color: '#cc0000' }}>OS de Garantia · refação sem cobrança (total R$ 0,00)</span>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
               <label style={{ fontSize: '11px', fontWeight: 700, color: R.dim, textTransform: 'uppercase' }}>OS de origem</label>
               <input value={garantiaOrigem} onChange={e => setGarantiaOrigem(e.target.value)} placeholder="Nº da OS original"
@@ -677,7 +677,7 @@ export default function LabNovaOrdem() {
         <div ref={headerRef} onKeyDown={handleHeaderKey} style={card}>
           <div style={secTitle}>Cabeçalho da OS</div>
 
-          {/* Grid uniforme de 12 colunas — as bordas alinham entre as linhas */}
+          {/* Grid uniforme de 12 colunas · as bordas alinham entre as linhas */}
           {/* Linha 1: identificação da ótica */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '8px', marginBottom: '8px' }}>
             <div style={{ gridColumn: 'span 2' }}>
@@ -706,7 +706,7 @@ export default function LabNovaOrdem() {
                 placeholder="Nº que veio da ótica" />
               {refDup && (
                 <span style={{ display: 'block', color: '#cc0000', fontSize: '10px', fontWeight: 700, marginTop: '2px' }}>
-                  ⚠ Referência já usada nesta ótica (OS #{String(refDup).padStart(4, '0')})
+                  Referência já usada nesta ótica (OS #{String(refDup).padStart(4, '0')})
                 </span>
               )}
             </div>
@@ -744,7 +744,7 @@ export default function LabNovaOrdem() {
             <div style={{ gridColumn: 'span 3' }}>
               <label style={LBL}>Operador</label>
               <select value={operador} onChange={e => setOperador(e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
-                <option value="">— Operador</option>
+                <option value="">Operador</option>
                 {operadores.map(u => <option key={u.id} value={u.nome}>{u.nome}</option>)}
               </select>
             </div>
@@ -755,7 +755,7 @@ export default function LabNovaOrdem() {
             <div style={{ gridColumn: 'span 2' }}>
               <label style={LBL}>Vendedor</label>
               <select value={vendedorRepId} onChange={e => setVendedorRepId(e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }} title="Preenche sozinho pelo cadastro da ótica">
-                <option value="">— Vendedor</option>
+                <option value="">Vendedor</option>
                 {vendedores.map(v => <option key={v.id} value={v.id}>{v.codigo != null ? `${String(v.codigo).padStart(2, '0')} · ` : ''}{v.nome}</option>)}
               </select>
             </div>
@@ -913,7 +913,7 @@ export default function LabNovaOrdem() {
                 <label style={LBL}>Shape</label>
                 <button type="button" onClick={() => setShowShapePicker(true)}
                   style={{ ...INP, textAlign: 'left', cursor: 'pointer', color: armShape ? R.txt : R.dim, fontWeight: armShape ? '700' : '400', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between' }}>
-                  <span>{armShape || '— Shape'}</span>
+                  <span>{armShape || 'Shape'}</span>
                   <span style={{ fontSize: '10px', color: R.dim }}>▼</span>
                 </button>
               </div>
@@ -936,7 +936,7 @@ export default function LabNovaOrdem() {
               <label style={LBL}>Tipo de Lente</label>
               <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                 <select value={lenteTipo} onChange={e => setLenteTipo(e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif", flex: 1 }}>
-                  <option value="">— Tipo de lente</option>
+                  <option value="">Tipo de lente</option>
                   {lenteTipos.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
                 </select>
                 <button type="button" onClick={() => { setNovoTipoLabel(''); setNovoTipoOpen(true); }}
@@ -1037,7 +1037,7 @@ export default function LabNovaOrdem() {
                       </td>
                       <td style={TD}><CobInput value={s.un} onChange={v => setCobItem(i, { un: v })} style={{ textAlign: 'center', width: '40px' }} /></td>
                       <td style={{ ...TD, fontFamily: "'Courier New', monospace", fontSize: '11px', color: R.dim, textAlign: 'center' }}>
-                        {s.estoque || '—'}
+                        {s.estoque || '-'}
                       </td>
                       <td style={TD}><CobInput value={s.qtd} onChange={v => setCobItem(i, { qtd: v })} style={{ textAlign: 'center', width: '50px' }} /></td>
                       <td style={TD}><CobInput value={s.pv_unit} onChange={v => setCobItem(i, { pv_unit: v })} style={{ textAlign: 'right', width: '75px' }} /></td>

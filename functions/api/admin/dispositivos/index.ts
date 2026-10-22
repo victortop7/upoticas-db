@@ -6,7 +6,7 @@ function isAdmin(request: Request, env: Env): boolean {
   return !!env.ADMIN_SECRET && auth.replace(/^Bearer\s+/i, '').trim() === env.ADMIN_SECRET.trim();
 }
 
-// GET /api/admin/dispositivos?tenant_id=xxx — lista os tablets registrados de uma conta
+// GET /api/admin/dispositivos?tenant_id=xxx: lista os tablets registrados de uma conta
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   if (!isAdmin(request, env)) return json({ error: 'Não autorizado' }, 401);
   const tenantId = new URL(request.url).searchParams.get('tenant_id');
@@ -21,8 +21,8 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
   }
 };
 
-// DELETE /api/admin/dispositivos?id=xxx — remove um tablet (libera vaga)
-// DELETE /api/admin/dispositivos?tenant_id=xxx&all=1 — remove todos os tablets da conta
+// DELETE /api/admin/dispositivos?id=xxx: remove um tablet (libera vaga)
+// DELETE /api/admin/dispositivos?tenant_id=xxx&all=1: remove todos os tablets da conta
 export const onRequestDelete = async ({ request, env }: { request: Request; env: Env }) => {
   if (!isAdmin(request, env)) return json({ error: 'Não autorizado' }, 401);
   const url = new URL(request.url);

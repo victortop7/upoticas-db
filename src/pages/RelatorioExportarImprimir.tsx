@@ -79,7 +79,7 @@ export default function RelatorioExportarImprimir() {
           <button onClick={() => setPaisagem(false)} style={{ padding: '6px 12px', fontSize: 12.5, borderRadius: 6, border: '1px solid #374151', cursor: 'pointer', background: !paisagem ? '#374151' : 'transparent', color: '#fff' }}>Em pé</button>
           <button onClick={() => setPaisagem(true)} style={{ padding: '6px 12px', fontSize: 12.5, borderRadius: 6, border: '1px solid #374151', cursor: 'pointer', background: paisagem ? '#374151' : 'transparent', color: '#fff' }}>Deitada</button>
           <span style={{ color: '#9ca3af', fontSize: 11.5, marginLeft: 8 }}>Desmarque “Cabeçalhos e rodapés” na impressão</span>
-          <button onClick={() => window.print()} style={{ padding: '8px 18px', fontSize: 13.5, fontWeight: 700, background: '#16a34a', color: '#fff', border: 'none', borderRadius: 7, cursor: 'pointer' }}>🖨️ Imprimir / Salvar PDF</button>
+          <button onClick={() => window.print()} style={{ padding: '8px 18px', fontSize: 13.5, fontWeight: 700, background: '#16a34a', color: '#fff', border: 'none', borderRadius: 7, cursor: 'pointer' }}>Imprimir / Salvar PDF</button>
         </div>
       </div>
 

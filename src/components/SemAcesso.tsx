@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import type { Sistema } from '../types';
+import Icone from './Icone';
 
 const NOMES: Record<Sistema, string> = { otica: 'Connect Óticas', lab: 'Connect LAB', vision: 'Connect Vision' };
 const HOME: Record<Sistema, string> = { otica: '/dashboard', lab: '/lab/dashboard', vision: '/vision' };
@@ -16,7 +17,7 @@ export default function SemAcesso({ sistema, login }: { sistema: Sistema; login:
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0b10', padding: 20, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
       <div style={{ background: '#13151d', border: '1px solid #232634', borderRadius: 16, padding: '30px 28px', maxWidth: 420, width: '100%', textAlign: 'center', color: '#e8e8ed' }}>
-        <div style={{ fontSize: 34, marginBottom: 12 }}>🔐</div>
+        <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center' }}><Icone nome="cadeado" size={32} color="#8a8c9c" /></div>
         <h2 style={{ margin: '0 0 8px', fontSize: 19, fontWeight: 700 }}>Sua conta não tem o {NOMES[sistema]}</h2>
         <p style={{ margin: '0 0 20px', fontSize: 14, color: '#8a8c9c', lineHeight: 1.6 }}>
           O login está certo, mas esse sistema ainda não foi liberado pra <b style={{ color: '#e8e8ed' }}>{tenant?.nome}</b>.

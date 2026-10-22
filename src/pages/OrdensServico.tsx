@@ -34,7 +34,7 @@ function formatBRL(v: number) {
 }
 
 function formatDate(s?: string) {
-  if (!s) return '—';
+  if (!s) return '-';
   const [y, m, d] = s.split('T')[0].split('-');
   return `${d}/${m}/${y}`;
 }
@@ -87,7 +87,7 @@ export default function OrdensServico() {
   const filterBtnStyle = (active: boolean): React.CSSProperties => ({
     padding: '6px 12px', fontSize: '12px', fontWeight: '500',
     border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`,
-    borderRadius: '20px', cursor: 'pointer',
+    borderRadius: '6px', cursor: 'pointer',
     background: active ? 'var(--primary)' : 'var(--surface)',
     color: active ? 'white' : 'var(--text-dim)',
     transition: 'all 0.15s',
@@ -185,7 +185,7 @@ export default function OrdensServico() {
                     #{String(os.numero).padStart(4, '0')}
                   </td>
                   <td style={{ padding: '12px 16px', fontSize: '14px', fontWeight: '500', color: 'var(--text)' }}>
-                    {(os as any).cliente_nome || '—'}
+                    {(os as any).cliente_nome || '-'}
                   </td>
                   <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>
                     {os.tipo === 'oculos_grau' ? 'Óculos Grau' :
@@ -200,7 +200,7 @@ export default function OrdensServico() {
                       style={{
                         padding: '4px 8px', fontSize: '12px', fontWeight: '500',
                         background: sc.bg, color: sc.color,
-                        border: `1px solid ${sc.color}44`, borderRadius: '20px',
+                        border: `1px solid ${sc.color}44`, borderRadius: '6px',
                         cursor: 'pointer', outline: 'none', appearance: 'none',
                         WebkitAppearance: 'none',
                       }}
@@ -227,7 +227,7 @@ export default function OrdensServico() {
                       padding: '5px 10px', fontSize: '12px', marginRight: '6px',
                       background: 'var(--surface-alt)', color: 'var(--text-dim)',
                       border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer',
-                    }}>🖨️</button>
+                    }}>Imprimir</button>
                     <button onClick={() => abrirEditar(os)} style={{
                       padding: '5px 10px', fontSize: '12px', marginRight: '6px',
                       background: 'var(--primary-dim)', color: 'var(--primary)',

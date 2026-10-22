@@ -23,7 +23,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     const o = await env.DB.prepare('SELECT id, tipo, sistemas, dispositivos_limite FROM tenants WHERE id = ?').bind(oid).first<Record<string, unknown>>();
     if (!p || !o) return json({ error: 'Conta não encontrada' }, 404);
 
-    // 1) usuários repetidos (mesmo e-mail) — fica o da principal
+    // 1) usuários repetidos (mesmo e-mail): fica o da principal
     await env.DB.prepare(
       `DELETE FROM usuarios WHERE tenant_id = ? AND lower(trim(email)) IN (SELECT lower(trim(email)) FROM usuarios WHERE tenant_id = ?)`
     ).bind(oid, pid).run();

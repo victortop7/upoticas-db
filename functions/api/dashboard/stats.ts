@@ -76,7 +76,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       env.DB.prepare(`SELECT COALESCE(SUM(valor_final), 0) as total FROM vendas WHERE tenant_id = ? AND situacao != 'cancelada' AND strftime('%Y-%m', created_at) = ?` + fl.sql)
         .bind(auth.tenant_id, mesAnterior, ...p).first<{ total: number }>(),
 
-      // A receber — saldo pendente de vendas parceladas
+      // A receber: saldo pendente de vendas parceladas
       env.DB.prepare(`SELECT COALESCE(SUM(saldo_restante), 0) as total, COUNT(*) as n FROM vendas WHERE tenant_id = ? AND saldo_restante > 0` + fl.sql)
         .bind(auth.tenant_id, ...p).first<{ total: number; n: number }>(),
 
@@ -88,7 +88,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
         GROUP BY ym ORDER BY ym ASC
       `).bind(auth.tenant_id, ...p).all(),
 
-      // Produtos mais vendidos (geral) — a partir dos itens de venda
+      // Produtos mais vendidos (geral): a partir dos itens de venda
       env.DB.prepare(`
         SELECT descricao, SUM(quantidade) as qtd, COALESCE(SUM(valor_total), 0) as faturamento
         FROM venda_itens WHERE tenant_id = ?${fl.sql ? ` AND venda_id IN (SELECT id FROM vendas WHERE tenant_id = ?${fl.sql})` : ''}

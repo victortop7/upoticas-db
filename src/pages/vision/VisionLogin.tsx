@@ -5,6 +5,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { api } from '../../lib/api';
 import ForcarPaisagem from '../../components/ForcarPaisagem';
 import SplashVision from '../../components/SplashVision';
+import Icone from '../../components/Icone';
 
 // Credenciais salvas no tablet (login de 1 toque). Chave local.
 const CRED_KEY = 'cv_creds';
@@ -36,7 +37,7 @@ export default function VisionLogin() {
   const [tErro, setTErro] = useState('');
   const [tLoading, setTLoading] = useState(false);
 
-  useEffect(() => { document.title = 'Connect Vision — Entrar'; }, []);
+  useEffect(() => { document.title = 'Connect Vision · Entrar'; }, []);
 
   // Tela compacta (celular): login menor e à esquerda. Tablet fica igual.
   const isCompact = () => typeof window !== 'undefined' && (window.innerHeight < 500 || window.innerWidth < 640);
@@ -188,16 +189,16 @@ export default function VisionLogin() {
 
         <button onClick={() => { setModoTeste(true); setTErro(''); }} style={{
           display: 'block', margin: compact ? '9px auto 0' : '16px auto 0', background: 'rgba(120,180,255,0.12)',
-          border: '1px solid rgba(120,180,255,0.3)', borderRadius: 999, padding: compact ? '7px 14px' : '9px 18px',
+          border: '1px solid rgba(120,180,255,0.3)', borderRadius: 6, padding: compact ? '7px 14px' : '9px 18px',
           color: '#bcd6ff', fontSize: compact ? 12 : 13, fontWeight: 600, cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
-        }}>🎁 Tenho um código de teste grátis</button>
+        }}>Tenho um código de teste grátis</button>
 
         <div style={{ display: compact ? 'none' : 'block', textAlign: 'center', marginTop: 18, fontSize: 12, color: 'rgba(160,190,255,0.5)' }}>
           Conexão Óticas · Connect Vision
         </div>
       </div>
 
-      {/* Modal — Teste grátis por código */}
+      {/* Modal · Teste grátis por código */}
       {modoTeste && (
         <div onClick={() => setModoTeste(false)} style={{
           position: 'fixed', inset: 0, background: 'rgba(4,9,22,0.8)', zIndex: 50,
@@ -205,11 +206,11 @@ export default function VisionLogin() {
           backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
         }}>
           <form onClick={e => e.stopPropagation()} onSubmit={ativarTeste} style={{
-            width: 380, maxWidth: '94vw', background: '#fff', borderRadius: 20, padding: 24,
+            width: 380, maxWidth: '94vw', background: '#fff', borderRadius: 6, padding: 24,
             boxShadow: '0 24px 70px rgba(0,0,0,0.5)', maxHeight: '92vh', overflowY: 'auto',
           }}>
             <div style={{ textAlign: 'center', marginBottom: 16 }}>
-              <div style={{ fontSize: 30 }}>🎁</div>
+              <div style={{ display: 'flex', justifyContent: 'center' }}><Icone nome="destaque" size={28} color="#60a5fa" /></div>
               <div style={{ fontSize: 20, fontWeight: 800, color: '#1c1c1e' }}>15 dias grátis</div>
               <div style={{ fontSize: 13, color: '#8e8e93', marginTop: 2 }}>Digite o código que você recebeu do especialista.</div>
             </div>
@@ -238,7 +239,7 @@ export default function VisionLogin() {
                 marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid #25D366', color: '#128a3a', fontSize: 14, fontWeight: 700,
               }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="#25D366"><path d="M12 2a10 10 0 0 0-8.6 15.05L2 22l5.1-1.34A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.1.8.83-3-.2-.3A8.2 8.2 0 1 1 12 20.2z" /></svg>
-              Não tenho código — falar com especialista
+              Não tenho código · falar com especialista
             </a>
 
             <button type="button" onClick={() => setModoTeste(false)} style={{

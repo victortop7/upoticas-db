@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { adminRequest } from '../../lib/api';
 import { MENU_GRUPOS, TODOS_MENUS, menusPadrao } from '../../lib/permissoes';
+import Icone from '../../components/Icone';
 
 /* ============================================================
-   PAINEL ADMINISTRATIVO — Conexão Óticas
+   PAINEL ADMINISTRATIVO · Conexão Óticas
    Visual próprio (moderno / escuro), separado do Connect LAB.
    Autenticação: ADMIN_SECRET (Bearer).  Rota: /admin
    ============================================================ */
@@ -68,9 +69,9 @@ const STATUS_META: Record<string, { label: string; color: string; bg: string }> 
 };
 
 function fmtData(iso: string | null): string {
-  if (!iso) return '—';
+  if (!iso) return '-';
   const d = new Date(iso);
-  if (isNaN(d.getTime())) return '—';
+  if (isNaN(d.getTime())) return '-';
   return d.toLocaleDateString('pt-BR');
 }
 
@@ -121,13 +122,13 @@ function LoginScreen({ onOk }: { onOk: (secret: string) => void }) {
     }
   }
 
-  const digits = ['1','2','3','4','5','6','7','8','9','←','0','✓'];
+  const digits = ['1','2','3','4','5','6','7','8','9','←','0',''];
 
   return (
     <div style={{ minHeight: '100vh', background: C.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: C.sans, padding: 20 }}>
       <div style={{ width: 340, maxWidth: '100%' }}>
         <div style={{ textAlign: 'center', marginBottom: 26 }}>
-          <div style={{ width: 56, height: 56, borderRadius: 16, background: C.accentDim, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 26 }}>🛡️</div>
+          <div style={{ width: 56, height: 56, borderRadius: 16, background: C.accentDim, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}><Icone nome="escudo" size={26} color={C.accent} /></div>
           <div style={{ fontSize: 22, fontWeight: 700, color: C.text, letterSpacing: '-0.02em' }}>Painel Administrativo</div>
           <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>Conexão Óticas · acesso restrito</div>
         </div>
@@ -146,11 +147,11 @@ function LoginScreen({ onOk }: { onOk: (secret: string) => void }) {
               {pinErro && <div style={{ textAlign: 'center', color: C.red, fontSize: 12.5, fontWeight: 700, marginBottom: 12 }}>PIN incorreto</div>}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
                 {digits.map(d => (
-                  <button key={d} onClick={() => d === '←' ? del() : d === '✓' ? undefined : press(d)}
+                  <button key={d} onClick={() => d === '←' ? del() : d === '' ? undefined : press(d)}
                     style={{ padding: '14px 0', fontSize: 18, fontWeight: 700, fontFamily: C.mono,
-                      background: d === '←' || d === '✓' ? 'transparent' : C.bgAlt,
-                      color: d === '✓' ? C.dim : C.text,
-                      border: `1px solid ${C.border}`, borderRadius: 10, cursor: d === '✓' ? 'default' : 'pointer' }}>
+                      background: d === '←' || d === '' ? 'transparent' : C.bgAlt,
+                      color: d === '' ? C.dim : C.text,
+                      border: `1px solid ${C.border}`, borderRadius: 10, cursor: d === '' ? 'default' : 'pointer' }}>
                     {d}
                   </button>
                 ))}
@@ -289,7 +290,7 @@ function NovoCliente({ secret, onClose, onSaved }: { secret: string; onClose: ()
           </div>
         )}
         <div style={{ background: C.accentDim, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 16px' }}>
-          <label style={{ ...lbl, color: C.accent }}>💳 Valor da mensalidade (R$)</label>
+          <label style={{ ...lbl, color: C.accent }}>Valor da mensalidade (R$)</label>
           <input style={{ ...inp, fontSize: 16, fontFamily: C.mono }} value={f.valor} onChange={e => set('valor', e.target.value)} placeholder="Ex: 149,90" inputMode="decimal" />
           <div style={{ fontSize: 11.5, color: C.dim, marginTop: 6 }}>Este é o valor que aparece no QR Code / chave Pix pro cliente pagar todo mês. Cada cliente pode ter um valor diferente.</div>
         </div>
@@ -376,7 +377,7 @@ function EditarLicenca({ secret, tenant, onClose, onSaved, onSenhas }: { secret:
     <Modal title={`Licença · ${tenant.nome}`} onClose={onClose}>
       <div style={{ display: 'grid', gap: 14 }}>
         <button onClick={onSenhas} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 14px', background: C.surfaceHi, color: C.text, border: `1px solid ${C.border}`, borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: C.sans }}>
-          🔑 Usuários, permissões e senhas <span style={{ color: C.accent }}>→</span>
+          Usuários, permissões e senhas <span style={{ color: C.accent }}>→</span>
         </button>
         <div>
           <label style={lbl}>Plano</label>
@@ -399,7 +400,7 @@ function EditarLicenca({ secret, tenant, onClose, onSaved, onSenhas }: { secret:
           <input style={inp} type="number" min={1} value={dispositivos} onChange={e => setDispositivos(e.target.value)} />
         </div>
         <div style={{ background: C.accentDim, border: `1px solid ${C.border}`, borderRadius: 10, padding: '12px 14px' }}>
-          <label style={{ ...lbl, color: C.accent, marginBottom: 6 }}>💳 Valor da mensalidade (R$)</label>
+          <label style={{ ...lbl, color: C.accent, marginBottom: 6 }}>Valor da mensalidade (R$)</label>
           <input style={{ ...inp, fontFamily: C.mono }} value={valor} onChange={e => setValor(e.target.value)} placeholder="Ex: 149,90" inputMode="decimal" />
           <div style={{ fontSize: 11, color: C.dim, marginTop: 5 }}>Valor cobrado no Pix deste cliente todo mês.</div>
         </div>
@@ -472,7 +473,7 @@ function EditorPermissoes({ secret, u, lojas, onSaved, onCancel }: { secret: str
         <div>
           <label style={lbl}>Loja</label>
           <select style={inp} value={isAdm ? '' : loja} disabled={isAdm} onChange={e => setLoja(e.target.value)}>
-            <option value="">{lojas.length ? '— Sem loja —' : '— Conta sem lojas —'}</option>
+            <option value="">{lojas.length ? 'Sem loja' : 'Conta sem lojas'}</option>
             {lojas.map(l => <option key={l.id} value={l.id}>{l.nome}</option>)}
           </select>
         </div>
@@ -502,7 +503,7 @@ function EditorPermissoes({ secret, u, lojas, onSaved, onCancel }: { secret: str
                     {g.items.map(i => (
                       <label key={i.to} style={chip(menus.includes(i.to))}>
                         <input type="checkbox" checked={menus.includes(i.to)} onChange={() => toggle(i.to)} style={{ margin: 0 }} />
-                        {i.icon} {i.label}
+                        <Icone nome={i.icon} size={13} /> {i.label}
                       </label>
                     ))}
                   </div>
@@ -564,10 +565,10 @@ function UsuariosSenhas({ secret, tenant, onClose }: { secret: string; tenant: T
         </div>
         {feito && (
           <div style={{ background: C.accentDim, border: `1px solid ${C.accent}`, borderRadius: 10, padding: '12px 14px' }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 6 }}>✅ Senha de {feito.nome} alterada</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 6 }}>Senha de {feito.nome} alterada</div>
             <div style={{ fontFamily: C.mono, fontSize: 13, color: C.text, lineHeight: 1.7 }}>E-mail: {feito.email}<br />Senha: <b>{feito.senha}</b></div>
             <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
-              <button onClick={() => navigator.clipboard?.writeText(textoEnvio)} style={{ padding: '7px 12px', background: C.surfaceHi, color: C.text, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>📋 Copiar</button>
+              <button onClick={() => navigator.clipboard?.writeText(textoEnvio)} style={{ padding: '7px 12px', background: C.surfaceHi, color: C.text, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>Copiar</button>
               <a href={`https://wa.me/?text=${encodeURIComponent(textoEnvio)}`} target="_blank" rel="noopener noreferrer" style={{ padding: '7px 12px', background: '#25D366', color: '#fff', borderRadius: 8, fontSize: 12.5, fontWeight: 700, textDecoration: 'none' }}>Enviar no WhatsApp</a>
             </div>
           </div>
@@ -594,7 +595,7 @@ function UsuariosSenhas({ secret, tenant, onClose }: { secret: string; tenant: T
             {editando === u.id && (
               <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
                 <input style={{ ...inp, flex: 1, minWidth: 140, fontFamily: C.mono }} value={nova} onChange={e => setNova(e.target.value)} placeholder="nova senha (mín. 6)" autoFocus />
-                <button onClick={() => setNova(gerarSenha())} title="Gerar outra" style={{ padding: '0 12px', background: 'transparent', color: C.dim, border: `1px solid ${C.border}`, borderRadius: 8, cursor: 'pointer' }}>🎲</button>
+                <button onClick={() => setNova(gerarSenha())} title="Gerar outra" style={{ padding: '0 12px', background: 'transparent', color: C.dim, border: `1px solid ${C.border}`, borderRadius: 8, cursor: 'pointer' }}>Gerar outra</button>
                 <button onClick={() => salvar(u)} disabled={salvando} style={{ padding: '0 16px', background: C.accent, color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>{salvando ? '…' : 'Salvar'}</button>
                 <button onClick={() => { setEditando(null); setNova(''); }} style={{ padding: '0 12px', background: 'transparent', color: C.dim, border: `1px solid ${C.border}`, borderRadius: 8, cursor: 'pointer' }}>Cancelar</button>
               </div>
@@ -643,8 +644,8 @@ function UnirContas({ secret, tenant, todos, onClose, onSaved }: { secret: strin
         <div>
           <label style={lbl}>Conta que será juntada nela</label>
           <select style={inp} value={outra} onChange={e => setOutra(e.target.value)}>
-            <option value="">— Escolher —</option>
-            {ordenadas.map(t => <option key={t.id} value={t.id}>{parecida(t) ? '★ ' : ''}{t.nome} · {t.email} · {nomesSistemas(t)}</option>)}
+            <option value="">Escolher</option>
+            {ordenadas.map(t => <option key={t.id} value={t.id}>{parecida(t) ? 'Sugerida: ' : ''}{t.nome} · {t.email} · {nomesSistemas(t)}</option>)}
           </select>
         </div>
         {sel && (
@@ -753,9 +754,9 @@ export default function Admin() {
   };
 
   const NAV: { key: typeof aba; label: string; icon: string }[] = [
-    { key: 'geral', label: 'Visão geral', icon: '📊' },
-    { key: 'clientes', label: 'Clientes', icon: '🏢' },
-    { key: 'leads', label: 'Leads', icon: '📥' },
+    { key: 'geral', label: 'Visão geral', icon: 'relatorios' },
+    { key: 'clientes', label: 'Clientes', icon: 'empresa' },
+    { key: 'leads', label: 'Leads', icon: 'caixaEntrada' },
   ];
 
   return (
@@ -763,7 +764,7 @@ export default function Admin() {
       {/* Sidebar */}
       <aside style={{ width: 234, background: C.bgAlt, borderRight: `1px solid ${C.border}`, padding: '22px 16px', display: 'flex', flexDirection: 'column', position: 'sticky', top: 0, height: '100vh', boxSizing: 'border-box' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28, padding: '0 6px' }}>
-          <div style={{ width: 34, height: 34, borderRadius: 10, background: C.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 17 }}>🛡️</div>
+          <div style={{ width: 34, height: 34, borderRadius: 10, background: C.accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icone nome="escudo" size={18} color="#fff" /></div>
           <div>
             <div style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.1 }}>Painel Admin</div>
             <div style={{ fontSize: 11, color: C.dim }}>Conexão Óticas</div>
@@ -776,7 +777,7 @@ export default function Admin() {
                 background: aba === n.key ? C.accentDim : 'transparent',
                 color: aba === n.key ? C.text : C.dim,
                 fontFamily: C.sans }}>
-              <span style={{ fontSize: 16 }}>{n.icon}</span>{n.label}
+              <Icone nome={n.icon} size={16} />{n.label}
             </button>
           ))}
         </nav>
@@ -845,9 +846,9 @@ export default function Admin() {
                           </td>
                           <td style={{ padding: '13px 16px', fontSize: 13, color: C.dim }}>{nomesSistemas(t)}</td>
                           <td style={{ padding: '13px 16px', fontSize: 13, textTransform: 'capitalize' }}>{t.plano}</td>
-                          <td style={{ padding: '13px 16px', fontSize: 13, fontFamily: C.mono, color: t.valor_mensal ? C.text : C.dim }}>{t.valor_mensal ? `R$ ${Number(t.valor_mensal).toFixed(2).replace('.', ',')}` : '—'}</td>
+                          <td style={{ padding: '13px 16px', fontSize: 13, fontFamily: C.mono, color: t.valor_mensal ? C.text : C.dim }}>{t.valor_mensal ? `R$ ${Number(t.valor_mensal).toFixed(2).replace('.', ',')}` : '-'}</td>
                           <td style={{ padding: '13px 16px' }}>
-                            <span style={{ fontSize: 12, fontWeight: 700, color: meta.color, background: meta.bg, padding: '4px 10px', borderRadius: 999 }}>{meta.label}</span>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: meta.color, background: meta.bg, padding: '4px 10px', borderRadius: 6 }}>{meta.label}</span>
                           </td>
                           <td style={{ padding: '13px 16px', fontSize: 13, color: C.dim, fontFamily: C.mono }}>{t.plano === 'vitalicio' ? '∞' : fmtData(expira)}</td>
                           <td style={{ padding: '13px 16px', fontSize: 13, color: C.dim, fontFamily: C.mono }}>{fmtData(t.created_at)}</td>

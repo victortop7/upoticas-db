@@ -22,12 +22,12 @@ interface TenantInfo {
 }
 
 function fmtGrau(v?: number) {
-  if (v == null) return '—';
+  if (v == null) return '-';
   return (v >= 0 ? '+' : '') + v.toFixed(2);
 }
 function brl(v: number) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 function fmtDate(s?: string) {
-  if (!s) return '—';
+  if (!s) return '-';
   const [y, m, d] = s.split('T')[0].split('-');
   return `${d}/${m}/${y}`;
 }
@@ -94,7 +94,7 @@ export default function ImprimirOS() {
         <div>
           <p style={s.oticaName}>{tenant?.nome || 'Ótica'}</p>
           {tenant?.cnpj && <p style={s.oticaInfo}>CNPJ: {tenant.cnpj}</p>}
-          {tenant?.endereco && <p style={s.oticaInfo}>{tenant.endereco}{tenant.cidade ? ` — ${tenant.cidade}${tenant.uf ? `/${tenant.uf}` : ''}` : ''}</p>}
+          {tenant?.endereco && <p style={s.oticaInfo}>{tenant.endereco}{tenant.cidade ? ` · ${tenant.cidade}${tenant.uf ? `/${tenant.uf}` : ''}` : ''}</p>}
           {tenant?.telefone && <p style={s.oticaInfo}>Tel: {tenant.telefone}</p>}
         </div>
         <div style={s.osNum}>
@@ -142,13 +142,13 @@ export default function ImprimirOS() {
                   <td style={s.tdLeft}>Longe OD</td>
                   <td style={s.td}>{fmtGrau(os.longe_od_esf)}</td>
                   <td style={s.td}>{fmtGrau(os.longe_od_cil)}</td>
-                  <td style={s.td}>{os.longe_od_eixo ?? '—'}°</td>
+                  <td style={s.td}>{os.longe_od_eixo ?? '-'}°</td>
                 </tr>
                 <tr>
                   <td style={s.tdLeft}>Longe OE</td>
                   <td style={s.td}>{fmtGrau(os.longe_oe_esf)}</td>
                   <td style={s.td}>{fmtGrau(os.longe_oe_cil)}</td>
-                  <td style={s.td}>{os.longe_oe_eixo ?? '—'}°</td>
+                  <td style={s.td}>{os.longe_oe_eixo ?? '-'}°</td>
                 </tr>
               </>}
               {temPerto && <>
@@ -156,13 +156,13 @@ export default function ImprimirOS() {
                   <td style={s.tdLeft}>Perto OD</td>
                   <td style={s.td}>{fmtGrau(os.perto_od_esf)}</td>
                   <td style={s.td}>{fmtGrau(os.perto_od_cil)}</td>
-                  <td style={s.td}>{os.perto_od_eixo ?? '—'}°</td>
+                  <td style={s.td}>{os.perto_od_eixo ?? '-'}°</td>
                 </tr>
                 <tr>
                   <td style={s.tdLeft}>Perto OE</td>
                   <td style={s.td}>{fmtGrau(os.perto_oe_esf)}</td>
                   <td style={s.td}>{fmtGrau(os.perto_oe_cil)}</td>
-                  <td style={s.td}>{os.perto_oe_eixo ?? '—'}°</td>
+                  <td style={s.td}>{os.perto_oe_eixo ?? '-'}°</td>
                 </tr>
               </>}
             </tbody>

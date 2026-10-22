@@ -141,7 +141,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       try { await salvarPagamentos(env.DB, auth.tenant_id, id, linhas!); } catch { /* não bloqueia a venda */ }
     }
 
-    // Itens da venda (produtos comprados) — opcional
+    // Itens da venda (produtos comprados): opcional
     const itens = Array.isArray((body as Record<string, unknown>).itens) ? (body as Record<string, unknown>).itens as Record<string, unknown>[] : [];
     if (itens.length) {
       try { await env.DB.prepare(`CREATE TABLE IF NOT EXISTS venda_itens (id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL, venda_id TEXT NOT NULL, produto_id TEXT, descricao TEXT NOT NULL, quantidade REAL NOT NULL DEFAULT 1, valor_unitario REAL NOT NULL DEFAULT 0, desconto REAL NOT NULL DEFAULT 0, valor_total REAL NOT NULL DEFAULT 0, created_at TEXT NOT NULL DEFAULT (datetime('now')))`).run(); } catch {}
@@ -161,7 +161,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       try { await sincronizarEstoqueVenda(env.DB, auth.tenant_id, id, auth.usuario_id); } catch { /* não bloqueia a venda */ }
     }
 
-    // Vendas das pessoas adicionais (mesmo grupo/pagamento) — cada uma quitada (ativa)
+    // Vendas das pessoas adicionais (mesmo grupo/pagamento): cada uma quitada (ativa)
     if (adicionais.length > 0) {
       let proxNumero = numero;
       for (const ad of adicionais) {
@@ -191,7 +191,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       try {
         await env.DB.prepare(
           'INSERT OR IGNORE INTO crm_estagios (id, tenant_id, key, label, icon, color, ordem, sistema) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-        ).bind(crypto.randomUUID(), auth.tenant_id, 'a_receber', 'A Receber', '💳', '#dc2626', 5, 1).run();
+        ).bind(crypto.randomUUID(), auth.tenant_id, 'a_receber', 'A Receber', '', '#dc2626', 5, 1).run();
 
         // Garante o card do cliente e move para A Receber
         await env.DB.prepare(

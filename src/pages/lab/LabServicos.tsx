@@ -249,17 +249,17 @@ export default function LabServicos() {
 
       {listaFiltro === null ? (
         /* ══════════════════════════════════════════
-           LANDING — SÓ MOSTRA AS LISTAS
+           LANDING · SÓ MOSTRA AS LISTAS
            ══════════════════════════════════════════ */
         <>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px' }}>
             <div style={{ background:R.hdr, color:R.hdrTxt, padding:'5px 14px', fontSize:'13px', fontWeight:'700', letterSpacing:'1px', border:`2px outset ${R.hdrBdr}` }}>
-              LISTAS DE PREÇOS — {listasAtivas} lista(s) | {servicos.length} produto(s) no catálogo
+              LISTAS DE PREÇOS · {listasAtivas} lista(s) | {servicos.length} produto(s) no catálogo
             </div>
             <div style={{ display:'flex', gap:'6px' }}>
               <button onClick={handleSeed} disabled={seeding}
                 style={{ padding:'5px 12px', fontSize:'11px', fontWeight:'700', background:R.alt, color:R.txt, border:`1px outset ${R.bdr}`, cursor:seeding?'not-allowed':'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
-                {seeding ? 'IMPORTANDO...' : '📥 IMPORTAR CATÁLOGO'}
+                {seeding ? 'IMPORTANDO...' : 'IMPORTAR CATÁLOGO'}
               </button>
               {listasAtivas < 5 && (
                 <button onClick={() => { setNovaListaNome(''); setNovaListaModal(true); }}
@@ -320,21 +320,21 @@ export default function LabServicos() {
                     await api.put('/lab/configuracoes', { [`tab_lista_${listaFiltro + 1}`]: nomeLista });
                     setListaNomes(n => n.map((v, i) => i === listaFiltro ? nomeLista : v));
                     setEditingNomeLista(false);
-                  }} style={{ padding:'2px 8px', fontSize:'11px', fontWeight:'700', background:'var(--lab-chip-bg)', color:'var(--lab-accent)', border:'1px outset var(--lab-accent)', cursor:'pointer', fontFamily:'inherit' }}>✓ SALVAR</button>
-                  <button onClick={() => setEditingNomeLista(false)} style={{ padding:'2px 8px', fontSize:'11px', background:'#ffcccc', color:'#880000', border:'1px outset #880000', cursor:'pointer', fontFamily:'inherit' }}>✕</button>
+                  }} style={{ padding:'2px 8px', fontSize:'11px', fontWeight:'700', background:'var(--lab-chip-bg)', color:'var(--lab-accent)', border:'1px outset var(--lab-accent)', cursor:'pointer', fontFamily:'inherit' }}>SALVAR</button>
+                  <button onClick={() => setEditingNomeLista(false)} style={{ padding:'2px 8px', fontSize:'11px', background:'#ffcccc', color:'#880000', border:'1px outset #880000', cursor:'pointer', fontFamily:'inherit' }}>×</button>
                 </>
               ) : (
                 <>
-                  <span>{listaNomes[listaFiltro]} — {filtrado.filter(s => (s[LISTA_FIELDS[listaFiltro] as ListaField] as number) > 0).length} produto(s)</span>
+                  <span>{listaNomes[listaFiltro]} · {filtrado.filter(s => (s[LISTA_FIELDS[listaFiltro] as ListaField] as number) > 0).length} produto(s)</span>
                   <button onClick={() => { setNomeLista(listaNomes[listaFiltro]); setEditingNomeLista(true); }}
                     style={{ padding:'2px 8px', fontSize:'11px', fontWeight:'700', background:'rgba(255,255,255,0.15)', color:R.hdrTxt, border:'1px solid rgba(255,255,255,0.3)', cursor:'pointer', fontFamily:'inherit' }}>
-                    ✏️ Renomear
+                    Renomear
                   </button>
                   <div style={{ marginLeft:'auto', display:'flex', gap:'6px' }}>
                     {listaFiltro !== null && (
                       <button onClick={() => setConfirmarDeleteLista(listaFiltro)}
                         style={{ padding:'2px 10px', fontSize:'11px', fontWeight:'700', background:'#ffdddd', color:'#880000', border:'1px outset #cc0000', cursor:'pointer', fontFamily:'inherit' }}>
-                        🗑 EXCLUIR LISTA
+                        EXCLUIR LISTA
                       </button>
                     )}
                     <button onClick={openNovo}
@@ -362,7 +362,7 @@ export default function LabServicos() {
                     <th style={{ padding:'6px 10px', textAlign:'left', fontSize:'10px', fontWeight:'700', color:R.hdrTxt, letterSpacing:'0.5px', border:`1px solid ${R.hdrBdr}` }}>CÓDIGO</th>
                     <th style={{ padding:'6px 10px', textAlign:'left', fontSize:'10px', fontWeight:'700', color:R.hdrTxt, letterSpacing:'0.5px', border:`1px solid ${R.hdrBdr}` }}>DESCRIÇÃO</th>
                     <th style={{ padding:'6px 10px', textAlign:'right', fontSize:'10px', fontWeight:'700', color: 'var(--lab-on-accent)', letterSpacing:'0.5px', border:`1px solid ${R.hdrBdr}`, background:R.accent, minWidth:'150px' }}>
-                      {listaNomes[listaFiltro]} — clique para editar
+                      {listaNomes[listaFiltro]} · clique para editar
                     </th>
                     <th style={{ padding:'6px 10px', border:`1px solid ${R.hdrBdr}`, width:'80px' }}></th>
                   </tr>
@@ -380,7 +380,7 @@ export default function LabServicos() {
                       <tr key={s.id} style={{ background: i%2===0 ? R.panel : R.alt, borderBottom:`1px solid ${R.bdr}` }}
                         onMouseEnter={e => (e.currentTarget.style.background = '#d0f0d0')}
                         onMouseLeave={e => (e.currentTarget.style.background = i%2===0 ? R.panel : R.alt)}>
-                        <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', color:R.dim }}>{s.codigo||'—'}</td>
+                        <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', color:R.dim }}>{s.codigo||'-'}</td>
                         <td style={{ padding:'6px 10px', fontSize:'12px', fontWeight:'700', color:R.txt }}>{s.nome}</td>
                         <td style={{ padding:'4px 6px', textAlign:'right' }}>
                           {isEditing ? (
@@ -401,13 +401,13 @@ export default function LabServicos() {
                           ) : (
                             <button onClick={() => setInlineEdit({ id: s.id, field, value: val > 0 ? String(val) : '' })}
                               style={{ width:'100%', textAlign:'right', padding:'4px 8px', fontFamily:"'Courier New', monospace", fontSize:'13px', fontWeight:'700', background: val > 0 ? '#efffef' : '#fff8f8', color: val > 0 ? 'var(--lab-accent)' : '#cc0000', border:`1px solid ${val > 0 ? '#aaddaa' : '#ddaaaa'}`, cursor:'pointer', borderRadius:'2px' }}>
-                              {val > 0 ? `R$ ${val.toFixed(2).replace('.',',')}` : '— definir preço'}
+                              {val > 0 ? `R$ ${val.toFixed(2).replace('.',',')}` : 'definir preço'}
                             </button>
                           )}
                         </td>
                         <td style={{ padding:'4px 6px', whiteSpace:'nowrap', textAlign:'center' }}>
-                          <button onClick={() => openEdit(s)} style={{ fontSize:'11px', padding:'2px 8px', background:R.alt, color:R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', marginRight:'3px' }}>✏️</button>
-                          <button onClick={() => setConfirmarDeleteProduto({ id: s.id, nome: s.nome })} style={{ fontSize:'11px', padding:'2px 6px', background:'#ffeeee', color:'#880000', border:'1px outset #cc0000', cursor:'pointer', fontFamily:'inherit' }}>✕</button>
+                          <button onClick={() => openEdit(s)} style={{ fontSize:'11px', padding:'2px 8px', background:R.alt, color:R.txt, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit', marginRight:'3px' }}>Editar</button>
+                          <button onClick={() => setConfirmarDeleteProduto({ id: s.id, nome: s.nome })} style={{ fontSize:'11px', padding:'2px 6px', background:'#ffeeee', color:'#880000', border:'1px outset #cc0000', cursor:'pointer', fontFamily:'inherit' }}>Excluir</button>
                         </td>
                       </tr>
                     );
@@ -424,7 +424,7 @@ export default function LabServicos() {
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:400, display:'flex', alignItems:'center', justifyContent:'center' }}>
           <div style={{ background:R.panel, border:`2px outset ${R.bdr}`, width:'100%', maxWidth:'360px' }}>
             <div style={{ background:'#880000', color:'#fff', padding:'6px 14px', fontSize:'12px', fontWeight:'700', letterSpacing:'1px' }}>
-              ⚠ EXCLUIR PRODUTO
+              EXCLUIR PRODUTO
             </div>
             <div style={{ padding:'20px 16px', display:'flex', flexDirection:'column', gap:'16px' }}>
               <div style={{ fontSize:'13px', color:R.txt, lineHeight:'1.6' }}>
@@ -452,7 +452,7 @@ export default function LabServicos() {
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:400, display:'flex', alignItems:'center', justifyContent:'center' }}>
           <div style={{ background:R.panel, border:`2px outset ${R.bdr}`, width:'100%', maxWidth:'360px' }}>
             <div style={{ background:'#880000', color:'#fff', padding:'6px 14px', fontSize:'12px', fontWeight:'700', letterSpacing:'1px' }}>
-              ⚠ EXCLUIR LISTA
+              EXCLUIR LISTA
             </div>
             <div style={{ padding:'20px 16px', display:'flex', flexDirection:'column', gap:'16px' }}>
               <div style={{ fontSize:'13px', color:R.txt, lineHeight:'1.6' }}>
@@ -479,8 +479,8 @@ export default function LabServicos() {
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:300, display:'flex', alignItems:'center', justifyContent:'center', padding:'16px' }}>
           <div style={{ background:R.panel, border:`2px outset ${R.bdr}`, width:'100%', maxWidth:'360px' }}>
             <div style={{ background:R.hdr, color:R.hdrTxt, padding:'6px 14px', fontSize:'12px', fontWeight:'700', letterSpacing:'1px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-              <span>NOVA LISTA DE PREÇOS — LISTA {listasAtivas + 1}</span>
-              <button onClick={() => setNovaListaModal(false)} style={{ background:'none', border:'1px solid #99ffaa', color:'#99ffaa', padding:'1px 6px', cursor:'pointer', fontFamily:'inherit', fontWeight:'700' }}>✕</button>
+              <span>NOVA LISTA DE PREÇOS · LISTA {listasAtivas + 1}</span>
+              <button onClick={() => setNovaListaModal(false)} style={{ background:'none', border:'1px solid #99ffaa', color:'#99ffaa', padding:'1px 6px', cursor:'pointer', fontFamily:'inherit', fontWeight:'700' }}>×</button>
             </div>
             <div style={{ padding:'16px', display:'flex', flexDirection:'column', gap:'12px' }}>
               <div>
@@ -506,7 +506,7 @@ export default function LabServicos() {
           <div style={{ background:R.panel, border:`2px outset ${R.bdr}`, width:'100%', maxWidth:'480px' }}>
             <div style={{ background:R.hdr, color:R.hdrTxt, padding:'6px 14px', fontSize:'12px', fontWeight:'700', letterSpacing:'1px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
               <span>{editItem ? 'EDITAR PRODUTO' : 'NOVO PRODUTO'}</span>
-              <button onClick={() => setModal(false)} style={{ background:'none', border:'1px solid #99ffaa', color:'#99ffaa', padding:'1px 6px', cursor:'pointer', fontFamily:'inherit', fontWeight:'700' }}>✕</button>
+              <button onClick={() => setModal(false)} style={{ background:'none', border:'1px solid #99ffaa', color:'#99ffaa', padding:'1px 6px', cursor:'pointer', fontFamily:'inherit', fontWeight:'700' }}>×</button>
             </div>
             <div style={{ padding:'16px' }}>
               {erro && <div style={{ background:'var(--lab-chip-bg)', border:'1px solid var(--lab-chip-bdr)', padding:'6px 10px', marginBottom:'10px', fontSize:'11px', color:'var(--lab-chip-txt)', fontWeight:'700' }}>{erro}</div>}

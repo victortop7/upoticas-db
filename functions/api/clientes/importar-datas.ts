@@ -22,7 +22,7 @@ function toISO(br: string): string | null {
   const [, d, mo, y] = m;
   const dd = +d, mm = +mo, yy = +y;
   if (mm < 1 || mm > 12 || dd < 1 || dd > 31) return null;
-  // CADASTRO real fica entre 2022 e 2030 — descarta nascimento (1899, anos antigos) e lixo
+  // CADASTRO real fica entre 2022 e 2030: descarta nascimento (1899, anos antigos) e lixo
   if (yy < 2022 || yy > 2030) return null;
   return `${y}-${mo}-${d}`;
 }

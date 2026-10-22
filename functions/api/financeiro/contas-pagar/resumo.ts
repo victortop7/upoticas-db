@@ -3,7 +3,7 @@ import type { Env } from '../../../lib/types';
 import { requireAuth, json } from '../../../lib/auth-middleware';
 import { gerarRecorrentes, hojeSP } from '../../../lib/recorrentes';
 
-// GET /api/financeiro/contas-pagar/resumo — para o Painel: vencidas + vencendo nos próximos 7 dias
+// GET /api/financeiro/contas-pagar/resumo: para o Painel: vencidas + vencendo nos próximos 7 dias
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;

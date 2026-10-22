@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { MENU_GRUPOS, menusDo } from '../lib/permissoes';
+import Icone from './Icone';
 
 export default function Sidebar() {
   const { tenant, usuario, logout } = useAuth();
@@ -67,7 +68,7 @@ export default function Sidebar() {
               }}
             >
               <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>🔍</span> Buscar...
+                <Icone nome="busca" size={15} /> Buscar...
               </span>
               <kbd style={{ fontSize: '10px', padding: '1px 5px', borderRadius: '3px', background: 'var(--surface)', border: '1px solid var(--border)', fontFamily: 'var(--mono)' }}>⌃K</kbd>
             </button>
@@ -90,7 +91,7 @@ export default function Sidebar() {
                       textDecoration: 'none', transition: 'all 0.15s',
                     })}
                   >
-                    <span style={{ fontSize: '15px' }}>{item.icon}</span>
+                    <Icone nome={item.icon} size={16} />
                     {item.label}
                   </NavLink>
                 ))}
@@ -114,7 +115,7 @@ export default function Sidebar() {
           onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-alt)')}
           onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
         >
-          <span>{dark ? '☀️' : '🌙'}</span>
+          <Icone nome={dark ? 'sol' : 'lua'} size={16} />
           {dark ? 'Modo claro' : 'Modo escuro'}
         </button>
         <button
@@ -129,7 +130,7 @@ export default function Sidebar() {
           onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-alt)')}
           onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
         >
-          <span>↩</span> Sair
+          <Icone nome="sair" size={16} /> Sair
         </button>
       </div>
     </div>

@@ -1,14 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '../../lib/api';
+import Icone from '../../components/Icone';
 
 interface Modelo { id: string; nome: string; categoria: string; corpo: string; }
 
 const CATEGORIAS = [
-  { value: 'aniversario', label: 'Aniversário', icon: '🎂' },
-  { value: 'cobranca', label: 'Cobrança', icon: '💰' },
-  { value: 'os', label: 'Ordem de Serviço', icon: '🔧' },
-  { value: 'venda', label: 'Venda', icon: '🛒' },
-  { value: 'promocao', label: 'Promoção', icon: '📢' },
+  { value: 'aniversario', label: 'Aniversário', icon: 'aniversario' },
+  { value: 'cobranca', label: 'Cobrança', icon: 'dinheiro' },
+  { value: 'os', label: 'Ordem de Serviço', icon: 'os' },
+  { value: 'venda', label: 'Venda', icon: 'vendas' },
+  { value: 'promocao', label: 'Promoção', icon: 'campanhas' },
 ];
 
 const VARIAVEIS = ['{nome}', '{data}', '{numero_os}', '{valor}', '{loja}'];
@@ -72,12 +73,12 @@ function Modal({ modelo, onClose, onSaved }: { modelo: Modelo | null; onClose: (
             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
               {CATEGORIAS.map(c => (
                 <button key={c.value} type="button" onClick={() => handleCategoria(c.value)} style={{
-                  padding: '6px 12px', fontSize: '12px', fontWeight: '500', borderRadius: '20px', cursor: 'pointer',
+                  padding: '6px 12px', fontSize: '12px', fontWeight: '500', borderRadius: '6px', cursor: 'pointer',
                   border: `1px solid ${form.categoria === c.value ? 'var(--primary)' : 'var(--border)'}`,
                   background: form.categoria === c.value ? 'var(--primary-dim)' : 'transparent',
                   color: form.categoria === c.value ? 'var(--primary)' : 'var(--text-dim)',
                 }}>
-                  {c.icon} {c.label}
+                  {c.label}
                 </button>
               ))}
             </div>
@@ -140,7 +141,7 @@ export default function Modelos() {
     load();
   }
 
-  const filterBtn = (active: boolean): React.CSSProperties => ({ padding: '6px 14px', fontSize: '12px', fontWeight: '500', border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`, borderRadius: '20px', cursor: 'pointer', background: active ? 'var(--primary)' : 'var(--surface)', color: active ? 'white' : 'var(--text-dim)' });
+  const filterBtn = (active: boolean): React.CSSProperties => ({ padding: '6px 14px', fontSize: '12px', fontWeight: '500', border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`, borderRadius: '6px', cursor: 'pointer', background: active ? 'var(--primary)' : 'var(--surface)', color: active ? 'white' : 'var(--text-dim)' });
 
   const grupos = CATEGORIAS.map(c => ({ ...c, items: modelos.filter(m => m.categoria === c.value) })).filter(g => !catFiltro || g.value === catFiltro);
 
@@ -156,7 +157,7 @@ export default function Modelos() {
 
       <div style={{ display: 'flex', gap: '6px', marginBottom: '24px', flexWrap: 'wrap' }}>
         <button style={filterBtn(catFiltro === '')} onClick={() => setCatFiltro('')}>Todos</button>
-        {CATEGORIAS.map(c => <button key={c.value} style={filterBtn(catFiltro === c.value)} onClick={() => setCatFiltro(c.value)}>{c.icon} {c.label}</button>)}
+        {CATEGORIAS.map(c => <button key={c.value} style={filterBtn(catFiltro === c.value)} onClick={() => setCatFiltro(c.value)}>{c.label}</button>)}
       </div>
 
       {loading ? <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Carregando...</p> : (
@@ -164,7 +165,7 @@ export default function Modelos() {
           {grupos.map(grupo => grupo.items.length === 0 && catFiltro ? null : (
             <div key={grupo.value}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                <span style={{ fontSize: '18px' }}>{grupo.icon}</span>
+                <Icone nome={grupo.icon} size={17} color="var(--text-muted)" />
                 <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>{grupo.label}</h3>
                 <span style={{ fontSize: '12px', color: 'var(--text-muted)', background: 'var(--surface-alt)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1px 8px' }}>{grupo.items.length}</span>
               </div>

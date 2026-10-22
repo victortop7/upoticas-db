@@ -34,7 +34,7 @@ export default function LogoLoja() {
     try {
       await api.put('/configuracoes/logo', { logo: nova });
       setLogo(nova);
-      setMsg(nova ? '✓ Logo salva' : 'Logo removida');
+      setMsg(nova ? 'Logo salva' : 'Logo removida');
     } catch (e) { setMsg(e instanceof Error ? e.message : 'Erro ao salvar'); }
     setSalvando(false);
   }
@@ -63,7 +63,7 @@ export default function LogoLoja() {
             <input type="file" accept="image/png,image/jpeg,image/webp" onChange={escolher} disabled={salvando} style={{ display: 'none' }} />
           </label>
           {logo && <button type="button" onClick={() => confirm('Remover a logo?') && salvar(null)} style={{ padding: '9px 14px', fontSize: '13px', background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer' }}>Remover</button>}
-          {msg && <span style={{ fontSize: 13, color: msg.startsWith('✓') ? 'var(--green)' : 'var(--text-muted)' }}>{msg}</span>}
+          {msg && <span style={{ fontSize: 13, color: msg === 'Logo salva' ? 'var(--green)' : 'var(--text-muted)' }}>{msg}</span>}
         </div>
       </div>
     </div>

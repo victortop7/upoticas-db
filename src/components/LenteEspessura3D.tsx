@@ -6,7 +6,7 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 const BASE_SCALE = 0.42; // tamanho base de cada lente (menor: cabem as duas)
 const R = 1;            // raio geométrico (R=1 ↔ 32,5mm; Ø65mm de referência)
 const ESP_SCALE = 0.05; // mm -> unidades (~1.6× a escala real, só p/ a espessura ficar visível)
-const BC = 0.12;        // sag da curvatura base (menisco SUTIL — disco fino, nunca tigela)
+const BC = 0.12;        // sag da curvatura base (menisco SUTIL: disco fino, nunca tigela)
 const THICK_GAIN = 4;   // exagera o volume de refração (transmission) p/ a lupa ficar visível
 const OFFSET = 1.02;    // distância de cada lente ao centro (OD à esquerda, OE à direita)
 
@@ -170,7 +170,7 @@ export default function LenteEspessura3D({
   return <div ref={mountRef} style={{ width: '100%', height: '100%', cursor: 'grab' }} />;
 }
 
-// Volume de refração do vidro (unidades locais — o scale do objeto é aplicado pelo shader)
+// Volume de refração do vidro (unidades locais: o scale do objeto é aplicado pelo shader)
 const thicknessFor = (centerMm: number, edgeMm: number) =>
   Math.max(0.06, Math.max(centerMm, edgeMm) * ESP_SCALE * THICK_GAIN);
 

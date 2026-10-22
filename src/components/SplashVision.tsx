@@ -53,9 +53,9 @@ export default function SplashVision() {
       </div>
 
       {/* Barra de carregamento */}
-      <div style={{ position: 'relative', width: 200, height: 6, borderRadius: 999, background: 'rgba(120,170,255,0.15)', overflow: 'hidden' }}>
+      <div style={{ position: 'relative', width: 200, height: 6, borderRadius: 6, background: 'rgba(120,170,255,0.15)', overflow: 'hidden' }}>
         <div style={{
-          height: '100%', width: `${progress}%`, borderRadius: 999,
+          height: '100%', width: `${progress}%`, borderRadius: 6,
           background: 'linear-gradient(90deg, #007aff, #3ba6ff)', boxShadow: '0 0 12px rgba(59,166,255,0.7)',
           transition: 'width .05s linear',
         }} />

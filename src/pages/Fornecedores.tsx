@@ -96,10 +96,10 @@ export default function Fornecedores() {
                     <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text)' }}>{f.nome}</div>
                     {f.fantasia && <div style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{f.fantasia}</div>}
                   </td>
-                  <td style={{ padding: '12px 16px', fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{f.cnpj || '—'}</td>
-                  <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>{f.telefone || f.celular || '—'}</td>
-                  <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>{f.email || '—'}</td>
-                  <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>{f.cidade && f.uf ? `${f.cidade}/${f.uf}` : f.cidade || '—'}</td>
+                  <td style={{ padding: '12px 16px', fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{f.cnpj || '-'}</td>
+                  <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>{f.telefone || f.celular || '-'}</td>
+                  <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>{f.email || '-'}</td>
+                  <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>{f.cidade && f.uf ? `${f.cidade}/${f.uf}` : f.cidade || '-'}</td>
                   <td style={{ padding: '12px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                     <button onClick={() => abrirEditar(f)} style={{ padding: '4px 10px', fontSize: '12px', marginRight: '6px', background: 'var(--primary-dim)', color: 'var(--primary)', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Editar</button>
                     <button onClick={() => excluir(f.id, f.nome)} style={{ padding: '4px 10px', fontSize: '12px', background: 'var(--red-dim)', color: 'var(--red)', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Excluir</button>
@@ -133,7 +133,7 @@ export default function Fornecedores() {
                 <div>{lbl('Bairro')}<input value={form.bairro} onChange={e => setForm(f => ({ ...f, bairro: e.target.value }))} style={inp} /></div>
                 <div>{lbl('CEP')}<input value={form.cep} onChange={e => setForm(f => ({ ...f, cep: e.target.value }))} style={{ ...inp, fontFamily: 'var(--mono)' }} /></div>
                 <div>{lbl('Cidade')}<input value={form.cidade} onChange={e => setForm(f => ({ ...f, cidade: e.target.value }))} style={inp} /></div>
-                <div>{lbl('UF')}<select value={form.uf} onChange={e => setForm(f => ({ ...f, uf: e.target.value }))} style={{ ...inp, fontFamily: 'inherit' }}><option value="">—</option>{UF_LIST.map(u => <option key={u} value={u}>{u}</option>)}</select></div>
+                <div>{lbl('UF')}<select value={form.uf} onChange={e => setForm(f => ({ ...f, uf: e.target.value }))} style={{ ...inp, fontFamily: 'inherit' }}><option value="">-</option>{UF_LIST.map(u => <option key={u} value={u}>{u}</option>)}</select></div>
                 <div style={{ gridColumn: '1 / -1' }}>{lbl('Observação')}<input value={form.observacao} onChange={e => setForm(f => ({ ...f, observacao: e.target.value }))} style={inp} /></div>
               </div>
               <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>

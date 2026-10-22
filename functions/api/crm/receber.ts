@@ -76,7 +76,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       const novaEntrada = (os.valor_entrada || 0) + recebido;
       saldoRestante = Math.max(0, (os.valor_total || 0) - novaEntrada);
 
-      // Atualiza SOMENTE o financeiro — não mexe em grau/produtos/situação da OS
+      // Atualiza SOMENTE o financeiro: não mexe em grau/produtos/situação da OS
       await env.DB.prepare(
         `UPDATE ordens_servico SET valor_entrada = ?, valor_restante = ?, updated_at = ?
          WHERE id = ? AND tenant_id = ?`

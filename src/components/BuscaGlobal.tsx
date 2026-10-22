@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
+import Icone from './Icone';
 
 interface ResultadoBusca {
   clientes: { id: string; nome: string; cpf?: string; celular?: string; cidade?: string; uf?: string }[];
@@ -66,8 +67,8 @@ export default function BuscaGlobal() {
   // Itens navegáveis (flatten)
   const itens = resultado ? [
     ...resultado.clientes.map(c => ({ tipo: 'cliente' as const, id: c.id, label: c.nome, sub: c.celular || c.cpf || (c.cidade ? `${c.cidade}${c.uf ? `/${c.uf}` : ''}` : ''), path: '/clientes' })),
-    ...resultado.os.map(o => ({ tipo: 'os' as const, id: o.id, label: `OS #${String(o.numero).padStart(4, '0')} — ${o.cliente_nome}`, sub: `${SITUACAO_LABEL[o.situacao]} · ${brl(o.valor_total)}`, path: '/os' })),
-    ...resultado.vendas.map(v => ({ tipo: 'venda' as const, id: v.id, label: `Venda #${String(v.numero).padStart(4, '0')}${v.cliente_nome ? ` — ${v.cliente_nome}` : ''}`, sub: brl(v.valor_final), path: '/vendas' })),
+    ...resultado.os.map(o => ({ tipo: 'os' as const, id: o.id, label: `OS #${String(o.numero).padStart(4, '0')} · ${o.cliente_nome}`, sub: `${SITUACAO_LABEL[o.situacao]} · ${brl(o.valor_total)}`, path: '/os' })),
+    ...resultado.vendas.map(v => ({ tipo: 'venda' as const, id: v.id, label: `Venda #${String(v.numero).padStart(4, '0')}${v.cliente_nome ? ` · ${v.cliente_nome}` : ''}`, sub: brl(v.valor_final), path: '/vendas' })),
   ] : [];
 
   // Navega com teclado
@@ -87,7 +88,7 @@ export default function BuscaGlobal() {
     setAberto(false);
   }
 
-  const ICONE: Record<string, string> = { cliente: '👤', os: '🔧', venda: '🛒' };
+  const ICONE: Record<string, string> = { cliente: 'clientes', os: 'os', venda: 'vendas' };
   const TIPO_LABEL: Record<string, string> = { cliente: 'Cliente', os: 'OS', venda: 'Venda' };
 
   const totalResultados = (resultado?.clientes.length || 0) + (resultado?.os.length || 0) + (resultado?.vendas.length || 0);
@@ -107,7 +108,7 @@ export default function BuscaGlobal() {
       }}>
         {/* Input */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 20px', borderBottom: itens.length > 0 || loading ? '1px solid var(--border)' : 'none' }}>
-          <span style={{ fontSize: '18px', opacity: 0.5 }}>🔍</span>
+          <Icone nome="busca" size={18} color="var(--text-muted)" />
           <input
             ref={inputRef}
             value={query}

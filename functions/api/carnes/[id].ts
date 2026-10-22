@@ -3,7 +3,7 @@ import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
 import { ensureCarneTables } from './index';
 
-// GET /api/carnes/:id — carnê completo (parcelas + cliente + loja) para visualizar/imprimir
+// GET /api/carnes/:id: carnê completo (parcelas + cliente + loja) para visualizar/imprimir
 export const onRequestGet: PagesFunction<Env> = async ({ request, env, params }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;
@@ -27,7 +27,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env, params })
   return json({ carne, parcelas: parcelas.results, cliente, loja });
 };
 
-// DELETE /api/carnes/:id — exclui o carnê e suas parcelas
+// DELETE /api/carnes/:id: exclui o carnê e suas parcelas
 export const onRequestDelete: PagesFunction<Env> = async ({ request, env, params }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;

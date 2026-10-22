@@ -93,7 +93,7 @@ export default function LabEstoque() {
       {/* Header */}
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'8px', flexWrap:'wrap', gap:'6px' }}>
         <div style={{ background:R.hdr, color:R.hdrTxt, padding:'5px 14px', fontSize:'13px', fontWeight:'700', letterSpacing:'1px', border:`2px outset ${R.hdrBdr}` }}>
-          ESTOQUE DE LENTES — {produtos.length} produto(s)
+          ESTOQUE DE LENTES · {produtos.length} produto(s)
         </div>
         <button onClick={abrirNovo} style={{ padding:'5px 16px', fontSize:'12px', fontWeight:'700', background:R.accent, color:'var(--lab-on-accent)', border:`1px outset ${R.hdrBdr}`, cursor:'pointer', fontFamily:'inherit', textTransform:'uppercase' }}>
           + NOVO PRODUTO
@@ -103,7 +103,7 @@ export default function LabEstoque() {
       {/* Alerta baixo estoque */}
       {baixoEstoque.length > 0 && (
         <div style={{ background:'var(--lab-chip-bg)', border:'1px solid var(--lab-chip-bdr)', padding:'6px 12px', marginBottom:'8px', fontSize:'11px', color:'var(--lab-chip-txt)', fontWeight:'700', fontFamily:"'Courier New', monospace" }}>
-          ⚠ {baixoEstoque.length} produto(s) abaixo do mínimo: {baixoEstoque.map(p => `${p.marca} ${p.indice}`).join(', ')}
+          {baixoEstoque.length} produto(s) abaixo do mínimo: {baixoEstoque.map(p => `${p.marca} ${p.indice}`).join(', ')}
         </div>
       )}
 
@@ -123,7 +123,7 @@ export default function LabEstoque() {
         {(filtroMarca || filtroIndice || filtroTipo) && (
           <button onClick={() => { setFiltroMarca(''); setFiltroIndice(''); setFiltroTipo(''); }}
             style={{ padding:'4px 10px', fontSize:'11px', fontWeight:'700', background:R.alt, color:R.accent, border:`1px outset ${R.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>
-            ✕ LIMPAR
+            LIMPAR
           </button>
         )}
       </div>
@@ -152,7 +152,7 @@ export default function LabEstoque() {
                     <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', color:R.accent2, fontWeight:'700' }}>{p.indice}</td>
                     <td style={{ padding:'6px 10px', fontSize:'11px', color:R.txt }}>{TIPO_LABEL[p.tipo] ?? p.tipo}</td>
                     <td style={{ padding:'6px 10px', fontSize:'11px', color:R.txt }}>{p.tratamento}</td>
-                    <td style={{ padding:'6px 10px', fontSize:'11px', color:R.dim }}>{p.descricao ?? '—'}</td>
+                    <td style={{ padding:'6px 10px', fontSize:'11px', color:R.dim }}>{p.descricao ?? '-'}</td>
                     <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'14px', fontWeight:'900', color: baixo ? R.accent : p.quantidade > p.quantidade_minima * 2 ? R.accent : '#886600', textAlign:'center' }}>
                       {p.quantidade}
                     </td>
@@ -175,7 +175,7 @@ export default function LabEstoque() {
           <div style={panelStyle}>
             <div style={{ background:R.hdr, color:R.hdrTxt, padding:'6px 14px', fontSize:'12px', fontWeight:'700', letterSpacing:'1px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
               <span>{editando ? 'EDITAR PRODUTO' : 'INCLUIR PRODUTO'}</span>
-              <button onClick={() => setModalProd(false)} style={{ background:'none', border:'1px solid #99ffaa', color:'#99ffaa', padding:'1px 6px', cursor:'pointer', fontFamily:'inherit', fontWeight:'700' }}>✕</button>
+              <button onClick={() => setModalProd(false)} style={{ background:'none', border:'1px solid #99ffaa', color:'#99ffaa', padding:'1px 6px', cursor:'pointer', fontFamily:'inherit', fontWeight:'700' }}>×</button>
             </div>
             <div style={{ padding:'16px' }}>
               {erroProd && <div style={{ background:'var(--lab-chip-bg)', border:'1px solid var(--lab-chip-bdr)', padding:'6px 10px', marginBottom:'10px', fontSize:'11px', color:'var(--lab-chip-txt)', fontWeight:'700' }}>{erroProd}</div>}
@@ -221,11 +221,11 @@ export default function LabEstoque() {
           <div style={{ ...panelStyle, maxWidth:'380px' }}>
             <div style={{ background:R.hdr, color:R.hdrTxt, padding:'6px 14px', fontSize:'12px', fontWeight:'700', letterSpacing:'1px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
               <span>MOVIMENTAR ESTOQUE</span>
-              <button onClick={() => setModalMov(false)} style={{ background:'none', border:'1px solid #99ffaa', color:'#99ffaa', padding:'1px 6px', cursor:'pointer', fontFamily:'inherit', fontWeight:'700' }}>✕</button>
+              <button onClick={() => setModalMov(false)} style={{ background:'none', border:'1px solid #99ffaa', color:'#99ffaa', padding:'1px 6px', cursor:'pointer', fontFamily:'inherit', fontWeight:'700' }}>×</button>
             </div>
             <div style={{ padding:'14px' }}>
               <div style={{ background:R.alt, border:`1px inset ${R.bdr}`, padding:'8px 12px', marginBottom:'12px' }}>
-                <div style={{ fontSize:'12px', fontWeight:'700', color:R.txt }}>{produtoMov.marca} — {produtoMov.indice}</div>
+                <div style={{ fontSize:'12px', fontWeight:'700', color:R.txt }}>{produtoMov.marca} · {produtoMov.indice}</div>
                 <div style={{ fontSize:'11px', color:R.dim }}>{produtoMov.tratamento} · {TIPO_LABEL[produtoMov.tipo]}</div>
                 <div style={{ fontSize:'13px', fontFamily:"'Courier New', monospace", color:R.accent2, marginTop:'4px', fontWeight:'700' }}>
                   Estoque atual: {produtoMov.quantidade}

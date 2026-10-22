@@ -3,7 +3,7 @@ import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
 import { ensureLojaCols } from '../../lib/lojas';
 
-// GET /api/lojas — lista as lojas do tenant
+// GET /api/lojas: lista as lojas do tenant
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;
@@ -15,7 +15,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   return json(r.results);
 };
 
-// POST /api/lojas — cria uma loja (admin)
+// POST /api/lojas: cria uma loja (admin)
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;

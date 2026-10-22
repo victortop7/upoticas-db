@@ -209,7 +209,7 @@ function ParamContent({ tab, config, onChange }: { tab: TabParam; config: Config
             <input value={c[`param_setor_${n}_nome`] ?? ''} onChange={e => o(`param_setor_${n}_nome`, e.target.value)} style={{ padding: '2px 4px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: R.inp, border: '2px inset #808080' }} />
             <input type="number" value={c[`param_setor_${n}_tempo`] ?? ''} onChange={e => o(`param_setor_${n}_tempo`, e.target.value)} style={{ padding: '2px 4px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: R.inp, border: '2px inset #808080' }} />
             <select value={c[`param_setor_${n}_status`] ?? ''} onChange={e => o(`param_setor_${n}_status`, e.target.value)} style={{ padding: '2px 4px', fontSize: '11px', fontFamily: "'Courier New', monospace", background: R.inp, border: '2px inset #808080' }}>
-              <option value="">— não mudar status —</option>
+              <option value="">não mudar status</option>
               <option value="aguardando">AGUARDANDO</option>
               <option value="em_producao">EM PRODUÇÃO</option>
               <option value="pronto">PRONTO</option>
@@ -538,7 +538,7 @@ function TabelaContent({ tabela, config, onChange }: {
                 onMouseEnter={e => { if (despGrupo !== i) (e.currentTarget as HTMLElement).style.background = R.accent; }}
                 onMouseLeave={e => { if (despGrupo !== i) (e.currentTarget as HTMLElement).style.background = i % 2 === 0 ? R.panel : R.alt; }}
               >
-                <span style={S.label()}>GRUPO {i} — {config[`tab_desp_grp_${i}`] ?? grupoNomes[i]}</span>
+                <span style={S.label()}>GRUPO {i} · {config[`tab_desp_grp_${i}`] ?? grupoNomes[i]}</span>
                 <span style={S.num(despGrupo === i)}>{i}</span>
               </div>
             ))}
@@ -733,7 +733,7 @@ function TabelaContent({ tabela, config, onChange }: {
           {codes.map(code => (
             <div key={code} style={{ display: 'flex', alignItems: 'center', marginBottom: '5px', gap: '6px' }}>
               <span style={{ fontSize: '11px', fontWeight: 'bold', color: R.accent, minWidth: '56px' }}>LISTA {code}</span>
-              <span style={{ fontSize: '10px', color: R.dim }}>——</span>
+              <span style={{ fontSize: '10px', color: R.dim }}>--</span>
               <input
                 value={config[`tab_lista_${code}`] ?? ''}
                 onChange={e => onChange(`tab_lista_${code}`, e.target.value)}
@@ -896,7 +896,7 @@ export default function LabConfiguracoes() {
       >
         {saving ? 'SALVANDO...' : 'SALVAR'}
       </button>
-      {saved && <span style={{ fontSize: '11px', color: R.accent, fontWeight: 'bold', alignSelf: 'center' }}>✔ SALVO</span>}
+      {saved && <span style={{ fontSize: '11px', color: R.accent, fontWeight: 'bold', alignSelf: 'center' }}>SALVO</span>}
     </div>
   );
 

@@ -64,7 +64,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
   }
 };
 
-// POST — registrar movimentação (entrada, saída, ajuste)
+// POST: registrar movimentação (entrada, saída, ajuste)
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
   try {
     const auth = await requireAuth(request, env);

@@ -28,7 +28,7 @@ export function filtroLoja(auth: AuthData, coluna = 'loja_id'): { sql: string; p
   return { sql: '', params: [] };
 }
 
-// Mesma regra, mas deixa registros antigos (loja_id NULL) visíveis — usado em clientes
+// Mesma regra, mas deixa registros antigos (loja_id NULL) visíveis: usado em clientes
 // pra não quebrar a base importada (compartilhada) enquanto as novas já nascem separadas.
 export function filtroLojaComLegado(auth: AuthData, coluna = 'loja_id'): { sql: string; params: string[] } {
   if (auth.perfil !== 'admin' && auth.loja_id) {

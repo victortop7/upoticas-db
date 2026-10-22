@@ -3,6 +3,7 @@ import { api } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 import type { Cliente } from '../types';
 import ClienteModal from './ClienteModal';
+import Icone from './Icone';
 
 interface Venda {
   id: string;
@@ -91,7 +92,7 @@ interface AdicionalVenda { cliente_id: string; cliente_nome: string; valor_total
 
 function brlFmt(v: number) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 
-// Linha de "pessoa adicional" na mesma venda — cada uma tem seu próprio cliente/valor
+// Linha de "pessoa adicional" na mesma venda: cada uma tem seu próprio cliente/valor
 function PessoaAdicionalRow({ index, value, onChange, onRemove }: {
   index: number;
   value: AdicionalVenda;
@@ -119,13 +120,13 @@ function PessoaAdicionalRow({ index, value, onChange, onRemove }: {
   return (
     <div style={{ border: '1px solid var(--border)', borderRadius: '10px', padding: '10px', background: 'var(--surface-alt)', marginBottom: '8px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '7px' }}>
-        <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-dim)' }}>👤 Pessoa {index + 2}</span>
+        <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-dim)' }}>Pessoa {index + 2}</span>
         <button type="button" onClick={onRemove} title="Remover" style={{ width: '24px', height: '24px', border: '1px solid var(--border)', borderRadius: '6px', background: 'var(--surface)', color: 'var(--red)', cursor: 'pointer', fontWeight: '700' }}>×</button>
       </div>
 
       {value.cliente_id ? (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(37,99,235,0.06)', border: '1px solid rgba(37,99,235,0.2)', borderRadius: '7px', padding: '7px 10px', marginBottom: '7px' }}>
-          <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--primary)' }}>✓ {value.cliente_nome}</span>
+          <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--primary)' }}>{value.cliente_nome}</span>
           <button type="button" onClick={() => { onChange({ ...value, cliente_id: '', cliente_nome: '' }); setBusca(''); setAberto(false); }} style={{ fontSize: '11px', color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}>trocar</button>
         </div>
       ) : (
@@ -349,7 +350,7 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
               const venc = String(b.data_recebimento || '') || carnePrimeiroVenc;
               const carne = await api.post<{ id: string }>('/carnes', {
                 cliente_id: form.cliente_id,
-                descricao: `Venda #${String(nova.numero).padStart(4, '0')} — boleto`,
+                descricao: `Venda #${String(nova.numero).padStart(4, '0')} · boleto`,
                 valor_total: parseFloat(String(b.valor)) || 0,
                 num_parcelas: parseInt(String(b.parcelas || '1')) || 1,
                 primeiro_vencimento: venc,
@@ -391,7 +392,7 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
     const res = await api.get<{ clientes: Cliente[] }>('/clientes?page=1');
     setClientes(res.clientes);
     if (res.clientes.length > 0) {
-      // O mais recente está no topo após ordenação por nome — busca pelo created_at mais alto
+      // O mais recente está no topo após ordenação por nome: busca pelo created_at mais alto
       const mais_recente = [...res.clientes].sort((a, b) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       )[0];
@@ -481,7 +482,7 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
                   borderBottom: '1px solid var(--border)',
                   background: !form.cliente_id ? 'var(--surface-alt)' : 'transparent',
                 }}
-              >— Sem cliente —</div>
+              >Sem cliente</div>
               {clientes.map((c, i) => (
                 <div
                   key={c.id}
@@ -505,7 +506,7 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
               background: 'rgba(37,99,235,0.06)', border: '1px solid rgba(37,99,235,0.2)',
               borderRadius: '8px', padding: '8px 12px', fontSize: '13px', marginBottom: '14px',
             }}>
-              <span style={{ fontWeight: '600', color: 'var(--primary)' }}>✓ {clienteSelecionado.nome}</span>
+              <span style={{ fontWeight: '600', color: 'var(--primary)' }}>{clienteSelecionado.nome}</span>
             </div>
           )}
 
@@ -517,7 +518,7 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
                 <button type="button" onClick={() => setNovoVendedorOpen(true)} style={{ fontSize: '12px', fontWeight: '600', color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>+ Cadastrar novo</button>
               </div>
               <select style={inputStyle} value={funcionarioId} onChange={e => setFuncionarioId(e.target.value)}>
-                <option value="">— Atribuir a mim mesmo —</option>
+                <option value="">Atribuir a mim mesmo</option>
                 {vendedores.map(v => (
                   <option key={v.id} value={v.id}>{v.nome} ({v.perfil})</option>
                 ))}
@@ -540,10 +541,10 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
               borderRadius: '10px', padding: '14px 18px', marginBottom: '14px',
               display: 'flex', alignItems: 'center', gap: '10px',
             }}>
-              <span style={{ fontSize: '18px' }}>📢</span>
+              <Icone nome="campanhas" size={17} color="#ec4899" />
               <div>
                 <p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: '#db2777' }}>Venda de Marketing</p>
-                <p style={{ margin: '2px 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>Registrada sem valor — apenas para contabilização</p>
+                <p style={{ margin: '2px 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>Registrada sem valor · apenas para contabilização</p>
               </div>
             </div>
           ) : (
@@ -642,7 +643,7 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
               {/* Boleto → gera carnê Pix ao salvar */}
               {!multiPag && form.forma_pagamento === 'boleto' && (
                 <div style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: '10px', padding: '14px 16px', marginBottom: '14px' }}>
-                  <div style={{ fontSize: '13px', fontWeight: '600', color: '#d97706', marginBottom: '10px' }}>🧾 Boleto / Carnê (Pix)</div>
+                  <div style={{ fontSize: '13px', fontWeight: '600', color: '#d97706', marginBottom: '10px' }}>Boleto / Carnê (Pix)</div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: '12px' }}>
                     <div>
                       <label style={labelStyle}>Nº de parcelas</label>
@@ -699,7 +700,7 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
               {/* Várias formas de pagamento */}
               {multiPag && (
                 <div style={{ border: '1px solid var(--border)', borderRadius: '10px', padding: '12px', marginBottom: '14px', background: 'var(--surface-alt)' }}>
-                  <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)', marginBottom: '8px' }}>💳 Pagamentos</div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)', marginBottom: '8px' }}>Pagamentos</div>
                   {pags.map((pg, i) => {
                     const upd = (patch: Partial<PagLinha>) => setPags(ps => ps.map((x, j) => j === i ? { ...x, ...patch } : x));
                     const small: React.CSSProperties = { ...inputStyle, padding: '6px 8px', fontSize: '12.5px' };
@@ -716,7 +717,7 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 70px 1.1fr 1fr', gap: '6px' }}>
                           <div><span style={cap}>Bandeira</span>
-                            <input style={small} disabled={!ehCartao(pg.forma)} placeholder={ehCartao(pg.forma) ? 'Visa...' : '—'} value={pg.bandeira} onChange={e => upd({ bandeira: e.target.value })} /></div>
+                            <input style={small} disabled={!ehCartao(pg.forma)} placeholder={ehCartao(pg.forma) ? 'Visa...' : '-'} value={pg.bandeira} onChange={e => upd({ bandeira: e.target.value })} /></div>
                           <div><span style={cap}>Parcelas</span>
                             <input type="number" min="1" style={{ ...small, textAlign: 'center' }} disabled={!(pg.forma === 'credito' || pg.forma === 'boleto')} value={pg.parcelas} onChange={e => upd({ parcelas: e.target.value })} /></div>
                           <div><span style={cap}>{pg.forma === 'boleto' ? '1º vencimento' : 'Data recebimento'}</span>
@@ -737,7 +738,7 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
                       )}
                     </div>
                     <span style={{ fontSize: '12px', fontFamily: 'var(--mono)', color: faltaPags > 0.009 ? '#d97706' : '#16a34a', fontWeight: 600 }}>
-                      {brlFmt(somaPags)} de {brlFmt(valorFinal)}{faltaPags > 0.009 ? ` · falta ${brlFmt(faltaPags)} (fica a receber)` : ' ✓'}
+                      {brlFmt(somaPags)} de {brlFmt(valorFinal)}{faltaPags > 0.009 ? ` · falta ${brlFmt(faltaPags)} (fica a receber)` : ''}
                     </span>
                   </div>
                   <p style={{ margin: '8px 0 0', fontSize: '11px', color: 'var(--text-muted)' }}>Linha em <b>Boleto</b> gera o carnê Pix daquele valor. O que faltar fica como a receber.</p>
@@ -746,7 +747,7 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
 
               {/* Entrada parcial */}
               {!multiPag && <div style={{ marginBottom: '8px' }}>
-                <label style={labelStyle}>Valor de Entrada (R$) — deixe em branco para pagamento integral</label>
+                <label style={labelStyle}>Valor de Entrada (R$) · deixe em branco para pagamento integral</label>
                 <input
                   type="number" step="0.01" min="0"
                   style={{ ...inputStyle, fontFamily: 'var(--mono)', textAlign: 'right' }}
@@ -765,7 +766,7 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
                   marginBottom: '14px',
                 }}>
                   <div>
-                    <div style={{ fontSize: '13px', fontWeight: '600', color: '#d97706' }}>👓 Óculos Pendente</div>
+                    <div style={{ fontSize: '13px', fontWeight: '600', color: '#d97706' }}>Óculos Pendente</div>
                     <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>Cliente vai buscar e pagar o restante</div>
                   </div>
                   <span style={{ fontSize: '18px', fontWeight: '700', fontFamily: 'var(--mono)', color: '#d97706' }}>
@@ -798,7 +799,7 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
 
                   {adicionais.length > 0 && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: '10px', padding: '12px 16px', marginTop: '4px' }}>
-                      <span style={{ fontSize: '13px', fontWeight: '600', color: '#16a34a' }}>💳 Total no pagamento ({adicionais.length + 1} pessoas)</span>
+                      <span style={{ fontSize: '13px', fontWeight: '600', color: '#16a34a' }}>Total no pagamento ({adicionais.length + 1} pessoas)</span>
                       <span style={{ fontSize: '18px', fontWeight: '700', fontFamily: 'var(--mono)', color: '#16a34a' }}>{brlFmt(totalCartao)}</span>
                     </div>
                   )}

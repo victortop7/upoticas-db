@@ -1,4 +1,4 @@
-// Shapes de lentes ópticas — viewBox "0 0 90 65"
+// Shapes de lentes ópticas: viewBox "0 0 90 65"
 // Baseados nas fotos de referência do catálogo geométrico
 
 const SHAPES: Array<{ name: string; d: string }> = [
@@ -98,7 +98,7 @@ export default function LabShapePicker({ value, onChange, onClose }: Props) {
 
         <div style={{ background:'var(--lab-accent)', color: 'var(--lab-on-accent)', padding:'7px 16px', display:'flex', justifyContent:'space-between', alignItems:'center', flexShrink:0 }}>
           <span style={{ fontWeight:'700', fontSize:'12px', letterSpacing:'2px', fontFamily:"'Courier New', monospace" }}>SHAPES</span>
-          <button onClick={onClose} style={{ background:'none', border:'1px solid #99ffaa', color: 'var(--lab-hdr-txt)', padding:'1px 8px', cursor:'pointer', fontSize:'11px' }}>✕</button>
+          <button onClick={onClose} style={{ background:'none', border:'1px solid #99ffaa', color: 'var(--lab-hdr-txt)', padding:'1px 8px', cursor:'pointer', fontSize:'11px' }}>×</button>
         </div>
 
         <div style={{ overflowY:'auto', padding:'10px', display:'grid', gridTemplateColumns:'repeat(5, 1fr)', gap:'7px', background:'#e0ddd8' }}>

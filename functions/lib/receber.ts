@@ -28,7 +28,7 @@ export async function ensureReceber(db: D1Database) {
   }
   try { await db.prepare('CREATE INDEX IF NOT EXISTS idx_carnes_venda ON carnes(tenant_id, venda_id)').run(); } catch { /* ok */ }
   try { await db.prepare('CREATE INDEX IF NOT EXISTS idx_carnes_cliente ON carnes(tenant_id, cliente_id)').run(); } catch { /* ok */ }
-  // Carnês antigos: liga à venda pela descrição "Venda #0123 — boleto"
+  // Carnês antigos: liga à venda pela descrição "Venda #0123: boleto"
   try {
     await db.prepare(`
       UPDATE carnes SET venda_id = (
@@ -159,5 +159,5 @@ export async function baixarParcela(db: D1Database, tenant: string, parcelaId: s
   if (!p) return { ok: false as const, erro: 'Parcela não encontrada' };
   const quando = pago ? (data ? `${data}T12:00:00.000Z` : new Date().toISOString()) : null;
   await db.prepare('UPDATE carne_parcelas SET status = ?, pago_em = ? WHERE id = ? AND tenant_id = ?').bind(pago ? 'pago' : 'pendente', quando, parcelaId, tenant).run();
-  return { ok: true as const, mudou: (p.status === 'pago') !== pago, valor: p.valor, descricao: `${p.descricao || 'Carnê'} — parcela ${p.numero}/${p.num_parcelas}` };
+  return { ok: true as const, mudou: (p.status === 'pago') !== pago, valor: p.valor, descricao: `${p.descricao || 'Carnê'} · parcela ${p.numero}/${p.num_parcelas}` };
 }

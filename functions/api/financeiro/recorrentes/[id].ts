@@ -3,7 +3,7 @@ import type { Env } from '../../../lib/types';
 import { requireAuth, json } from '../../../lib/auth-middleware';
 import { ensureRecorrentes } from '../../../lib/recorrentes';
 
-// PUT — altera o molde (vale para as próximas contas; as já lançadas se editam na lista)
+// PUT: altera o molde (vale para as próximas contas; as já lançadas se editam na lista)
 //   { descricao, fornecedor, fornecedor_id, categoria, valor, dia, ajuste_fds, fixa, ativo }
 export const onRequestPut: PagesFunction<Env> = async ({ request, env, params }) => {
   const auth = await requireAuth(request, env);
@@ -32,7 +32,7 @@ export const onRequestPut: PagesFunction<Env> = async ({ request, env, params })
   }
 };
 
-// DELETE — encerra a recorrência (as contas já lançadas continuam na lista)
+// DELETE: encerra a recorrência (as contas já lançadas continuam na lista)
 export const onRequestDelete: PagesFunction<Env> = async ({ request, env, params }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;

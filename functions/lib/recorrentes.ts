@@ -65,7 +65,7 @@ function menosDias(data: string, n: number): string {
 
 type Molde = { id: string; descricao: string; fornecedor: string | null; fornecedor_id: string | null; categoria: string | null; valor: number; dia: number; ajuste_fds: string; ultima_base: string };
 
-// Lança as próximas contas dos moldes ativos (idempotente — pode chamar a cada abertura de tela)
+// Lança as próximas contas dos moldes ativos (idempotente: pode chamar a cada abertura de tela)
 export async function gerarRecorrentes(db: D1Database, tenantId: string): Promise<number> {
   await ensureRecorrentes(db);
   const hoje = hojeSP();

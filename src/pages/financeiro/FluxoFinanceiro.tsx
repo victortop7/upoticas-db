@@ -50,7 +50,7 @@ export default function FluxoFinanceiro() {
     { key: 'custom', label: 'Personalizado' },
   ];
 
-  const filterBtn = (active: boolean): React.CSSProperties => ({ padding: '7px 14px', fontSize: '13px', fontWeight: '500', border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`, borderRadius: '20px', cursor: 'pointer', background: active ? 'var(--primary)' : 'var(--surface)', color: active ? 'white' : 'var(--text-dim)' });
+  const filterBtn = (active: boolean): React.CSSProperties => ({ padding: '7px 14px', fontSize: '13px', fontWeight: '500', border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`, borderRadius: '6px', cursor: 'pointer', background: active ? 'var(--primary)' : 'var(--surface)', color: active ? 'white' : 'var(--text-dim)' });
 
   // Merge dias
   const allDias = Array.from(new Set([

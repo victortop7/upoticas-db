@@ -1,6 +1,6 @@
 import type { Env } from '../../lib/types';
 
-// POST /api/asaas/webhook — o Asaas chama esta URL quando um pagamento acontece.
+// POST /api/asaas/webhook: o Asaas chama esta URL quando um pagamento acontece.
 // Renova a licença no servidor, independente do app estar aberto ou não.
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
   // 1) Segurança: se um token estiver configurado, exige que o Asaas envie o mesmo

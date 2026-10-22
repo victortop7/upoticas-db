@@ -10,7 +10,7 @@ interface Dados {
 }
 
 const brl = (v: number) => (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-const fmtData = (s?: string) => { if (!s) return '—'; const d = s.split('T')[0].split('-'); return `${d[2]}/${d[1]}/${d[0]}`; };
+const fmtData = (s?: string) => { if (!s) return '-'; const d = s.split('T')[0].split('-'); return `${d[2]}/${d[1]}/${d[0]}`; };
 const FORMA: Record<string, string> = { dinheiro: 'Dinheiro', pix: 'Pix', credito: 'Crédito', debito: 'Débito', boleto: 'Boleto', outro: 'Outro' };
 
 const CSS = `
@@ -76,7 +76,7 @@ export default function RelatorioImprimir() {
         <span style={{ color: '#fff', fontWeight: 600, fontFamily: 'system-ui', fontSize: 14 }}>Relatório de Vendas por Vendedor</span>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
           <span style={{ color: '#9ca3af', fontSize: 11.5, fontFamily: 'system-ui' }}>Dica: na impressão, desmarque “Cabeçalhos e rodapés”</span>
-          <button onClick={() => window.print()} style={{ padding: '8px 18px', fontSize: 13.5, fontWeight: 700, background: '#16a34a', color: '#fff', border: 'none', borderRadius: 7, cursor: 'pointer' }}>🖨️ Imprimir / Salvar PDF</button>
+          <button onClick={() => window.print()} style={{ padding: '8px 18px', fontSize: 13.5, fontWeight: 700, background: '#16a34a', color: '#fff', border: 'none', borderRadius: 7, cursor: 'pointer' }}>Imprimir / Salvar PDF</button>
         </div>
       </div>
 
@@ -100,7 +100,7 @@ export default function RelatorioImprimir() {
           <div className="kpi"><div className="l">Vendedores</div><div className="v num">{d.por_vendedor.length}</div></div>
         </div>
 
-        {/* Resumo por vendedor — ocupa a página 1 com o que importa */}
+        {/* Resumo por vendedor · ocupa a página 1 com o que importa */}
         <h2>Resumo por vendedor</h2>
         <table className="resumo">
           <thead><tr>
@@ -116,7 +116,7 @@ export default function RelatorioImprimir() {
                   <td className="r num">{v.qtd}</td>
                   <td className="r num" style={{ fontWeight: 700 }}>{brl(v.total)}</td>
                   <td className="r num">{brl(v.ticket_medio)}</td>
-                  <td className="r num" style={{ color: v.a_receber > 0 ? '#b45309' : '#9ca3af' }}>{v.a_receber > 0 ? brl(v.a_receber) : '—'}</td>
+                  <td className="r num" style={{ color: v.a_receber > 0 ? '#b45309' : '#9ca3af' }}>{v.a_receber > 0 ? brl(v.a_receber) : '-'}</td>
                   <td className="num"><span className="bar"><i style={{ width: `${(v.total / maxTotal) * 100}%` }} /></span>{pct.toFixed(1)}%</td>
                 </tr>
               );
@@ -124,7 +124,7 @@ export default function RelatorioImprimir() {
           </tbody>
         </table>
 
-        {/* Detalhamento — flui entre as páginas sem deixar buraco */}
+        {/* Detalhamento · flui entre as páginas sem deixar buraco */}
         <h2 style={{ marginTop: 20 }}>Detalhamento das vendas</h2>
         {d.por_vendedor.length === 0 && <div style={{ color: '#6b7280', padding: 12 }}>Nenhuma venda no período.</div>}
         {d.por_vendedor.map(v => (

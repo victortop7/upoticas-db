@@ -13,7 +13,7 @@ function headers(env: Env) {
   return { 'access_token': env.ASAAS_API_KEY as string, 'Content-Type': 'application/json', 'User-Agent': 'ConnectVision' };
 }
 
-// ── POST /api/asaas/pix — gera cobrança Pix (QR + copia e cola) ──────────────
+// ── POST /api/asaas/pix: gera cobrança Pix (QR + copia e cola) ──────────────
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
   const auth = await requireAuthBasic(request, env);
   if (auth instanceof Response) return auth;
@@ -62,8 +62,8 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     const valor = valorMensal > 0 ? valorMensal : (valorBase + extras * valorExtra);
     const due = hojeSP();
     const desc = valorMensal > 0
-      ? `Mensalidade — ${tenant.nome}`
-      : (extras > 0 ? `Connect Vision — Mensalidade (${limite} tablets)` : 'Connect Vision — Mensalidade');
+      ? `Mensalidade · ${tenant.nome}`
+      : (extras > 0 ? `Connect Vision · Mensalidade (${limite} tablets)` : 'Connect Vision · Mensalidade');
     const pRes = await fetch(`${base}/payments`, {
       method: 'POST', headers: H,
       body: JSON.stringify({
@@ -95,7 +95,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   }
 };
 
-// ── GET /api/asaas/pix?paymentId=xxx — consulta status do pagamento ──────────
+// ── GET /api/asaas/pix?paymentId=xxx: consulta status do pagamento ──────────
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   const auth = await requireAuthBasic(request, env);
   if (auth instanceof Response) return auth;

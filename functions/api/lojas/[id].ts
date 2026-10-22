@@ -3,7 +3,7 @@ import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
 import { ensureLojaCols } from '../../lib/lojas';
 
-// PATCH /api/lojas/:id — renomeia/edita a loja (admin)
+// PATCH /api/lojas/:id: renomeia/edita a loja (admin)
 export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;
@@ -16,7 +16,7 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
   return json({ ok: true });
 };
 
-// DELETE /api/lojas/:id — desativa a loja (admin). Não apaga dados; só some da lista.
+// DELETE /api/lojas/:id: desativa a loja (admin). Não apaga dados; só some da lista.
 export const onRequestDelete: PagesFunction<Env> = async ({ request, env, params }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;

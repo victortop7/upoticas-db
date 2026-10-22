@@ -29,9 +29,9 @@ const TIPOS_OS = [
 ];
 
 function statusLabel(s: string) { return STATUS_FLOW.find(x => x.value === s)?.label ?? s; }
-function brl(v: number) { return v > 0 ? `R$ ${v.toFixed(2).replace('.', ',')}` : '—'; }
+function brl(v: number) { return v > 0 ? `R$ ${v.toFixed(2).replace('.', ',')}` : '-'; }
 function fmtDate(s: string | null) {
-  if (!s) return '—';
+  if (!s) return '-';
   const [y, m, d] = s.slice(0, 10).split('-');
   return `${d}/${m}/${y}`;
 }
@@ -100,7 +100,7 @@ export default function LabOrdens() {
       {/* Header */}
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'8px', flexWrap:'wrap', gap:'6px' }}>
         <div style={{ background:R.hdr, color:R.hdrTxt, padding:'5px 14px', fontSize:'13px', fontWeight:'700', letterSpacing:'1px', border:`2px outset ${R.hdrBdr}` }}>
-          ORDENS DE SERVIÇO — {ordens.length} registro(s)
+          ORDENS DE SERVIÇO · {ordens.length} registro(s)
         </div>
         <div style={{ display:'flex', gap:'6px', alignItems:'center', flexWrap:'wrap' }}>
           <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar OS#, ref., cont. interno..." style={{ ...INP, width:'220px' }} />
@@ -176,7 +176,7 @@ export default function LabOrdens() {
         {(busca || oticaId || nomeOtica || codOtica || refOtica || numOS || dataIni || dataFim || tipo || status) && (
           <button onClick={() => { setBusca(''); setOticaId(''); setNomeOtica(''); setCodOtica(''); setRefOtica(''); setNumOS(''); setDataIni(''); setDataFim(''); setTipo(''); setStatus(''); }}
             style={{ padding:'3px 10px', fontSize:'11px', fontWeight:'700', background:'#ffcccc', color:'#880000', border:`1px outset #cc0000`, cursor:'pointer', fontFamily:'inherit', alignSelf:'flex-end' }}>
-            ✕ LIMPAR
+            LIMPAR
           </button>
         )}
       </div>
@@ -221,13 +221,13 @@ export default function LabOrdens() {
                     {o.otica_nome}
                   </td>
                   <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt }}>
-                    {o.ref_otica ?? '—'}
+                    {o.ref_otica ?? '-'}
                   </td>
                   <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt }}>
-                    {o.cont_interno ?? '—'}
+                    {o.cont_interno ?? '-'}
                   </td>
                   <td style={{ padding:'6px 10px', fontSize:'11px', color:R.txt }}>
-                    {o.vendedor ?? '—'}
+                    {o.vendedor ?? '-'}
                   </td>
                   <td style={{ padding:'6px 10px', fontFamily:"'Courier New', monospace", fontSize:'12px', color:R.txt, fontWeight:'700', textAlign:'right', whiteSpace:'nowrap' }}>
                     {brl(o.total)}

@@ -7,7 +7,7 @@ function isAdmin(request: Request, env: Env): boolean {
   return !!env.ADMIN_SECRET && auth.replace(/^Bearer\s+/i, '').trim() === env.ADMIN_SECRET.trim();
 }
 
-// POST /api/admin/senha — altera a senha de qualquer usuário (por email), acesso super-admin.
+// POST /api/admin/senha: altera a senha de qualquer usuário (por email), acesso super-admin.
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
   if (!isAdmin(request, env)) return json({ error: 'Não autorizado' }, 401);
 

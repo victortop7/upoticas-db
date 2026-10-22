@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 
-// Paleta compartilhada do Connect Lab — aponta para variáveis CSS.
+// Paleta compartilhada do Connect Lab: aponta para variáveis CSS.
 // O modo noturno troca as variáveis de uma vez (via atributo data-lab-theme no <html>),
 // então TODAS as páginas que usam este R mudam juntas.
 // Cobre os dois padrões de nome de chave usados nas páginas (curtos e longos).

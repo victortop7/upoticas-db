@@ -76,7 +76,7 @@ export default function LabOticaDetalhe() {
       entregue:    { label:'ENTREGUE',     color:'#555' },
       cancelado:   { label:'CANCELADO',    color:'#cc0000' },
     };
-    function fd(s: string | null) { return s ? s.slice(0,10).split('-').reverse().join('/') : '—'; }
+    function fd(s: string | null) { return s ? s.slice(0,10).split('-').reverse().join('/') : '-'; }
     function mb(v: number) { return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
 
     // Carrega serviços detalhados
@@ -110,7 +110,7 @@ export default function LabOticaDetalhe() {
             <td style="padding:3px 8px;font-size:10px;color:#333" colspan="2">${s.descricao||''}</td>
             <td style="padding:3px 8px;font-family:monospace;font-size:10px;text-align:center">${Number(s.qtd||0).toFixed(2)}</td>
             <td style="padding:3px 8px;font-family:monospace;font-size:10px;text-align:right">${mb(s.valor_unit||0)}</td>
-            <td style="padding:3px 8px;font-family:monospace;font-size:10px;text-align:center">${s.perc_desc>0?Number(s.perc_desc).toFixed(1)+'%':'—'}</td>
+            <td style="padding:3px 8px;font-family:monospace;font-size:10px;text-align:center">${s.perc_desc>0?Number(s.perc_desc).toFixed(1)+'%':'-'}</td>
             <td style="padding:3px 8px;font-family:monospace;font-size:10px;text-align:right;font-weight:700">${mb(s.total||0)}</td>
           </tr>`).join('')
         : `<tr style="background:#f0ede8"><td colspan="7" style="padding:3px 28px;font-size:10px;color:#aaa;font-style:italic">Sem serviços registrados</td></tr>`;
@@ -119,8 +119,8 @@ export default function LabOticaDetalhe() {
         <tr style="background:${G};page-break-inside:avoid">
           <td style="padding:5px 8px;font-family:monospace;font-weight:900;color:#fff;font-size:12px">#${String(o.numero).padStart(4,'0')}</td>
           <td style="padding:5px 8px;font-family:monospace;color:#cff0d6;font-size:10px">${fd(o.created_at)}</td>
-          <td style="padding:5px 8px;font-family:monospace;color:#cff0d6;font-size:10px">Ref: ${o.ref_otica||'—'}</td>
-          <td style="padding:5px 8px;font-family:monospace;color:#cff0d6;font-size:10px">CI: ${o.cont_interno||'—'}</td>
+          <td style="padding:5px 8px;font-family:monospace;color:#cff0d6;font-size:10px">Ref: ${o.ref_otica||'-'}</td>
+          <td style="padding:5px 8px;font-family:monospace;color:#cff0d6;font-size:10px">CI: ${o.cont_interno||'-'}</td>
           <td colspan="2" style="padding:5px 8px;font-size:10px;font-weight:700;color:${st.color};background:#fff">${st.label}</td>
           <td style="padding:5px 8px;font-family:monospace;font-weight:900;color:#fff;text-align:right">${mb(o.total||0)}</td>
         </tr>
@@ -133,13 +133,13 @@ export default function LabOticaDetalhe() {
     // barra de ações (não sai na impressão)
     const toolbar = `
       <div class="noprint" style="position:sticky;top:0;display:flex;gap:8px;justify-content:flex-end;align-items:center;padding:10px 12px;background:#0f2a1c;margin:-12px -12px 12px">
-        <span style="color:#cff0d6;font-size:12px;margin-right:auto;font-weight:600">Relatório — ${nomeOtica}</span>
-        <button onclick="window.print()" style="padding:8px 16px;font-size:13px;font-weight:700;background:#16a34a;color:#fff;border:none;border-radius:8px;cursor:pointer">⬇ Baixar PDF / Imprimir</button>
+        <span style="color:#cff0d6;font-size:12px;margin-right:auto;font-weight:600">Relatório · ${nomeOtica}</span>
+        <button onclick="window.print()" style="padding:8px 16px;font-size:13px;font-weight:700;background:#16a34a;color:#fff;border:none;border-radius:8px;cursor:pointer">Baixar PDF / Imprimir</button>
         <button onclick="window.close()" style="padding:8px 14px;font-size:13px;background:transparent;color:#cff0d6;border:1px solid #2f6b45;border-radius:8px;cursor:pointer">Fechar</button>
       </div>`;
 
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
-      <title>Relatório — ${nomeOtica}</title>
+      <title>Relatório · ${nomeOtica}</title>
       <style>
         *{box-sizing:border-box}
         body{margin:12px;font-family:Arial,sans-serif;font-size:11px;color:#000;background:#fff}
@@ -155,7 +155,7 @@ export default function LabOticaDetalhe() {
         <div style="font-size:16px;font-weight:900;text-transform:uppercase;color:${G}">${nomeOtica}</div>
         <div style="font-size:11px;color:#333;margin-top:2px">RELATÓRIO DETALHADO DE ORDENS DE SERVIÇO</div>
         <div style="font-size:10px;color:#666">Período: ${periodo} &nbsp;|&nbsp; ${lista.length} OS &nbsp;|&nbsp; Total: ${mb(totalGeral)}</div>
-        <div style="font-size:9px;color:#aaa">Emitido em ${new Date().toLocaleString('pt-BR')} — Connect LAB</div>
+        <div style="font-size:9px;color:#aaa">Emitido em ${new Date().toLocaleString('pt-BR')} · Connect LAB</div>
       </div>
       <table>
         <thead class="hdr"><tr>
@@ -165,7 +165,7 @@ export default function LabOticaDetalhe() {
         <tbody>${blocos}</tbody>
         <tfoot>
           <tr style="background:${G}">
-            <td colspan="9" style="padding:6px 8px;font-weight:900;color:#fff;font-size:12px">TOTAL GERAL — ${lista.length} OS</td>
+            <td colspan="9" style="padding:6px 8px;font-weight:900;color:#fff;font-size:12px">TOTAL GERAL · ${lista.length} OS</td>
             <td style="padding:6px 8px;font-family:monospace;font-weight:900;color:#fff;text-align:right;font-size:13px">${mb(totalGeral)}</td>
           </tr>
         </tfoot>
@@ -222,7 +222,7 @@ export default function LabOticaDetalhe() {
       }
       setListasAtivas(Math.max(2, ativas));
     }).catch(() => {});
-    // Vendedores cadastrados — para o select do cadastro da ótica
+    // Vendedores cadastrados: para o select do cadastro da ótica
     api.get<{ id: string; codigo: number; nome: string; pct_comissao?: number }[]>('/lab/vendedores')
       .then(setVendedores).catch(() => {});
   }, []);
@@ -302,7 +302,7 @@ export default function LabOticaDetalhe() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
               <div style={{ fontSize: '10px', color: R.dim, fontWeight: '700', textTransform: 'uppercase' }}>Data Cadastro</div>
               <div style={{ fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim }}>
-                {otica.created_at ? new Date(otica.created_at).toLocaleDateString('pt-BR') : '—'}
+                {otica.created_at ? new Date(otica.created_at).toLocaleDateString('pt-BR') : '-'}
               </div>
               <div style={{ fontSize: '10px', color: R.dim, fontWeight: '700', textTransform: 'uppercase', marginTop: '2px' }}>Atualização</div>
               <div style={{ fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim }}>{new Date().toLocaleDateString('pt-BR')}</div>
@@ -362,7 +362,7 @@ export default function LabOticaDetalhe() {
                   const v = vendedores.find(x => x.id === vid);
                   if (v && v.pct_comissao != null && !form.comissao) setF('comissao', v.pct_comissao);
                 }} style={INP}>
-                  <option value="">— Vendedor</option>
+                  <option value="">Vendedor</option>
                   {vendedores.map(v => <option key={v.id} value={v.id}>{v.codigo != null ? `${String(v.codigo).padStart(2, '0')} · ` : ''}{v.nome}</option>)}
                 </select>
               </div>
@@ -399,7 +399,7 @@ export default function LabOticaDetalhe() {
             <div style={{ marginBottom: '6px' }}>
               <label style={LBL}>Classificação</label>
               <select value={form.classificacao_cli ?? ''} onKeyDown={nextField} onChange={e => setF('classificacao_cli', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
-                <option value="">—</option>
+                <option value="">-</option>
                 <option value="A">A</option><option value="B">B</option>
                 <option value="C">C</option><option value="D">D</option>
                 <option value="E">E - Especial</option>
@@ -408,7 +408,7 @@ export default function LabOticaDetalhe() {
             <div style={{ marginBottom: '6px' }}>
               <label style={LBL}>Tipo de Fechamento</label>
               <select value={form.tipo_fechamento ?? ''} onKeyDown={nextField} onChange={e => setF('tipo_fechamento', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
-                <option value="">—</option>
+                <option value="">-</option>
                 <option value="1">1 - Mensal</option>
                 <option value="2">2 - Quinzenal</option>
                 <option value="3">3 - Semanal</option>
@@ -418,7 +418,7 @@ export default function LabOticaDetalhe() {
             <div style={{ marginBottom: '6px' }}>
               <label style={LBL}>Tipo de Faturamento</label>
               <select value={form.tipo_faturamento ?? ''} onKeyDown={nextField} onChange={e => setF('tipo_faturamento', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
-                <option value="">—</option>
+                <option value="">-</option>
                 <option value="1">1 - Normal</option>
                 <option value="2">2 - Contrato</option>
                 <option value="3">3 - Convênio</option>
@@ -436,7 +436,7 @@ export default function LabOticaDetalhe() {
             <div style={{ marginBottom: '6px' }}>
               <label style={LBL}>Tipo de ICMS</label>
               <select value={form.tipo_icms ?? ''} onKeyDown={nextField} onChange={e => setF('tipo_icms', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
-                <option value="">—</option>
+                <option value="">-</option>
                 <option value="1">1 - Contribuinte</option>
                 <option value="2">2 - Não Contribuinte</option>
                 <option value="3">3 - Isento</option>
@@ -460,7 +460,7 @@ export default function LabOticaDetalhe() {
               <div style={{ marginBottom: '6px' }}>
                 <label style={LBL}>Situação</label>
                 <select value={form.situacao ?? ''} onKeyDown={nextField} onChange={e => setF('situacao', e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
-                  <option value="">—</option>
+                  <option value="">-</option>
                   <option value="A">A - Ativo</option>
                   <option value="I">I - Inativo</option>
                   <option value="B">B - Bloqueado</option>
@@ -604,7 +604,7 @@ export default function LabOticaDetalhe() {
     );
   }
 
-  // ===== MODO VISUALIZAÇÃO — RETRO =====
+  // ===== MODO VISUALIZAÇÃO: RETRO =====
   const RV = { bg:R.bg, panel:R.panel, alt:R.alt, bdr:'var(--lab-bdr)', hdr:'var(--lab-hdr)', hdrTxt:'#ccffcc', hdrBdr:R.accent, txt:R.txt };
   const RINP: React.CSSProperties = { padding:'5px 8px', fontSize:'12px', background:R.inp, border:'1px solid #999', color:R.txt, outline:'none', fontFamily:"'Courier New', monospace", boxSizing:'border-box' };
 
@@ -617,7 +617,7 @@ export default function LabOticaDetalhe() {
   };
 
   function fmtD(s: string | null) {
-    if (!s) return '—';
+    if (!s) return '-';
     return s.slice(0,10).split('-').reverse().join('/');
   }
 
@@ -716,24 +716,24 @@ export default function LabOticaDetalhe() {
             {temFiltro && (
               <button onClick={() => { setFiltroOS(''); setFiltroDataIni(''); setFiltroDataFim(''); }}
                 style={{ padding:'4px 10px', fontSize:'11px', fontWeight:'700', background:RV.alt, color:R.accent, border:`1px outset ${RV.bdr}`, cursor:'pointer', fontFamily:'inherit' }}>
-                ✕ LIMPAR
+                LIMPAR
               </button>
             )}
             <div style={{ display:'flex', gap:'6px', marginLeft:'auto' }}>
               <button onClick={() => visualizarRelatorio(id!, otica.nome, ordensFiltradas)}
                 style={{ padding:'4px 12px', fontSize:'11px', fontWeight:'700', background:RV.alt, color:R.accent, border:`1px solid ${RV.bdr}`, borderRadius:'5px', cursor:'pointer', fontFamily:'inherit' }}>
-                👁 VISUALIZAR
+                VISUALIZAR
               </button>
               <button onClick={() => baixarRelatorioPDF(id!, otica.nome, ordensFiltradas)}
                 style={{ padding:'4px 12px', fontSize:'11px', fontWeight:'700', background:R.accent, color:'#fff', border:'none', borderRadius:'5px', cursor:'pointer', fontFamily:'inherit' }}>
-                ⬇ BAIXAR PDF
+                BAIXAR PDF
               </button>
             </div>
           </div>
 
           {/* Tabela */}
           <div style={{ background:RV.hdr, color:RV.hdrTxt, padding:'4px 10px', fontSize:'11px', fontWeight:'700', letterSpacing:'0.5px', border:`2px outset ${RV.hdrBdr}`, borderBottom:'none' }}>
-            HISTÓRICO DE ORDENS — {ordensFiltradas.length} OS{temFiltro ? ` (filtrado de ${ordens.length})` : ''}
+            HISTÓRICO DE ORDENS · {ordensFiltradas.length} OS{temFiltro ? ` (filtrado de ${ordens.length})` : ''}
           </div>
           <div style={{ flex:1, overflowY:'auto', border:`2px inset ${RV.bdr}` }}>
             {ordensFiltradas.length === 0 ? (
@@ -760,13 +760,13 @@ export default function LabOticaDetalhe() {
                         onMouseLeave={e => (e.currentTarget.style.background= i%2===0 ? RV.panel : RV.alt)}>
                         <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'900', color:R.accent }}>#{String(o.numero).padStart(4,'0')}</td>
                         <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt, whiteSpace:'nowrap' }}>{fmtD(o.created_at)}</td>
-                        <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt }}>{o.ref_otica||'—'}</td>
-                        <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt }}>{o.cont_interno||'—'}</td>
+                        <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt }}>{o.ref_otica||'-'}</td>
+                        <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt }}>{o.cont_interno||'-'}</td>
                         <td style={{ padding:'6px 8px', fontSize:'11px', color:R.txt, textAlign:'center' }}>{o.servicos_count}</td>
                         <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'12px', fontWeight:'700', color:RV.txt, textAlign:'right', whiteSpace:'nowrap' }}>{brl(o.total)}</td>
                         <td style={{ padding:'6px 8px', fontFamily:"'Courier New', monospace", fontSize:'11px', color:R.txt, whiteSpace:'nowrap' }}>{fmtD(o.previsao_entrega)}</td>
                         <td style={{ padding:'6px 8px', fontSize:'11px', color:R.txt, textTransform:'capitalize', whiteSpace:'nowrap' }}>
-                          {o.status==='entregue' ? 'Entregue' : o.status==='pronto' ? 'Pronto' : (o.setor_atual ? String(o.setor_atual).replace('_',' ') : '—')}
+                          {o.status==='entregue' ? 'Entregue' : o.status==='pronto' ? 'Pronto' : (o.setor_atual ? String(o.setor_atual).replace('_',' ') : '-')}
                         </td>
                         <td style={{ padding:'6px 8px' }}>
                           <span style={{ fontSize:'10px', fontWeight:'700', color:st.color, background:st.bg, padding:'2px 6px', border:`1px solid ${st.color}`, whiteSpace:'nowrap' }}>{st.label}</span>

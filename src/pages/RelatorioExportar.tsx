@@ -86,7 +86,7 @@ function Previa({ t }: { t: TabelaRel }) {
           )}
         </tbody>
       </table>
-      {t.linhas.length > LIM && <div style={{ fontSize: 12, color: 'var(--text-muted)', padding: '8px 0' }}>Prévia mostrando {LIM} de {t.linhas.length} linhas — a exportação sai completa.</div>}
+      {t.linhas.length > LIM && <div style={{ fontSize: 12, color: 'var(--text-muted)', padding: '8px 0' }}>Prévia mostrando {LIM} de {t.linhas.length} linhas · a exportação sai completa.</div>}
     </div>
   );
 }
@@ -206,7 +206,7 @@ export default function RelatorioExportar() {
 
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 20 }}>
         <button type="button" onClick={gerar} disabled={loading} style={{ ...btn('var(--primary)'), padding: '11px 24px', fontSize: 14.5 }}>
-          {loading ? 'Gerando…' : '📊 Gerar relatório'}
+          {loading ? 'Gerando…' : 'Gerar relatório'}
         </button>
         {erro && <span style={{ color: 'var(--red)', fontSize: 13.5 }}>{erro}</span>}
       </div>
@@ -220,8 +220,8 @@ export default function RelatorioExportar() {
               {dados.canceladas.qtd > 0 && <> · <span style={{ color: '#d97706' }}>{dados.canceladas.qtd} cancelada(s): #{dados.canceladas.numeros.join(', #')}</span></>}
             </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <button type="button" onClick={exportarPDF} style={btn('#dc2626')}>📄 PDF</button>
-              <button type="button" onClick={exportarXLSX} style={btn('#16a34a')}>📗 Excel (XLSX)</button>
+              <button type="button" onClick={exportarPDF} style={btn('#dc2626')}>PDF</button>
+              <button type="button" onClick={exportarXLSX} style={btn('#16a34a')}>Excel (XLSX)</button>
               {temSecao('vendas') && <button type="button" onClick={() => exportarCSV('vendas')} style={btn('var(--text-dim)', false)}>CSV vendas</button>}
               {temSecao('pagamentos') && <button type="button" onClick={() => exportarCSV('pagamentos')} style={btn('var(--text-dim)', false)}>CSV pagamentos</button>}
               {temSecao('itens') && <button type="button" onClick={() => exportarCSV('itens')} style={btn('var(--text-dim)', false)}>CSV itens</button>}

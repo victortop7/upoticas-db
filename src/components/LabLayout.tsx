@@ -7,6 +7,7 @@ import PixLicenca from './PixLicenca';
 import { applyLabTheme } from '../lib/labTheme';
 import LabIcon, { type IconName } from './LabIcon';
 import { podeModulo, podeDashboard, homeLab } from '../lib/labPerms';
+import Icone from './Icone';
 
 type ModuleKey = 'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'|'K'|'L';
 type Opcao = { num: number; label: string; to?: string; disabled?: boolean };
@@ -122,7 +123,7 @@ export default function LabLayout() {
     return () => window.removeEventListener('labtheme', handler);
   }, []);
 
-  // Aplica o tema (claro/escuro) no <html> — faz TODAS as páginas do lab mudarem juntas
+  // Aplica o tema (claro/escuro) no <html>: faz TODAS as páginas do lab mudarem juntas
   useEffect(() => { applyLabTheme(dark); }, [dark]);
 
   useEffect(() => {
@@ -138,7 +139,7 @@ export default function LabLayout() {
     return () => window.removeEventListener('keydown', onKey);
   }, [altF1, activeModule, navigate]);
 
-  // Auto-detect module from route — always update, even to null
+  // Auto-detect module from route: always update, even to null
   useEffect(() => {
     setActiveModule(detectModule(location.pathname));
   }, [location.pathname]);
@@ -206,7 +207,7 @@ export default function LabLayout() {
       {/* ── AVISO DE VENCIMENTO ── */}
       {!licStatus.blocked && !licStatus.expired && licStatus.daysLeft !== null && licStatus.daysLeft <= 3 && (
         <div style={{ background: licStatus.daysLeft === 1 ? 'var(--lab-accent)' : licStatus.daysLeft === 2 ? '#aa4400' : '#886600', color: '#fff', padding: '5px 16px', fontSize: '12px', fontWeight: '700', textAlign: 'center', letterSpacing: '1px', fontFamily: "'Courier New', monospace", flexShrink: 0 }}>
-          ⚠ ATENÇÃO: {licStatus.daysLeft === 1 ? 'ÚLTIMO DIA' : `${licStatus.daysLeft} DIAS RESTANTES`} — ENTRE EM CONTATO PARA RENOVAR SUA LICENÇA ⚠
+          ATENÇÃO: {licStatus.daysLeft === 1 ? 'ÚLTIMO DIA' : `${licStatus.daysLeft} DIAS RESTANTES`} · ENTRE EM CONTATO PARA RENOVAR SUA LICENÇA
         </div>
       )}
 
@@ -226,7 +227,7 @@ export default function LabLayout() {
             transition: 'width .18s ease, box-shadow .18s ease',
           }}>
 
-            {/* topo — logo / nome do laboratório */}
+            {/* topo · logo / nome do laboratório */}
             <div onClick={() => { setRailOpen(false); setActiveModule(null); navigate('/lab/dashboard'); }}
               title="Painel principal"
               style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 0 10px 16px', cursor: 'pointer', borderBottom: `1px solid ${modBorder}`, flexShrink: 0, userSelect: 'none' }}>
@@ -263,7 +264,7 @@ export default function LabLayout() {
               })}
             </div>
 
-            {/* rodapé — busca, usuário e sair */}
+            {/* rodapé · busca, usuário e sair */}
             <div style={{ borderTop: `1px solid ${modBorder}`, flexShrink: 0, paddingBottom: '4px' }}>
               <div onClick={() => setAltF1(true)} title="Busca rápida (ALT+F1)"
                 style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 0 9px 16px', cursor: 'pointer', color: 'var(--lab-hdr-txt)', userSelect: 'none' }}
@@ -272,13 +273,13 @@ export default function LabLayout() {
                 <span style={{ width: '20px', display: 'flex', justifyContent: 'center', flexShrink: 0 }}><LabIcon name="search" size={16} /></span>
                 <span style={{ flex: 1, whiteSpace: 'nowrap', opacity: railOpen ? 1 : 0, transition: 'opacity .15s', fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', textTransform: 'uppercase' }}>Buscar (ALT+F1)</span>
               </div>
-              <div onClick={handleLogout} title={`Sair — ${usuario?.nome ?? ''}`}
+              <div onClick={handleLogout} title={`Sair · ${usuario?.nome ?? ''}`}
                 style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 0 9px 16px', cursor: 'pointer', color: 'var(--lab-hdr-txt)', userSelect: 'none' }}
                 onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.14)'; }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
                 <span style={{ width: '20px', display: 'flex', justifyContent: 'center', flexShrink: 0 }}><LabIcon name="power" size={16} /></span>
                 <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', opacity: railOpen ? 1 : 0, transition: 'opacity .15s', fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', textTransform: 'uppercase' }}>
-                  Sair — {usuario?.nome}
+                  Sair · {usuario?.nome}
                 </span>
               </div>
           </div>
@@ -325,7 +326,7 @@ export default function LabLayout() {
       {(licStatus.blocked || licStatus.expired) && !isAdminPage && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.88)', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: "'Courier New', monospace" }}>
           <div style={{ background: 'linear-gradient(180deg,#001a00,#002a00)', border: '3px outset var(--lab-accent)', borderRadius: '4px', padding: '40px 60px', maxWidth: '500px', textAlign: 'center' }}>
-            <div style={{ fontSize: '48px', marginBottom: '12px' }}>🔒</div>
+            <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center' }}><Icone nome="cadeado" size={44} color="var(--lab-accent)" /></div>
             <div style={{ color: '#44cc55', fontSize: '20px', fontWeight: '700', letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '16px' }}>
               {licStatus.blocked ? 'SISTEMA BLOQUEADO' : 'LICENÇA EXPIRADA'}
             </div>
@@ -333,7 +334,7 @@ export default function LabLayout() {
               {licStatus.message}
             </div>
             <div style={{ color: 'var(--lab-hdr-txt)', fontSize: '12px', padding: '10px', background: 'rgba(0,85,0,0.3)', border: '1px solid var(--lab-accent)', borderRadius: '2px', marginBottom: '16px' }}>
-              Pague a mensalidade pelo Pix abaixo — o acesso é liberado automaticamente.
+              Pague a mensalidade pelo Pix abaixo · o acesso é liberado automaticamente.
             </div>
             <div style={{ marginBottom: '16px' }}><PixLicenca /></div>
             <button onClick={handleLogout}

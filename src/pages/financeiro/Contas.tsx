@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '../../lib/api';
+import Icone from '../../components/Icone';
 
 interface Conta { id: string; nome: string; tipo: string; saldo_inicial: number; saldo: number; ativo: boolean; }
 
-const TIPO_ICON: Record<string, string> = { caixa: '🏪', banco: '🏦', cofre: '🔒' };
+const TIPO_ICON: Record<string, string> = { caixa: 'caixa', banco: 'contas', cofre: 'cofre' };
 const TIPO_LABEL: Record<string, string> = { caixa: 'Caixa', banco: 'Banco', cofre: 'Cofre' };
 
 function brl(v: number) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
@@ -104,7 +105,7 @@ export default function Contas() {
             <div key={c.id} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                 <div>
-                  <span style={{ fontSize: '22px' }}>{TIPO_ICON[c.tipo] || '💰'}</span>
+                  <Icone nome={TIPO_ICON[c.tipo] || 'carteira'} size={22} color="var(--text-dim)" />
                   <p style={{ margin: '4px 0 0', fontSize: '15px', fontWeight: '600', color: 'var(--text)' }}>{c.nome}</p>
                   <p style={{ margin: '2px 0 0', fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{TIPO_LABEL[c.tipo]}</p>
                 </div>

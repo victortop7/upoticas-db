@@ -13,7 +13,7 @@ const SUPORTE_WA = '5585991507887';
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 type TipoLenteId = 'multifocais' | 'visao-simples' | 'ocupacionais' | 'bifocais';
 
-// Cada MODELO tem variantes de material — o material é escolhido no painel da direita.
+// Cada MODELO tem variantes de material: o material é escolhido no painel da direita.
 interface Variante {
   material: string;           // Orma / Airwear / Stylis 1.67 / 1.50 / Poly ...
   preco: number;              // PVC do PAR (como vem na tabela). 12x = preco/12
@@ -31,7 +31,7 @@ interface Produto {
 }
 interface Tabela { id: string; nome: string; marca: string; cor: string; logo?: string; tipos: TipoLenteId[]; produtos: Produto[]; }
 
-// helper — preço é o PAR; o 12x sai de preco/12
+// helper: preço é o PAR; o 12x sai de preco/12
 const P = (nome: string, vars: Variante[], o: Partial<Produto> = {}): Produto => ({
   nome, vars, campo: o.campo, superficie: o.superficie ?? 'Digital', foto: o.foto ?? 'Incolor',
   codigo: o.codigo, campoImg: o.campoImg,
@@ -52,9 +52,9 @@ const TIPO_LABEL: Record<TipoLenteId, string> = {
   'multifocais': 'multifocal', 'visao-simples': 'visão simples', 'ocupacionais': 'ocupacional', 'bifocais': 'bifocal',
 };
 
-// ─── Catálogo — dados REAIS da tabela Unilab/Essilor (vigência 06/04 a 31/07/2026) ─
+// ─── Catálogo: dados REAIS da tabela Unilab/Essilor (vigência 06/04 a 31/07/2026) ─
 // Preço = PVC do PAR. Só modelos INCOLOR e SEM TRATAMENTO (coluna Verniz HC / Sem AR).
-// Cada MODELO tem suas variantes de material — o material é escolhido no painel da direita.
+// Cada MODELO tem suas variantes de material: o material é escolhido no painel da direita.
 // Famílias "sempre com Crizal" (XR Series, Physio, Eyezen) não têm versão sem AR:
 // nelas usamos a entrada mais barata e o tratamento fica anotado.
 const CIL6 = 'Cil. até -6,00';
@@ -119,7 +119,7 @@ const TABELAS: Tabela[] = [
       ], { campo: 'Varilux Liberty', superficie: 'Tradicional', campoImg: 'LIBERTY.png' }),
     ],
   },
-  // ══════════════ VARILUX — OCUPACIONAIS ══════════════
+  // ══════════════ VARILUX: OCUPACIONAIS ══════════════
   {
     id: 'varilux-oc', nome: 'Essilor · Unilab 04/2026', marca: 'VARILUX', cor: '#5b2a86',
     logo: '/logo das lentes/varilux-logo-1.png', tipos: ['ocupacionais'],
@@ -216,7 +216,7 @@ const TABELAS: Tabela[] = [
       ], { campo: 'Eyezen Start' }),
     ],
   },
-  // ══════════════ LENTES ESSILOR — VISÃO SIMPLES ══════════════
+  // ══════════════ LENTES ESSILOR: VISÃO SIMPLES ══════════════
   {
     id: 'essilor-vs', nome: 'Essilor · Unilab 04/2026', marca: 'ESSILOR', cor: '#0a4d8c', tipos: ['visao-simples'],
     produtos: [
@@ -296,7 +296,7 @@ const TABELAS: Tabela[] = [
   { id: 'rodenstock-mf', nome: 'Tabela em breve', marca: 'RODENSTOCK', cor: '#003057', logo: '/logo das lentes/rodenstock.png', tipos: ['multifocais'], produtos: [] },
 ];
 
-// ─── Ambientes de fundo (public/ambientes/{slug}.jpg) — arrasta p/ trocar (estilo story) ─
+// ─── Ambientes de fundo (public/ambientes/{slug}.jpg): arrasta p/ trocar (estilo story) ─
 // Começa no Olho. (Paisagens antigas seguem guardadas em /paisagens/.)
 const AMBIENTES: { slug: string; label: string }[] = [
   { slug: 'olho', label: 'Olho' },
@@ -348,7 +348,7 @@ export default function VendaIndicativa() {
   }
 
   // ══════════════════════════════════════════════════════════════════════════
-  // TELA 0 — AVISO (usuários que não são o administrador)
+  // TELA 0: AVISO (usuários que não são o administrador)
   // ══════════════════════════════════════════════════════════════════════════
   if (!isAdmin) {
     const msg = encodeURIComponent('Olá! Quero cadastrar as lentes da minha ótica na Tabela Digital do Connect Vision.');
@@ -356,7 +356,7 @@ export default function VendaIndicativa() {
       <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: '#eef1f5', overflow: 'hidden', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', userSelect: 'none' }}>
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
           <div style={{ maxWidth: 460, textAlign: 'center', background: '#fff', border: '1px solid #dfe4ea', borderRadius: 18, padding: '38px 30px', boxShadow: '0 10px 40px rgba(15,23,42,0.08)' }}>
-            <div style={{ width: 72, height: 72, margin: '0 auto 20px', borderRadius: 20, background: 'linear-gradient(160deg,#e8effb,#dbe4f5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 72, height: 72, margin: '0 auto 20px', borderRadius: 6, background: 'linear-gradient(160deg,#e8effb,#dbe4f5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="12" rx="9" ry="6" /><circle cx="12" cy="12" r="2.5" /><path d="M3 12h4M17 12h4" /></svg>
             </div>
             <h2 style={{ margin: '0 0 10px', fontSize: 20, fontWeight: 800, color: '#0a2f6b' }}>Tabela Digital</h2>
@@ -381,7 +381,7 @@ export default function VendaIndicativa() {
   }
 
   // ══════════════════════════════════════════════════════════════════════════
-  // TELA 1 — GRADE DE TABELAS (escolha da marca)
+  // TELA 1: GRADE DE TABELAS (escolha da marca)
   // ══════════════════════════════════════════════════════════════════════════
   if (view === 'grade' || !tabela) {
     return (
@@ -450,7 +450,7 @@ export default function VendaIndicativa() {
   }
 
   // ══════════════════════════════════════════════════════════════════════════
-  // TELA 2 — TABELA (produtos + campo de visão sobre paisagem)
+  // TELA 2: TABELA (produtos + campo de visão sobre paisagem)
   // ══════════════════════════════════════════════════════════════════════════
   const produtos = tabela.produtos;
   const filtrados = busca.trim()
@@ -469,15 +469,15 @@ export default function VendaIndicativa() {
 
   return (
     <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: '#0a0b0e', overflow: 'hidden', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', userSelect: 'none' }}>
-      {/* ══ ÁREA IMERSIVA — paisagem em tela cheia, lente centralizada ══ */}
+      {/* ══ ÁREA IMERSIVA · paisagem em tela cheia, lente centralizada ══ */}
       <div style={{ flex: 1, position: 'relative', overflow: 'hidden', minHeight: 0 }}>
 
-        {/* Fundo: ambiente em tela cheia — arraste p/ o lado para trocar (estilo story) */}
+        {/* Fundo: ambiente em tela cheia · arraste p/ o lado para trocar (estilo story) */}
         {aba === 'ambientes'
           ? <FundoStory idx={bgIdx} onChange={setBgIdx} />
           : <img src={ambSrc(AMBIENTES[bgIdx].slug)} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
 
-        {/* Lente (campo de visão) centralizada — ou modo Desenhar */}
+        {/* Lente (campo de visão) centralizada · ou modo Desenhar */}
         {aba === 'ambientes' ? (
           p?.campoImg ? (
             <LenteCampo key={p.campoImg} campoImg={p.campoImg} box={{ left: '1%', right: '1%' }} />
@@ -542,7 +542,7 @@ export default function VendaIndicativa() {
           </div>
         )}
 
-        {/* Tecnologias da lente (direita) — só o nome; toque para abrir.
+        {/* Tecnologias da lente (direita) · só o nome; toque para abrir.
             "Material" é SELECIONÁVEL: troca a variante e o preço acompanha. */}
         {aba === 'ambientes' && p && (
           <div style={{ position: 'absolute', top: 58, right: 10, bottom: 66, overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, zIndex: 6 }}>
@@ -565,7 +565,7 @@ export default function VendaIndicativa() {
                     <span style={{ fontSize: aberto ? 14 : 11, opacity: 0.7, transform: aberto ? 'rotate(90deg)' : 'none', transition: 'transform .15s' }}>›</span>
                   </div>
                   {aberto && (ehMaterial ? (
-                    // seletor de material — troca o preço
+                    // seletor de material: troca o preço
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 6 }}>
                       {p.vars.map((vr, i) => {
                         const sel = i === vi;
@@ -585,7 +585,7 @@ export default function VendaIndicativa() {
                       })}
                     </div>
                   ) : (
-                    <div style={{ fontSize: 11.5, fontWeight: 600, marginTop: 5, lineHeight: 1.35, color: '#eaf1ff' }}>{v || '—'}</div>
+                    <div style={{ fontSize: 11.5, fontWeight: 600, marginTop: 5, lineHeight: 1.35, color: '#eaf1ff' }}>{v || '-'}</div>
                   ))}
                 </button>
               );
@@ -593,7 +593,7 @@ export default function VendaIndicativa() {
           </div>
         )}
 
-        {/* Indicador de ambiente (baixo-centro) — estilo story: arraste p/ trocar */}
+        {/* Indicador de ambiente (baixo-centro) · estilo story: arraste p/ trocar */}
         {aba === 'ambientes' && (
           <div style={{ position: 'absolute', bottom: 14, left: '50%', transform: 'translateX(-50%)', zIndex: 7, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, pointerEvents: 'none' }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: '#fff', letterSpacing: '.06em', textShadow: '0 1px 6px rgba(0,0,0,0.8)', textTransform: 'uppercase' }}>{ambiente.label}</span>
@@ -687,7 +687,7 @@ function Dock({ navigate, onOS, produto, tabela }: {
               </div>
             )}
 
-            {/* EXTRAS — ficha técnica */}
+            {/* EXTRAS · ficha técnica */}
             {modal === 'extras' && (
               <div style={{ padding: 18 }}>
                 {produto ? (
@@ -700,7 +700,7 @@ function Dock({ navigate, onOS, produto, tabela }: {
                     ] as [string, string | undefined][]).map(([k, v]) => (
                       <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '8px 0', borderTop: '1px solid #f1f4f8' }}>
                         <span style={{ fontSize: 12.5, color: '#64748b', flexShrink: 0 }}>{k}</span>
-                        <span style={{ fontSize: 12.5, fontWeight: 700, color: '#1e293b', textAlign: 'right' }}>{v || '—'}</span>
+                        <span style={{ fontSize: 12.5, fontWeight: 700, color: '#1e293b', textAlign: 'right' }}>{v || '-'}</span>
                       </div>
                     ))}
                   </>

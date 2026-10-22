@@ -12,7 +12,7 @@ interface OsItem {
 type Svc = any;
 
 function brl(v: number) { return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
-function fmtDate(s: string | null) { if (!s) return '—'; const [y, m, d] = s.slice(0, 10).split('-'); return `${d}/${m}/${y}`; }
+function fmtDate(s: string | null) { if (!s) return '-'; const [y, m, d] = s.slice(0, 10).split('-'); return `${d}/${m}/${y}`; }
 function ymd(d: Date) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
 
 const OS_STATUS: Record<string, { label: string; cor: string }> = {
@@ -87,18 +87,18 @@ export default function LabReciboPanel({ oticas }: { oticas: OticaLite[] }) {
             : `<tr><td colspan="5" style="padding:3px 8px 3px 26px;font-size:10px;color:#999;border-bottom:1px solid #eee">Sem itens detalhados</td></tr>`;
           return `<tr style="background:${G}"><td style="padding:5px 8px;font-family:monospace;font-weight:900;color:#fff;font-size:12px">#${String(o.numero).padStart(4, '0')}</td><td colspan="2" style="padding:5px 8px;font-family:monospace;color:#cff0d6;font-size:10px">${fmtDate(o.created_at)}${o.ref_otica ? ` · Ref: ${o.ref_otica}` : ''}</td><td style="padding:5px 8px;font-size:10px;color:#cff0d6;text-align:right">Total OS</td><td style="padding:5px 8px;font-family:monospace;font-weight:900;color:#fff;text-align:right">${brl(o.total || 0)}</td></tr>${svcHtml}<tr><td colspan="5" style="height:4px;background:${GBG}"></td></tr>`;
         }).join('');
-        const cab = umaOtica ? '' : `<tr><td colspan="5" style="padding:10px 8px 4px;font-size:13px;font-weight:900;color:${G}">${nome} — ${os.length} OS</td></tr>`;
+        const cab = umaOtica ? '' : `<tr><td colspan="5" style="padding:10px 8px 4px;font-size:13px;font-weight:900;color:${G}">${nome} · ${os.length} OS</td></tr>`;
         const subRow = umaOtica ? '' : `<tr><td colspan="4" style="padding:4px 8px;text-align:right;font-size:11px;color:#555">Subtotal ${nome}</td><td style="padding:4px 8px;text-align:right;font-family:monospace;font-weight:700">${brl(sub)}</td></tr>`;
         return cab + linhas + subRow;
       }).join('');
 
       const toolbar = `<div class="noprint" style="position:sticky;top:0;display:flex;gap:8px;justify-content:flex-end;align-items:center;padding:10px 12px;background:#0f2a1c;margin:-12px -12px 12px">
-          <span style="color:#cff0d6;font-size:12px;margin-right:auto;font-weight:600">Recibo — ${cliente}</span>
-          <button onclick="window.print()" style="padding:8px 16px;font-size:13px;font-weight:700;background:#16a34a;color:#fff;border:none;border-radius:8px;cursor:pointer">⬇ Baixar PDF / Imprimir</button>
+          <span style="color:#cff0d6;font-size:12px;margin-right:auto;font-weight:600">Recibo · ${cliente}</span>
+          <button onclick="window.print()" style="padding:8px 16px;font-size:13px;font-weight:700;background:#16a34a;color:#fff;border:none;border-radius:8px;cursor:pointer">Baixar PDF / Imprimir</button>
           <button onclick="window.close()" style="padding:8px 14px;font-size:13px;background:transparent;color:#cff0d6;border:1px solid #2f6b45;border-radius:8px;cursor:pointer">Fechar</button>
         </div>`;
 
-      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Recibo — ${cliente}</title>
+      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Recibo · ${cliente}</title>
         <style>*{box-sizing:border-box}body{margin:12px;font-family:Arial,sans-serif;font-size:11px;color:#000;background:#fff}
         table{width:100%;border-collapse:collapse}
         @page{margin:8mm}@media print{body{margin:0}.noprint{display:none!important}}</style></head><body>
@@ -140,7 +140,7 @@ export default function LabReciboPanel({ oticas }: { oticas: OticaLite[] }) {
       if (!w) { setMsg('Erro: o navegador bloqueou a janela. Permita pop-ups para gerar o recibo.'); setGerando(false); return; }
       w.document.write(html); w.document.close();
       if (auto) setTimeout(() => { try { w.print(); } catch { /* ignora */ } }, 500);
-      setMsg(`✓ Recibo gerado com ${escolhidas.length} OS.`);
+      setMsg(`Recibo gerado com ${escolhidas.length} OS.`);
     } catch (e: unknown) {
       setMsg(`Erro ao gerar recibo: ${e instanceof Error ? e.message : 'tente novamente'}`);
     } finally { setGerando(false); }
@@ -215,12 +215,12 @@ export default function LabReciboPanel({ oticas }: { oticas: OticaLite[] }) {
                     <tr key={o.id} onClick={() => toggleSel(o.id)} style={{ borderBottom: '1px solid var(--lab-bdr)', cursor: 'pointer', background: on ? `${R.accent}12` : 'transparent' }}>
                       <td style={{ padding: '8px 12px', textAlign: 'center' }}><input type="checkbox" checked={on} onChange={() => toggleSel(o.id)} onClick={e => e.stopPropagation()} /></td>
                       <td style={{ padding: '8px 12px', fontFamily: "'Courier New', monospace", fontSize: '13px', fontWeight: 700, color: R.txt }}>#{String(o.numero).padStart(4, '0')}</td>
-                      <td style={{ padding: '8px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{o.otica_codigo || '—'}</td>
+                      <td style={{ padding: '8px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{o.otica_codigo || '-'}</td>
                       <td style={{ padding: '8px 12px', fontSize: '13px', color: R.txt, maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.otica_nome}</td>
-                      <td style={{ padding: '8px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{o.ref_otica || '—'}</td>
-                      <td style={{ padding: '8px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{o.cont_interno || '—'}</td>
+                      <td style={{ padding: '8px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{o.ref_otica || '-'}</td>
+                      <td style={{ padding: '8px 12px', fontSize: '12px', fontFamily: "'Courier New', monospace", color: R.dim }}>{o.cont_interno || '-'}</td>
                       <td style={{ padding: '8px 12px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim, whiteSpace: 'nowrap' }}>{fmtDate(o.created_at)}</td>
-                      <td style={{ padding: '8px 12px' }}><span style={{ fontSize: '10px', fontWeight: 600, color: st.cor, background: `${st.cor}18`, padding: '2px 7px', borderRadius: '20px', whiteSpace: 'nowrap' }}>{st.label}</span></td>
+                      <td style={{ padding: '8px 12px' }}><span style={{ fontSize: '10px', fontWeight: 600, color: st.cor, background: `${st.cor}18`, padding: '2px 7px', borderRadius: '6px', whiteSpace: 'nowrap' }}>{st.label}</span></td>
                       <td style={{ padding: '8px 12px', fontSize: '13px', fontFamily: "'Courier New', monospace", fontWeight: 700, color: R.txt, textAlign: 'right', whiteSpace: 'nowrap' }}>{brl(o.total)}</td>
                     </tr>
                   );
@@ -229,18 +229,18 @@ export default function LabReciboPanel({ oticas }: { oticas: OticaLite[] }) {
             </table>
           </div>
 
-          {/* Barra "bilhete" — soma ao vivo */}
+          {/* Barra "bilhete" · soma ao vivo */}
           <div style={{ position: 'sticky', bottom: 0, background: 'linear-gradient(90deg, #0f2a1c, #123a24)', borderTop: `2px solid ${R.accent}`, padding: '12px 18px', display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '11px', fontWeight: 700, color: '#cff0d6', textTransform: 'uppercase', letterSpacing: '0.5px', background: 'rgba(255,255,255,0.1)', padding: '4px 10px', borderRadius: '20px' }}>🧾 {qtdSel} OS</span>
+            <span style={{ fontSize: '11px', fontWeight: 700, color: '#cff0d6', textTransform: 'uppercase', letterSpacing: '0.5px', background: 'rgba(255,255,255,0.1)', padding: '4px 10px', borderRadius: '6px' }}>{qtdSel} OS</span>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
               <span style={{ fontSize: '11px', color: '#9fd3b0', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total do comprovante</span>
               <span style={{ fontSize: '26px', fontWeight: 900, color: '#fff', fontFamily: "'Courier New', monospace", letterSpacing: '-0.5px' }}>{brl(totalSel)}</span>
             </div>
             <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
               <button type="button" onClick={() => gerarRecibo(false)} disabled={!qtdSel || gerando}
-                style={{ padding: '7px 14px', fontSize: '12px', fontWeight: 700, borderRadius: '7px', cursor: (!qtdSel || gerando) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: (!qtdSel || gerando) ? 0.5 : 1, border: `1px solid ${R.accent}66`, background: 'transparent', color: R.accent }}>👁 Visualizar</button>
+                style={{ padding: '7px 14px', fontSize: '12px', fontWeight: 700, borderRadius: '7px', cursor: (!qtdSel || gerando) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: (!qtdSel || gerando) ? 0.5 : 1, border: `1px solid ${R.accent}66`, background: 'transparent', color: R.accent }}>Visualizar</button>
               <button type="button" onClick={() => gerarRecibo(true)} disabled={!qtdSel || gerando}
-                style={{ padding: '7px 14px', fontSize: '12px', fontWeight: 700, borderRadius: '7px', cursor: (!qtdSel || gerando) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: (!qtdSel || gerando) ? 0.5 : 1, border: 'none', background: R.accent, color: '#fff' }}>{gerando ? 'Gerando...' : '⬇ Gerar Recibo (PDF)'}</button>
+                style={{ padding: '7px 14px', fontSize: '12px', fontWeight: 700, borderRadius: '7px', cursor: (!qtdSel || gerando) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: (!qtdSel || gerando) ? 0.5 : 1, border: 'none', background: R.accent, color: '#fff' }}>{gerando ? 'Gerando...' : 'Gerar Recibo (PDF)'}</button>
             </div>
           </div>
         </div>

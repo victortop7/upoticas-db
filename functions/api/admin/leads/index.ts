@@ -7,7 +7,7 @@ function isAdmin(request: Request, env: Env): boolean {
   return !!env.ADMIN_SECRET && auth.replace(/^Bearer\s+/i, '').trim() === env.ADMIN_SECRET.trim();
 }
 
-// GET /api/admin/leads — lista todos os leads
+// GET /api/admin/leads: lista todos os leads
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   if (!isAdmin(request, env)) return json({ error: 'Não autorizado' }, 401);
 
@@ -21,7 +21,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
   }
 };
 
-// POST /api/admin/leads — cria conta a partir de um lead
+// POST /api/admin/leads: cria conta a partir de um lead
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
   if (!isAdmin(request, env)) return json({ error: 'Não autorizado' }, 401);
 
@@ -90,7 +90,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   }
 };
 
-// PATCH /api/admin/leads — atualiza status do lead
+// PATCH /api/admin/leads: atualiza status do lead
 export const onRequestPatch = async ({ request, env }: { request: Request; env: Env }) => {
   if (!isAdmin(request, env)) return json({ error: 'Não autorizado' }, 401);
 
@@ -105,7 +105,7 @@ export const onRequestPatch = async ({ request, env }: { request: Request; env: 
   }
 };
 
-// DELETE /api/admin/leads?id=xxx — exclui lead
+// DELETE /api/admin/leads?id=xxx: exclui lead
 export const onRequestDelete = async ({ request, env }: { request: Request; env: Env }) => {
   if (!isAdmin(request, env)) return json({ error: 'Não autorizado' }, 401);
 

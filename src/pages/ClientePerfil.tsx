@@ -16,7 +16,7 @@ type Perfil = { cliente: ClientePerfilData; vendas: VendaP[]; os: OSP[]; carnes:
 type Conta = { id: string; nome: string };
 
 const brl = (v: number) => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-const fmtD = (s?: string | null) => { if (!s) return '—'; const [y, m, d] = s.slice(0, 10).split('-'); return `${d}/${m}/${y}`; };
+const fmtD = (s?: string | null) => { if (!s) return '-'; const [y, m, d] = s.slice(0, 10).split('-'); return `${d}/${m}/${y}`; };
 function idade(s?: string) { if (!s) return null; const n = new Date(s); if (isNaN(n.getTime())) return null; const h = new Date(); let a = h.getFullYear() - n.getFullYear(); if (h < new Date(h.getFullYear(), n.getMonth(), n.getDate())) a--; return a; }
 function haQuanto(s?: string | null) {
   if (!s) return '';
@@ -84,7 +84,7 @@ export default function ClientePerfil() {
   const btn = (bg: string, fg = '#fff'): React.CSSProperties => ({ width: '100%', padding: '10px 12px', fontSize: 14, fontWeight: 600, background: bg, color: fg, border: bg === 'transparent' ? '1px solid var(--border)' : 'none', borderRadius: 9, cursor: 'pointer', textAlign: 'center', textDecoration: 'none', display: 'block', boxSizing: 'border-box' });
   const linha = (rot: string, val: React.ReactNode) => (
     <div style={{ display: 'grid', gridTemplateColumns: '130px 1fr', gap: 10, padding: '5px 0', fontSize: 13.5 }}>
-      <span style={{ color: 'var(--text-muted)', textAlign: 'right' }}>{rot}</span><span style={{ color: 'var(--text)' }}>{val || '—'}</span>
+      <span style={{ color: 'var(--text-muted)', textAlign: 'right' }}>{rot}</span><span style={{ color: 'var(--text)' }}>{val || '-'}</span>
     </div>
   );
   const abaBtn = (k: typeof aba, l: string, n?: number) => (
@@ -98,7 +98,7 @@ export default function ClientePerfil() {
   const grupos = new Map<string, { titulo: string; itens: Titulo[] }>();
   for (const t of p.titulos) {
     const k = t.carne_id || `${t.origem}-${t.venda_id || t.id}`;
-    const nome = t.origem === 'carne' ? `${t.venda_numero ? `Venda #${t.venda_numero} — ` : ''}${t.descricao.replace(/^Venda #\d+\s*—\s*/, '') || 'Carnê'}` : t.origem === 'venda' ? `Venda #${t.venda_numero} — saldo em aberto` : t.descricao;
+    const nome = t.origem === 'carne' ? `${t.venda_numero ? `Venda #${t.venda_numero} · ` : ''}${t.descricao.replace(/^Venda #\d+\s*[—·-]\s*/, '') || 'Carnê'}` : t.origem === 'venda' ? `Venda #${t.venda_numero} · saldo em aberto` : t.descricao;
     const g = grupos.get(k) || { titulo: nome, itens: [] };
     g.itens.push(t); grupos.set(k, g);
   }
@@ -118,12 +118,12 @@ export default function ClientePerfil() {
                   {c.apelido ? `${c.apelido} · ` : ''}cliente desde {fmtD(r.primeira_compra || c.created_at)} {r.primeira_compra || c.created_at ? `(${haQuanto(r.primeira_compra || c.created_at)})` : ''}
                 </div>
               </div>
-              {!c.ativo && <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 20, background: 'var(--surface-alt)', color: 'var(--text-muted)' }}>Inativo</span>}
+              {!c.ativo && <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 6, background: 'var(--surface-alt)', color: 'var(--text-muted)' }}>Inativo</span>}
             </div>
 
             {atrasados.length > 0 && (
               <div style={{ marginTop: 14, background: 'rgba(220,38,38,.08)', border: '1px solid rgba(220,38,38,.35)', borderRadius: 10, padding: '12px 14px' }}>
-                <div style={{ fontWeight: 700, color: '#dc2626', fontSize: 14 }}>⚠️ Este cliente tem {atrasados.length} parcela{atrasados.length > 1 ? 's' : ''} em atraso — {brl(r.em_atraso)}</div>
+                <div style={{ fontWeight: 700, color: '#dc2626', fontSize: 14 }}>Este cliente tem {atrasados.length} parcela{atrasados.length > 1 ? 's' : ''} em atraso · {brl(r.em_atraso)}</div>
                 <div style={{ marginTop: 8, display: 'grid', gap: 3 }}>
                   {atrasados.slice(0, 6).map(t => (
                     <div key={t.origem + t.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5, color: 'var(--text-dim)', gap: 10 }}>
@@ -131,7 +131,7 @@ export default function ClientePerfil() {
                       <b style={{ fontFamily: 'var(--mono)', color: '#dc2626' }}>{brl(t.valor)}</b>
                     </div>
                   ))}
-                  {atrasados.length > 6 && <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>+ {atrasados.length - 6} parcela(s) — veja na aba Crediário</div>}
+                  {atrasados.length > 6 && <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>+ {atrasados.length - 6} parcela(s) · veja na aba Crediário</div>}
                 </div>
               </div>
             )}
@@ -151,7 +151,7 @@ export default function ClientePerfil() {
                 {linha('CEP', c.cep)}
                 {linha('Referência', ref !== null
                   ? <span style={{ display: 'flex', gap: 6 }}><input autoFocus value={ref} onChange={e => setRef(e.target.value)} onKeyDown={e => e.key === 'Enter' && salvarRef()} style={{ flex: 1, padding: '4px 8px', fontSize: 13, border: '1px solid var(--border)', borderRadius: 6, background: 'var(--surface-alt)', color: 'var(--text)' }} placeholder="Ex: casa azul, ao lado da padaria" /><button onClick={salvarRef} style={{ fontSize: 12, padding: '4px 10px', border: 'none', borderRadius: 6, background: 'var(--primary)', color: '#fff', cursor: 'pointer' }}>OK</button></span>
-                  : <span>{c.referencia || <span style={{ color: 'var(--text-muted)' }}>—</span>} <button onClick={() => setRef(c.referencia || '')} style={{ fontSize: 11.5, background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer' }}>editar</button></span>)}
+                  : <span>{c.referencia || <span style={{ color: 'var(--text-muted)' }}>-</span>} <button onClick={() => setRef(c.referencia || '')} style={{ fontSize: 11.5, background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer' }}>editar</button></span>)}
               </div>
             </div>
             {c.observacao && (
@@ -179,10 +179,10 @@ export default function ClientePerfil() {
           {/* Histórico */}
           <div style={{ ...card, overflow: 'hidden' }}>
             <div style={{ display: 'flex', gap: 2, borderBottom: '1px solid var(--border)', padding: '0 10px', flexWrap: 'wrap' }}>
-              {abaBtn('vendas', '🛒 Vendas', p.vendas.length)}
-              {abaBtn('crediario', '🧾 Crediário', abertos.length)}
-              {abaBtn('os', '🔧 O.S.', p.os.length)}
-              {abaBtn('receita', '👓 Receita')}
+              {abaBtn('vendas', 'Vendas', p.vendas.length)}
+              {abaBtn('crediario', 'Crediário', abertos.length)}
+              {abaBtn('os', 'O.S.', p.os.length)}
+              {abaBtn('receita', 'Receita')}
             </div>
 
             {aba === 'vendas' && (
@@ -195,7 +195,7 @@ export default function ClientePerfil() {
                       <div style={{ fontSize: 11.5, color: 'var(--text-muted)', fontFamily: 'var(--mono)' }}>{fmtD(v.created_at)}</div>
                     </div>
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 13, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{v.itens || '—'}</div>
+                      <div style={{ fontSize: 13, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{v.itens || '-'}</div>
                       <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>
                         {[v.vendedor, v.loja, v.forma_pagamento].filter(Boolean).join(' · ')}{v.situacao === 'cancelada' ? ' · CANCELADA' : ''}
                       </div>
@@ -220,14 +220,14 @@ export default function ClientePerfil() {
                     <div key={k} style={{ border: `1px solid ${temAtraso ? 'rgba(220,38,38,.4)' : 'var(--border)'}`, borderRadius: 10, overflow: 'hidden' }}>
                       <div style={{ padding: '9px 14px', background: temAtraso ? 'rgba(220,38,38,.08)' : 'var(--surface-alt)', display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 13.5 }}>
                         <b style={{ color: 'var(--text)' }}>{g.titulo}</b>
-                        <span style={{ fontFamily: 'var(--mono)', color: aberto > 0 ? (temAtraso ? '#dc2626' : '#d97706') : '#16a34a', fontWeight: 700 }}>{aberto > 0 ? `aberto ${brl(aberto)}` : 'quitado ✓'}</span>
+                        <span style={{ fontFamily: 'var(--mono)', color: aberto > 0 ? (temAtraso ? '#dc2626' : '#d97706') : '#16a34a', fontWeight: 700 }}>{aberto > 0 ? `aberto ${brl(aberto)}` : 'quitado'}</span>
                       </div>
                       {g.itens.map(t => {
                         const cor = t.situacao === 'recebido' ? '#16a34a' : t.situacao === 'vencido' ? '#dc2626' : '#d97706';
                         return (
                           <div key={t.id} style={{ display: 'grid', gridTemplateColumns: '92px 70px 1fr 110px 90px', gap: 10, padding: '7px 14px', borderTop: '1px solid var(--border)', alignItems: 'center', fontSize: 13 }}>
                             <span style={{ fontSize: 11.5, fontWeight: 600, color: cor }}>{t.situacao === 'recebido' ? 'Pago' : t.situacao === 'vencido' ? 'Em atraso' : 'A vencer'}</span>
-                            <span style={{ fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{t.parcela || '—'}</span>
+                            <span style={{ fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{t.parcela || '-'}</span>
                             <span style={{ fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{fmtD(t.vencimento)} <span style={{ fontSize: 11, color: cor }}>{t.situacao === 'vencido' ? `${t.dias_atraso}d atraso` : t.situacao === 'recebido' ? `pago ${fmtD(t.recebido_em)}` : ''}</span></span>
                             <span style={{ fontFamily: 'var(--mono)', fontWeight: 700, textAlign: 'right', color: 'var(--text)' }}>{brl(t.valor)}</span>
                             <span style={{ textAlign: 'right' }}>
@@ -236,7 +236,7 @@ export default function ClientePerfil() {
                           </div>
                         );
                       })}
-                      {g.itens[0]?.carne_id && <div style={{ padding: '7px 14px', borderTop: '1px solid var(--border)', textAlign: 'right' }}><a href={`/carnes/${g.itens[0].carne_id}/imprimir`} target="_blank" rel="noreferrer" style={{ fontSize: 12.5, color: 'var(--primary)' }}>🖨️ Imprimir carnê</a></div>}
+                      {g.itens[0]?.carne_id && <div style={{ padding: '7px 14px', borderTop: '1px solid var(--border)', textAlign: 'right' }}><a href={`/carnes/${g.itens[0].carne_id}/imprimir`} target="_blank" rel="noreferrer" style={{ fontSize: 12.5, color: 'var(--primary)' }}>Imprimir carnê</a></div>}
                     </div>
                   );
                 })}
@@ -253,7 +253,7 @@ export default function ClientePerfil() {
                       <div style={{ fontSize: 11.5, color: 'var(--text-muted)', fontFamily: 'var(--mono)' }}>{fmtD(o.created_at)}</div>
                     </div>
                     <div style={{ fontSize: 13, color: 'var(--text)', minWidth: 0 }}>
-                      {[o.armacao_desc, o.lente_desc].filter(Boolean).join(' · ') || '—'}
+                      {[o.armacao_desc, o.lente_desc].filter(Boolean).join(' · ') || '-'}
                       <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>{SIT_OS[o.situacao] || o.situacao}{o.data_entrega ? ` · entrega ${fmtD(o.data_entrega)}` : ''}</div>
                     </div>
                     <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
@@ -270,11 +270,11 @@ export default function ClientePerfil() {
                 <table style={{ borderCollapse: 'collapse', fontFamily: 'var(--mono)', fontSize: 14 }}>
                   <thead><tr>{['', 'Esférico', 'Cilíndrico', 'Eixo'].map(h => <th key={h} style={{ padding: '6px 16px', fontSize: 11, color: 'var(--text-muted)', textAlign: 'left', fontFamily: 'var(--sans)' }}>{h}</th>)}</tr></thead>
                   <tbody>
-                    <tr><td style={{ padding: '6px 16px', fontWeight: 700 }}>OD</td><td style={{ padding: '6px 16px' }}>{c.rec_od_esf || '—'}</td><td style={{ padding: '6px 16px' }}>{c.rec_od_cil || '—'}</td><td style={{ padding: '6px 16px' }}>{c.rec_od_eixo || '—'}</td></tr>
-                    <tr><td style={{ padding: '6px 16px', fontWeight: 700 }}>OE</td><td style={{ padding: '6px 16px' }}>{c.rec_oe_esf || '—'}</td><td style={{ padding: '6px 16px' }}>{c.rec_oe_cil || '—'}</td><td style={{ padding: '6px 16px' }}>{c.rec_oe_eixo || '—'}</td></tr>
+                    <tr><td style={{ padding: '6px 16px', fontWeight: 700 }}>OD</td><td style={{ padding: '6px 16px' }}>{c.rec_od_esf || '-'}</td><td style={{ padding: '6px 16px' }}>{c.rec_od_cil || '-'}</td><td style={{ padding: '6px 16px' }}>{c.rec_od_eixo || '-'}</td></tr>
+                    <tr><td style={{ padding: '6px 16px', fontWeight: 700 }}>OE</td><td style={{ padding: '6px 16px' }}>{c.rec_oe_esf || '-'}</td><td style={{ padding: '6px 16px' }}>{c.rec_oe_cil || '-'}</td><td style={{ padding: '6px 16px' }}>{c.rec_oe_eixo || '-'}</td></tr>
                   </tbody>
                 </table>
-                <div style={{ marginTop: 10, fontSize: 13, color: 'var(--text-dim)' }}>Adição: <b style={{ fontFamily: 'var(--mono)' }}>{c.rec_adicao || '—'}</b> · DP: <b style={{ fontFamily: 'var(--mono)' }}>{c.rec_dp || '—'}</b>{c.rec_obs ? ` · ${c.rec_obs}` : ''}</div>
+                <div style={{ marginTop: 10, fontSize: 13, color: 'var(--text-dim)' }}>Adição: <b style={{ fontFamily: 'var(--mono)' }}>{c.rec_adicao || '-'}</b> · DP: <b style={{ fontFamily: 'var(--mono)' }}>{c.rec_dp || '-'}</b>{c.rec_obs ? ` · ${c.rec_obs}` : ''}</div>
               </div>
             )}
           </div>
@@ -285,15 +285,15 @@ export default function ClientePerfil() {
           <label style={{ ...card, aspectRatio: '1 / 1', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', cursor: 'pointer', position: 'relative' }} title="Trocar foto">
             {c.foto
               ? <img src={c.foto} alt={c.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              : <div style={{ textAlign: 'center', color: 'var(--text-muted)' }}><div style={{ fontSize: 46 }}>👤</div><div style={{ fontSize: 12.5 }}>Sem foto</div></div>}
+              : <div style={{ textAlign: 'center', color: 'var(--text-muted)' }}><div style={{ fontSize: 46 }}></div><div style={{ fontSize: 12.5 }}>Sem foto</div></div>}
             <input type="file" accept="image/*" capture="user" onChange={trocarFoto} style={{ display: 'none' }} />
           </label>
-          <label style={{ ...btn('var(--primary)'), cursor: 'pointer' }}>📷 {c.foto ? 'Trocar foto' : 'Capturar foto'}<input type="file" accept="image/*" capture="user" onChange={trocarFoto} style={{ display: 'none' }} /></label>
-          <button onClick={() => setEditar(true)} style={btn('var(--primary)')}>✏️ Alterar dados</button>
-          <button onClick={() => setNovaVenda(true)} style={btn('#16a34a')}>🛒 Iniciar venda</button>
-          <button onClick={() => setNovaOS(true)} style={btn('#7c3aed')}>🔧 Abrir O.S.</button>
-          {wa && <a href={`https://wa.me/55${wa.replace(/^55/, '')}`} target="_blank" rel="noreferrer" style={btn('#25D366')}>💬 WhatsApp</a>}
-          {abertos.length > 0 && <a href={`/financeiro/cobranca/imprimir?cliente_id=${c.id}&situacao=aberto`} target="_blank" rel="noreferrer" style={btn('transparent', 'var(--text)')}>🖨️ Ficha de cobrança</a>}
+          <label style={{ ...btn('var(--primary)'), cursor: 'pointer' }}>{c.foto ? 'Trocar foto' : 'Capturar foto'}<input type="file" accept="image/*" capture="user" onChange={trocarFoto} style={{ display: 'none' }} /></label>
+          <button onClick={() => setEditar(true)} style={btn('var(--primary)')}>Alterar dados</button>
+          <button onClick={() => setNovaVenda(true)} style={btn('#16a34a')}>Iniciar venda</button>
+          <button onClick={() => setNovaOS(true)} style={btn('#7c3aed')}>Abrir O.S.</button>
+          {wa && <a href={`https://wa.me/55${wa.replace(/^55/, '')}`} target="_blank" rel="noreferrer" style={btn('#25D366')}>WhatsApp</a>}
+          {abertos.length > 0 && <a href={`/financeiro/cobranca/imprimir?cliente_id=${c.id}&situacao=aberto`} target="_blank" rel="noreferrer" style={btn('transparent', 'var(--text)')}>Ficha de cobrança</a>}
           <button onClick={() => navigate('/clientes')} style={btn('transparent', 'var(--text-dim)')}>← Voltar aos clientes</button>
         </div>
       </div>

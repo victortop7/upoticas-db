@@ -17,7 +17,7 @@ const FORMAS = ['Dinheiro','Pix','Crédito','Débito','Transferência','Boleto',
 const CATEGORIAS = ['Venda','OS','Serviço','Outros'];
 
 function brl(v: number) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
-function fmtDate(s?: string) { if (!s) return '—'; const [y,m,d] = s.split('T')[0].split('-'); return `${d}/${m}/${y}`; }
+function fmtDate(s?: string) { if (!s) return '-'; const [y,m,d] = s.split('T')[0].split('-'); return `${d}/${m}/${y}`; }
 
 function Modal({ conta, onClose, onSaved }: { conta: ContaReceber | null; contas: Conta[]; onClose: () => void; onSaved: () => void }) {
   const [form, setForm] = useState({ descricao: '', cliente_id: '', categoria: 'Outros', valor: '', data_vencimento: '', observacao: '' });
@@ -56,7 +56,7 @@ function Modal({ conta, onClose, onSaved }: { conta: ContaReceber | null; contas
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
             <div><label style={lbl}>Cliente</label>
               <select style={inp} value={form.cliente_id} onChange={e => setForm(f => ({ ...f, cliente_id: e.target.value }))}>
-                <option value="">— Nenhum —</option>
+                <option value="">Nenhum</option>
                 {clientes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
               </select>
             </div>
@@ -124,7 +124,7 @@ export function BaixaModal({ t, contas, onClose, onSaved }: { t: Titulo; contas:
         <div style={{ padding: '18px 24px 14px', borderBottom: '1px solid var(--border)' }}>
           <h2 style={{ margin: '0 0 3px', fontSize: '17px', fontWeight: '700', color: 'var(--text)' }}>Registrar recebimento</h2>
           <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)' }}>
-            {t.cliente_nome || '—'} · {t.descricao}{t.parcela ? ` ${t.parcela}` : ''} — <b style={{ fontFamily: 'var(--mono)', color: 'var(--text)' }}>{brl(t.valor)}</b>
+            {t.cliente_nome || '-'} · {t.descricao}{t.parcela ? ` ${t.parcela}` : ''} · <b style={{ fontFamily: 'var(--mono)', color: 'var(--text)' }}>{brl(t.valor)}</b>
           </p>
         </div>
         <form onSubmit={salvar} style={{ padding: '18px 24px' }}>
@@ -139,14 +139,14 @@ export function BaixaModal({ t, contas, onClose, onSaved }: { t: Titulo; contas:
             </div>
             <div><label style={lbl}>Entrou em qual conta</label>
               <select style={inp} value={form.conta_id} onChange={e => setForm(f => ({ ...f, conta_id: e.target.value }))}>
-                <option value="">— Nenhuma —</option>{contas.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+                <option value="">Nenhuma</option>{contas.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
               </select>
             </div>
           </div>
           {erro && <p style={{ margin: '0 0 12px', fontSize: 13, color: 'var(--red)' }}>{erro}</p>}
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 10, borderTop: '1px solid var(--border)' }}>
             <button type="button" onClick={onClose} style={{ padding: '9px 18px', fontSize: 14, background: 'var(--surface-alt)', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer' }}>Cancelar</button>
-            <button type="submit" disabled={saving} style={{ padding: '9px 20px', fontSize: 14, fontWeight: 600, background: '#16a34a', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer' }}>{saving ? '...' : '✓ Confirmar'}</button>
+            <button type="submit" disabled={saving} style={{ padding: '9px 20px', fontSize: 14, fontWeight: 600, background: '#16a34a', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer' }}>{saving ? '...' : 'Confirmar'}</button>
           </div>
         </form>
       </div>
@@ -199,7 +199,7 @@ export default function ContasReceber() {
 
   const inp: React.CSSProperties = { width: '100%', padding: '8px 10px', fontSize: '13px', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--surface)', color: 'var(--text)', outline: 'none', boxSizing: 'border-box' };
   const lbl: React.CSSProperties = { display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '.4px' };
-  const chip = (on: boolean): React.CSSProperties => ({ padding: '6px 14px', fontSize: '12px', fontWeight: 500, border: `1px solid ${on ? 'var(--primary)' : 'var(--border)'}`, borderRadius: '20px', cursor: 'pointer', background: on ? 'var(--primary)' : 'var(--surface)', color: on ? 'white' : 'var(--text-dim)' });
+  const chip = (on: boolean): React.CSSProperties => ({ padding: '6px 14px', fontSize: '12px', fontWeight: 500, border: `1px solid ${on ? 'var(--primary)' : 'var(--border)'}`, borderRadius: '6px', cursor: 'pointer', background: on ? 'var(--primary)' : 'var(--surface)', color: on ? 'white' : 'var(--text-dim)' });
   const r = data?.resumo;
 
   return (
@@ -210,7 +210,7 @@ export default function ContasReceber() {
           <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-dim)' }}>Carnês, saldo das vendas e lançamentos manuais, tudo junto</p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={imprimirCobranca} style={{ padding: '9px 16px', fontSize: 14, fontWeight: 600, background: 'transparent', color: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: 8, cursor: 'pointer' }}>🖨️ Relatório do cobrador</button>
+          <button onClick={imprimirCobranca} style={{ padding: '9px 16px', fontSize: 14, fontWeight: 600, background: 'transparent', color: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: 8, cursor: 'pointer' }}>Relatório do cobrador</button>
           <button onClick={() => setModalOpen(true)} style={{ padding: '9px 18px', fontSize: '14px', fontWeight: '600', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>+ Lançamento manual</button>
         </div>
       </div>
@@ -282,7 +282,7 @@ export default function ContasReceber() {
                   <td style={{ padding: '10px 14px' }}>
                     {t.cliente_id
                       ? <button onClick={() => navigate(`/clientes/${t.cliente_id}`)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 14, fontWeight: 600, color: 'var(--primary)', textAlign: 'left' }}>{t.cliente_nome}</button>
-                      : <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>—</span>}
+                      : <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>-</span>}
                     <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>{[t.bairro, t.cidade].filter(Boolean).join(' · ')}{t.celular ? ` · ${t.celular}` : ''}</div>
                   </td>
                   <td style={{ padding: '10px 14px', fontSize: 13, color: 'var(--text-dim)' }}>
@@ -296,7 +296,7 @@ export default function ContasReceber() {
                     {t.recebido_em && <div style={{ fontSize: 11, color: '#16a34a' }}>Recebido {fmtDate(t.recebido_em)}</div>}
                   </td>
                   <td style={{ padding: '10px 14px', fontFamily: 'var(--mono)', fontSize: 13, fontWeight: 700, color: 'var(--text)', textAlign: 'right' }}>{brl(t.valor)}</td>
-                  <td style={{ padding: '10px 14px' }}><span style={{ padding: '3px 9px', borderRadius: 20, fontSize: 12, fontWeight: 500, background: sc.bg, color: sc.color }}>{t.situacao === 'vencido' ? 'Em atraso' : SIT_LABEL[t.situacao]}</span></td>
+                  <td style={{ padding: '10px 14px' }}><span style={{ padding: '3px 9px', borderRadius: 6, fontSize: 12, fontWeight: 500, background: sc.bg, color: sc.color }}>{t.situacao === 'vencido' ? 'Em atraso' : SIT_LABEL[t.situacao]}</span></td>
                   <td style={{ padding: '10px 14px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                     {t.situacao !== 'recebido'
                       ? <button onClick={() => setBaixa(t)} style={{ padding: '5px 12px', fontSize: 12, background: 'rgba(34,197,94,0.12)', color: '#16a34a', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}>Receber</button>

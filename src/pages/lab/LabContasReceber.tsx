@@ -15,7 +15,7 @@ const STATUS_LABEL = { aberto: 'Em Aberto', pago: 'Pago', vencido: 'Vencido' };
 
 function brl(v: number) { return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 function fmtDate(s: string | null) {
-  if (!s) return '—';
+  if (!s) return '-';
   const [y, m, d] = s.slice(0, 10).split('-');
   return `${d}/${m}/${y}`;
 }
@@ -129,7 +129,7 @@ export default function LabContasReceber() {
       <div style={{ padding: '8px 20px', borderBottom: '1px solid var(--lab-bdr)', display: 'flex', gap: '8px', alignItems: 'center' }}>
         {[['', 'Todos'], ['aberto', 'Em Aberto'], ['vencido', 'Vencidos'], ['pago', 'Pagos']].map(([v, l]) => (
           <button key={v} onClick={() => setStatusFiltro(v)}
-            style={{ padding: '4px 12px', fontSize: '11px', fontWeight: '600', borderRadius: '20px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${statusFiltro === v ? '#b8b4ac' : 'var(--lab-bdr)'}`, background: statusFiltro === v ? R.alt : 'transparent', color: statusFiltro === v ? R.txt : R.dim }}>
+            style={{ padding: '4px 12px', fontSize: '11px', fontWeight: '600', borderRadius: '6px', cursor: 'pointer', fontFamily: 'inherit', border: `1px solid ${statusFiltro === v ? '#b8b4ac' : 'var(--lab-bdr)'}`, background: statusFiltro === v ? R.alt : 'transparent', color: statusFiltro === v ? R.txt : R.dim }}>
             {l}
           </button>
         ))}
@@ -160,13 +160,13 @@ export default function LabContasReceber() {
                     <td style={{ padding: '9px 12px', fontFamily: "'Courier New', monospace", fontSize: '12px', color: R.dim }}>#{String(c.numero).padStart(4, '0')}</td>
                     <td style={{ padding: '9px 12px', fontSize: '12px', color: R.txt, maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.otica_nome}</td>
                     <td style={{ padding: '9px 12px', fontSize: '12px', color: R.dim }}>{c.descricao}</td>
-                    <td style={{ padding: '9px 12px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim }}>{c.ordem_numero ? `#${String(c.ordem_numero).padStart(4,'0')}` : '—'}</td>
+                    <td style={{ padding: '9px 12px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim }}>{c.ordem_numero ? `#${String(c.ordem_numero).padStart(4,'0')}` : '-'}</td>
                     <td style={{ padding: '9px 12px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.dim, whiteSpace: 'nowrap' }}>{fmtDate(c.data_emissao)}</td>
                     <td style={{ padding: '9px 12px', fontSize: '11px', fontFamily: "'Courier New', monospace", whiteSpace: 'nowrap', color: c.status === 'vencido' ? '#cc0000' : R.dim, fontWeight: c.status === 'vencido' ? '700' : '400' }}>{fmtDate(c.data_vencimento)}</td>
                     <td style={{ padding: '9px 12px', fontSize: '11px', fontFamily: "'Courier New', monospace", color: R.accent, whiteSpace: 'nowrap' }}>{fmtDate(c.data_pagamento)}</td>
                     <td style={{ padding: '9px 12px', fontSize: '13px', fontFamily: "'Courier New', monospace", fontWeight: '700', color: R.txt, textAlign: 'right' }}>{brl(c.valor)}</td>
                     <td style={{ padding: '9px 12px' }}>
-                      <span style={{ fontSize: '10px', fontWeight: '600', color: STATUS_COLOR[c.status], background: `${STATUS_COLOR[c.status]}18`, padding: '2px 7px', borderRadius: '20px', whiteSpace: 'nowrap' }}>
+                      <span style={{ fontSize: '10px', fontWeight: '600', color: STATUS_COLOR[c.status], background: `${STATUS_COLOR[c.status]}18`, padding: '2px 7px', borderRadius: '6px', whiteSpace: 'nowrap' }}>
                         {STATUS_LABEL[c.status]}
                       </span>
                     </td>
@@ -179,9 +179,7 @@ export default function LabContasReceber() {
                           </button>
                         )}
                         <button onClick={() => excluirConta(c)} title="Excluir lançamento"
-                          style={{ fontSize: '13px', padding: '3px 8px', borderRadius: '5px', border: '1px solid #cc000055', background: 'transparent', color: '#cc0000', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '700', lineHeight: 1 }}>
-                          ✕
-                        </button>
+                          style={{ fontSize: '13px', padding: '3px 8px', borderRadius: '5px', border: '1px solid #cc000055', background: 'transparent', color: '#cc0000', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '700', lineHeight: 1 }}>Excluir lançamento</button>
                       </div>
                     </td>
                   </tr>
@@ -194,21 +192,21 @@ export default function LabContasReceber() {
       {baixando && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '12px', padding: '24px', width: '380px' }}>
-            <h3 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: '700', color: R.txt }}>Dar Baixa — #{String(baixando.numero).padStart(4,'0')}</h3>
+            <h3 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: '700', color: R.txt }}>Dar Baixa · #{String(baixando.numero).padStart(4,'0')}</h3>
             <div style={{ fontSize: '13px', color: R.dim, marginBottom: '14px' }}>
-              <b style={{ color: R.txt }}>{baixando.otica_nome}</b> — {brl(baixando.valor)}
+              <b style={{ color: R.txt }}>{baixando.otica_nome}</b> · {brl(baixando.valor)}
             </div>
             <div style={{ marginBottom: '10px' }}><label style={LBL}>Data de Pagamento *</label><input type="date" value={dataPgto} onChange={e => setDataPgto(e.target.value)} style={INP} /></div>
             <div style={{ marginBottom: '16px' }}>
               <label style={LBL}>Forma de Pagamento</label>
               <select value={formaPgto} onChange={e => setFormaPgto(e.target.value)} style={{ ...INP, fontFamily: "'Montserrat', sans-serif" }}>
-                <option value="">— Selecionar</option>
+                <option value="">Selecionar</option>
                 {['Dinheiro','PIX','Transferência','Boleto','Cheque','Cartão Crédito','Cartão Débito','Depósito'].map(f => <option key={f} value={f}>{f}</option>)}
               </select>
             </div>
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
               <button onClick={() => setBaixando(null)} style={{ padding: '8px 18px', fontSize: '13px', background: 'transparent', color: R.dim, border: '1px solid var(--lab-bdr)', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
-              <button onClick={darBaixa} disabled={salvando || !dataPgto} style={{ padding: '8px 22px', fontSize: '13px', fontWeight: '600', background: !dataPgto || salvando ? R.dim : R.accent, color: '#fff', border: 'none', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>{salvando ? '...' : '✓ Confirmar'}</button>
+              <button onClick={darBaixa} disabled={salvando || !dataPgto} style={{ padding: '8px 22px', fontSize: '13px', fontWeight: '600', background: !dataPgto || salvando ? R.dim : R.accent, color: '#fff', border: 'none', borderRadius: '7px', cursor: 'pointer', fontFamily: 'inherit' }}>{salvando ? '...' : 'Confirmar'}</button>
             </div>
           </div>
         </div>
@@ -218,7 +216,7 @@ export default function LabContasReceber() {
       {novaModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ background: R.panel, border: '1px solid var(--lab-bdr)', borderRadius: '12px', padding: '24px', width: '440px' }}>
-            <h3 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: '700', color: R.txt }}>Novo Lançamento — Contas a Receber</h3>
+            <h3 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: '700', color: R.txt }}>Novo Lançamento · Contas a Receber</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div>
                 <label style={LBL}>Ótica *</label>

@@ -31,7 +31,7 @@ function gerarCodigo(): string {
   return `VISION-${s}`;
 }
 
-// GET /api/admin/codigos — lista todos os códigos
+// GET /api/admin/codigos: lista todos os códigos
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   if (!isAdmin(request, env)) return json({ error: 'Não autorizado' }, 401);
   await ensureTable(env);
@@ -41,7 +41,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
   return json(results || []);
 };
 
-// POST /api/admin/codigos — gera um novo código { nome_contato?, dias? }
+// POST /api/admin/codigos: gera um novo código { nome_contato?, dias? }
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
   if (!isAdmin(request, env)) return json({ error: 'Não autorizado' }, 401);
   await ensureTable(env);
@@ -63,7 +63,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   return json({ id, codigo, dias, nome_contato: body.nome_contato || null, usado: 0 });
 };
 
-// DELETE /api/admin/codigos?id=xxx — exclui um código
+// DELETE /api/admin/codigos?id=xxx: exclui um código
 export const onRequestDelete = async ({ request, env }: { request: Request; env: Env }) => {
   if (!isAdmin(request, env)) return json({ error: 'Não autorizado' }, 401);
   await ensureTable(env);
