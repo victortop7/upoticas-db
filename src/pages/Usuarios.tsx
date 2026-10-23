@@ -1,14 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
+import EditorPermissoes, { type PermUsuario, type DadosPermissoes } from '../components/EditorPermissoes';
 
 interface Usuario {
   id: string;
   nome: string;
   email: string;
-  perfil: 'admin' | 'vendedor' | 'caixa';
+  perfil: 'admin' | 'vendedor' | 'caixa' | 'financeiro' | 'marketing';
   ativo: boolean;
   loja_id?: string | null;
+  permissoes?: PermUsuario;
 }
 
 interface Loja { id: string; nome: string; }
@@ -17,15 +19,16 @@ interface ModalProps {
   usuario: Usuario | null;
   lojas: Loja[];
   onClose: () => void;
-  onSaved: () => void;
+  onSaved: (novoId?: string) => void;
 }
 
-const PERFIL_LABEL: Record<string, string> = { admin: 'Admin', vendedor: 'Vendedor', caixa: 'Caixa', marketing: 'Marketing' };
+const PERFIL_LABEL: Record<string, string> = { admin: 'Admin', vendedor: 'Vendedor', caixa: 'Caixa', marketing: 'Marketing', financeiro: 'Financeiro' };
 const PERFIL_COLOR: Record<string, { bg: string; color: string }> = {
   admin:     { bg: 'rgba(124,58,237,0.1)', color: '#7c3aed' },
   vendedor:  { bg: 'rgba(37,99,235,0.1)', color: '#2563eb' },
   caixa:     { bg: 'rgba(34,197,94,0.1)', color: '#16a34a' },
   marketing: { bg: 'rgba(236,72,153,0.1)', color: '#db2777' },
+  financeiro: { bg: 'rgba(217,119,6,0.1)', color: '#d97706' },
 };
 
 function UsuarioModal({ usuario, lojas, onClose, onSaved }: ModalProps) {
@@ -46,10 +49,11 @@ function UsuarioModal({ usuario, lojas, onClose, onSaved }: ModalProps) {
     try {
       if (usuario) {
         await api.put(`/usuarios/${usuario.id}`, form);
+        onSaved();
       } else {
-        await api.post('/usuarios', form);
+        const r = await api.post<{ id: string }>('/usuarios', form);
+        onSaved(form.perfil !== 'admin' ? r.id : undefined);
       }
-      onSaved();
     } catch (err: any) {
       setErro(err.message || 'Erro ao salvar');
     } finally {
@@ -93,6 +97,7 @@ function UsuarioModal({ usuario, lojas, onClose, onSaved }: ModalProps) {
                 <option value="admin">Admin</option>
                 <option value="vendedor">Vendedor</option>
                 <option value="caixa">Caixa</option>
+                <option value="financeiro">Financeiro</option>
                 <option value="marketing">Marketing</option>
               </select>
             </div>
@@ -136,6 +141,8 @@ export default function Usuarios() {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editando, setEditando] = useState<Usuario | null>(null);
+  const [permDe, setPermDe] = useState<Usuario | null>(null);
+  const [abrirPermDe, setAbrirPermDe] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -153,6 +160,18 @@ export default function Usuarios() {
   const lojaNome = (id?: string | null) => lojas.find(l => l.id === id)?.nome;
 
   useEffect(() => { load(); }, [load]);
+  // depois de cadastrar alguém, já abre as permissões dessa pessoa
+  useEffect(() => {
+    if (!abrirPermDe) return;
+    const u = usuarios.find(x => x.id === abrirPermDe);
+    if (u) { setPermDe(u); setAbrirPermDe(null); }
+  }, [abrirPermDe, usuarios]);
+
+  async function salvarPermissoes(u: Usuario, d: DadosPermissoes) {
+    await api.put(`/usuarios/${u.id}/permissoes`, d);
+    setPermDe(null);
+    load();
+  }
 
   async function desativar(id: string, nome: string) {
     if (!confirm(`Desativar usuário "${nome}"?`)) return;
@@ -184,16 +203,16 @@ export default function Usuarios() {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border)' }}>
-              {['Nome', 'E-mail', 'Perfil', 'Loja', 'Status', ''].map(h => (
+              {['Nome', 'E-mail', 'Cargo', 'Loja', 'Acesso', 'Status', ''].map(h => (
                 <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', background: 'var(--surface-alt)' }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>Carregando...</td></tr>
+              <tr><td colSpan={7} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>Carregando...</td></tr>
             ) : !usuarios.length ? (
-              <tr><td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>Nenhum usuário encontrado.</td></tr>
+              <tr><td colSpan={7} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>Nenhum usuário encontrado.</td></tr>
             ) : usuarios.map((u, i) => {
               const pc = PERFIL_COLOR[u.perfil] || PERFIL_COLOR.vendedor;
               const isMe = u.id === meUsuario?.id;
@@ -215,7 +234,10 @@ export default function Usuarios() {
                     </span>
                   </td>
                   <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-dim)' }}>
-                    {u.perfil === 'admin' ? 'Todas' : (lojaNome(u.loja_id) || '-')}
+                    {u.perfil === 'admin' || u.permissoes?.todas_lojas ? 'Todas' : (lojaNome(u.loja_id) || '-')}
+                  </td>
+                  <td style={{ padding: '12px 16px', fontSize: '12.5px', color: 'var(--text-dim)' }}>
+                    {u.perfil === 'admin' ? 'Tudo' : Array.isArray(u.permissoes?.menus) ? `${u.permissoes!.menus!.length} telas (personalizado)` : 'Padrão do cargo'}
                   </td>
                   <td style={{ padding: '12px 16px' }}>
                     <span style={{ fontSize: '12px', fontWeight: '500', color: u.ativo ? '#16a34a' : '#dc2626' }}>
@@ -225,6 +247,7 @@ export default function Usuarios() {
                   <td style={{ padding: '12px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                     {isAdmin && (
                       <>
+                        <button onClick={() => setPermDe(u)} style={{ padding: '5px 10px', fontSize: '12px', marginRight: '6px', background: 'transparent', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer' }}>Permissões</button>
                         <button onClick={() => { setEditando(u); setModalOpen(true); }} style={{ padding: '5px 10px', fontSize: '12px', marginRight: '6px', background: 'var(--primary-dim)', color: 'var(--primary)', border: '1px solid transparent', borderRadius: '6px', cursor: 'pointer' }}>Editar</button>
                         {!isMe && u.ativo && (
                           <button onClick={() => desativar(u.id, u.nome)} style={{ padding: '5px 10px', fontSize: '12px', background: 'var(--red-dim)', color: 'var(--red)', border: '1px solid transparent', borderRadius: '6px', cursor: 'pointer' }}>Desativar</button>
@@ -244,8 +267,25 @@ export default function Usuarios() {
           usuario={editando}
           lojas={lojas}
           onClose={() => setModalOpen(false)}
-          onSaved={() => { setModalOpen(false); load(); }}
+          onSaved={(novoId) => { setModalOpen(false); load(); if (novoId) setAbrirPermDe(novoId); }}
         />
+      )}
+
+      {permDe && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+          onClick={e => e.target === e.currentTarget && setPermDe(null)}>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, width: '100%', maxWidth: 640, maxHeight: '92vh', overflowY: 'auto', padding: '20px 22px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+              <div>
+                <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: 'var(--text)' }}>Permissões · {permDe.nome}</h2>
+                <p style={{ margin: '3px 0 0', fontSize: 12.5, color: 'var(--text-muted)' }}>Defina o cargo, a loja e quais telas essa pessoa pode abrir.</p>
+              </div>
+              <button onClick={() => setPermDe(null)} style={{ width: 30, height: 30, border: 'none', borderRadius: 6, background: 'var(--surface-alt)', color: 'var(--text-dim)', cursor: 'pointer', fontSize: 16 }}>×</button>
+            </div>
+            <EditorPermissoes u={permDe} lojas={lojas} euMesmo={permDe.id === meUsuario?.id}
+              onSalvar={d => salvarPermissoes(permDe, d)} onCancelar={() => setPermDe(null)} />
+          </div>
+        </div>
       )}
     </div>
   );

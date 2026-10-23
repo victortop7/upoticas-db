@@ -4,16 +4,24 @@ import { requireAuth, json } from '../../lib/auth-middleware';
 import { hashPassword } from '../../lib/jwt';
 import { ensureLojaCols } from '../../lib/lojas';
 
+let colPermissoes = false;
+
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;
   await ensureLojaCols(env.DB);
+  if (!colPermissoes) { try { await env.DB.prepare('ALTER TABLE usuarios ADD COLUMN permissoes TEXT').run(); } catch { /* já existe */ } colPermissoes = true; }
 
   const result = await env.DB.prepare(
-    'SELECT id, nome, email, perfil, ativo, loja_id, created_at FROM usuarios WHERE tenant_id = ? ORDER BY nome ASC'
-  ).bind(auth.tenant_id).all();
+    'SELECT id, nome, email, perfil, ativo, loja_id, permissoes, created_at FROM usuarios WHERE tenant_id = ? ORDER BY nome ASC'
+  ).bind(auth.tenant_id).all<Record<string, unknown>>();
+  const usuarios = (result.results || []).map(u => {
+    let permissoes = null;
+    try { permissoes = u.permissoes ? JSON.parse(String(u.permissoes)) : null; } catch { /* inválido */ }
+    return { ...u, permissoes };
+  });
 
-  return json({ usuarios: result.results });
+  return json({ usuarios });
 };
 
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
