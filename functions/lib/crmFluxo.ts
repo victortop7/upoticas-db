@@ -14,6 +14,12 @@ export async function ensureCrmFluxo(db: D1Database) {
   if (jaGarantiu) return;
   await ensureReceber(db);
   try { await db.prepare('ALTER TABLE crm_cards ADD COLUMN quitado_em TEXT').run(); } catch { /* já existe */ }
+  // OS copiadas do Connect Vision nasciam com o valor total "em aberto" sem nunca ter cobrança.
+  // Zera o restante das que nunca tiveram pagamento lançado (não mexe nas que receberam algo).
+  try {
+    await db.prepare(`UPDATE ordens_servico SET valor_restante = 0
+      WHERE valor_restante > 0 AND COALESCE(valor_entrada, 0) = 0 AND observacao LIKE 'Connect Vision%'`).run();
+  } catch { /* ok */ }
   jaGarantiu = true;
 }
 
@@ -34,8 +40,9 @@ const DEVEDORES = `
    WHERE p.tenant_id = ? AND p.status != 'pago' AND p.vencimento < ? AND c.cliente_id IS NOT NULL
   UNION
   SELECT os.cliente_id FROM ordens_servico os
-   WHERE os.tenant_id = ? AND COALESCE(os.valor_restante, 0) > 0.009 AND os.situacao != 'cancelado'
-     AND NOT EXISTS (SELECT 1 FROM vendas v WHERE v.tenant_id = os.tenant_id AND v.os_id = os.id)`;
+   WHERE os.tenant_id = ? AND COALESCE(os.valor_restante, 0) > 0.009 AND os.situacao NOT IN ('cancelado', 'orcamento')
+     AND NOT EXISTS (SELECT 1 FROM vendas v WHERE v.tenant_id = os.tenant_id AND (v.os_id = os.id
+       OR (v.cliente_id = os.cliente_id AND v.situacao != 'cancelada' AND date(v.created_at) >= date(os.created_at, '-2 days'))))`;
 
 export async function aplicarFluxoReceber(db: D1Database, tenant: string, naoCustom = '') {
   await ensureCrmFluxo(db);
@@ -53,10 +60,14 @@ export async function aplicarFluxoReceber(db: D1Database, tenant: string, naoCus
   // 2. Quem estava em A Receber e não deve mais: sai, e marca a data da quitação
   await db.prepare(`
     UPDATE crm_cards SET
-      estagio = CASE WHEN EXISTS (SELECT 1 FROM ordens_servico os WHERE os.tenant_id = crm_cards.tenant_id AND os.cliente_id = crm_cards.cliente_id
-                                    AND os.situacao IN ('orcamento', 'aprovado', 'em_producao'))
-                     THEN 'oculos_pendente' ELSE 'oculos_pronto' END,
-      quitado_em = ?, updated_at = datetime('now')
+      estagio = CASE
+        WHEN EXISTS (SELECT 1 FROM ordens_servico os WHERE os.tenant_id = crm_cards.tenant_id AND os.cliente_id = crm_cards.cliente_id
+                     AND os.situacao IN ('aprovado', 'em_producao', 'aberta')) THEN 'oculos_pendente'
+        WHEN (EXISTS (SELECT 1 FROM vendas v WHERE v.tenant_id = crm_cards.tenant_id AND v.cliente_id = crm_cards.cliente_id AND v.situacao != 'cancelada')
+                  OR EXISTS (SELECT 1 FROM ordens_servico os WHERE os.tenant_id = crm_cards.tenant_id AND os.cliente_id = crm_cards.cliente_id AND os.situacao NOT IN ('orcamento', 'cancelado'))) THEN 'oculos_pronto'
+        ELSE 'contato' END,  -- só tinha orçamento: volta pra Em andamento
+      quitado_em = CASE WHEN (EXISTS (SELECT 1 FROM vendas v WHERE v.tenant_id = crm_cards.tenant_id AND v.cliente_id = crm_cards.cliente_id AND v.situacao != 'cancelada')
+                  OR EXISTS (SELECT 1 FROM ordens_servico os WHERE os.tenant_id = crm_cards.tenant_id AND os.cliente_id = crm_cards.cliente_id AND os.situacao NOT IN ('orcamento', 'cancelado'))) THEN ? ELSE NULL END, updated_at = datetime('now')
     WHERE tenant_id = ? AND estagio = 'a_receber'
       AND cliente_id NOT IN (${DEVEDORES})
   `).bind(hoje, tenant, ...pDev).run();
@@ -82,10 +93,10 @@ export async function aplicarFluxoReceber(db: D1Database, tenant: string, naoCus
 // Valores que aparecem no card de A Receber (mesma regra de quem deve)
 export const SQL_CARD_PENDENTES = {
   // OS sem venda ligada
-  os: `(SELECT COALESCE(SUM(os.valor_restante),0) FROM ordens_servico os WHERE os.cliente_id = c.id AND os.tenant_id = cc.tenant_id AND os.valor_restante > 0.009 AND os.situacao != 'cancelado'
-        AND NOT EXISTS (SELECT 1 FROM vendas v2 WHERE v2.tenant_id = os.tenant_id AND v2.os_id = os.id))`,
-  osId: `(SELECT os.id FROM ordens_servico os WHERE os.cliente_id = c.id AND os.tenant_id = cc.tenant_id AND os.valor_restante > 0.009 AND os.situacao != 'cancelado'
-        AND NOT EXISTS (SELECT 1 FROM vendas v2 WHERE v2.tenant_id = os.tenant_id AND v2.os_id = os.id) ORDER BY os.created_at DESC LIMIT 1)`,
+  os: `(SELECT COALESCE(SUM(os.valor_restante),0) FROM ordens_servico os WHERE os.cliente_id = c.id AND os.tenant_id = cc.tenant_id AND os.valor_restante > 0.009 AND os.situacao NOT IN ('cancelado', 'orcamento')
+        AND NOT EXISTS (SELECT 1 FROM vendas v2 WHERE v2.tenant_id = os.tenant_id AND (v2.os_id = os.id OR (v2.cliente_id = os.cliente_id AND v2.situacao != 'cancelada' AND date(v2.created_at) >= date(os.created_at, '-2 days')))))`,
+  osId: `(SELECT os.id FROM ordens_servico os WHERE os.cliente_id = c.id AND os.tenant_id = cc.tenant_id AND os.valor_restante > 0.009 AND os.situacao NOT IN ('cancelado', 'orcamento')
+        AND NOT EXISTS (SELECT 1 FROM vendas v2 WHERE v2.tenant_id = os.tenant_id AND (v2.os_id = os.id OR (v2.cliente_id = os.cliente_id AND v2.situacao != 'cancelada' AND date(v2.created_at) >= date(os.created_at, '-2 days')))) ORDER BY os.created_at DESC LIMIT 1)`,
   // saldo de venda fora do carnê
   venda: `(SELECT COALESCE(SUM(MAX(0, v.saldo_restante - COALESCE((SELECT SUM(p.valor) FROM carne_parcelas p JOIN carnes k ON k.id = p.carne_id WHERE k.venda_id = v.id), 0))), 0)
         FROM vendas v WHERE v.cliente_id = c.id AND v.tenant_id = cc.tenant_id AND v.situacao != 'cancelada' AND v.saldo_restante > 0.009)`,

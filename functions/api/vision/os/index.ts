@@ -144,7 +144,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       null, null, null,
       num(body.arm_dnp), num(body.arm_alt_pupilar ?? body.od_alt), num(body.od_adicao ?? body.oe_adicao),
       null, (body.lente_desc as string) || null,
-      valorTotal, 0, valorTotal,
+      valorTotal, 0, 0, // sem "restante": o Vision não recebe pagamento; quem controla é a venda
       null, (body.medico_nome as string) || null, `Connect Vision · O.S. #${numero}`, auth.usuario_id,
       now, now
     ).run();
