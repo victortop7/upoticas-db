@@ -180,6 +180,15 @@ function NovoItem({ categorias, catInicial, subInicial, onClose, onSaved }: { ca
   );
 }
 
+// O que cada categoria guarda dentro dela, pelo nome (só muda os textos e as sugestões)
+function tipoDaCategoria(nome: string) {
+  const n = nome.toLowerCase();
+  if (/limp/.test(n)) return { singular: 'produto', plural: 'produtos', exemplo: 'Spray limpa lentes', sugestoes: ['Spray limpa lentes', 'Flanela', 'Álcool', 'Papel toalha', 'Detergente', 'Desinfetante', 'Pano multiuso'] };
+  if (/aces/.test(n)) return { singular: 'tipo', plural: 'tipos', exemplo: 'Relógio', sugestoes: ['Relógio', 'Chaveiro', 'Estojo', 'Cordão', 'Corrente para óculos', 'Flanela', 'Bolsa'] };
+  if (/arma|sol|esport|óculos|oculos|grife|ray|chilli/.test(n)) return { singular: 'material', plural: 'materiais', exemplo: 'Metal', sugestoes: ['Metal', 'Acetato', 'TR90', 'Parafusada', 'Clip On', 'Nylon', '360'] };
+  return { singular: 'item', plural: 'itens', exemplo: 'Nome', sugestoes: [] as string[] };
+}
+
 // Criar / renomear / excluir categorias e subcategorias
 function GerenciarCategorias({ categorias, onClose, onMudou }: { categorias: Categoria[]; onClose: () => void; onMudou: () => void }) {
   const [nova, setNova] = useState('');
@@ -202,41 +211,89 @@ function GerenciarCategorias({ categorias, onClose, onMudou }: { categorias: Cat
     if (!confirm(`Excluir "${nome}"?`)) return;
     try { await api.delete(`/estoque/categorias/${id}`); onMudou(); } catch (e) { setErro(e instanceof Error ? e.message : 'Erro'); }
   }
-  const mini: React.CSSProperties = { fontSize: 11.5, padding: '3px 8px', background: 'transparent', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--text-dim)', cursor: 'pointer' };
+  const [abrindo, setAbrindo] = useState<string | null>(null);
+  const [ocupado, setOcupado] = useState(false);
+  async function adicionarVarios(catId: string, nomes: string[]) {
+    setOcupado(true); setErro('');
+    try { for (const n of nomes) await api.post('/estoque/categorias', { nome: n, parent_id: catId }); onMudou(); }
+    catch (e) { setErro(e instanceof Error ? e.message : 'Erro'); }
+    setOcupado(false);
+  }
   return (
-    <Janela titulo="Categorias do estoque" onClose={onClose} largura={560}>
-      <p style={{ margin: '0 0 14px', fontSize: 13, color: 'var(--text-dim)' }}>Cada categoria vira uma aba: use uma por <b>linha ou grife</b> (ex.: Armação Conceito, Ray-Ban, Chilli Beans). Dentro, as subcategorias são o <b>material</b> (Metal, Acetato, TR90, Nylon, Parafusada, Clip On, 360).</p>
+    <Janela titulo="Categorias do estoque" onClose={onClose} largura={620}>
+      <p style={{ margin: '0 0 14px', fontSize: 13, color: 'var(--text-dim)', lineHeight: 1.5 }}>
+        Cada categoria vira uma aba. Dentro dela ficam os itens que você controla: em armações e óculos, o <b>material</b>;
+        em limpeza, os <b>produtos de uso da loja</b>; em acessórios, o <b>tipo</b> (relógio, chaveiro...).
+      </p>
       {erro && <div style={{ color: 'var(--red)', fontSize: 13, marginBottom: 10 }}>{erro}</div>}
       <div style={{ display: 'grid', gap: 10 }}>
-        {categorias.map(c => (
-          <div key={c.id} style={{ border: '1px solid var(--border)', borderRadius: 10, padding: '10px 12px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-              <b style={{ color: 'var(--text)', fontSize: 14 }}>{c.nome} <span style={{ fontSize: 11.5, fontWeight: 400, color: 'var(--text-muted)' }}>· {c.itens} modelo(s)</span></b>
-              <span style={{ display: 'flex', gap: 6 }}>
-                <button style={mini} onClick={() => renomear(c.id, c.nome)}>Renomear</button>
-                <button style={{ ...mini, color: 'var(--red)' }} onClick={() => excluir(c.id, c.nome)}>Excluir</button>
-              </span>
+        {categorias.map(c => {
+          const tipo = tipoDaCategoria(c.nome);
+          const existentes = new Set(c.subs.map(x => x.nome.toLowerCase()));
+          const faltam = tipo.sugestoes.filter(n => !existentes.has(n.toLowerCase()));
+          const aberto = abrindo === c.id;
+          return (
+            <div key={c.id} style={{ border: '1px solid var(--border)', borderRadius: 10, padding: '12px 14px', background: 'var(--surface)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 14.5, fontWeight: 700, color: 'var(--text)' }}>{c.nome}</div>
+                  <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>{c.subs.length} {c.subs.length === 1 ? tipo.singular : tipo.plural} · {c.itens} no estoque</div>
+                </div>
+                <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                  <button className="btn btn-xs" onClick={() => renomear(c.id, c.nome)}><Icone nome="editar" size={13} />Renomear</button>
+                  <button className="btn btn-xs" onClick={() => excluir(c.id, c.nome)} title="Excluir categoria"><Icone nome="excluir" size={13} color="var(--red)" /></button>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10, alignItems: 'center' }}>
+                {c.subs.map(sb => (
+                  <span key={sb.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 2, height: 30, fontSize: 12.5, padding: '0 4px 0 10px', borderRadius: 6, background: 'var(--surface-alt)', border: '1px solid var(--border-light)', color: 'var(--text)' }}>
+                    {sb.nome}
+                    {sb.pecas ? <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-muted)', marginLeft: 4 }}>{sb.pecas}</span> : null}
+                    <button title={`Renomear ${sb.nome}`} onClick={() => renomear(sb.id, sb.nome)} style={{ display: 'inline-flex', padding: 4, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><Icone nome="editar" size={12} /></button>
+                    <button title={`Excluir ${sb.nome}`} onClick={() => excluir(sb.id, sb.nome)} style={{ display: 'inline-flex', padding: 4, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--red)' }}><Icone nome="fechar" size={13} /></button>
+                  </span>
+                ))}
+                {!aberto && (
+                  <button className="btn btn-xs" onClick={() => { setAbrindo(c.id); setErro(''); }} style={{ borderStyle: 'dashed', height: 30 }}>
+                    <Icone nome="mais" size={13} strokeWidth={2.2} />Adicionar {tipo.singular}
+                  </button>
+                )}
+              </div>
+
+              {aberto && (
+                <div style={{ marginTop: 10, padding: 10, borderRadius: 8, background: 'var(--surface-alt)', border: '1px solid var(--border)' }}>
+                  <form onSubmit={e => { e.preventDefault(); criar(novaSub[c.id] || '', c.id); }} style={{ display: 'flex', gap: 6 }}>
+                    <input autoFocus value={novaSub[c.id] || ''} onChange={e => setNovaSub(x => ({ ...x, [c.id]: e.target.value }))}
+                      placeholder={`Nome do ${tipo.singular} (ex.: ${tipo.exemplo})`} style={{ ...inp, height: 34, padding: '0 10px' }} />
+                    <button type="submit" className="btn btn-sm btn-prim" disabled={!(novaSub[c.id] || '').trim()}>Adicionar</button>
+                    <button type="button" className="btn btn-sm" onClick={() => setAbrindo(null)}>Fechar</button>
+                  </form>
+                  {faltam.length > 0 && (
+                    <div style={{ marginTop: 10 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                        <span style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>Sugestões, clique para adicionar</span>
+                        {faltam.length > 1 && <button type="button" disabled={ocupado} onClick={() => adicionarVarios(c.id, faltam)} style={{ fontSize: 12, fontWeight: 600, color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Adicionar todas</button>}
+                      </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                        {faltam.map(n => (
+                          <button key={n} type="button" className="btn btn-xs" disabled={ocupado} onClick={() => adicionarVarios(c.id, [n])}>
+                            <Icone nome="mais" size={12} />{n}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
-              {c.subs.map(s => (
-                <span key={s.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12.5, padding: '3px 4px 3px 10px', borderRadius: 6, background: 'var(--surface-alt)', border: '1px solid var(--border)', color: 'var(--text)' }}>
-                  {s.nome}
-                  <button title="Renomear" onClick={() => renomear(s.id, s.nome)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 11 }}>Renomear</button>
-                  <button title="Excluir" onClick={() => excluir(s.id, s.nome)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--red)', fontSize: 12 }}>×</button>
-                </span>
-              ))}
-              <form onSubmit={e => { e.preventDefault(); criar(novaSub[c.id] || '', c.id); }} style={{ display: 'inline-flex', gap: 4 }}>
-                <input value={novaSub[c.id] || ''} onChange={e => setNovaSub(s => ({ ...s, [c.id]: e.target.value }))} placeholder="+ subcategoria" style={{ ...inp, width: 130, padding: '4px 8px', fontSize: 12 }} />
-                {(novaSub[c.id] || '').trim() && <button type="submit" style={{ ...mini, background: 'var(--primary)', color: '#fff', border: 'none' }}>Add</button>}
-              </form>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       <form onSubmit={e => { e.preventDefault(); criar(nova); }} style={{ marginTop: 14, border: '1px dashed var(--border)', borderRadius: 10, padding: 12 }}>
         <div style={{ display: 'flex', gap: 8 }}>
-          <input value={nova} onChange={e => setNova(e.target.value)} placeholder="Nova grife / linha (ex.: Ray-Ban)" style={inp} />
-          <button type="submit" style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', whiteSpace: 'nowrap' }}>+ Criar aba</button>
+          <input value={nova} onChange={e => setNova(e.target.value)} placeholder="Nova categoria (ex.: Óculos Esporte, Ray-Ban)" style={{ ...inp, height: 36, padding: '0 10px' }} />
+          <button type="submit" className="btn btn-prim"><Icone nome="mais" size={15} strokeWidth={2.2} />Criar categoria</button>
         </div>
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, fontSize: 12.5, color: 'var(--text-dim)', cursor: 'pointer' }}>
           <input type="checkbox" checked={comMateriais} onChange={e => setComMateriais(e.target.checked)} />
