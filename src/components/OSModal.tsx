@@ -175,12 +175,11 @@ export default function OSModal({ os, onClose, onSaved, clienteInicial }: Props)
     <div style={{
       position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      zIndex: 1000, padding: '16px',
-    }} onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={{
-        background: 'var(--surface)', borderRadius: '16px',
-        border: '1px solid var(--border)', width: '100%', maxWidth: '820px',
-        maxHeight: '94vh', display: 'flex', flexDirection: 'column',
+      zIndex: 1000, padding: '12px',
+    }} className="modal-fundo" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal-largo" style={{
+        background: 'var(--surface)', borderRadius: '12px',
+        border: '1px solid var(--border)', display: 'flex', flexDirection: 'column',
         boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
       }}>
         {/* Header */}
@@ -204,7 +203,9 @@ export default function OSModal({ os, onClose, onSaved, clienteInicial }: Props)
         </div>
 
         {/* Conteúdo · tudo em uma tela só */}
-        <form onSubmit={handleSubmit} style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
+        <form onSubmit={handleSubmit} className="modal-form" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '20px 24px' }}>
+          <div className="modal-cols">
+          <div>
 
           {/* === CLIENTE & DADOS === */}
           <Section icon="clientes" title="Cliente & Dados">
@@ -287,7 +288,9 @@ export default function OSModal({ os, onClose, onSaved, clienteInicial }: Props)
               <textarea style={{ ...inputStyle, minHeight: '60px', resize: 'vertical' }} value={form.observacao} onChange={e => set('observacao', e.target.value)} placeholder="Notas adicionais..." />
             </div>
           </Section>
+          </div>
 
+          <div>
           {/* === RECEITA (GRAU) === */}
           <Section icon="oculos" title="Receita (Grau)">
             <div style={{ overflowX: 'auto' }}>
@@ -383,6 +386,8 @@ export default function OSModal({ os, onClose, onSaved, clienteInicial }: Props)
               </span>
             </div>
           </Section>
+          </div>
+          </div>
         </form>
 
         {/* Footer */}

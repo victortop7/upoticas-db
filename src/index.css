@@ -147,3 +147,17 @@ input, select, textarea, button { font-family: var(--sans); }
 .crm-card .crm-card-acoes { opacity: 0; pointer-events: none; transition: opacity .12s; }
 .crm-card:hover .crm-card-acoes, .crm-card:focus-within .crm-card-acoes { opacity: 1; pointer-events: auto; }
 .crm-card:hover { border-color: var(--border-light, #3a3a48) !important; }
+
+/* Janelas de cadastro (Venda, OS): largas e em colunas, viram 1 coluna em telas estreitas */
+.modal-largo { width: min(1180px, 100%); max-height: calc(100dvh - 24px); }
+.modal-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 28px; align-items: start; }
+.modal-cols > * { min-width: 0; }
+@media (max-width: 900px) {
+  .modal-cols { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 600px) {
+  .modal-largo { max-height: 100dvh; border-radius: 0 !important; }
+  .modal-fundo { padding: 0 !important; }
+  .modal-form { padding: 16px !important; }
+  .modal-grid-2 { grid-template-columns: minmax(0, 1fr) !important; }
+}

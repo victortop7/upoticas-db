@@ -433,12 +433,12 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
     <div style={{
       position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      zIndex: 1000, padding: '16px',
-    }} onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={{
-        background: 'var(--surface)', borderRadius: '16px',
-        border: '1px solid var(--border)', width: '100%', maxWidth: '480px',
-        maxHeight: '92vh', display: 'flex', flexDirection: 'column',
+      zIndex: 1000, padding: '12px',
+    }} className="modal-fundo" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal-largo" style={{
+        background: 'var(--surface)', borderRadius: '12px',
+        border: '1px solid var(--border)',
+        display: 'flex', flexDirection: 'column',
         boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
       }}>
         {/* Header */}
@@ -461,7 +461,9 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
           }}>×</button>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
+        <form onSubmit={handleSubmit} className="modal-form" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '20px 24px' }}>
+          <div className="modal-cols">
+          <div>
           {/* Cliente */}
           <div style={{ marginBottom: '14px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
@@ -545,19 +547,7 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
             </select>
           </div>
 
-          {isMarketing ? (
-            <div style={{
-              background: 'rgba(236,72,153,0.07)', border: '1px solid rgba(236,72,153,0.2)',
-              borderRadius: '10px', padding: '14px 18px', marginBottom: '14px',
-              display: 'flex', alignItems: 'center', gap: '10px',
-            }}>
-              <Icone nome="campanhas" size={17} color="#ec4899" />
-              <div>
-                <p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: '#db2777' }}>Venda de Marketing</p>
-                <p style={{ margin: '2px 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>Registrada sem valor · apenas para contabilização</p>
-              </div>
-            </div>
-          ) : (
+          {!isMarketing && (
             <>
               {/* Produtos / Itens da venda */}
               <div style={{ marginBottom: '14px' }}>
@@ -621,6 +611,52 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
                 }}>+ Item avulso</button>
               </div>
 
+            </>
+          )}
+
+          <div className="modal-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 6 }}>
+            <div>
+              <label style={labelStyle}>Origem do cliente</label>
+              <select style={inputStyle} value={form.origem} onChange={e => set('origem', e.target.value)}>
+                <option value="">Selecionar</option>
+                {ORIGENS.map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={labelStyle}>Prazo de entrega do óculos</label>
+              <input type="date" style={{ ...inputStyle, fontFamily: 'var(--mono)' }} value={form.prazo_entrega} onChange={e => set('prazo_entrega', e.target.value)} />
+            </div>
+          </div>
+          <p style={{ margin: '0 0 14px', fontSize: 12, color: 'var(--text-muted)' }}>
+            No Funil, o cliente fica em Em andamento até a data de entrega e depois passa para Óculos Pronto.
+          </p>
+
+          <div>
+            <label style={labelStyle}>Observação</label>
+            <textarea
+              style={{ ...inputStyle, minHeight: '70px', resize: 'vertical' }}
+              value={form.observacao}
+              onChange={e => set('observacao', e.target.value)}
+              placeholder="Notas adicionais..."
+            />
+          </div>
+          </div>
+
+          <div>
+          {isMarketing ? (
+            <div style={{
+              background: 'rgba(236,72,153,0.07)', border: '1px solid rgba(236,72,153,0.2)',
+              borderRadius: '10px', padding: '14px 18px', marginBottom: '14px',
+              display: 'flex', alignItems: 'center', gap: '10px',
+            }}>
+              <Icone nome="campanhas" size={17} color="#ec4899" />
+              <div>
+                <p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: '#db2777' }}>Venda de Marketing</p>
+                <p style={{ margin: '2px 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>Registrada sem valor · apenas para contabilização</p>
+              </div>
+            </div>
+          ) : (
+            <>
               {/* Forma de pagamento + Valores */}
               <div style={{ marginBottom: '14px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
@@ -818,31 +854,7 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
             </>
           )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: '200px 200px 1fr', gap: 12, alignItems: 'end' }}>
-            <div>
-              <label style={labelStyle}>Origem do cliente</label>
-              <select style={inputStyle} value={form.origem} onChange={e => set('origem', e.target.value)}>
-                <option value="">Selecionar</option>
-                {ORIGENS.map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
-              </select>
-            </div>
-            <div>
-              <label style={labelStyle}>Prazo de entrega do óculos</label>
-              <input type="date" style={{ ...inputStyle, fontFamily: 'var(--mono)' }} value={form.prazo_entrega} onChange={e => set('prazo_entrega', e.target.value)} />
-            </div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', paddingBottom: 9 }}>
-              No Funil, o cliente fica em Em andamento até esta data e depois passa para Óculos Pronto.
-            </div>
           </div>
-
-          <div>
-            <label style={labelStyle}>Observação</label>
-            <textarea
-              style={{ ...inputStyle, minHeight: '70px', resize: 'vertical' }}
-              value={form.observacao}
-              onChange={e => set('observacao', e.target.value)}
-              placeholder="Notas adicionais..."
-            />
           </div>
         </form>
 
