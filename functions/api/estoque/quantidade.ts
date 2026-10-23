@@ -77,3 +77,26 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     return json({ error: 'Erro interno', detail: String(err) }, 500);
   }
 };
+
+// GET /api/estoque/quantidade?categoria_id=&subcategoria_id=
+// Usado na venda: devolve o produto genérico do material (cria se ainda não existir) e quanto tem.
+export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
+  const auth = await requireAuth(request, env);
+  if (auth instanceof Response) return auth;
+  try {
+    await ensureEstoque(env.DB);
+    const url = new URL(request.url);
+    const cat = url.searchParams.get('categoria_id') || '';
+    if (!cat) return json({ error: 'categoria_id obrigatório' }, 400);
+    const p = await produtoGenerico(env, auth.tenant_id, cat, url.searchParams.get('subcategoria_id') || null);
+    if (!p) return json({ error: 'Categoria ou material não encontrado' }, 404);
+    const r = await env.DB.prepare(
+      `SELECT p.id, p.descricao, p.preco_venda, COALESCE(e.quantidade, 0) AS quantidade
+       FROM produtos p LEFT JOIN estoque e ON e.produto_id = p.id AND e.tenant_id = p.tenant_id
+       WHERE p.id = ? AND p.tenant_id = ?`
+    ).bind(p.id, auth.tenant_id).first<{ id: string; descricao: string; preco_venda: number; quantidade: number }>();
+    return json({ produto: r });
+  } catch (err) {
+    return json({ error: 'Erro interno', detail: String(err) }, 500);
+  }
+};

@@ -5,6 +5,8 @@ import type { Cliente } from '../types';
 import ClienteModal from './ClienteModal';
 import Icone from './Icone';
 import { ORIGENS } from '../lib/origens';
+import ArmacaoEstoque, { type Escolhido } from './ArmacaoEstoque';
+import OSNaVenda, { OS_VAZIA, type OSForm } from './OSNaVenda';
 
 interface Venda {
   id: string;
@@ -201,6 +203,10 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
   const [multiPag, setMultiPag] = useState(false);
   const [pags, setPags] = useState<PagLinha[]>([]);
   const [cartao, setCartao] = useState({ bandeira: '', parcelas: '1', conta: '' });
+  // Venda + OS na mesma tela: venda nova já vem com a OS marcada
+  const [gerarOS, setGerarOS] = useState(!venda && !isMarketing);
+  const [osForm, setOsForm] = useState<OSForm>(OS_VAZIA);
+  const setOs = (k: string, val: string) => setOsForm(f => ({ ...f, [k]: val }));
 
   useEffect(() => {
     if (!venda && clienteInicial) {
@@ -271,6 +277,11 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
     setItens(prev => [...prev, { produto_id: p.id, descricao: p.descricao, quantidade: 1, valor_unitario: p.preco_venda || 0, desconto: 0 }]);
     setBuscaProduto(''); setProdutos([]);
   }
+  // armação escolhida do estoque: vira item da venda (baixa) e já vai pra OS
+  function addDoEstoque(p: Escolhido) {
+    setItens(prev => [...prev, { produto_id: p.produto_id, descricao: p.descricao, quantidade: 1, valor_unitario: p.preco_venda || 0, desconto: 0 }]);
+    setOsForm(f => ({ ...f, armacao_desc: f.armacao_desc ? `${f.armacao_desc}, ${p.descricao}` : p.descricao }));
+  }
   function addAvulso() {
     setItens(prev => [...prev, { produto_id: null, descricao: '', quantidade: 1, valor_unitario: 0, desconto: 0 }]);
   }
@@ -325,6 +336,11 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
         }];
       }
     }
+    const comOS = gerarOS && !venda && !isMarketing;
+    if (comOS && !form.cliente_id) {
+      setErro('Selecione o cliente: a ordem de serviço precisa de cliente. Ou desmarque "Gerar ordem de serviço".');
+      return;
+    }
     const boletos = (pagamentos || []).filter(pg => pg.forma === 'boleto');
     const ehBoleto = boletos.length > 0;
     if (ehBoleto && !form.cliente_id) {
@@ -341,6 +357,7 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
         valor_entrada: (form.forma_pagamento === 'boleto' && form.valor_entrada === '') ? '0' : (form.valor_entrada || ''),
         ...(pagamentos ? { pagamentos } : {}),
         ...(isMarketing ? {} : { itens: itens.filter(it => it.descricao.trim()) }),
+        ...(comOS ? { os: osForm } : {}),
         ...(podeAgrupar && adicionais.length
           ? { adicionais: adicionais
               .filter(a => (parseFloat(a.valor_total) || 0) > 0)
@@ -549,9 +566,11 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
 
           {!isMarketing && (
             <>
+              <ArmacaoEstoque onEscolher={addDoEstoque} inputStyle={inputStyle} />
+
               {/* Produtos / Itens da venda */}
               <div style={{ marginBottom: '14px' }}>
-                <label style={labelStyle}>Produtos da venda (opcional)</label>
+                <label style={labelStyle}>Outros produtos e serviços</label>
                 <input
                   style={inputStyle}
                   placeholder="Buscar produto do catálogo..."
@@ -856,6 +875,15 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
 
           </div>
           </div>
+
+          {!venda && !isMarketing && (
+            <OSNaVenda ativo={gerarOS} onAtivo={setGerarOS} value={osForm} onChange={setOs} inputStyle={inputStyle} labelStyle={labelStyle} />
+          )}
+          {venda?.os_id && (
+            <div style={{ fontSize: 12.5, color: 'var(--text-muted)', marginTop: 4 }}>
+              Esta venda tem ordem de serviço vinculada. A receita fica na aba Ordens de Serviço.
+            </div>
+          )}
         </form>
 
         {/* Footer */}

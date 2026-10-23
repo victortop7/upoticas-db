@@ -4,6 +4,7 @@ import { sincronizarEstoqueVenda } from '../../lib/estoque';
 import { ensureLojaCols, filtroLoja, lojaParaGravar } from '../../lib/lojas';
 import { normalizarLinhas, recebidoDasLinhas, formaResumo, salvarPagamentos } from '../../lib/pagamentos';
 import { ensureCrmFluxo, recalcularFunil } from '../../lib/crmFluxo';
+import { criarOSDaVenda } from '../../lib/osVenda';
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   const auth = await requireAuth(request, env);
@@ -214,11 +215,20 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       if (prazo) await env.DB.prepare('UPDATE vendas SET prazo_entrega = ? WHERE id = ? AND tenant_id = ?').bind(prazo, id, auth.tenant_id).run();
       const origem = String((body as Record<string, unknown>).origem || '').trim().slice(0, 40);
       if (origem) await env.DB.prepare('UPDATE vendas SET origem = ? WHERE id = ? AND tenant_id = ?').bind(origem, id, auth.tenant_id).run();
+      // tela unificada: a OS do óculos nasce junto com a venda
+      const osBody = (body as Record<string, unknown>).os;
+      if (osBody && typeof osBody === 'object' && body.cliente_id && !body.os_id) {
+        const os = await criarOSDaVenda(env.DB, {
+          tenant: auth.tenant_id, usuarioId: funcionarioId, lojaId, clienteId: body.cliente_id,
+          vendaNumero: numero, valorFinal, prazo, os: osBody as Record<string, unknown>,
+        });
+        await env.DB.prepare('UPDATE vendas SET os_id = ? WHERE id = ? AND tenant_id = ?').bind(os.id, id, auth.tenant_id).run();
+      }
       if (body.cliente_id) await recalcularFunil(env.DB, auth.tenant_id, body.cliente_id);
     } catch { /* não bloqueia a venda */ }
 
     const venda = await env.DB.prepare(`
-      SELECT v.*, c.nome as cliente_nome FROM vendas v
+      SELECT v.*, c.nome as cliente_nome, (SELECT o.numero FROM ordens_servico o WHERE o.id = v.os_id) as os_numero FROM vendas v
       LEFT JOIN clientes c ON c.id = v.cliente_id WHERE v.id = ?
     `).bind(id).first();
     return json(venda, 201);

@@ -8,8 +8,7 @@ export const MENU_GRUPOS: GrupoMenu[] = [
   { label: 'Menu', items: [
     { to: '/dashboard', label: 'Painel', icon: 'painel' },
     { to: '/clientes', label: 'Clientes', icon: 'clientes' },
-    { to: '/os', label: 'Ordens de Serviço', icon: 'os' },
-    { to: '/vendas', label: 'Vendas', icon: 'vendas' },
+    { to: '/vendas', label: 'Vendas e OS', icon: 'vendas' },
     { to: '/crm', label: 'Funil CRM', icon: 'crm' },
     { to: '/relatorios', label: 'Relatórios', icon: 'relatorios' },
   ] },
@@ -60,7 +59,9 @@ export function menusPadrao(perfil?: string | null): string[] {
 export function menusDo(usuario: { perfil?: string; permissoes?: Permissoes | null } | null | undefined): string[] {
   if (usuario?.perfil === 'admin') return TODOS_MENUS;
   const m = usuario?.permissoes?.menus;
-  return Array.isArray(m) ? m.filter(x => TODOS_MENUS.includes(x)) : menusPadrao(usuario?.perfil);
+  if (!Array.isArray(m)) return menusPadrao(usuario?.perfil);
+  const lista = m.map(x => (x === '/os' ? '/vendas' : x));
+  return [...new Set(lista)].filter(x => TODOS_MENUS.includes(x));
 }
 
 // A rota atual está liberada? (/relatorios/exportar entra em /relatorios)

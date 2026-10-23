@@ -39,7 +39,7 @@ function formatDate(s?: string) {
   return `${d}/${m}/${y}`;
 }
 
-export default function OrdensServico() {
+export default function OrdensServico({ embutido = false }: { embutido?: boolean }) {
   const [data, setData] = useState<OSResponse | null>(null);
   const [busca, setBusca] = useState('');
   const [situacaoFiltro, setSituacaoFiltro] = useState('');
@@ -94,11 +94,11 @@ export default function OrdensServico() {
   });
 
   return (
-    <div style={{ padding: '32px' }}>
+    <div style={{ padding: embutido ? '20px 32px 32px' : '32px' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: '22px', fontWeight: '600', color: 'var(--text)' }}>Ordens de Serviço</h1>
+          {!embutido && <h1 style={{ margin: 0, fontSize: '22px', fontWeight: '600', color: 'var(--text)' }}>Ordens de Serviço</h1>}
           <p style={{ margin: '4px 0 0', fontSize: '14px', color: 'var(--text-dim)' }}>
             {data?.total ?? '...'} ordens no total
           </p>

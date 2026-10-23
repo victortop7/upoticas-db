@@ -33,8 +33,7 @@ import Dashboard from './pages/Dashboard';
 import Clientes from './pages/Clientes';
 import ClientePerfil from './pages/ClientePerfil';
 import CobrancaImprimir from './pages/CobrancaImprimir';
-import OrdensServico from './pages/OrdensServico';
-import Vendas from './pages/Vendas';
+import VendasOS from './pages/VendasOS';
 import Usuarios from './pages/Usuarios';
 import Vendedores from './pages/Vendedores';
 import Configuracoes from './pages/Configuracoes';
@@ -99,8 +98,8 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/clientes" element={<Clientes />} />
             <Route path="/clientes/:id" element={<ClientePerfil />} />
-            <Route path="/os" element={<OrdensServico />} />
-            <Route path="/vendas" element={<Vendas />} />
+            <Route path="/os" element={<Navigate to="/vendas?aba=os" replace />} />
+            <Route path="/vendas" element={<VendasOS />} />
             <Route path="/carnes" element={<Carnes />} />
             <Route path="/usuarios" element={<Usuarios />} />
             <Route path="/lojas" element={<Lojas />} />
