@@ -26,7 +26,7 @@ const AZ = {
 
 // Grupos do menu sanfona: nome mostrado e ícone
 const GRUPO_INFO: Record<string, { nome: string; icone: string }> = {
-  Menu: { nome: 'Principal', icone: 'painel' },
+  Menu: { nome: 'Principal', icone: 'clientes' },
   Financeiro: { nome: 'Financeiro', icone: 'dinheiro' },
   Marketing: { nome: 'Marketing', icone: 'campanhas' },
   Cadastros: { nome: 'Cadastros', icone: 'lista' },
@@ -96,7 +96,7 @@ export default function Sidebar() {
   }
 
   const grupos = MENU_GRUPOS
-    .map(g => ({ label: g.label, items: g.items.filter(i => liberados.includes(i.to)).map(i => (i.to === '/vendedores' && usuario?.perfil !== 'admin') ? { ...i, label: 'Ranking' } : i) }))
+    .map(g => ({ label: g.label, items: g.items.filter(i => i.to !== '/dashboard' && liberados.includes(i.to)).map(i => (i.to === '/vendedores' && usuario?.perfil !== 'admin') ? { ...i, label: 'Ranking' } : i) }))
     .filter(g => g.items.length > 0);
 
   // grupo da tela atual abre sozinho; um grupo aberto por vez
@@ -159,6 +159,17 @@ export default function Sidebar() {
           <span style={{ ...texto, flex: 1 }}>Buscar...</span>
           <kbd style={{ ...texto, fontSize: '10px', padding: '1px 5px', marginRight: 8, borderRadius: '3px', background: 'rgba(255,255,255,0.1)', border: `1px solid ${AZ.borda}`, fontFamily: 'var(--mono)', color: AZ.suave }}>Ctrl K</kbd>
         </button>
+        {liberados.includes('/dashboard') && (
+          <NavLink to="/dashboard" title="Painel" className="menu-azul-item"
+            style={({ isActive }) => ({
+              ...linhaBtn, height: 38, fontWeight: isActive ? 700 : 600, fontSize: '13.5px', textDecoration: 'none',
+              color: isActive ? AZ.ativoTexto : AZ.texto,
+              background: isActive ? AZ.ativo : 'transparent',
+            })}>
+            <Icone nome="painel" size={17} />
+            <span style={texto}>Painel</span>
+          </NavLink>
+        )}
         {grupos.map(({ label, items }) => {
           const info = GRUPO_INFO[label] || { nome: label, icone: 'lista' };
           const ativo = grupoAtivo === label;
