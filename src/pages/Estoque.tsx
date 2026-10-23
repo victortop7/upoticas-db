@@ -52,7 +52,7 @@ function PainelQuantidade({ cat, itens, onMudou }: { cat: Categoria; itens: Item
         Controle <b>por quantidade</b>: sem código nem preço por peça. Total em {cat.nome}: <b style={{ fontFamily: 'var(--mono)', color: 'var(--text)' }}>{total}</b> peça(s).
         Na venda, a vendedora escolhe <b>"{cat.nome} {linhas[0].id ? linhas[0].nome : ''}"</b> e digita o valor · o estoque baixa sozinho.
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(270px, 1fr))', gap: 12 }}>
         {linhas.map(l => {
           const it = itemDe(l.id);
           const q = it?.quantidade ?? 0;
@@ -64,13 +64,15 @@ function PainelQuantidade({ cat, itens, onMudou }: { cat: Categoria; itens: Item
                 <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{l.nome}</span>
                 {it?.preco_venda ? <span style={{ fontSize: 11.5, fontFamily: 'var(--mono)', color: 'var(--text-muted)' }}>{brl(it.preco_venda)}</span> : null}
               </div>
-              <div style={{ fontSize: 34, fontWeight: 800, fontFamily: 'var(--mono)', color: q < 0 || baixo ? 'var(--red)' : q === 0 ? 'var(--text-muted)' : 'var(--text)', margin: '4px 0 10px' }}>{q}</div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, margin: '6px 0 14px' }}>
+                <span style={{ fontSize: 32, lineHeight: 1, fontWeight: 800, fontFamily: 'var(--mono)', color: q < 0 || baixo ? 'var(--red)' : q === 0 ? 'var(--text-muted)' : 'var(--text)' }}>{q}</span>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{q === 1 ? 'peça' : 'peças'}</span>
+              </div>
               {!aberto ? (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
+                <div className="acoes-barra">
                   {(['entrada', 'saida', 'ajuste'] as const).map(t => (
-                    <button key={t} className="btn btn-sm" title={t === 'entrada' ? 'Dar entrada de peças' : t === 'saida' ? 'Registrar saída' : 'Contar o que tem na loja'}
-                      onClick={() => { setAcao({ sub: l.id, tipo: t }); setQtd(''); setPreco(''); setDoc(''); setErro(''); }}
-                      style={{ padding: '0 6px' }}>
+                    <button key={t} title={t === 'entrada' ? 'Dar entrada de peças' : t === 'saida' ? 'Registrar saída' : 'Contar o que tem na loja'}
+                      onClick={() => { setAcao({ sub: l.id, tipo: t }); setQtd(''); setPreco(''); setDoc(''); setErro(''); }}>
                       <Icone nome={t === 'entrada' ? 'mais' : t === 'saida' ? 'menos' : 'contar'} size={14} color={cores[t]} strokeWidth={2.2} />
                       {t === 'entrada' ? 'Entrada' : t === 'saida' ? 'Saída' : 'Contar'}
                     </button>

@@ -184,3 +184,10 @@ input, select, textarea, button { font-family: var(--sans); }
 .aba-linha:hover { color: var(--text); border-bottom-color: var(--border-light); }
 .aba-linha.on { color: var(--text); font-weight: 700; border-bottom-color: var(--primary); }
 .aba-linha .aba-n { font-size: 11px; font-family: var(--mono); color: var(--text-muted); background: var(--surface-alt); border-radius: 5px; padding: 1px 6px; }
+
+/* Barra de ações dividida em partes iguais (ex.: Entrada | Saída | Contar) */
+.acoes-barra { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--border-light); border-radius: 8px; overflow: hidden; background: var(--surface-alt); }
+.acoes-barra button { display: flex; align-items: center; justify-content: center; gap: 6px; height: 36px; min-width: 0; padding: 0 6px; font: inherit; font-size: 12.5px; font-weight: 600; color: var(--text); background: transparent; border: none; border-left: 1px solid var(--border-light); cursor: pointer; white-space: nowrap; overflow: hidden; transition: background .15s; }
+.acoes-barra button:first-child { border-left: none; }
+.acoes-barra button:hover { background: var(--surface); }
+.acoes-barra button:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
