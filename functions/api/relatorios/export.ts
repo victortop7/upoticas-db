@@ -1,7 +1,7 @@
 import type { PagesFunction } from '@cloudflare/workers-types';
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
-import { ensureLojaCols, filtroLoja } from '../../lib/lojas';
+import { ensureLojaCols, filtroRelatorio } from '../../lib/lojas';
 
 // GET /api/relatorios/export?inicio=&fim=
 // Vendas do período agrupadas por vendedor (p/ exportar em PDF).
@@ -15,7 +15,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     const inicio = url.searchParams.get('inicio') || new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
     const fim = url.searchParams.get('fim') || new Date().toISOString().split('T')[0];
 
-    const fl = filtroLoja(auth, 'v.loja_id');
+    const fl = filtroRelatorio(auth, 'v.loja_id', 'v.funcionario_id');
 
     const [rows, tenant, loja] = await Promise.all([
       env.DB.prepare(`

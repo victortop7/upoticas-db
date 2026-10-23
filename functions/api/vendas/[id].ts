@@ -115,6 +115,13 @@ export const onRequestPut = async ({ request, env, params }: { request: Request;
 
     // prazo de entrega (se veio) e recalcula o funil
     try {
+      const origem = (body as Record<string, unknown>).origem;
+      if (origem !== undefined) {
+        const { ensureCrmFluxo } = await import('../../lib/crmFluxo');
+        await ensureCrmFluxo(env.DB);
+        await env.DB.prepare('UPDATE vendas SET origem = ? WHERE id = ? AND tenant_id = ?')
+          .bind(String(origem || '').trim().slice(0, 40) || null, params.id, auth.tenant_id).run();
+      }
       const prazo = (body as Record<string, unknown>).prazo_entrega;
       if (prazo !== undefined) {
         const { ensureCrmFluxo } = await import('../../lib/crmFluxo');

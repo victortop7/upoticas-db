@@ -1,9 +1,10 @@
+import { nomeOrigem } from './origens';
 // Definições do relatório personalizado: colunas, seções, resumos e exportação (CSV/XLSX).
 
 export interface VendaRow {
   id: string; numero: number; data: string; situacao: string;
   cliente_id: string; cliente: string; cpf: string;
-  vendedor_id: string; vendedor: string;
+  vendedor_id: string; vendedor: string; origem?: string;
   os_id: string; os_numero: number | null; grupo_venda_id: string;
   forma: string; valor_bruto: number; desconto: number; valor_final: number;
   recebido: number; saldo: number; doc_original: string;
@@ -42,6 +43,7 @@ export const COLS_VENDAS: Coluna<VendaRow>[] = [
   { key: 'cliente_id', label: 'ID cliente', fmt: 'text', get: r => r.cliente_id },
   { key: 'vendedor', label: 'Vendedor / usuário', fmt: 'text', get: r => r.vendedor, padrao: true },
   { key: 'vendedor_id', label: 'ID vendedor', fmt: 'text', get: r => r.vendedor_id },
+  { key: 'origem', label: 'Origem do cliente', fmt: 'text', get: r => nomeOrigem(r.origem), padrao: true },
   { key: 'forma', label: 'Pagamento', fmt: 'text', get: r => forma(r.forma), padrao: true },
   { key: 'valor_bruto', label: 'Valor bruto', fmt: 'brl', get: r => r.valor_bruto },
   { key: 'desconto', label: 'Desconto', fmt: 'brl', get: r => r.desconto, padrao: true },

@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import type { Cliente } from '../types';
 import ClienteModal from './ClienteModal';
 import Icone from './Icone';
+import { ORIGENS } from '../lib/origens';
 
 interface Venda {
   id: string;
@@ -86,6 +87,7 @@ const EMPTY = {
   cliente_id: '', os_id: '', situacao: 'ativa',
   valor_total: '', desconto: '', valor_entrada: '', forma_pagamento: 'pix', observacao: '',
   prazo_entrega: '',
+  origem: '',
 };
 
 interface UsuarioSimples { id: string; nome: string; perfil: string; }
@@ -222,6 +224,7 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
         forma_pagamento: venda.forma_pagamento || 'pix',
         observacao: venda.observacao || '',
         prazo_entrega: ((venda as unknown as { prazo_entrega?: string }).prazo_entrega || '').slice(0, 10),
+        origem: (venda as unknown as { origem?: string }).origem || '',
       });
       api.get<{ itens?: ItemVenda[]; pagamentos?: PagApi[] }>(`/vendas/${venda.id}`).then(r => {
         const ps = r.pagamentos || [];
@@ -815,7 +818,14 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
             </>
           )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: 12, alignItems: 'end' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '200px 200px 1fr', gap: 12, alignItems: 'end' }}>
+            <div>
+              <label style={labelStyle}>Origem do cliente</label>
+              <select style={inputStyle} value={form.origem} onChange={e => set('origem', e.target.value)}>
+                <option value="">Selecionar</option>
+                {ORIGENS.map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
+              </select>
+            </div>
             <div>
               <label style={labelStyle}>Prazo de entrega do óculos</label>
               <input type="date" style={{ ...inputStyle, fontFamily: 'var(--mono)' }} value={form.prazo_entrega} onChange={e => set('prazo_entrega', e.target.value)} />

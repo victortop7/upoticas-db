@@ -37,6 +37,14 @@ export function filtroLojaComLegado(auth: AuthData, coluna = 'loja_id'): { sql: 
   return { sql: '', params: [] };
 }
 
+// Relatórios: vendedor (não-admin) só enxerga as PRÓPRIAS vendas, dentro da loja dele.
+// colLoja/colFunc: colunas com alias (ex.: 'v.loja_id', 'v.funcionario_id').
+export function filtroRelatorio(auth: AuthData, colLoja = 'loja_id', colFunc = 'funcionario_id'): { sql: string; params: string[]; soMeu: boolean } {
+  const fl = filtroLoja(auth, colLoja);
+  if (auth.perfil === 'admin') return { ...fl, soMeu: false };
+  return { sql: `${fl.sql} AND ${colFunc} = ?`, params: [...fl.params, auth.usuario_id], soMeu: true };
+}
+
 // loja_id a gravar ao criar um registro: a loja do vendedor; admin pode escolher via body.
 export function lojaParaGravar(auth: AuthData, bodyLojaId?: string | null): string | null {
   if (auth.perfil === 'admin') return bodyLojaId || null;

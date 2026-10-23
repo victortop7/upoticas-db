@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 import Icone from '../components/Icone';
+import { nomeOrigem } from '../lib/origens';
 
 interface Resumo {
   periodo: { inicio: string; fim: string };
@@ -12,6 +13,8 @@ interface Resumo {
   top_clientes: { nome: string; compras: number; total: number; a_receber: number }[];
   vendas_por_dia: { dia: string; vendas: number; valor: number }[];
   por_vendedor: { funcionario_id: string; vendedor: string; perfil: string; total_vendas: number; valor_total: number; ticket_medio: number; total_desconto: number; a_receber: number }[];
+  por_origem?: { origem: string; vendas: number; valor: number }[];
+  so_meu?: boolean;
 }
 
 interface VendaVendedor {
@@ -236,6 +239,8 @@ function VendedorModal({ funcionarioId, nome, inicio, fim, isAdmin, onClose }: {
 export default function Relatorios() {
   const { usuario } = useAuth();
   const isAdmin = usuario?.perfil === 'admin';
+  // quem não é admin vê só as próprias vendas (o servidor já filtra)
+  const soMeu = !isAdmin;
   const [vendedorSel, setVendedorSel] = useState<{ id: string; nome: string } | null>(null);
   const [tipoPeriodo, setTipoPeriodo] = useState('mes');
   const [custom, setCustom] = useState({ inicio: '', fim: '' });
@@ -277,18 +282,24 @@ export default function Relatorios() {
     <div style={{ padding: '32px' }}>
       <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
         <div>
-          <h1 style={{ margin: '0 0 4px', fontSize: '22px', fontWeight: '600', color: 'var(--text)' }}>Relatórios</h1>
+          <h1 style={{ margin: '0 0 4px', fontSize: '22px', fontWeight: '600', color: 'var(--text)' }}>{soMeu ? 'Meu painel de vendas' : 'Relatórios'}</h1>
           <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-dim)' }}>
             {data ? `${fmtDate(data.periodo.inicio)} · ${fmtDate(data.periodo.fim)}` : 'Selecione um período'}
+            {soMeu && ' · somente as suas vendas'}
           </p>
         </div>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           <Link to="/relatorios/exportar" style={{ padding: '9px 18px', fontSize: '14px', fontWeight: 600, background: 'var(--primary)', color: 'white', borderRadius: '8px', textDecoration: 'none', whiteSpace: 'nowrap' }}>
             Relatório personalizado / Exportar
           </Link>
-          <Link to="/financeiro/contas-receber" style={{ padding: '9px 18px', fontSize: '14px', fontWeight: 600, background: 'transparent', color: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: '8px', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+          {soMeu && usuario && (
+            <button onClick={() => setVendedorSel({ id: usuario.id, nome: usuario.nome })} style={{ padding: '9px 18px', fontSize: '14px', fontWeight: 600, background: 'transparent', color: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: '8px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              Minhas vendas detalhadas
+            </button>
+          )}
+          {!soMeu && <Link to="/financeiro/contas-receber" style={{ padding: '9px 18px', fontSize: '14px', fontWeight: 600, background: 'transparent', color: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: '8px', textDecoration: 'none', whiteSpace: 'nowrap' }}>
             Cobrança / crediário
-          </Link>
+          </Link>}
           {data && (
             <a href={`/relatorios/imprimir?inicio=${data.periodo.inicio}&fim=${data.periodo.fim}`} target="_blank" rel="noreferrer"
               style={{ padding: '9px 18px', fontSize: '14px', fontWeight: 600, background: 'transparent', color: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: '8px', cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap' }}>
@@ -322,10 +333,11 @@ export default function Relatorios() {
           {/* KPIs */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
             {[
-              { label: 'Faturamento (Vendas)', value: brl(data.vendas.valor), color: '#2563eb', sub: `${data.vendas.total} vendas • já pago ${brl(data.vendas.recebido)}` },
-              { label: 'A Receber (Vendas)', value: brl(data.a_receber_geral.total), color: '#dc2626', sub: `${data.a_receber_geral.qtd} venda(s) em aberto` },
+              { label: soMeu ? 'Eu vendi' : 'Faturamento (Vendas)', value: brl(data.vendas.valor), color: '#2563eb', sub: `${data.vendas.total} vendas • já pago ${brl(data.vendas.recebido)}` },
+              ...(soMeu ? [{ label: 'Ticket médio', value: brl(data.vendas.total ? data.vendas.valor / data.vendas.total : 0), color: '#0f766e', sub: 'Valor médio por venda' }] : []),
+              { label: soMeu ? 'A receber das minhas vendas' : 'A Receber (Vendas)', value: brl(data.a_receber_geral.total), color: '#dc2626', sub: `${data.a_receber_geral.qtd} venda(s) em aberto` },
               { label: 'Descontos', value: brl(data.vendas.descontos), color: '#d97706', sub: 'Total concedido' },
-              { label: 'OS · Recebido', value: brl(data.os.recebido), color: '#16a34a', sub: `OS pendente: ${brl(data.os.pendente)}` },
+              { label: soMeu ? 'Minhas OS · Recebido' : 'OS · Recebido', value: brl(data.os.recebido), color: '#16a34a', sub: `OS pendente: ${brl(data.os.pendente)}` },
             ].map((card, i) => (
               <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '18px 20px' }}>
                 <p style={{ margin: '0 0 8px', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{card.label}</p>
@@ -386,8 +398,36 @@ export default function Relatorios() {
             </div>
           </div>
 
-          {/* Por Vendedor · separado por perfil */}
-          {(() => {
+          {/* De onde vieram as vendas */}
+          {(data.por_origem?.length ?? 0) > 0 && (() => {
+            const lista = data.por_origem!;
+            const maxO = Math.max(...lista.map(o => o.valor), 1);
+            const totO = lista.reduce((a, o) => a + o.vendas, 0);
+            return (
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden', marginBottom: '20px' }}>
+                <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Icone nome="campanhas" size={15} color="var(--text-muted)" />
+                  <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>Vendas por origem do cliente</h3>
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginLeft: '4px' }}>marcada na tela de venda</span>
+                </div>
+                <div style={{ padding: '8px 20px 14px' }}>
+                  {lista.map(o => (
+                    <div key={o.origem} style={{ display: 'grid', gridTemplateColumns: '150px 1fr 70px 120px', gap: '12px', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
+                      <span style={{ fontSize: '13px', color: o.origem === 'nao_informado' ? 'var(--text-muted)' : 'var(--text)' }}>{nomeOrigem(o.origem)}</span>
+                      <div style={{ height: '8px', background: 'var(--surface-alt)', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ width: `${(o.valor / maxO) * 100}%`, height: '100%', background: 'var(--primary)' }} />
+                      </div>
+                      <span style={{ fontFamily: 'var(--mono)', fontSize: '12.5px', color: 'var(--text-dim)', textAlign: 'right' }}>{o.vendas} ({totO ? Math.round((o.vendas / totO) * 100) : 0}%)</span>
+                      <span style={{ fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: 600, color: 'var(--text)', textAlign: 'right' }}>{brl(o.valor)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Por Vendedor · separado por perfil (só admin vê o ranking) */}
+          {!soMeu && (() => {
             const vendedores = data.por_vendedor.filter(v => v.perfil !== 'marketing');
             const marketing  = data.por_vendedor.filter(v => v.perfil === 'marketing');
 

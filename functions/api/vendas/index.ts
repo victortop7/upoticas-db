@@ -212,6 +212,8 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       await ensureCrmFluxo(env.DB);
       const prazo = /^\d{4}-\d{2}-\d{2}$/.test(String((body as Record<string, unknown>).prazo_entrega || '')) ? String((body as Record<string, unknown>).prazo_entrega) : null;
       if (prazo) await env.DB.prepare('UPDATE vendas SET prazo_entrega = ? WHERE id = ? AND tenant_id = ?').bind(prazo, id, auth.tenant_id).run();
+      const origem = String((body as Record<string, unknown>).origem || '').trim().slice(0, 40);
+      if (origem) await env.DB.prepare('UPDATE vendas SET origem = ? WHERE id = ? AND tenant_id = ?').bind(origem, id, auth.tenant_id).run();
       if (body.cliente_id) await recalcularFunil(env.DB, auth.tenant_id, body.cliente_id);
     } catch { /* não bloqueia a venda */ }
 

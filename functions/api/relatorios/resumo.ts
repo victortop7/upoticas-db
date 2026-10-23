@@ -2,7 +2,8 @@ import type { PagesFunction } from '@cloudflare/workers-types';
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
 import { ensureIndexes } from '../../lib/ensure-indexes';
-import { ensureLojaCols, filtroLoja } from '../../lib/lojas';
+import { ensureLojaCols, filtroRelatorio } from '../../lib/lojas';
+import { ensureCrmFluxo } from '../../lib/crmFluxo';
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const auth = await requireAuth(request, env);
@@ -12,9 +13,11 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     await ensureIndexes(env.DB);
     await ensureLojaCols(env.DB);
     // Separação por loja (vendedor só vê a própria loja no relatório)
-    const fl = filtroLoja(auth, 'loja_id');     // vendas/OS sem alias
-    const flV = filtroLoja(auth, 'v.loja_id');  // vendas com alias v
+    // vendedor só vê as próprias vendas (e da própria loja); admin vê tudo
+    const fl = filtroRelatorio(auth, 'loja_id', 'funcionario_id');        // vendas/OS sem alias
+    const flV = filtroRelatorio(auth, 'v.loja_id', 'v.funcionario_id');   // vendas com alias v
     const p = fl.params;
+    await ensureCrmFluxo(env.DB);
     const url = new URL(request.url);
     const inicio = url.searchParams.get('inicio') || new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
     const fim = url.searchParams.get('fim') || new Date().toISOString().split('T')[0];
@@ -31,6 +34,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       vendasPorDia,
       porVendedor,
       aReceberGeral,
+      porOrigem,
     ] = await Promise.all([
       env.DB.prepare(`
         SELECT COUNT(*) as total, COALESCE(SUM(valor_final), 0) as valor,
@@ -90,6 +94,14 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
         SELECT COALESCE(SUM(saldo_restante), 0) as total, COUNT(*) as n
         FROM vendas WHERE tenant_id = ? AND saldo_restante > 0${fl.sql}
       `).bind(auth.tenant_id, ...p).first<{ total: number; n: number }>(),
+
+      // De onde vieram as vendas (tráfego pago, indicação, fluxo de loja...)
+      env.DB.prepare(`
+        SELECT COALESCE(NULLIF(origem, ''), 'nao_informado') as origem, COUNT(*) as vendas, COALESCE(SUM(valor_final), 0) as valor
+        FROM vendas WHERE tenant_id = ? AND situacao != 'cancelada'
+        AND date(created_at) BETWEEN ? AND ?${fl.sql}
+        GROUP BY 1 ORDER BY valor DESC
+      `).bind(auth.tenant_id, inicio, fim, ...p).all<{ origem: string; vendas: number; valor: number }>(),
     ]);
 
     return json({
@@ -112,6 +124,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       top_clientes: topClientes.results,
       vendas_por_dia: vendasPorDia.results,
       por_vendedor: porVendedor.results,
+      por_origem: porOrigem.results,
+      so_meu: fl.soMeu,
     });
   } catch (err) {
     return json({ error: 'Erro interno', detail: String(err) }, 500);

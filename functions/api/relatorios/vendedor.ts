@@ -30,6 +30,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     const inicio = url.searchParams.get('inicio') || new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
     const fim = url.searchParams.get('fim') || new Date().toISOString().split('T')[0];
     if (!fid) return json({ error: 'funcionario_id requerido' }, 400);
+    if (auth.perfil !== 'admin' && fid !== auth.usuario_id) return json({ error: 'Você só pode ver o seu próprio relatório' }, 403);
 
     const [vendedor, tenant] = await Promise.all([
       env.DB.prepare('SELECT id, nome, perfil FROM usuarios WHERE id = ? AND tenant_id = ?')

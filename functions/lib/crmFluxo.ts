@@ -33,7 +33,7 @@ export async function ensureCrmFluxo(db: D1Database) {
   await ensureReceber(db);
   await ensurePagamentos(db);
   try { await db.prepare('ALTER TABLE crm_cards ADD COLUMN quitado_em TEXT').run(); } catch { /* já existe */ }
-  for (const c of ['prazo_entrega TEXT', 'entregue_em TEXT']) {
+  for (const c of ['prazo_entrega TEXT', 'entregue_em TEXT', 'origem TEXT']) {
     try { await db.prepare(`ALTER TABLE vendas ADD COLUMN ${c}`).run(); } catch { /* já existe */ }
   }
   // OS copiadas do Connect Vision nasciam com o valor total "em aberto" sem nunca ter cobrança.

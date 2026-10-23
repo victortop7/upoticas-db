@@ -3,6 +3,7 @@ import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
 import { ensureLojaCols, filtroLoja } from '../../lib/lojas';
 import { ensurePagamentos } from '../../lib/pagamentos';
+import { ensureCrmFluxo } from '../../lib/crmFluxo';
 
 // GET /api/relatorios/dados?inicio=&fim=&canceladas=0|1&vendedor=<id>
 // Dados "planos" do período para o relatório personalizado / exportação:
@@ -13,6 +14,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
 
   try {
     await ensureLojaCols(env.DB);
+    await ensureCrmFluxo(env.DB);
     await ensurePagamentos(env.DB);
     try { await env.DB.prepare('ALTER TABLE vendas ADD COLUMN valor_entrada REAL NOT NULL DEFAULT 0').run(); } catch {}
     try { await env.DB.prepare('ALTER TABLE vendas ADD COLUMN saldo_restante REAL NOT NULL DEFAULT 0').run(); } catch {}
@@ -21,7 +23,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     const inicio = url.searchParams.get('inicio') || new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
     const fim = url.searchParams.get('fim') || new Date().toISOString().split('T')[0];
     const incluirCanceladas = url.searchParams.get('canceladas') === '1';
-    const vendedor = url.searchParams.get('vendedor') || '';
+    const vendedor = auth.perfil === 'admin' ? (url.searchParams.get('vendedor') || '') : auth.usuario_id;
 
     const fl = filtroLoja(auth, 'v.loja_id');
     let where = `v.tenant_id = ? AND date(v.created_at) BETWEEN ? AND ?${fl.sql}`;
@@ -34,7 +36,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
         SELECT v.id, v.numero, v.created_at, v.situacao, v.os_id, v.grupo_venda_id,
                v.valor_total, v.desconto, v.valor_final, v.valor_entrada, v.saldo_restante, v.forma_pagamento,
                v.cliente_id, c.nome as cliente_nome, c.cpf as cliente_cpf,
-               v.funcionario_id, u.nome as vendedor,
+ v.origem,
                os.numero as os_numero
         FROM vendas v
         LEFT JOIN clientes c ON c.id = v.cliente_id
@@ -64,8 +66,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       // Canceladas do período (sempre informadas, mesmo quando não listadas)
       env.DB.prepare(`
         SELECT COUNT(*) as n, COALESCE(SUM(v.valor_final), 0) as total, GROUP_CONCAT(v.numero) as numeros
-        FROM vendas v WHERE v.tenant_id = ? AND date(v.created_at) BETWEEN ? AND ?${fl.sql} AND v.situacao = 'cancelada'
-      `).bind(auth.tenant_id, inicio, fim, ...fl.params).first<{ n: number; total: number; numeros: string | null }>(),
+        FROM vendas v WHERE v.tenant_id = ? AND date(v.created_at) BETWEEN ? AND ?${fl.sql}${vendedor ? ' AND v.funcionario_id = ?' : ''} AND v.situacao = 'cancelada'
+      `).bind(auth.tenant_id, inicio, fim, ...fl.params, ...(vendedor ? [vendedor] : [])).first<{ n: number; total: number; numeros: string | null }>(),
 
       env.DB.prepare('SELECT nome FROM tenants WHERE id = ?').bind(auth.tenant_id).first<{ nome: string }>(),
       auth.loja_id ? env.DB.prepare('SELECT nome FROM lojas WHERE id = ?').bind(auth.loja_id).first<{ nome: string }>() : Promise.resolve(null),
@@ -86,6 +88,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
         cpf: v.cliente_cpf || '',
         vendedor_id: v.funcionario_id || '',
         vendedor: v.vendedor || '',
+        origem: v.origem || '',
         os_id: v.os_id || '',
         os_numero: v.os_numero != null ? Number(v.os_numero) : null,
         grupo_venda_id: v.grupo_venda_id || '',
