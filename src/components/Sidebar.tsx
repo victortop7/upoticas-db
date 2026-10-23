@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { MENU_GRUPOS, menusDo } from '../lib/permissoes';
@@ -22,6 +22,15 @@ const AZ = {
   hover: 'rgba(255,255,255,0.12)',
   ativo: 'rgba(255,255,255,0.95)',
   ativoTexto: '#0b3487',
+};
+
+// Grupos do menu sanfona: nome mostrado e ícone
+const GRUPO_INFO: Record<string, { nome: string; icone: string }> = {
+  Menu: { nome: 'Principal', icone: 'painel' },
+  Financeiro: { nome: 'Financeiro', icone: 'dinheiro' },
+  Marketing: { nome: 'Marketing', icone: 'campanhas' },
+  Cadastros: { nome: 'Cadastros', icone: 'lista' },
+  Sistema: { nome: 'Sistema', icone: 'config' },
 };
 
 function lerFixo() {
@@ -59,6 +68,7 @@ export default function Sidebar() {
   const [enviando, setEnviando] = useState(false);
   const inputFoto = useRef<HTMLInputElement>(null);
   const aberto = fixo || hover;
+  const { pathname } = useLocation();
 
   // igual ao Connect LAB: ao abrir, o menu empurra a página pro lado (não fica por cima)
   useEffect(() => {
@@ -88,6 +98,11 @@ export default function Sidebar() {
   const grupos = MENU_GRUPOS
     .map(g => ({ label: g.label, items: g.items.filter(i => liberados.includes(i.to)).map(i => (i.to === '/vendedores' && usuario?.perfil !== 'admin') ? { ...i, label: 'Ranking' } : i) }))
     .filter(g => g.items.length > 0);
+
+  // grupo da tela atual abre sozinho; um grupo aberto por vez
+  const grupoAtivo = grupos.find(g => g.items.some(i => pathname === i.to || pathname.startsWith(i.to + '/')))?.label || null;
+  const [grupoAberto, setGrupoAberto] = useState<string | null>(grupoAtivo);
+  useEffect(() => { if (grupoAtivo) setGrupoAberto(grupoAtivo); }, [grupoAtivo]);
 
   const texto: React.CSSProperties = { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', opacity: aberto ? 1 : 0, transition: 'opacity .15s' };
   const linhaBtn: React.CSSProperties = {
@@ -144,32 +159,58 @@ export default function Sidebar() {
           <span style={{ ...texto, flex: 1 }}>Buscar...</span>
           <kbd style={{ ...texto, fontSize: '10px', padding: '1px 5px', marginRight: 8, borderRadius: '3px', background: 'rgba(255,255,255,0.1)', border: `1px solid ${AZ.borda}`, fontFamily: 'var(--mono)', color: AZ.suave }}>Ctrl K</kbd>
         </button>
-        {grupos.map(({ label, items }, gi) => (
-          <div key={label}>
-            <div style={{ height: aberto ? 24 : (gi > 0 ? 8 : 0), display: 'flex', alignItems: 'flex-end', transition: 'height .18s', overflow: 'hidden' }}>
-              <span style={{ ...texto, fontSize: '10px', fontWeight: 700, color: AZ.suave, textTransform: 'uppercase', letterSpacing: '0.9px', padding: '0 0 3px 17px' }}>{label}</span>
+        {grupos.map(({ label, items }) => {
+          const info = GRUPO_INFO[label] || { nome: label, icone: 'lista' };
+          const ativo = grupoAtivo === label;
+          const expandido = aberto && grupoAberto === label;
+          return (
+            <div key={label}>
+              {/* cabeçalho do grupo: clica e abre pra baixo */}
+              <button
+                onClick={() => setGrupoAberto(g => (g === label ? null : label))}
+                title={info.nome}
+                style={{
+                  ...linhaBtn, height: 38, fontWeight: 600, fontSize: '13.5px',
+                  color: ativo ? '#fff' : AZ.texto,
+                  background: ativo ? 'rgba(255,255,255,0.10)' : 'transparent',
+                  boxShadow: ativo ? 'inset 3px 0 0 #fff' : 'none',
+                }}
+                onMouseEnter={e => { if (!ativo) realce(e, true); }}
+                onMouseLeave={e => { if (!ativo) realce(e, false); }}>
+                <Icone nome={info.icone} size={17} />
+                <span style={{ ...texto, flex: 1 }}>{info.nome}</span>
+                <span style={{ ...texto, marginRight: 12, display: 'flex', transform: expandido ? 'rotate(90deg)' : 'none', transition: 'transform .15s, opacity .15s', color: AZ.suave }}>
+                  <Icone nome="proximo" size={14} />
+                </span>
+              </button>
+
+              {/* telas do grupo */}
+              <div style={{ overflow: 'hidden', maxHeight: expandido ? items.length * 34 + 8 : 0, transition: 'max-height .2s ease', background: 'rgba(0,0,0,0.12)' }}>
+                <div style={{ padding: '4px 0' }}>
+                  {items.map(item => (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      title={item.label}
+                      className="menu-azul-item"
+                      style={({ isActive }) => ({
+                        display: 'flex', alignItems: 'center', gap: '10px', height: 34,
+                        padding: '0 0 0 44px', borderRadius: 0,
+                        fontSize: '13px', fontWeight: isActive ? 700 : 400,
+                        color: isActive ? AZ.ativoTexto : AZ.texto,
+                        background: isActive ? AZ.ativo : 'transparent',
+                        textDecoration: 'none', transition: 'background .12s',
+                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                      })}
+                    >
+                      {item.label}
+                    </NavLink>
+                  ))}
+                </div>
+              </div>
             </div>
-            {items.map(item => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                title={item.label}
-                className="menu-azul-item"
-                style={({ isActive }) => ({
-                  display: 'flex', alignItems: 'center', gap: '12px', height: 34,
-                  padding: '0 0 0 17px', borderRadius: 0,
-                  fontSize: '13px', fontWeight: isActive ? 700 : 500,
-                  color: isActive ? AZ.ativoTexto : AZ.texto,
-                  background: isActive ? AZ.ativo : 'transparent',
-                  textDecoration: 'none', transition: 'background .12s',
-                })}
-              >
-                <Icone nome={item.icon} size={17} />
-                <span style={texto}>{item.label}</span>
-              </NavLink>
-            ))}
-          </div>
-        ))}
+          );
+        })}
       </nav>
 
       {/* Rodapé: perfil, tema e sair */}
