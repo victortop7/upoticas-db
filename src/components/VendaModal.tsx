@@ -78,9 +78,14 @@ const FORMAS = [
   { value: 'outro', label: 'Outro' },
 ];
 
+// prazo padrão de entrega do óculos (Funil: Em andamento até essa data, depois Óculos Pronto)
+const PRAZO_PADRAO_DIAS = 7;
+function prazoPadrao() { const d = new Date(); d.setDate(d.getDate() + PRAZO_PADRAO_DIAS); return d.toISOString().split('T')[0]; }
+
 const EMPTY = {
   cliente_id: '', os_id: '', situacao: 'ativa',
   valor_total: '', desconto: '', valor_entrada: '', forma_pagamento: 'pix', observacao: '',
+  prazo_entrega: '',
 };
 
 interface UsuarioSimples { id: string; nome: string; perfil: string; }
@@ -172,7 +177,7 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
   const { usuario } = useAuth();
   const isMarketing = usuario?.perfil === 'marketing';
   const isAdmin = usuario?.perfil === 'admin';
-  const [form, setForm] = useState({ ...EMPTY });
+  const [form, setForm] = useState({ ...EMPTY, prazo_entrega: prazoPadrao() });
   const [funcionarioId, setFuncionarioId] = useState('');
   const [vendedores, setVendedores] = useState<UsuarioSimples[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -216,6 +221,7 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
         valor_entrada: venda.valor_entrada != null ? String(venda.valor_entrada) : '',
         forma_pagamento: venda.forma_pagamento || 'pix',
         observacao: venda.observacao || '',
+        prazo_entrega: ((venda as unknown as { prazo_entrega?: string }).prazo_entrega || '').slice(0, 10),
       });
       api.get<{ itens?: ItemVenda[]; pagamentos?: PagApi[] }>(`/vendas/${venda.id}`).then(r => {
         const ps = r.pagamentos || [];
@@ -808,6 +814,16 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
               )}
             </>
           )}
+
+          <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: 12, alignItems: 'end' }}>
+            <div>
+              <label style={labelStyle}>Prazo de entrega do óculos</label>
+              <input type="date" style={{ ...inputStyle, fontFamily: 'var(--mono)' }} value={form.prazo_entrega} onChange={e => set('prazo_entrega', e.target.value)} />
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', paddingBottom: 9 }}>
+              No Funil, o cliente fica em Em andamento até esta data e depois passa para Óculos Pronto.
+            </div>
+          </div>
 
           <div>
             <label style={labelStyle}>Observação</label>

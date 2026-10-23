@@ -3,6 +3,7 @@ import { requireAuth, json } from '../../lib/auth-middleware';
 import { sincronizarEstoqueVenda } from '../../lib/estoque';
 import { ensureLojaCols, filtroLoja, lojaParaGravar } from '../../lib/lojas';
 import { normalizarLinhas, recebidoDasLinhas, formaResumo, salvarPagamentos } from '../../lib/pagamentos';
+import { ensureCrmFluxo, recalcularFunil } from '../../lib/crmFluxo';
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   const auth = await requireAuth(request, env);
@@ -205,6 +206,14 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
         ).bind(body.cliente_id, auth.tenant_id).run();
       } catch {}
     }
+
+    // prazo de entrega do óculos (Funil: Em andamento até o prazo, depois Óculos Pronto)
+    try {
+      await ensureCrmFluxo(env.DB);
+      const prazo = /^\d{4}-\d{2}-\d{2}$/.test(String((body as Record<string, unknown>).prazo_entrega || '')) ? String((body as Record<string, unknown>).prazo_entrega) : null;
+      if (prazo) await env.DB.prepare('UPDATE vendas SET prazo_entrega = ? WHERE id = ? AND tenant_id = ?').bind(prazo, id, auth.tenant_id).run();
+      if (body.cliente_id) await recalcularFunil(env.DB, auth.tenant_id, body.cliente_id);
+    } catch { /* não bloqueia a venda */ }
 
     const venda = await env.DB.prepare(`
       SELECT v.*, c.nome as cliente_nome FROM vendas v

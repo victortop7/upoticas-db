@@ -113,8 +113,17 @@ export const onRequestPut = async ({ request, env, params }: { request: Request;
     // estoque acompanha a venda (itens mudados, cancelada, reativada)
     try { await sincronizarEstoqueVenda(env.DB, auth.tenant_id, params.id, auth.usuario_id); } catch { /* não bloqueia */ }
 
-    // Saída de A Receber pela regra única do funil (quitou -> sai; 20 dias -> Pós-venda)
-    try { await aplicarFluxoReceber(env.DB, auth.tenant_id); } catch { /* não bloqueia */ }
+    // prazo de entrega (se veio) e recalcula o funil
+    try {
+      const prazo = (body as Record<string, unknown>).prazo_entrega;
+      if (prazo !== undefined) {
+        const { ensureCrmFluxo } = await import('../../lib/crmFluxo');
+        await ensureCrmFluxo(env.DB);
+        await env.DB.prepare('UPDATE vendas SET prazo_entrega = ? WHERE id = ? AND tenant_id = ?')
+          .bind(/^\d{4}-\d{2}-\d{2}$/.test(String(prazo || '')) ? String(prazo) : null, params.id, auth.tenant_id).run();
+      }
+      await aplicarFluxoReceber(env.DB, auth.tenant_id);
+    } catch { /* não bloqueia */ }
 
     // Ao quitar o saldo, avança o card CRM:
     //  - A Receber  → Pós-venda (venda concluída/recebida)

@@ -18,6 +18,8 @@ interface Card {
   saldo_venda_pendente?: number;
   carne_vencido?: number;
   quitado_em?: string | null;
+  prazo_entrega?: string | null;
+  entregue_em?: string | null;
   venda_pendente_id?: string;
   os_pendente_id?: string;
 }
@@ -281,7 +283,7 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
   async function handleEntregar() {
     setFinalizando(true);
     try {
-      await api.put(`/crm/${card.id}`, { estagio: 'pos_venda', prioridade, notas: nota || null });
+      await api.post('/crm/entregue', { cliente_id: card.cliente_id });
       onAtualizar();
     } catch {}
     setFinalizando(false);
@@ -382,10 +384,15 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
           {(card.carne_vencido || 0) > 0 && <span title="Parcelas de carnê vencidas" style={{ fontSize: '10px', background: 'rgba(220,38,38,0.1)', color: '#dc2626', padding: '1px 6px', borderRadius: '4px', fontWeight: '600' }}>carnê vencido {brl(card.carne_vencido!)}</span>}
           {ultimaAtiv && <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{diasAtras(ultimaAtiv)}</span>}
         </div>
-        {card.quitado_em && (card.estagio === 'oculos_pendente' || card.estagio === 'oculos_pronto') && (() => {
-          const dias = Math.floor((Date.now() - new Date(card.quitado_em + 'T12:00:00').getTime()) / 86_400_000);
-          const faltam = Math.max(0, 20 - dias);
-          return <p style={{ margin: '5px 0 0', fontSize: '10.5px', color: '#16a34a' }}>Quitado em {card.quitado_em.split('-').reverse().join('/')} · Pós-venda {faltam ? `em ${faltam} dia${faltam > 1 ? 's' : ''}` : 'hoje'}</p>;
+        {(() => {
+          const br = (x?: string | null) => (x ? x.slice(0, 10).split('-').reverse().join('/') : '');
+          const dias = (x: string) => Math.round((new Date(x.slice(0, 10) + 'T12:00:00').getTime() - new Date(new Date().toISOString().slice(0, 10) + 'T12:00:00').getTime()) / 86_400_000);
+          let txt = '', cor = 'var(--text-muted)';
+          if (card.estagio === 'contato' && card.prazo_entrega) { const n = dias(card.prazo_entrega); txt = `Prazo de entrega ${br(card.prazo_entrega)}${n > 0 ? ` · faltam ${n} dia${n > 1 ? 's' : ''}` : ''}`; cor = '#2563eb'; }
+          if (card.estagio === 'oculos_pronto' && card.prazo_entrega) { txt = `Pronto desde ${br(card.prazo_entrega)} · aguardando o cliente`; cor = '#16a34a'; }
+          if (card.estagio === 'oculos_pendente' && card.prazo_entrega) { const n = -dias(card.prazo_entrega); txt = `Pronto há ${n} dia${n > 1 ? 's' : ''} · cliente ainda não buscou`; cor = '#d97706'; }
+          if ((card.estagio === 'pos_venda' || card.estagio === 'indicacao') && card.entregue_em) { txt = `Entregue em ${br(card.entregue_em)}`; }
+          return txt ? <p style={{ margin: '5px 0 0', fontSize: '10.5px', color: cor }}>{txt}</p> : null;
         })()}
 
         {card.notas && !expandido && (
@@ -398,9 +405,10 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
           </button>
         )}
 
-        {card.estagio === 'oculos_pronto' && (
-          <button onClick={handleEntregar} disabled={finalizando} style={{ width: '100%', marginTop: '8px', padding: '7px', fontSize: '12px', fontWeight: '700', background: 'rgba(22,163,74,0.15)', color: '#16a34a', border: '1px solid rgba(22,163,74,0.4)', borderRadius: '7px', cursor: 'pointer' }}>
-            {finalizando ? 'Salvando...' : 'Marcar como Entregue → Pós-Venda'}
+        {(card.estagio === 'oculos_pronto' || card.estagio === 'oculos_pendente') && (
+          <button onClick={handleEntregar} disabled={finalizando} title="O cliente buscou o óculos. Em 20 dias ele aparece no Pós-venda."
+            style={{ width: '100%', marginTop: '8px', padding: '7px', fontSize: '12px', fontWeight: '700', background: '#16a34a', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', opacity: finalizando ? 0.7 : 1 }}>
+            {finalizando ? 'Salvando...' : 'Entregue'}
           </button>
         )}
 

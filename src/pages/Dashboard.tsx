@@ -77,6 +77,28 @@ export default function Dashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const vePagar = menusDo(usuario).includes('/financeiro/contas-pagar');
+  // Alerta de A Receber (quem deve): para quem vê o Funil ou o Contas a Receber
+  const veReceber = menusDo(usuario).some(m => m === '/crm' || m === '/financeiro/contas-receber');
+  type TitAlerta = { cliente_id: string | null; cliente_nome: string | null; valor: number; situacao: string; dias_atraso: number; venda_numero: number | null };
+  const [receber, setReceber] = useState<{ vencido: number; pendente: number; clientes: number; atrasados: number; top: TitAlerta[] } | null>(null);
+  useEffect(() => {
+    if (!veReceber) return;
+    api.get<{ titulos: TitAlerta[]; resumo: { vencido: number; pendente: number; clientes_em_atraso: number } }>('/financeiro/receber?situacao=aberto')
+      .then(r => {
+        const porCliente = new Map<string, TitAlerta>();
+        for (const t of r.titulos.filter(x => x.situacao === 'vencido')) {
+          const k = t.cliente_id || t.cliente_nome || '?';
+          const a = porCliente.get(k);
+          porCliente.set(k, a ? { ...a, valor: a.valor + t.valor, dias_atraso: Math.max(a.dias_atraso, t.dias_atraso) } : { ...t });
+        }
+        setReceber({
+          vencido: r.resumo.vencido, pendente: r.resumo.pendente,
+          clientes: new Set(r.titulos.map(t => t.cliente_id || t.cliente_nome)).size,
+          atrasados: r.resumo.clientes_em_atraso,
+          top: [...porCliente.values()].sort((a, b) => b.dias_atraso - a.dias_atraso).slice(0, 5),
+        });
+      }).catch(() => {});
+  }, [veReceber]);
   const [pagar, setPagar] = useState<ResumoPagar | null>(null);
   useEffect(() => {
     if (!vePagar) return;
@@ -200,6 +222,42 @@ export default function Dashboard() {
           </div>
         ))}
       </div>
+
+      {/* A Receber: alerta de pendência */}
+      {veReceber && receber && receber.clientes > 0 && (
+        <div style={{ background: 'var(--surface)', border: `1px solid ${receber.vencido > 0 ? '#dc262680' : '#d9770666'}`, borderLeft: `4px solid ${receber.vencido > 0 ? '#dc2626' : '#d97706'}`, borderRadius: '10px', padding: '14px 18px', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Icone nome="alerta" size={18} color={receber.vencido > 0 ? '#dc2626' : '#d97706'} />
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
+                  A Receber: {receber.clientes} cliente{receber.clientes > 1 ? 's' : ''} com pagamento pendente
+                </div>
+                <div style={{ fontSize: 12.5, color: 'var(--text-dim)', marginTop: 2, fontFamily: 'var(--mono)' }}>
+                  {receber.vencido > 0 && <span style={{ color: '#dc2626', fontWeight: 700 }}>{formatBRL(receber.vencido)} em atraso ({receber.atrasados} cliente{receber.atrasados > 1 ? 's' : ''})</span>}
+                  {receber.vencido > 0 && receber.pendente > 0 && ' · '}
+                  {receber.pendente > 0 && <span>{formatBRL(receber.pendente)} a vencer</span>}
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => navigate('/crm')} style={{ padding: '7px 12px', fontSize: 12.5, fontWeight: 600, background: 'transparent', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: 6, cursor: 'pointer' }}>Ver no Funil</button>
+              <button onClick={() => navigate('/financeiro/contas-receber')} style={{ padding: '7px 12px', fontSize: 12.5, fontWeight: 600, background: receber.vencido > 0 ? '#dc2626' : '#d97706', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }}>Cobrar</button>
+            </div>
+          </div>
+          {receber.top.length > 0 && (
+            <div style={{ marginTop: 10, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '4px 18px' }}>
+              {receber.top.map(t => (
+                <div key={(t.cliente_id || '') + t.cliente_nome} onClick={() => t.cliente_id && navigate(`/clientes/${t.cliente_id}`)}
+                  style={{ display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 12.5, padding: '3px 0', cursor: t.cliente_id ? 'pointer' : 'default', borderBottom: '1px solid var(--border)' }}>
+                  <span style={{ color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.cliente_nome || '-'}</span>
+                  <span style={{ fontFamily: 'var(--mono)', color: '#dc2626', whiteSpace: 'nowrap' }}>{formatBRL(t.valor)} · {t.dias_atraso}d</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Contas a pagar: vencidas e vencendo nos próximos 7 dias */}
       {vePagar && pagar && pagar.contas.length > 0 && (
