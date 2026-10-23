@@ -24,9 +24,11 @@ export default function Sidebar() {
   const [hover, setHover] = useState(false);
   const aberto = fixo || hover;
 
-  // o conteúdo da página respeita só o menu fixo; aberto pelo mouse ele passa por cima
+  // igual ao Connect LAB: ao abrir, o menu empurra a página pro lado (não fica por cima)
   useEffect(() => {
-    document.documentElement.style.setProperty('--sidebar-w', `${fixo ? LARGO : ESTREITO}px`);
+    document.documentElement.style.setProperty('--sidebar-w', `${aberto ? LARGO : ESTREITO}px`);
+  }, [aberto]);
+  useEffect(() => {
     try { localStorage.setItem(CHAVE_FIXO, fixo ? '1' : '0'); } catch { /* sem storage */ }
   }, [fixo]);
 
@@ -54,7 +56,6 @@ export default function Sidebar() {
         height: '100vh',
         background: 'var(--surface)',
         borderRight: '1px solid var(--border)',
-        boxShadow: hover && !fixo ? '8px 0 24px rgba(0,0,0,0.25)' : 'none',
         display: 'flex',
         flexDirection: 'column',
         position: 'fixed',
