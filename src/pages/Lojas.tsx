@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
+import EditorPermissoes, { type PermUsuario, type DadosPermissoes } from '../components/EditorPermissoes';
 
 interface Loja { id: string; nome: string; endereco?: string; }
-interface Usuario { id: string; nome: string; email: string; perfil: string; ativo: boolean; loja_id?: string | null; }
+interface Usuario { id: string; nome: string; email: string; perfil: string; ativo: boolean; loja_id?: string | null; permissoes?: PermUsuario; }
 interface VendedorVenda { funcionario_id: string; nome: string; qtd: number; com_loja: number; primeira?: string; ultima?: string; }
 
 const inp: React.CSSProperties = { padding: '9px 11px', fontSize: '14px', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--surface)', color: 'var(--text)', outline: 'none', boxSizing: 'border-box' };
@@ -52,6 +53,7 @@ function NovoAcesso({ lojaId, onSaved }: { lojaId: string; onSaved: () => void }
 
 export default function Lojas() {
   const { usuario } = useAuth();
+  const [permDe, setPermDe] = useState<Usuario | null>(null);
   const isAdmin = usuario?.perfil === 'admin';
   const [lojas, setLojas] = useState<Loja[]>([]);
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -120,6 +122,12 @@ export default function Lojas() {
     try { await api.delete(`/usuarios/${id}`); load(); } catch {}
   }
 
+  async function salvarPermissoes(u: Usuario, d: DadosPermissoes) {
+    await api.put(`/usuarios/${u.id}/permissoes`, d);
+    setPermDe(null);
+    load();
+  }
+
   if (!isAdmin) return <div style={{ padding: 32, color: 'var(--text-muted)' }}>Apenas a administradora (Patrícia) acessa esta tela.</div>;
 
   const vendedoresDa = (lojaId: string) => usuarios.filter(u => u.ativo && u.loja_id === lojaId && u.perfil !== 'admin');
@@ -166,11 +174,19 @@ export default function Lojas() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                       {vs.map(u => (
                         <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--surface-alt)', borderRadius: 8, padding: '8px 12px' }}>
-                          <div>
+                          <div style={{ minWidth: 0 }}>
                             <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>{u.nome}</span>
                             <span style={{ fontSize: 13, color: 'var(--text-dim)', fontFamily: 'var(--mono)', marginLeft: 10 }}>{u.email}</span>
+                            <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 2 }}>
+                              {u.perfil.charAt(0).toUpperCase() + u.perfil.slice(1)}
+                              {u.permissoes?.todas_lojas ? ' · vê todas as lojas' : ''}
+                              {Array.isArray(u.permissoes?.menus) ? ` · ${u.permissoes!.menus!.length} telas liberadas` : ' · telas padrão do cargo'}
+                            </div>
                           </div>
-                          <button onClick={() => removerAcesso(u.id, u.nome)} style={{ fontSize: 12, color: 'var(--red)', background: 'none', border: 'none', cursor: 'pointer' }}>Desativar</button>
+                          <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexShrink: 0 }}>
+                            <button onClick={() => setPermDe(u)} style={{ fontSize: 12, fontWeight: 600, padding: '5px 10px', color: 'var(--text)', background: 'transparent', border: '1px solid var(--border)', borderRadius: 6, cursor: 'pointer' }}>Permissões</button>
+                            <button onClick={() => removerAcesso(u.id, u.nome)} style={{ fontSize: 12, color: 'var(--red)', background: 'none', border: 'none', cursor: 'pointer' }}>Desativar</button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -236,6 +252,22 @@ export default function Lojas() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+      {permDe && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+          onClick={e => e.target === e.currentTarget && setPermDe(null)}>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, width: '100%', maxWidth: 640, maxHeight: '92vh', overflowY: 'auto', padding: '20px 22px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+              <div>
+                <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: 'var(--text)' }}>Permissões · {permDe.nome}</h2>
+                <p style={{ margin: '3px 0 0', fontSize: 12.5, color: 'var(--text-muted)' }}>Cargo, loja e quais telas essa pessoa pode abrir.</p>
+              </div>
+              <button onClick={() => setPermDe(null)} style={{ width: 30, height: 30, border: 'none', borderRadius: 6, background: 'var(--surface-alt)', color: 'var(--text-dim)', cursor: 'pointer', fontSize: 16 }}>×</button>
+            </div>
+            <EditorPermissoes u={permDe} lojas={lojas} euMesmo={permDe.id === usuario?.id}
+              onSalvar={d => salvarPermissoes(permDe, d)} onCancelar={() => setPermDe(null)} />
           </div>
         </div>
       )}
