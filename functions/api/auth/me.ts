@@ -1,6 +1,7 @@
 import type { Env } from '../../lib/types';
 import { requireAuthBasic, json } from '../../lib/auth-middleware';
 import { ensureSistemas, parseSistemas } from '../../lib/sistemas';
+import { ensureFotoUsuario } from './foto';
 
 function lerPermissoes(raw: unknown) {
   try { return raw ? JSON.parse(String(raw)) : null; } catch { return null; }
@@ -12,9 +13,10 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
 
   try {
     await ensureSistemas(env.DB);
+    await ensureFotoUsuario(env.DB);
     try { await env.DB.prepare('ALTER TABLE usuarios ADD COLUMN permissoes TEXT').run(); } catch { /* já existe */ }
     const usuario = await env.DB.prepare(
-      `SELECT u.id, u.tenant_id, u.nome, u.email, u.perfil, u.ativo, u.permissoes,
+      `SELECT u.id, u.tenant_id, u.nome, u.email, u.perfil, u.ativo, u.permissoes, u.foto,
               t.nome as tenant_nome, t.tipo as tenant_tipo, t.plano,
               t.trial_expira, t.ativo as tenant_ativo, t.sistemas,
               COALESCE(t.bloqueado, 0) as bloqueado,
@@ -34,6 +36,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
         perfil: usuario.perfil,
         ativo: Boolean(usuario.ativo),
         permissoes: lerPermissoes(usuario.permissoes),
+        foto: usuario.foto || null,
       },
       tenant: {
         id: usuario.tenant_id,

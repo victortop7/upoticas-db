@@ -59,6 +59,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       email: usuario.email,
       perfil: usuario.perfil,
       ativo: Boolean(usuario.ativo),
+      foto: usuario.foto || null,
       permissoes: (() => { try { return usuario.permissoes ? JSON.parse(String(usuario.permissoes)) : null; } catch { return null; } })(),
     };
 

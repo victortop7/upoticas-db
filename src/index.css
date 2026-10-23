@@ -141,3 +141,5 @@ input, select, textarea, button { font-family: var(--sans); }
 /* Menu lateral do Connect Óticas: rola com a roda do mouse, sem mostrar a barra */
 .menu-sem-barra { scrollbar-width: none; -ms-overflow-style: none; }
 .menu-sem-barra::-webkit-scrollbar { display: none; width: 0; height: 0; }
+/* hover dos itens do menu azul (o item ativo já tem fundo próprio) */
+.menu-azul-item:not(.active):hover { background: rgba(255,255,255,0.12) !important; }

@@ -20,6 +20,7 @@ export interface Usuario {
   perfil: 'admin' | 'vendedor' | 'caixa' | 'marketing' | 'digitador' | 'financeiro';
   ativo: boolean;
   permissoes?: { menus?: string[] | null; todas_lojas?: boolean } | null;
+  foto?: string | null;
 }
 
 export interface Cliente {
