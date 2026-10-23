@@ -31,7 +31,7 @@ export default function OSNaVenda({ ativo, onAtivo, value, onChange, inputStyle,
   const mono: React.CSSProperties = { ...inputStyle, fontFamily: 'var(--mono)', textAlign: 'center', padding: '7px 6px' };
   const v = (k: string) => value[k] ?? '';
   return (
-    <div style={{ border: '1px solid var(--border)', borderRadius: 10, marginTop: 6, marginBottom: 14, overflow: 'hidden' }}>
+    <div style={{ border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
       <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', background: 'var(--surface-alt)', cursor: 'pointer', borderBottom: ativo ? '1px solid var(--border)' : 'none' }}>
         <input type="checkbox" checked={ativo} onChange={e => onAtivo(e.target.checked)} />
         <Icone nome="os" size={15} color="var(--text-dim)" />

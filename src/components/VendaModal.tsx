@@ -205,6 +205,8 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
   const [cartao, setCartao] = useState({ bandeira: '', parcelas: '1', conta: '' });
   // Venda + OS na mesma tela: venda nova já vem com a OS marcada
   const [gerarOS, setGerarOS] = useState(!venda && !isMarketing);
+  const temAbaOS = !venda && !isMarketing;
+  const [abaModal, setAbaModal] = useState<'venda' | 'os'>('venda');
   const [osForm, setOsForm] = useState<OSForm>(OS_VAZIA);
   const setOs = (k: string, val: string) => setOsForm(f => ({ ...f, [k]: val }));
 
@@ -338,7 +340,8 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
     }
     const comOS = gerarOS && !venda && !isMarketing;
     if (comOS && !form.cliente_id) {
-      setErro('Selecione o cliente: a ordem de serviço precisa de cliente. Ou desmarque "Gerar ordem de serviço".');
+      setAbaModal('venda');
+      setErro('Selecione o cliente: a ordem de serviço precisa de cliente. Ou desmarque "Gerar ordem de serviço" na aba OS.');
       return;
     }
     const boletos = (pagamentos || []).filter(pg => pg.forma === 'boleto');
@@ -478,8 +481,19 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
           }}>×</button>
         </div>
 
+        {temAbaOS && (
+          <div style={{ display: 'flex', gap: 2, padding: '0 24px', borderBottom: '1px solid var(--border)' }}>
+            <button type="button" className={'aba-linha' + (abaModal === 'venda' ? ' on' : '')} onClick={() => setAbaModal('venda')}>
+              <Icone nome="vendas" size={15} />Venda
+            </button>
+            <button type="button" className={'aba-linha' + (abaModal === 'os' ? ' on' : '')} onClick={() => setAbaModal('os')}>
+              <Icone nome="os" size={15} />Ordem de serviço
+              <span className="aba-n" style={gerarOS ? { color: 'var(--primary)' } : undefined}>{gerarOS ? 'gerar' : 'sem OS'}</span>
+            </button>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="modal-form" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '20px 24px' }}>
-          <div className="modal-cols">
+          <div className="modal-cols" style={{ display: abaModal === 'venda' ? undefined : 'none' }}>
           <div>
           {/* Cliente */}
           <div style={{ marginBottom: '14px' }}>
@@ -876,7 +890,7 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
           </div>
           </div>
 
-          {!venda && !isMarketing && (
+          {temAbaOS && abaModal === 'os' && (
             <OSNaVenda ativo={gerarOS} onAtivo={setGerarOS} value={osForm} onChange={setOs} inputStyle={inputStyle} labelStyle={labelStyle} />
           )}
           {venda?.os_id && (
