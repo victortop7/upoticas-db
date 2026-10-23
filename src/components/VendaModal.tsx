@@ -207,6 +207,8 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
   const [gerarOS, setGerarOS] = useState(!venda && !isMarketing);
   const temAbaOS = !venda && !isMarketing;
   const [abaModal, setAbaModal] = useState<'venda' | 'os'>('venda');
+  // ao registrar, confirma se a outra aba já foi preenchida
+  const [confirmar, setConfirmar] = useState<null | 'venda' | 'os'>(null);
   const [osForm, setOsForm] = useState<OSForm>(OS_VAZIA);
   const setOs = (k: string, val: string) => setOsForm(f => ({ ...f, [k]: val }));
 
@@ -315,9 +317,14 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
   const totalCartao = valorFinal + totalAdicionais;
   const podeAgrupar = !venda && !isMarketing;
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent | React.MouseEvent, jaConfirmou = false) {
     e.preventDefault();
+    if (temAbaOS && !jaConfirmou) {
+      const pergunta = abaModal === 'os' ? 'venda' : (gerarOS ? 'os' : null);
+      if (pergunta) { setConfirmar(pergunta); return; }
+    }
     if (!isMarketing && (!form.valor_total || parseFloat(form.valor_total) <= 0)) {
+      setAbaModal('venda');
       setErro('Informe o valor total da venda');
       return;
     }
@@ -922,6 +929,32 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
         </div>
       </div>
     </div>
+    {confirmar && (
+      <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 1300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+        onClick={e => e.target === e.currentTarget && setConfirmar(null)}>
+        <div role="dialog" aria-modal="true" style={{ width: '100%', maxWidth: 400, background: 'var(--surface)', border: '1px solid var(--border-light)', borderRadius: 12, padding: '20px 22px', boxShadow: '0 20px 60px rgba(0,0,0,0.35)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+            <Icone nome={confirmar === 'os' ? 'os' : 'vendas'} size={18} color="var(--primary)" />
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>
+              {confirmar === 'os' ? 'Já preencheu a ordem de serviço?' : 'Já preencheu a venda?'}
+            </h3>
+          </div>
+          <p style={{ margin: '0 0 18px', fontSize: 13, color: 'var(--text-dim)', lineHeight: 1.5 }}>
+            {confirmar === 'os'
+              ? 'Receita, lente, armação e médico ficam na aba Ordem de serviço.'
+              : 'Cliente, armação, produtos e pagamento ficam na aba Venda.'}
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <button type="button" className="btn" onClick={() => { setAbaModal(confirmar); setConfirmar(null); }}>
+              Não, abrir {confirmar === 'os' ? 'a OS' : 'a venda'}
+            </button>
+            <button type="button" className="btn btn-prim" autoFocus onClick={e => { setConfirmar(null); handleSubmit(e, true); }}>
+              Sim, registrar
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
     </>
   );
 }
