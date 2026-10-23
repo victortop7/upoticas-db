@@ -314,7 +314,6 @@ export default function ContasPagar() {
   }
 
   const filterBtn = (active: boolean): React.CSSProperties => ({ padding: '6px 14px', fontSize: '12px', fontWeight: '500', border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`, borderRadius: '6px', cursor: 'pointer', background: active ? 'var(--primary)' : 'var(--surface)', color: active ? 'white' : 'var(--text-dim)' });
-  const abaBtn = (on: boolean): React.CSSProperties => ({ padding: '9px 16px', fontSize: 14, fontWeight: 600, background: 'none', border: 'none', borderBottom: `2px solid ${on ? 'var(--primary)' : 'transparent'}`, color: on ? 'var(--text)' : 'var(--text-muted)', cursor: 'pointer' });
   const btn = (bg: string, color: string): React.CSSProperties => ({ padding: '5px 10px', fontSize: '12px', marginRight: '6px', background: bg, color, border: '1px solid transparent', borderRadius: '6px', cursor: 'pointer' });
   const fixasAtivas = recs.filter(r => r.ativo);
 
@@ -329,8 +328,8 @@ export default function ContasPagar() {
       </div>
 
       <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid var(--border)', marginBottom: 20 }}>
-        <button style={abaBtn(aba === 'contas')} onClick={() => setAba('contas')}>Contas</button>
-        <button style={abaBtn(aba === 'recorrentes')} onClick={() => setAba('recorrentes')}>Recorrentes e fixas {recs.length ? `(${recs.length})` : ''}</button>
+        <button className={'aba-linha' + (aba === 'contas' ? ' on' : '')} onClick={() => setAba('contas')}>Contas</button>
+        <button className={'aba-linha' + (aba === 'recorrentes' ? ' on' : '')} onClick={() => setAba('recorrentes')}>Recorrentes e fixas {recs.length > 0 && <span className="aba-n">{recs.length}</span>}</button>
       </div>
 
       {aba === 'contas' && (<>

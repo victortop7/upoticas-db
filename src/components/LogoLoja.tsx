@@ -62,7 +62,7 @@ export default function LogoLoja() {
             {salvando ? 'Enviando...' : logo ? 'Trocar logo' : 'Enviar logo'}
             <input type="file" accept="image/png,image/jpeg,image/webp" onChange={escolher} disabled={salvando} style={{ display: 'none' }} />
           </label>
-          {logo && <button type="button" onClick={() => confirm('Remover a logo?') && salvar(null)} style={{ padding: '9px 14px', fontSize: '13px', background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer' }}>Remover</button>}
+          {logo && <button type="button" onClick={() => confirm('Remover a logo?') && salvar(null)} style={{ padding: '9px 14px', fontSize: '13px', background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border-light)', fontWeight: 600, borderRadius: '8px', cursor: 'pointer' }}>Remover</button>}
           {msg && <span style={{ fontSize: 13, color: msg === 'Logo salva' ? 'var(--green)' : 'var(--text-muted)' }}>{msg}</span>}
         </div>
       </div>

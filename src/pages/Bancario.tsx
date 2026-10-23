@@ -92,7 +92,7 @@ export default function Bancario() {
           <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-dim)' }}>Contas bancárias e lançamentos</p>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
-          <button onClick={() => setModalConta(true)} style={{ padding: '9px 16px', fontSize: '13px', background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
+          <button onClick={() => setModalConta(true)} style={{ padding: '9px 16px', fontSize: '13px', background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border-light)', fontWeight: 600, borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
             + Nova Conta
           </button>
           <button onClick={() => { setLancForm(f => ({ ...f, conta_id: contaSel || (contas[0]?.id ?? '') })); setErroLanc(''); setModalLanc(true); }}
@@ -193,7 +193,7 @@ export default function Bancario() {
               </div>
               <div>{lbl('Saldo Inicial')}<input value={contaForm.saldo_inicial} onChange={e => setContaForm(f => ({ ...f, saldo_inicial: e.target.value }))} style={{ ...inp, fontFamily: 'var(--mono)' }} placeholder="0,00" /></div>
               <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
-                <button type="button" onClick={() => setModalConta(false)} style={{ flex: 1, padding: '10px', fontSize: '13px', background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
+                <button type="button" onClick={() => setModalConta(false)} style={{ flex: 1, padding: '10px', fontSize: '13px', background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border-light)', fontWeight: 600, borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
                 <button type="submit" disabled={savingConta} style={{ flex: 1, padding: '10px', fontSize: '13px', fontWeight: '600', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
                   {savingConta ? 'Salvando...' : 'Salvar'}
                 </button>
@@ -232,7 +232,7 @@ export default function Bancario() {
               <div>{lbl('Histórico *')}<input required value={lancForm.historico} onChange={e => setLancForm(f => ({ ...f, historico: e.target.value }))} style={inp} placeholder="Ex: Pagamento fornecedor, Recebimento cliente..." /></div>
               <div>{lbl('Documento')}<input value={lancForm.documento} onChange={e => setLancForm(f => ({ ...f, documento: e.target.value }))} style={inp} placeholder="NF, Cheque, Transferência..." /></div>
               <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
-                <button type="button" onClick={() => setModalLanc(false)} style={{ flex: 1, padding: '10px', fontSize: '13px', background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
+                <button type="button" onClick={() => setModalLanc(false)} style={{ flex: 1, padding: '10px', fontSize: '13px', background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border-light)', fontWeight: 600, borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
                 <button type="submit" disabled={savingLanc} style={{ flex: 1, padding: '10px', fontSize: '13px', fontWeight: '600', background: lancForm.tipo === 'credito' ? 'var(--green)' : 'var(--red)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }}>
                   {savingLanc ? 'Salvando...' : 'Registrar'}
                 </button>

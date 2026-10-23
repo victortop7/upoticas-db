@@ -250,8 +250,8 @@ export default function ClientePerfil() {
   );
   const sep = <span style={{ width: 1, height: 24, background: 'var(--border)', margin: '0 4px' }} />;
   const abaBtn = (k: typeof aba, l: string, n?: number) => (
-    <button onClick={() => setAba(k)} style={{ padding: '9px 14px', fontSize: 13.5, fontWeight: 600, background: 'none', border: 'none', borderBottom: `2px solid ${aba === k ? 'var(--primary)' : 'transparent'}`, color: aba === k ? 'var(--text)' : 'var(--text-muted)', cursor: 'pointer' }}>
-      {l}{n !== undefined && <span style={{ marginLeft: 6, fontSize: 11, padding: '1px 6px', borderRadius: 4, background: 'var(--surface-alt)', fontFamily: 'var(--mono)' }}>{n}</span>}
+    <button className={'aba-linha' + (aba === k ? ' on' : '')} onClick={() => setAba(k)}>
+      {l}{n !== undefined && <span className="aba-n">{n}</span>}
     </button>
   );
 

@@ -110,7 +110,7 @@ export default function EditorPermissoes({ u, lojas, euMesmo, onSalvar, onCancel
 
       {erro && <div style={{ color: 'var(--red)', fontSize: 13 }}>{erro}</div>}
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', paddingTop: 6, borderTop: '1px solid var(--border)' }}>
-        <button type="button" onClick={onCancelar} style={{ padding: '9px 16px', fontSize: 13.5, background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: 6, cursor: 'pointer' }}>Cancelar</button>
+        <button type="button" onClick={onCancelar} style={{ padding: '9px 16px', fontSize: 13.5, background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border-light)', fontWeight: 600, borderRadius: 6, cursor: 'pointer' }}>Cancelar</button>
         <button type="button" onClick={salvar} disabled={salvando} style={{ padding: '9px 18px', fontSize: 13.5, fontWeight: 700, background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', opacity: salvando ? 0.7 : 1 }}>{salvando ? 'Salvando...' : 'Salvar permissões'}</button>
       </div>
     </div>

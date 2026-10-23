@@ -223,7 +223,7 @@ export default function LeitorEstoque({ onMudou, categorias = [] }: { onMudou: (
             <div><label style={{ fontSize: 12, color: 'var(--text-muted)' }}>Custo (R$)</label><input style={{ ...inp, fontFamily: 'var(--mono)' }} inputMode="decimal" value={novo.preco_custo} onChange={e => setNovo({ ...novo, preco_custo: e.target.value })} /></div>
             <div><label style={{ fontSize: 12, color: 'var(--text-muted)' }}>Venda (R$)</label><input style={{ ...inp, fontFamily: 'var(--mono)' }} inputMode="decimal" value={novo.preco_venda} onChange={e => setNovo({ ...novo, preco_venda: e.target.value })} /></div>
             <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-              <button type="button" onClick={() => setNovo(null)} style={{ padding: '9px 16px', background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer' }}>Cancelar</button>
+              <button type="button" onClick={() => setNovo(null)} style={{ padding: '9px 16px', background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border-light)', fontWeight: 600, borderRadius: 8, cursor: 'pointer' }}>Cancelar</button>
               <button type="submit" disabled={ocupado} style={{ padding: '9px 18px', fontWeight: 700, background: '#16a34a', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}>Cadastrar e dar entrada</button>
             </div>
           </form>

@@ -247,7 +247,7 @@ export default function ContasReceber() {
           <div><label style={lbl}>Vencimento de</label><input type="date" style={{ ...inp, fontFamily: 'var(--mono)' }} value={f.inicio} onChange={e => set('inicio', e.target.value)} /></div>
           <div><label style={lbl}>até</label><input type="date" style={{ ...inp, fontFamily: 'var(--mono)' }} value={f.fim} onChange={e => set('fim', e.target.value)} /></div>
           <div style={{ display: 'flex', gap: 6 }}>
-            <button type="button" onClick={() => setMais(m => !m)} style={{ padding: '8px 12px', fontSize: 13, background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer', whiteSpace: 'nowrap' }}>{mais ? '− Endereço' : '+ Endereço'}</button>
+            <button type="button" onClick={() => setMais(m => !m)} style={{ padding: '8px 12px', fontSize: 13, background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border-light)', fontWeight: 600, borderRadius: 8, cursor: 'pointer', whiteSpace: 'nowrap' }}>{mais ? '− Endereço' : '+ Endereço'}</button>
             <button type="submit" style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, background: 'var(--primary)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer' }}>Buscar</button>
           </div>
         </div>

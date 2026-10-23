@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { api } from '../lib/api';
 import LeitorEstoque from '../components/LeitorEstoque';
+import Icone from '../components/Icone';
 
 interface ItemEstoque {
   id: string; produto_id: string; codigo?: string; codigo_barras?: string; descricao: string;
@@ -67,9 +68,11 @@ function PainelQuantidade({ cat, itens, onMudou }: { cat: Categoria; itens: Item
               {!aberto ? (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
                   {(['entrada', 'saida', 'ajuste'] as const).map(t => (
-                    <button key={t} onClick={() => { setAcao({ sub: l.id, tipo: t }); setQtd(''); setPreco(''); setDoc(''); setErro(''); }}
-                      style={{ padding: '7px 4px', fontSize: 12, fontWeight: 600, borderRadius: 7, cursor: 'pointer', border: `1px solid ${cores[t]}`, background: 'transparent', color: cores[t] }}>
-                      {t === 'entrada' ? '+ Entrada' : t === 'saida' ? '− Saída' : 'Contar'}
+                    <button key={t} className="btn btn-sm" title={t === 'entrada' ? 'Dar entrada de peças' : t === 'saida' ? 'Registrar saída' : 'Contar o que tem na loja'}
+                      onClick={() => { setAcao({ sub: l.id, tipo: t }); setQtd(''); setPreco(''); setDoc(''); setErro(''); }}
+                      style={{ padding: '0 6px' }}>
+                      <Icone nome={t === 'entrada' ? 'mais' : t === 'saida' ? 'menos' : 'contar'} size={14} color={cores[t]} strokeWidth={2.2} />
+                      {t === 'entrada' ? 'Entrada' : t === 'saida' ? 'Saída' : 'Contar'}
                     </button>
                   ))}
                 </div>
@@ -83,8 +86,8 @@ function PainelQuantidade({ cat, itens, onMudou }: { cat: Categoria; itens: Item
                   </>}
                   {erro && <div style={{ fontSize: 12, color: 'var(--red)' }}>{erro}</div>}
                   <div style={{ display: 'flex', gap: 6 }}>
-                    <button type="button" onClick={() => setAcao(null)} style={{ flex: 1, padding: 7, fontSize: 12, background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: 7, cursor: 'pointer' }}>Cancelar</button>
-                    <button type="submit" disabled={salvando} style={{ flex: 1.4, padding: 7, fontSize: 12, fontWeight: 700, background: cores[acao!.tipo], color: '#fff', border: 'none', borderRadius: 7, cursor: 'pointer' }}>{salvando ? '...' : 'Confirmar'}</button>
+                    <button type="button" className="btn btn-sm" onClick={() => setAcao(null)} style={{ flex: 1 }}>Cancelar</button>
+                    <button type="submit" className="btn btn-sm" disabled={salvando} style={{ flex: 1.4, background: cores[acao!.tipo], borderColor: cores[acao!.tipo], color: '#fff' }}>{salvando ? 'Salvando...' : 'Confirmar'}</button>
                   </div>
                 </form>
               )}
@@ -167,7 +170,7 @@ function NovoItem({ categorias, catInicial, subInicial, onClose, onSaved }: { ca
           <div><label style={lbl}>Localização</label><input style={inp} value={f.localizacao} onChange={e => set('localizacao', e.target.value)} placeholder="Expositor 2" /></div>
         </div>
         <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-          <button type="button" onClick={onClose} style={{ flex: 1, padding: 10, fontSize: 13, background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer' }}>Cancelar</button>
+          <button type="button" onClick={onClose} style={{ flex: 1, padding: 10, fontSize: 13, background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border-light)', fontWeight: 600, borderRadius: 8, cursor: 'pointer' }}>Cancelar</button>
           <button type="submit" disabled={saving} style={{ flex: 1, padding: 10, fontSize: 13, fontWeight: 600, background: 'var(--primary)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer' }}>{saving ? 'Salvando...' : 'Cadastrar no estoque'}</button>
         </div>
       </form>
@@ -326,9 +329,16 @@ export default function Estoque() {
   const catAtual = aba?.tipo === 'cat' ? cats?.categorias.find(c => c.id === aba.id) : undefined;
   const abaIgual = (a: Aba) => JSON.stringify(a) === JSON.stringify(aba);
   const tabBtn = (a: Aba, label: React.ReactNode, alerta = 0) => (
-    <button key={JSON.stringify(a)} onClick={() => { setAba(a); setSub(''); }} style={{ padding: '9px 14px', fontSize: 13.5, fontWeight: abaIgual(a) ? 700 : 500, background: 'none', border: 'none', borderBottom: `2px solid ${abaIgual(a) ? 'var(--primary)' : 'transparent'}`, color: abaIgual(a) ? 'var(--text)' : 'var(--text-muted)', cursor: 'pointer', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 6 }}>
+    <button key={JSON.stringify(a)} className={'aba-linha' + (abaIgual(a) ? ' on' : '')} onClick={() => { setAba(a); setSub(''); }}>
       {label}
-      {alerta > 0 && <span style={{ fontSize: 10.5, fontWeight: 700, background: 'var(--red)', color: '#fff', borderRadius: 10, padding: '1px 6px' }}>{alerta}</span>}
+      {alerta > 0 && <span title="Abaixo do mínimo" style={{ fontSize: 10.5, fontWeight: 700, fontFamily: 'var(--mono)', background: 'var(--red)', color: '#fff', borderRadius: 5, padding: '1px 6px' }}>{alerta}</span>}
+    </button>
+  );
+  const ferramenta = (a: Aba, icone: string, label: string, alerta = 0) => (
+    <button key={JSON.stringify(a)} className={abaIgual(a) ? 'on' : ''} onClick={() => { setAba(a); setSub(''); }}>
+      <Icone nome={icone} size={15} />
+      {label}
+      {alerta > 0 && <span className="seg-badge" title="Itens abaixo do mínimo">{alerta}</span>}
     </button>
   );
   const chip = (on: boolean): React.CSSProperties => ({ padding: '5px 12px', fontSize: 12.5, fontWeight: 500, borderRadius: 6, cursor: 'pointer', border: `1px solid ${on ? 'var(--primary)' : 'var(--border)'}`, background: on ? 'var(--primary)' : 'var(--surface)', color: on ? '#fff' : 'var(--text-dim)' });
@@ -343,8 +353,8 @@ export default function Estoque() {
           <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-dim)' }}>Separado por categoria. Cada venda dá baixa sozinha.</p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => setGerenciar(true)} style={{ padding: '9px 14px', fontSize: 13, background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer' }}>Categorias</button>
-          {catAtual?.modo !== 'quantidade' && <button onClick={() => setNovoItem(true)} disabled={!cats?.categorias.length} style={{ padding: '9px 16px', fontSize: 13, fontWeight: 600, background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}>+ Novo item{catAtual ? ` em ${catAtual.nome}` : ''}</button>}
+          <button className="btn" onClick={() => setGerenciar(true)}><Icone nome="categorias" size={15} />Categorias</button>
+          {catAtual?.modo !== 'quantidade' && <button className="btn btn-prim" onClick={() => setNovoItem(true)} disabled={!cats?.categorias.length}><Icone nome="mais" size={15} strokeWidth={2.2} />Novo item{catAtual ? ` em ${catAtual.nome}` : ''}</button>}
         </div>
       </div>
 
@@ -359,29 +369,33 @@ export default function Estoque() {
       )}
 
       {/* Abas: uma por categoria + ferramentas */}
-      <div style={{ display: 'flex', gap: 2, borderBottom: '1px solid var(--border)', marginBottom: 16, overflowX: 'auto' }}>
-        {cats?.categorias.map(c => tabBtn({ tipo: 'cat', id: c.id }, <>{c.nome} <span style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--text-muted)' }}>{c.pecas}</span></>, c.baixo))}
-        {cats && cats.sem_categoria.itens > 0 && tabBtn({ tipo: 'sem' }, <>Sem categoria <span style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--text-muted)' }}>{cats.sem_categoria.itens}</span></>)}
-        <span style={{ width: 1, background: 'var(--border)', margin: '8px 6px' }} />
-        {tabBtn({ tipo: 'leitor' }, '▌▌▌ Leitor')}
-        {tabBtn({ tipo: 'mov' }, 'Movimentações')}
-        {tabBtn({ tipo: 'compras' }, 'Repor', totalBaixo)}
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12, borderBottom: '1px solid var(--border)', marginBottom: 16, flexWrap: 'wrap' }}>
+        <div className="menu-sem-barra" style={{ display: 'flex', gap: 2, overflowX: 'auto', minWidth: 0 }}>
+          {cats?.categorias.map(c => tabBtn({ tipo: 'cat', id: c.id }, <>{c.nome}<span className="aba-n">{c.pecas}</span></>, c.baixo))}
+          {cats && cats.sem_categoria.itens > 0 && tabBtn({ tipo: 'sem' }, <>Sem categoria<span className="aba-n">{cats.sem_categoria.itens}</span></>)}
+        </div>
+        <div className="seg" style={{ marginBottom: 8 }}>
+          {ferramenta({ tipo: 'leitor' }, 'leitor', 'Leitor')}
+          {ferramenta({ tipo: 'mov' }, 'historico', 'Movimentações')}
+          {ferramenta({ tipo: 'compras' }, 'repor', 'Repor', totalBaixo)}
+        </div>
       </div>
 
       {/* Subcategorias da aba */}
       {aba?.tipo === 'cat' && catAtual && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap', fontSize: 12.5, color: 'var(--text-muted)' }}>
-          <span>Controle desta aba:</span>
-          {(['quantidade', 'modelo'] as const).map(m => (
-            <button key={m} onClick={async () => { if ((catAtual.modo || 'modelo') === m) return; await api.put(`/estoque/categorias/${catAtual.id}`, { modo: m }); recarregar(); }}
-              style={{ padding: '4px 11px', fontSize: 12, borderRadius: 6, cursor: 'pointer', border: `1px solid ${(catAtual.modo || 'modelo') === m ? 'var(--primary)' : 'var(--border)'}`, background: (catAtual.modo || 'modelo') === m ? 'var(--primary-dim)' : 'transparent', color: (catAtual.modo || 'modelo') === m ? 'var(--primary)' : 'var(--text-dim)' }}>
-              {m === 'quantidade' ? 'Só quantidade' : 'Por modelo (código/preço)'}
-            </button>
-          ))}
-          <span style={{ marginLeft: 8 }}>NCM p/ nota:</span>
+          <span>Controle desta aba</span>
+          <div className="seg">
+            {(['quantidade', 'modelo'] as const).map(m => (
+              <button key={m} className={(catAtual.modo || 'modelo') === m ? 'on' : ''} onClick={async () => { if ((catAtual.modo || 'modelo') === m) return; await api.put(`/estoque/categorias/${catAtual.id}`, { modo: m }); recarregar(); }}>
+                {m === 'quantidade' ? 'Só quantidade' : 'Por modelo (código e preço)'}
+              </button>
+            ))}
+          </div>
+          <span style={{ marginLeft: 8 }}>NCM para nota</span>
           <input defaultValue={catAtual.ncm || ''} key={catAtual.id + (catAtual.ncm || '')} placeholder="ex.: 90031900" inputMode="numeric"
             onBlur={async e => { const v = e.target.value.replace(/\D/g, ''); if (v !== (catAtual.ncm || '')) { await api.put(`/estoque/categorias/${catAtual.id}`, { ncm: v || null }); loadCats(); } }}
-            style={{ ...inp, width: 120, padding: '4px 8px', fontSize: 12, fontFamily: 'var(--mono)' }} />
+            style={{ ...inp, width: 130, height: 36, padding: '0 10px', fontSize: 12.5, fontFamily: 'var(--mono)' }} />
         </div>
       )}
       {aba?.tipo === 'cat' && catAtual && catAtual.modo === 'quantidade' && (
@@ -462,9 +476,9 @@ export default function Estoque() {
                       <td style={{ padding: '10px 14px', fontSize: 12, color: 'var(--text-muted)' }}>{item.localizacao || '-'}</td>
                       <td style={{ padding: '10px 14px', whiteSpace: 'nowrap', textAlign: 'right' }}>
                         <button onClick={() => { setItemSel(item); setMovForm({ tipo: 'entrada', quantidade: '', motivo: '', documento: '', preco_unitario: '' }); setErroMov(''); }}
-                          style={{ fontSize: 11.5, fontWeight: 600, padding: '4px 10px', background: 'var(--accent-dim)', color: 'var(--accent)', border: 'none', borderRadius: 6, cursor: 'pointer', marginRight: 6 }}>+/− Mov.</button>
+                          className="btn btn-xs" style={{ marginRight: 6 }}><Icone nome="repetir" size={13} />Movimentar</button>
                         <button onClick={() => { setMover(item); setMoverPara({ categoria_id: item.categoria_id || cats?.categorias[0]?.id || '', subcategoria_id: item.subcategoria_id || '' }); }}
-                          style={{ fontSize: 11.5, padding: '4px 10px', background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: 6, cursor: 'pointer' }}>Mover</button>
+                          className="btn btn-xs"><Icone nome="mover" size={13} />Mover</button>
                       </td>
                     </tr>
                   );
@@ -540,7 +554,7 @@ export default function Estoque() {
             <div><label style={lbl}>Nº documento / NF</label><input value={movForm.documento} onChange={e => setMovForm(f => ({ ...f, documento: e.target.value }))} style={inp} placeholder="Ex: NF 001234" /></div>
             <div><label style={lbl}>Motivo</label><input value={movForm.motivo} onChange={e => setMovForm(f => ({ ...f, motivo: e.target.value }))} style={inp} placeholder="Ex: Compra, Devolução, Inventário..." /></div>
             <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-              <button type="button" onClick={() => setItemSel(null)} style={{ flex: 1, padding: 10, fontSize: 13, background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer' }}>Cancelar</button>
+              <button type="button" onClick={() => setItemSel(null)} style={{ flex: 1, padding: 10, fontSize: 13, background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border-light)', fontWeight: 600, borderRadius: 8, cursor: 'pointer' }}>Cancelar</button>
               <button type="submit" disabled={savingMov} style={{ flex: 1, padding: 10, fontSize: 13, fontWeight: 600, background: TIPO_COLOR[movForm.tipo], color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer' }}>{savingMov ? 'Salvando...' : `Registrar ${TIPO_LABEL[movForm.tipo]}`}</button>
             </div>
           </form>
