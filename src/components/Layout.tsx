@@ -1,4 +1,5 @@
-import { Outlet, Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
+import AreaComAbas from './Abas';
 import { TODOS_MENUS, menusDo, rotaLiberada } from '../lib/permissoes';
 import Sidebar from './Sidebar';
 import BuscaGlobal from './BuscaGlobal';
@@ -104,7 +105,7 @@ export default function Layout() {
         minHeight: '100vh',
       }}>
         {licenca.tipo === 'aviso' && <AvisoBanner dias={licenca.dias} motivo={licenca.motivo} />}
-        <Outlet />
+        <AreaComAbas />
       </main>
       <BuscaGlobal />
       {licenca.tipo === 'bloqueado' && <BloqueioOverlay motivo={licenca.motivo} />}

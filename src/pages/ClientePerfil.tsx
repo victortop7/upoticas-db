@@ -5,6 +5,7 @@ import type { Cliente } from '../types';
 import VendaModal from '../components/VendaModal';
 import OSModal from '../components/OSModal';
 import Icone from '../components/Icone';
+import { useTituloAba } from '../components/Abas';
 import { BaixaModal, type Titulo } from './financeiro/ContasReceber';
 
 type ClienteFicha = Cliente & {
@@ -133,6 +134,8 @@ export default function ClientePerfil() {
   const [achados, setAchados] = useState<Achado[]>([]);
   const [estagios, setEstagios] = useState<Estagio[]>([]);
   const histRef = useRef<HTMLDivElement>(null);
+  // nome do cliente na aba (como janela)
+  useTituloAba(novo ? 'Novo cliente' : p?.cliente?.nome ? p.cliente.nome.split(' ').slice(0, 2).join(' ') : undefined);
 
   const load = useCallback(() => {
     setErro(''); setAviso('');
