@@ -1,5 +1,6 @@
 import type { D1Database } from '@cloudflare/workers-types';
 import { ensureReceber, hojeSP } from './receber';
+import { ensurePagamentos } from './pagamentos';
 
 // Linha do tempo do cliente no Funil depois de comprar:
 //   deve algo          -> A Receber
@@ -13,6 +14,7 @@ let jaGarantiu = false;
 export async function ensureCrmFluxo(db: D1Database) {
   if (jaGarantiu) return;
   await ensureReceber(db);
+  await ensurePagamentos(db);
   try { await db.prepare('ALTER TABLE crm_cards ADD COLUMN quitado_em TEXT').run(); } catch { /* já existe */ }
   // OS copiadas do Connect Vision nasciam com o valor total "em aberto" sem nunca ter cobrança.
   // Zera o restante das que nunca tiveram pagamento lançado (não mexe nas que receberam algo).
@@ -57,20 +59,42 @@ export async function aplicarFluxoReceber(db: D1Database, tenant: string, naoCus
       AND cliente_id IN (${DEVEDORES})
   `).bind(tenant, ...temCustom, ...pDev).run();
 
-  // 2. Quem estava em A Receber e não deve mais: sai, e marca a data da quitação
+  // Data-base da linha do tempo: o fato mais recente entre última compra, última OS e último pagamento.
+  // (quem nunca deveu de verdade, ex.: OS do Vision com "restante" falso, conta da data da compra)
+  const BASE = `NULLIF(MAX(
+      COALESCE((SELECT MAX(date(v.created_at)) FROM vendas v WHERE v.tenant_id = crm_cards.tenant_id AND v.cliente_id = crm_cards.cliente_id AND v.situacao != 'cancelada'), '0'),
+      COALESCE((SELECT MAX(date(os.created_at)) FROM ordens_servico os WHERE os.tenant_id = crm_cards.tenant_id AND os.cliente_id = crm_cards.cliente_id AND os.situacao NOT IN ('orcamento', 'cancelado')), '0'),
+      COALESCE((SELECT MAX(date(vp.data_recebimento)) FROM venda_pagamentos vp JOIN vendas v ON v.id = vp.venda_id WHERE v.tenant_id = crm_cards.tenant_id AND v.cliente_id = crm_cards.cliente_id AND vp.forma != 'boleto' AND vp.forma != 'a_receber'), '0'),
+      COALESCE((SELECT MAX(date(cp.pago_em)) FROM carne_parcelas cp JOIN carnes k ON k.id = cp.carne_id WHERE k.tenant_id = crm_cards.tenant_id AND k.cliente_id = crm_cards.cliente_id AND cp.status = 'pago'), '0')
+    ), '0')`;
+  const COMPROU = `(EXISTS (SELECT 1 FROM vendas v WHERE v.tenant_id = crm_cards.tenant_id AND v.cliente_id = crm_cards.cliente_id AND v.situacao != 'cancelada')
+      OR EXISTS (SELECT 1 FROM ordens_servico os WHERE os.tenant_id = crm_cards.tenant_id AND os.cliente_id = crm_cards.cliente_id AND os.situacao NOT IN ('orcamento', 'cancelado')))`;
+  // óculos em produção: OS ativa e recente (OS do Vision "aberta" antiga não prende ninguém)
+  const EM_PRODUCAO = `EXISTS (SELECT 1 FROM ordens_servico os WHERE os.tenant_id = crm_cards.tenant_id AND os.cliente_id = crm_cards.cliente_id
+      AND os.situacao IN ('aprovado', 'em_producao', 'aberta') AND date(os.created_at) >= ?)`;
+  const lim20 = menosDias(hoje, DIAS_POS_VENDA), lim60 = menosDias(hoje, DIAS_INDICACAO), lim45 = menosDias(hoje, 45);
+
+  // 2. Quem estava em A Receber e não deve mais: vai pra etapa certa pela idade da data-base
   await db.prepare(`
     UPDATE crm_cards SET
       estagio = CASE
-        WHEN EXISTS (SELECT 1 FROM ordens_servico os WHERE os.tenant_id = crm_cards.tenant_id AND os.cliente_id = crm_cards.cliente_id
-                     AND os.situacao IN ('aprovado', 'em_producao', 'aberta')) THEN 'oculos_pendente'
-        WHEN (EXISTS (SELECT 1 FROM vendas v WHERE v.tenant_id = crm_cards.tenant_id AND v.cliente_id = crm_cards.cliente_id AND v.situacao != 'cancelada')
-                  OR EXISTS (SELECT 1 FROM ordens_servico os WHERE os.tenant_id = crm_cards.tenant_id AND os.cliente_id = crm_cards.cliente_id AND os.situacao NOT IN ('orcamento', 'cancelado'))) THEN 'oculos_pronto'
-        ELSE 'contato' END,  -- só tinha orçamento: volta pra Em andamento
-      quitado_em = CASE WHEN (EXISTS (SELECT 1 FROM vendas v WHERE v.tenant_id = crm_cards.tenant_id AND v.cliente_id = crm_cards.cliente_id AND v.situacao != 'cancelada')
-                  OR EXISTS (SELECT 1 FROM ordens_servico os WHERE os.tenant_id = crm_cards.tenant_id AND os.cliente_id = crm_cards.cliente_id AND os.situacao NOT IN ('orcamento', 'cancelado'))) THEN ? ELSE NULL END, updated_at = datetime('now')
+        WHEN NOT ${COMPROU} THEN 'contato'                         -- só tinha orçamento: Em andamento
+        WHEN COALESCE(${BASE}, ?) <= ? THEN 'indicacao'           -- 2 meses ou mais
+        WHEN COALESCE(${BASE}, ?) <= ? THEN 'pos_venda'           -- 20 dias ou mais
+        WHEN ${EM_PRODUCAO} THEN 'oculos_pendente'
+        ELSE 'oculos_pronto' END,
+      quitado_em = CASE WHEN ${COMPROU} THEN COALESCE(${BASE}, ?) ELSE NULL END,
+      updated_at = datetime('now')
     WHERE tenant_id = ? AND estagio = 'a_receber'
       AND cliente_id NOT IN (${DEVEDORES})
-  `).bind(hoje, tenant, ...pDev).run();
+  `).bind(hoje, lim60, hoje, lim20, lim45, hoje, tenant, ...pDev).run();
+
+  // 2b. Quem está em Óculos Pronto/Pendente: recalcula a data-base (corrige quem saiu de A Receber sem ter devido)
+  await db.prepare(`
+    UPDATE crm_cards SET quitado_em = ${BASE}
+    WHERE tenant_id = ? AND estagio IN ('oculos_pendente', 'oculos_pronto') AND quitado_em IS NOT NULL
+      AND ${BASE} IS NOT NULL AND ${BASE} != quitado_em
+  `).bind(tenant).run();
 
   // 3. 20 dias depois de quitar: Pós-venda
   await db.prepare(`
