@@ -8,7 +8,7 @@ import Icone from './Icone';
 // Menu lateral recolhível (igual ao Connect LAB): faixa só com ícones que abre ao encostar o mouse.
 // O botão de alfinete deixa o menu sempre aberto (fica salvo neste computador).
 const LARGO = 240;
-const ESTREITO = 60;
+const ESTREITO = 52;
 const CHAVE_FIXO = 'menu_fixo';
 
 function lerFixo() {
@@ -41,8 +41,8 @@ export default function Sidebar() {
 
   const texto: React.CSSProperties = { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', opacity: aberto ? 1 : 0, transition: 'opacity .15s' };
   const linhaBtn: React.CSSProperties = {
-    width: '100%', height: 36, padding: '0 0 0 12px', fontSize: '13.5px', color: 'var(--text-dim)', background: 'transparent',
-    border: 'none', borderRadius: '6px', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '12px',
+    width: '100%', height: 34, padding: '0 0 0 17px', fontSize: '13px', color: 'var(--text-dim)', background: 'transparent',
+    border: 'none', borderRadius: 0, cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '12px',
   };
 
   return (
@@ -64,8 +64,8 @@ export default function Sidebar() {
         transition: 'width .18s ease, box-shadow .18s ease',
       }}>
       {/* Logo + loja */}
-      <div style={{ padding: '14px 10px', borderBottom: '1px solid var(--border)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingLeft: 4 }}>
+      <div style={{ padding: '10px 8px 10px 10px', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <img src="/brand-192.png" alt="Conexão Óticas" width="32" height="32" onClick={() => navigate('/dashboard')} title="Painel"
             style={{ width: '32px', height: '32px', borderRadius: '6px', objectFit: 'cover', border: '1px solid var(--border)', flexShrink: 0, cursor: 'pointer' }} />
           <span style={{ ...texto, flex: 1, fontSize: '15px', fontWeight: 700, color: 'var(--text)' }}>
@@ -83,21 +83,21 @@ export default function Sidebar() {
       </div>
 
       {/* Itens */}
-      <nav style={{ flex: 1, padding: '10px 8px', overflowY: 'auto', overflowX: 'hidden' }}>
+      <nav className="menu-sem-barra" style={{ flex: 1, padding: '6px 0', overflowY: 'auto', overflowX: 'hidden' }}>
         <button
           onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }))}
           title="Buscar (Ctrl+K)"
-          style={{ ...linhaBtn, marginBottom: 6, background: 'var(--surface-alt)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+          style={{ ...linhaBtn, marginBottom: 4, color: 'var(--text-muted)' }}
+          onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-alt)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
           <Icone nome="busca" size={16} />
           <span style={{ ...texto, flex: 1 }}>Buscar...</span>
           <kbd style={{ ...texto, fontSize: '10px', padding: '1px 5px', marginRight: 8, borderRadius: '3px', background: 'var(--surface)', border: '1px solid var(--border)', fontFamily: 'var(--mono)' }}>Ctrl K</kbd>
         </button>
         {grupos.map(({ label, items }, gi) => (
           <div key={label}>
-            <div style={{ height: 26, display: 'flex', alignItems: 'center', margin: '4px 0 2px' }}>
-              {aberto
-                ? <span style={{ ...texto, fontSize: '10px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', padding: '0 8px' }}>{label}</span>
-                : gi > 0 && <span style={{ width: '100%', height: 1, background: 'var(--border)' }} />}
+            <div style={{ height: aberto ? 24 : (gi > 0 ? 8 : 0), display: 'flex', alignItems: 'flex-end', transition: 'height .18s', overflow: 'hidden' }}>
+              <span style={{ ...texto, fontSize: '10px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', padding: '0 0 3px 17px' }}>{label}</span>
             </div>
             {items.map(item => (
               <NavLink
@@ -105,11 +105,11 @@ export default function Sidebar() {
                 to={item.to}
                 title={item.label}
                 style={({ isActive }) => ({
-                  display: 'flex', alignItems: 'center', gap: '12px', height: 36,
-                  padding: '0 0 0 12px', borderRadius: '6px', marginBottom: '2px',
-                  fontSize: '13.5px', fontWeight: isActive ? 600 : 400,
-                  color: isActive ? 'var(--primary)' : 'var(--text-dim)',
-                  background: isActive ? 'var(--primary-dim)' : 'transparent',
+                  display: 'flex', alignItems: 'center', gap: '12px', height: 34,
+                  padding: '0 0 0 17px', borderRadius: 0,
+                  fontSize: '13px', fontWeight: isActive ? 600 : 400,
+                  color: isActive ? '#fff' : 'var(--text-dim)',
+                  background: isActive ? 'var(--primary)' : 'transparent',
                   textDecoration: 'none', transition: 'background .12s',
                 })}
               >
@@ -122,7 +122,7 @@ export default function Sidebar() {
       </nav>
 
       {/* Rodapé */}
-      <div style={{ padding: '8px', borderTop: '1px solid var(--border)' }}>
+      <div style={{ padding: '4px 0', borderTop: '1px solid var(--border)' }}>
         <button onClick={toggle} title={dark ? 'Modo claro' : 'Modo escuro'} style={linhaBtn}
           onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-alt)')}
           onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
