@@ -2,6 +2,7 @@ import type { PagesFunction } from '@cloudflare/workers-types';
 import type { Env } from '../../../lib/types';
 import { requireAuth, json } from '../../../lib/auth-middleware';
 import { ensureReceber, listarTitulos } from '../../../lib/receber';
+import { ensureFicha, numerarClientes } from '../../../lib/clienteFicha';
 
 // GET /api/clientes/:id/perfil: tudo do cliente: dados, vendas (cada uma separada), OS, crediário e resumo
 export const onRequestGet: PagesFunction<Env> = async ({ request, env, params }) => {
@@ -9,8 +10,10 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env, params })
   if (auth instanceof Response) return auth;
   try {
     await ensureReceber(env.DB);
+    await ensureFicha(env.DB);
+    try { await numerarClientes(env.DB, auth.tenant_id); } catch { /* segue */ }
     const id = String(params.id);
-    const cliente = await env.DB.prepare('SELECT * FROM clientes WHERE id = ? AND tenant_id = ?')
+    const cliente = await env.DB.prepare('SELECT c.*, l.nome AS loja_nome FROM clientes c LEFT JOIN lojas l ON l.id = c.loja_id WHERE c.id = ? AND c.tenant_id = ?')
       .bind(id, auth.tenant_id).first<Record<string, unknown>>();
     if (!cliente) return json({ error: 'Cliente não encontrado' }, 404);
 

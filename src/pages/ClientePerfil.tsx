@@ -1,23 +1,49 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../lib/api';
 import type { Cliente } from '../types';
-import ClienteModal from '../components/ClienteModal';
 import VendaModal from '../components/VendaModal';
 import OSModal from '../components/OSModal';
+import Icone from '../components/Icone';
 import { BaixaModal, type Titulo } from './financeiro/ContasReceber';
 
-type ClientePerfilData = Cliente & { foto?: string | null; referencia?: string | null; loja_id?: string | null; created_at?: string };
+type ClienteFicha = Cliente & {
+  foto?: string | null; referencia?: string | null; loja_id?: string | null; loja_nome?: string | null; created_at?: string;
+  codigo?: number | null; pessoa?: string; rg?: string; tel_comercial?: string; numero?: string; complemento?: string;
+  mae?: string; pai?: string; conjuge?: string; regiao?: string; localidade?: string;
+  spc?: number; sem_cobranca?: number; nao_receber_msg?: number; situacao_cad?: string; cobranca?: string; data_compra?: string;
+};
 type VendaP = { id: string; numero: number; situacao: string; valor_total: number; desconto: number; valor_final: number; forma_pagamento?: string; valor_entrada: number; saldo_restante: number; created_at: string; vendedor?: string; loja?: string; itens?: string };
 type OSP = { id: string; numero: number; tipo: string; situacao: string; valor_total: number; valor_restante: number; data_entrega?: string; armacao_desc?: string; lente_desc?: string; created_at: string };
-type CarneP = { id: string; descricao: string; valor_total: number; num_parcelas: number; venda_id?: string; venda_numero?: number; created_at: string };
 type Resumo = { total_comprado: number; qtd_vendas: number; ticket_medio: number; em_aberto: number; em_atraso: number; parcelas_atraso: number; atraso_medio_dias: number | null; primeira_compra: string | null; ultima_compra: string | null };
-type Perfil = { cliente: ClientePerfilData; vendas: VendaP[]; os: OSP[]; carnes: CarneP[]; titulos: Titulo[]; resumo: Resumo };
+type Perfil = { cliente: ClienteFicha; vendas: VendaP[]; os: OSP[]; titulos: Titulo[]; resumo: Resumo };
 type Conta = { id: string; nome: string };
+type Opcoes = { regiao: string[]; localidade: string[]; bairro: string[]; cidade: string[] };
+
+const VAZIO = {
+  pessoa: 'F', nome: '', apelido: '', data_nascimento: '', cpf: '', rg: '', telefone: '', tel_comercial: '', celular: '',
+  spc: false, sem_cobranca: false, nao_receber_msg: false, situacao_cad: 'ativo', cobranca: 'normal', regiao: '', localidade: '',
+  cep: '', endereco: '', numero: '', complemento: '', bairro: '', cidade: '', uf: 'CE', observacao: '', email: '',
+  mae: '', pai: '', conjuge: '', referencia: '',
+};
+type Form = typeof VAZIO;
 
 const brl = (v: number) => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const fmtD = (s?: string | null) => { if (!s) return '-'; const [y, m, d] = s.slice(0, 10).split('-'); return `${d}/${m}/${y}`; };
-function idade(s?: string) { if (!s) return null; const n = new Date(s); if (isNaN(n.getTime())) return null; const h = new Date(); let a = h.getFullYear() - n.getFullYear(); if (h < new Date(h.getFullYear(), n.getMonth(), n.getDate())) a--; return a; }
+const cod = (n?: number | null) => (n ? String(n).padStart(6, '0') : '');
+const SIT_OS: Record<string, string> = { orcamento: 'Orçamento', aprovado: 'Aprovado', em_producao: 'Produção', pronto: 'Pronto', entregue: 'Entregue', cancelado: 'Cancelado', aberta: 'Aberta' };
+
+// "46 anos 3 meses 12 dias"
+function idadeCompleta(s?: string) {
+  if (!s || !/^\d{4}-\d{2}-\d{2}/.test(s)) return '';
+  const [y, m, d] = s.slice(0, 10).split('-').map(Number);
+  const h = new Date();
+  let anos = h.getFullYear() - y, meses = h.getMonth() + 1 - m, dias = h.getDate() - d;
+  if (dias < 0) { meses--; dias += new Date(h.getFullYear(), h.getMonth(), 0).getDate(); }
+  if (meses < 0) { anos--; meses += 12; }
+  if (anos < 0 || anos > 130) return '';
+  return `${anos} ano${anos === 1 ? '' : 's'} ${meses} ${meses === 1 ? 'mês' : 'meses'} ${dias} dia${dias === 1 ? '' : 's'}`;
+}
 function haQuanto(s?: string | null) {
   if (!s) return '';
   const dias = Math.floor((Date.now() - new Date(s.slice(0, 10) + 'T12:00:00').getTime()) / 86_400_000);
@@ -26,7 +52,17 @@ function haQuanto(s?: string | null) {
   if (dias < 365) { const m = Math.floor(dias / 30); return `há ${m} ${m > 1 ? 'meses' : 'mês'}`; }
   const a = Math.floor(dias / 365); return `há ${a} ano${a > 1 ? 's' : ''}`;
 }
-const SIT_OS: Record<string, string> = { orcamento: 'Orçamento', aprovado: 'Aprovado', em_producao: 'Produção', pronto: 'Pronto', entregue: 'Entregue', cancelado: 'Cancelado' };
+function mascaraDoc(v: string, pj: boolean) {
+  const d = v.replace(/\D/g, '').slice(0, pj ? 14 : 11);
+  if (pj) return d.replace(/^(\d{2})(\d)/, '$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3').replace(/\.(\d{3})(\d)/, '.$1/$2').replace(/(\d{4})(\d)/, '$1-$2');
+  return d.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+}
+function mascaraFone(v: string) {
+  const d = v.replace(/\D/g, '').slice(0, 11);
+  if (d.length <= 10) return d.replace(/^(\d{2})(\d)/, '($1) $2').replace(/(\d{4})(\d)/, '$1-$2');
+  return d.replace(/^(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2');
+}
+const mascaraCep = (v: string) => v.replace(/\D/g, '').slice(0, 8).replace(/^(\d{5})(\d)/, '$1-$2');
 
 // Foto: reduz para 360px (JPEG) antes de enviar
 function reduzirFoto(file: File): Promise<string> {
@@ -43,124 +79,295 @@ function reduzirFoto(file: File): Promise<string> {
   });
 }
 
+// Rótulo + campo (fora da tela pra não recriar o input a cada letra digitada)
+const rot: React.CSSProperties = { fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '.4px' };
+function Campo({ r: rotulo, children }: { r: string; children: React.ReactNode }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '108px minmax(0, 1fr)', alignItems: 'center', gap: 10, minHeight: 34 }}>
+      <span style={rot}>{rotulo}</span><div style={{ minWidth: 0 }}>{children}</div>
+    </div>
+  );
+}
+
+function doCliente(c: ClienteFicha): Form {
+  return {
+    pessoa: c.pessoa === 'J' ? 'J' : 'F', nome: c.nome || '', apelido: c.apelido || '', data_nascimento: (c.data_nascimento || '').slice(0, 10),
+    cpf: c.cpf || '', rg: c.rg || '', telefone: c.telefone || '', tel_comercial: c.tel_comercial || '', celular: c.celular || '',
+    spc: !!c.spc, sem_cobranca: !!c.sem_cobranca, nao_receber_msg: !!c.nao_receber_msg,
+    situacao_cad: c.situacao_cad || 'ativo', cobranca: c.cobranca || 'normal', regiao: c.regiao || '', localidade: c.localidade || '',
+    cep: c.cep || '', endereco: c.endereco || '', numero: c.numero || '', complemento: c.complemento || '', bairro: c.bairro || '',
+    cidade: c.cidade || '', uf: c.uf || '', observacao: c.observacao || '', email: c.email || '',
+    mae: c.mae || '', pai: c.pai || '', conjuge: c.conjuge || '', referencia: c.referencia || '',
+  };
+}
+
 export default function ClientePerfil() {
-  const { id } = useParams();
+  const { id = 'novo' } = useParams();
+  const novo = id === 'novo';
   const navigate = useNavigate();
   const [p, setP] = useState<Perfil | null>(null);
+  const [form, setForm] = useState<Form>(VAZIO);
+  const [original, setOriginal] = useState<Form>(VAZIO);
   const [erro, setErro] = useState('');
+  const [aviso, setAviso] = useState('');
+  const [salvando, setSalvando] = useState(false);
+  const [buscandoCep, setBuscandoCep] = useState(false);
+  const [mapa, setMapa] = useState(false);
+  const [opcoes, setOpcoes] = useState<Opcoes>({ regiao: [], localidade: [], bairro: [], cidade: [] });
   const [aba, setAba] = useState<'vendas' | 'crediario' | 'os' | 'receita'>('vendas');
-  const [editar, setEditar] = useState(false);
   const [novaVenda, setNovaVenda] = useState(false);
   const [novaOS, setNovaOS] = useState(false);
   const [baixa, setBaixa] = useState<Titulo | null>(null);
   const [contas, setContas] = useState<Conta[]>([]);
-  const [ref, setRef] = useState<string | null>(null);
 
   const load = useCallback(() => {
-    api.get<Perfil>(`/clientes/${id}/perfil`).then(r => { setP(r); setRef(null); }).catch(e => setErro(e instanceof Error ? e.message : 'Erro'));
-  }, [id]);
+    setErro(''); setAviso('');
+    if (novo) { setP(null); setForm(VAZIO); setOriginal(VAZIO); return; }
+    api.get<Perfil>(`/clientes/${id}/perfil`).then(r => { setP(r); const f = doCliente(r.cliente); setForm(f); setOriginal(f); })
+      .catch(e => setErro(e instanceof Error ? e.message : 'Erro'));
+  }, [id, novo]);
   useEffect(() => { load(); }, [load]);
-  useEffect(() => { api.get<Conta[]>('/financeiro/contas').then(setContas).catch(() => {}); }, []);
+  useEffect(() => {
+    api.get<Conta[]>('/financeiro/contas').then(setContas).catch(() => {});
+    api.get<Opcoes>('/clientes/opcoes').then(setOpcoes).catch(() => {});
+  }, []);
 
+  const alterado = useMemo(() => JSON.stringify(form) !== JSON.stringify(original), [form, original]);
+  const set = <K extends keyof Form>(k: K, v: Form[K]) => setForm(f => ({ ...f, [k]: v }));
+  const sairSePuder = () => !alterado || confirm('Há alterações não salvas. Sair mesmo assim?');
+
+  async function salvar() {
+    if (!form.nome.trim()) { setAviso('Informe o nome do cliente.'); return; }
+    setSalvando(true); setAviso('');
+    try {
+      if (novo) {
+        const r = await api.post<{ id: string }>('/clientes/ficha', form);
+        setOriginal(form);
+        navigate(`/clientes/${r.id}`, { replace: true });
+      } else {
+        await api.put(`/clientes/${id}/ficha`, form);
+        setOriginal(form);
+        setAviso('Salvo.');
+        load();
+      }
+    } catch (e) { setAviso(e instanceof Error ? e.message.replace(/\s*\(HTTP \d+\)$/, '') : 'Erro ao salvar'); }
+    setSalvando(false);
+  }
+  async function navegar(dir: 'primeiro' | 'anterior' | 'proximo' | 'ultimo') {
+    if (!sairSePuder()) return;
+    const r = await api.get<{ id: string | null }>(`/clientes/${id}/navegar?dir=${dir}`).catch(() => ({ id: null }));
+    if (r.id) navigate(`/clientes/${r.id}`);
+  }
+  async function buscarCep() {
+    const cep = form.cep.replace(/\D/g, '');
+    if (cep.length !== 8) { setAviso('CEP precisa ter 8 dígitos.'); return; }
+    setBuscandoCep(true); setAviso('');
+    try {
+      const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`).then(x => x.json());
+      if (r.erro) setAviso('CEP não encontrado.');
+      else setForm(f => ({ ...f, endereco: r.logradouro || f.endereco, bairro: r.bairro || f.bairro, cidade: r.localidade || f.cidade, uf: r.uf || f.uf, complemento: f.complemento || r.complemento || '' }));
+    } catch { setAviso('Não foi possível consultar o CEP agora.'); }
+    setBuscandoCep(false);
+  }
   async function trocarFoto(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]; e.target.value = '';
-    if (!f) return;
+    if (!f || novo) return;
     try { await api.put(`/clientes/${id}/perfil`, { foto: await reduzirFoto(f) }); load(); }
     catch (err) { alert(err instanceof Error ? err.message : 'Erro ao enviar a foto'); }
   }
-  async function salvarRef() {
-    if (ref === null) return;
-    await api.put(`/clientes/${id}/perfil`, { referencia: ref }); load();
+  async function tirarFoto() {
+    if (!confirm('Remover a foto?')) return;
+    await api.put(`/clientes/${id}/perfil`, { foto: null }); load();
   }
 
   if (erro) return <div style={{ padding: 32, color: 'var(--red)' }}>{erro}</div>;
-  if (!p) return <div style={{ padding: 32, color: 'var(--text-muted)' }}>Carregando…</div>;
+  if (!novo && !p) return <div style={{ padding: 32, color: 'var(--text-muted)' }}>Carregando…</div>;
 
-  const c = p.cliente; const r = p.resumo;
-  const atrasados = p.titulos.filter(t => t.situacao === 'vencido');
-  const abertos = p.titulos.filter(t => t.situacao !== 'recebido');
-  const wa = (c.celular || c.telefone || '').replace(/\D/g, '');
-  const card: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12 };
-  const btn = (bg: string, fg = '#fff'): React.CSSProperties => ({ width: '100%', padding: '10px 12px', fontSize: 14, fontWeight: 600, background: bg, color: fg, border: bg === 'transparent' ? '1px solid var(--border)' : 'none', borderRadius: 9, cursor: 'pointer', textAlign: 'center', textDecoration: 'none', display: 'block', boxSizing: 'border-box' });
-  const linha = (rot: string, val: React.ReactNode) => (
-    <div style={{ display: 'grid', gridTemplateColumns: '130px 1fr', gap: 10, padding: '5px 0', fontSize: 13.5 }}>
-      <span style={{ color: 'var(--text-muted)', textAlign: 'right' }}>{rot}</span><span style={{ color: 'var(--text)' }}>{val || '-'}</span>
-    </div>
+  const c = p?.cliente; const r = p?.resumo;
+  const titulos = p?.titulos || [];
+  const atrasados = titulos.filter(t => t.situacao === 'vencido');
+  const abertos = titulos.filter(t => t.situacao !== 'recebido');
+  const wa = (form.celular || form.telefone || '').replace(/\D/g, '');
+  const enderecoMapa = [form.endereco && `${form.endereco}${form.numero ? ', ' + form.numero : ''}`, form.bairro, form.cidade, form.uf, form.cep].filter(Boolean).join(', ');
+  const pj = form.pessoa === 'J';
+  const idade = idadeCompleta(form.data_nascimento);
+
+  // ---- estilos
+  const card: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8 };
+  const inp: React.CSSProperties = { width: '100%', padding: '7px 9px', fontSize: 13.5, border: '1px solid var(--border)', borderRadius: 5, background: 'var(--surface-alt)', color: 'var(--text)', outline: 'none', boxSizing: 'border-box' };
+  const radio = (nome: keyof Form, valor: string, rotulo: string) => (
+    <label style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12.5, color: 'var(--text-dim)', cursor: 'pointer', marginRight: 12 }}>
+      <input type="radio" checked={form[nome] === valor} onChange={() => set(nome, valor as never)} /> {rotulo}
+    </label>
   );
-  const abaBtn = (k: typeof aba, l: string, n?: number) => (
-    <button onClick={() => setAba(k)} style={{ padding: '9px 14px', fontSize: 13.5, fontWeight: 600, background: 'none', border: 'none', borderBottom: `2px solid ${aba === k ? 'var(--primary)' : 'transparent'}`, color: aba === k ? 'var(--text)' : 'var(--text-muted)', cursor: 'pointer' }}>
-      {l}{n !== undefined && <span style={{ marginLeft: 6, fontSize: 11, padding: '1px 7px', borderRadius: 10, background: 'var(--surface-alt)', fontFamily: 'var(--mono)' }}>{n}</span>}
+  const check = (nome: 'spc' | 'sem_cobranca' | 'nao_receber_msg', rotulo: string) => (
+    <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-dim)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+      <input type="checkbox" checked={form[nome]} onChange={e => set(nome, e.target.checked)} /> {rotulo}
+    </label>
+  );
+  const ferr = (icone: string, titulo: string, onClick: () => void, opts?: { desativado?: boolean; cor?: string; texto?: string }) => (
+    <button title={titulo} onClick={onClick} disabled={opts?.desativado}
+      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, height: 32, padding: opts?.texto ? '0 11px' : '0 8px', background: opts?.cor || 'var(--surface-alt)', color: opts?.cor ? '#fff' : 'var(--text)', border: `1px solid ${opts?.cor || 'var(--border)'}`, borderRadius: 5, cursor: opts?.desativado ? 'default' : 'pointer', opacity: opts?.desativado ? 0.4 : 1, fontSize: 12.5, fontWeight: 600 }}>
+      <Icone nome={icone} size={16} />{opts?.texto}
     </button>
   );
-  const nascIdade = idade(c.data_nascimento);
+  const sep = <span style={{ width: 1, height: 24, background: 'var(--border)', margin: '0 4px' }} />;
+  const abaBtn = (k: typeof aba, l: string, n?: number) => (
+    <button onClick={() => setAba(k)} style={{ padding: '9px 14px', fontSize: 13.5, fontWeight: 600, background: 'none', border: 'none', borderBottom: `2px solid ${aba === k ? 'var(--primary)' : 'transparent'}`, color: aba === k ? 'var(--text)' : 'var(--text-muted)', cursor: 'pointer' }}>
+      {l}{n !== undefined && <span style={{ marginLeft: 6, fontSize: 11, padding: '1px 6px', borderRadius: 4, background: 'var(--surface-alt)', fontFamily: 'var(--mono)' }}>{n}</span>}
+    </button>
+  );
 
   // crediário agrupado por carnê / saldo de venda
   const grupos = new Map<string, { titulo: string; itens: Titulo[] }>();
-  for (const t of p.titulos) {
+  for (const t of titulos) {
     const k = t.carne_id || `${t.origem}-${t.venda_id || t.id}`;
     const nome = t.origem === 'carne' ? `${t.venda_numero ? `Venda #${t.venda_numero} · ` : ''}${t.descricao.replace(/^Venda #\d+\s*[—·-]\s*/, '') || 'Carnê'}` : t.origem === 'venda' ? `Venda #${t.venda_numero} · saldo em aberto` : t.descricao;
     const g = grupos.get(k) || { titulo: nome, itens: [] };
     g.itens.push(t); grupos.set(k, g);
   }
 
+  const alertas: { cor: string; texto: string }[] = [];
+  if (form.spc) alertas.push({ cor: '#dc2626', texto: 'Incluído no SPC/Serasa' });
+  if (form.situacao_cad === 'bloqueado') alertas.push({ cor: '#dc2626', texto: 'Cliente BLOQUEADO para venda a prazo' });
+  if (form.situacao_cad === 'analise') alertas.push({ cor: '#d97706', texto: 'Cadastro em análise' });
+  if (form.sem_cobranca) alertas.push({ cor: '#7c7c8c', texto: 'Jurídico / sem cobrança' });
+  if (atrasados.length) alertas.push({ cor: '#dc2626', texto: `${atrasados.length} parcela${atrasados.length > 1 ? 's' : ''} em atraso · ${brl(r?.em_atraso || 0)}` });
+
   return (
-    <div style={{ padding: '28px 32px', maxWidth: 1180 }}>
-      <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 13, padding: 0, marginBottom: 10 }}>← Voltar</button>
+    <div style={{ padding: '20px 26px', maxWidth: 1240 }}>
+      {/* Barra do cadastro */}
+      <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 10px', flexWrap: 'wrap', marginBottom: 10 }}>
+        <Icone nome="usuario" size={18} color="var(--text-muted)" />
+        <span style={{ ...rot, marginLeft: 2 }}>Cliente</span>
+        <b style={{ fontSize: 14, color: 'var(--text)', marginRight: 'auto', fontFamily: 'var(--mono)' }}>
+          {novo ? 'NOVO CADASTRO' : `${cod(c?.codigo)}${c?.codigo ? '-' : ''}${(form.nome || c?.nome || '').toUpperCase()}`}
+        </b>
+        {alterado && <span style={{ fontSize: 11.5, color: '#d97706', marginRight: 4 }}>alterações não salvas</span>}
+        {ferr('mais', 'Novo cliente', () => { if (sairSePuder()) navigate('/clientes/novo'); })}
+        {ferr('salvar', 'Salvar', salvar, { desativado: salvando || (!alterado && !novo), cor: alterado || novo ? '#16a34a' : undefined, texto: salvando ? 'Salvando' : 'Salvar' })}
+        {ferr('desfazer', 'Cancelar alterações', () => { setForm(original); setAviso(''); }, { desativado: !alterado })}
+        {sep}
+        {ferr('primeiro', 'Primeiro', () => navegar('primeiro'))}
+        {ferr('anterior', 'Anterior', () => navegar('anterior'))}
+        {ferr('proximo', 'Próximo', () => navegar('proximo'))}
+        {ferr('ultimo', 'Último', () => navegar('ultimo'))}
+        {sep}
+        {ferr('mapa', 'Ver no mapa', () => setMapa(m => !m), { desativado: !enderecoMapa })}
+        {ferr('whatsapp', 'WhatsApp', () => window.open(`https://wa.me/55${wa.replace(/^55/, '')}`, '_blank'), { desativado: !wa || form.nao_receber_msg })}
+        {!novo && abertos.length > 0 && ferr('imprimir', 'Ficha de cobrança', () => window.open(`/financeiro/cobranca/imprimir?cliente_id=${id}&situacao=aberto`, '_blank'))}
+        {sep}
+        {ferr('vendas', 'Iniciar venda', () => setNovaVenda(true), { desativado: novo || alterado, cor: '#2563eb', texto: 'Venda' })}
+        {ferr('os', 'Abrir O.S.', () => setNovaOS(true), { desativado: novo || alterado, cor: '#0f766e', texto: 'O.S.' })}
+        {ferr('fechar', 'Fechar', () => { if (sairSePuder()) navigate('/clientes'); })}
+      </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 260px', gap: 20, alignItems: 'start' }}>
-        <div style={{ display: 'grid', gap: 16, minWidth: 0 }}>
-          {/* Cabeçalho */}
-          <div style={{ ...card, padding: '20px 22px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' }}>
-              <div>
-                <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: 'var(--text)' }}>{c.nome}</h1>
-                <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 3 }}>
-                  {c.apelido ? `${c.apelido} · ` : ''}cliente desde {fmtD(r.primeira_compra || c.created_at)} {r.primeira_compra || c.created_at ? `(${haQuanto(r.primeira_compra || c.created_at)})` : ''}
-                </div>
-              </div>
-              {!c.ativo && <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 6, background: 'var(--surface-alt)', color: 'var(--text-muted)' }}>Inativo</span>}
+      {aviso && <div style={{ marginBottom: 10, fontSize: 13, color: aviso === 'Salvo.' ? 'var(--green)' : 'var(--red)' }}>{aviso}</div>}
+      {alertas.length > 0 && (
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+          {alertas.map(a => <span key={a.texto} style={{ fontSize: 12.5, fontWeight: 600, color: a.cor, border: `1px solid ${a.cor}`, background: `${a.cor}14`, padding: '4px 10px', borderRadius: 5 }}>{a.texto}</span>)}
+        </div>
+      )}
+
+      {/* Ficha */}
+      <div style={{ ...card, padding: '16px 18px', display: 'grid', gridTemplateColumns: 'minmax(0, 1.05fr) minmax(0, 1fr) 190px', gap: '6px 28px', alignItems: 'start' }}>
+        <div style={{ display: 'grid', gap: 4 }}>
+          <Campo r="Pessoa">{radio('pessoa', 'F', 'Física')}{radio('pessoa', 'J', 'Jurídica')}</Campo>
+          <Campo r={pj ? 'Razão social' : 'Nome'}><input style={inp} value={form.nome} onChange={e => set('nome', e.target.value)} autoFocus={novo} /></Campo>
+          <Campo r={pj ? 'Fantasia' : 'Apelido'}><input style={inp} value={form.apelido} onChange={e => set('apelido', e.target.value)} /></Campo>
+          <Campo r={pj ? 'Fundação' : 'Nascimento'}>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+              <input type="date" style={{ ...inp, width: 160, fontFamily: 'var(--mono)' }} value={form.data_nascimento} onChange={e => set('data_nascimento', e.target.value)} />
+              {idade && <span style={{ fontSize: 12, color: 'var(--text-dim)', whiteSpace: 'nowrap' }}>{idade.toUpperCase()}</span>}
             </div>
-
-            {atrasados.length > 0 && (
-              <div style={{ marginTop: 14, background: 'rgba(220,38,38,.08)', border: '1px solid rgba(220,38,38,.35)', borderRadius: 10, padding: '12px 14px' }}>
-                <div style={{ fontWeight: 700, color: '#dc2626', fontSize: 14 }}>Este cliente tem {atrasados.length} parcela{atrasados.length > 1 ? 's' : ''} em atraso · {brl(r.em_atraso)}</div>
-                <div style={{ marginTop: 8, display: 'grid', gap: 3 }}>
-                  {atrasados.slice(0, 6).map(t => (
-                    <div key={t.origem + t.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5, color: 'var(--text-dim)', gap: 10 }}>
-                      <span>{t.venda_numero ? `Venda #${t.venda_numero}` : t.descricao}{t.parcela ? ` · parc. ${t.parcela}` : ''} · venceu {fmtD(t.vencimento)} ({t.dias_atraso} dias)</span>
-                      <b style={{ fontFamily: 'var(--mono)', color: '#dc2626' }}>{brl(t.valor)}</b>
-                    </div>
-                  ))}
-                  {atrasados.length > 6 && <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>+ {atrasados.length - 6} parcela(s) · veja na aba Crediário</div>}
-                </div>
-              </div>
-            )}
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '0 24px', marginTop: 14 }}>
-              <div>
-                {linha('CPF', <span style={{ fontFamily: 'var(--mono)' }}>{c.cpf}</span>)}
-                {linha('Nascimento', c.data_nascimento ? `${fmtD(c.data_nascimento)}${nascIdade !== null ? ` · ${nascIdade} anos` : ''}` : '')}
-                {linha('Celular', c.celular && <span style={{ fontFamily: 'var(--mono)' }}>{c.celular}</span>)}
-                {linha('Telefone', c.telefone && <span style={{ fontFamily: 'var(--mono)' }}>{c.telefone}</span>)}
-                {linha('E-mail', c.email)}
-              </div>
-              <div>
-                {linha('Endereço', c.endereco)}
-                {linha('Bairro', c.bairro)}
-                {linha('Cidade', [c.cidade, c.uf].filter(Boolean).join('/'))}
-                {linha('CEP', c.cep)}
-                {linha('Referência', ref !== null
-                  ? <span style={{ display: 'flex', gap: 6 }}><input autoFocus value={ref} onChange={e => setRef(e.target.value)} onKeyDown={e => e.key === 'Enter' && salvarRef()} style={{ flex: 1, padding: '4px 8px', fontSize: 13, border: '1px solid var(--border)', borderRadius: 6, background: 'var(--surface-alt)', color: 'var(--text)' }} placeholder="Ex: casa azul, ao lado da padaria" /><button onClick={salvarRef} style={{ fontSize: 12, padding: '4px 10px', border: 'none', borderRadius: 6, background: 'var(--primary)', color: '#fff', cursor: 'pointer' }}>OK</button></span>
-                  : <span>{c.referencia || <span style={{ color: 'var(--text-muted)' }}>-</span>} <button onClick={() => setRef(c.referencia || '')} style={{ fontSize: 11.5, background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer' }}>editar</button></span>)}
-              </div>
+          </Campo>
+          <Campo r={pj ? 'CNPJ' : 'CPF'}><input style={{ ...inp, width: 200, fontFamily: 'var(--mono)' }} value={form.cpf} onChange={e => set('cpf', mascaraDoc(e.target.value, pj))} /></Campo>
+          <Campo r={pj ? 'Insc. estadual' : 'RG'}><input style={{ ...inp, width: 200, fontFamily: 'var(--mono)' }} value={form.rg} onChange={e => set('rg', e.target.value)} /></Campo>
+          <Campo r="Residência">
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+              <input style={{ ...inp, width: 160, fontFamily: 'var(--mono)' }} value={form.telefone} onChange={e => set('telefone', mascaraFone(e.target.value))} />
+              {check('spc', 'Inclusão SPC/Serasa')}
             </div>
-            {c.observacao && (
-              <div style={{ marginTop: 10, fontSize: 13, color: 'var(--text-dim)', background: 'var(--surface-alt)', borderRadius: 8, padding: '9px 12px', whiteSpace: 'pre-wrap', maxHeight: 140, overflowY: 'auto' }}>{c.observacao}</div>
-            )}
+          </Campo>
+          <Campo r="Comercial">
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+              <input style={{ ...inp, width: 160, fontFamily: 'var(--mono)' }} value={form.tel_comercial} onChange={e => set('tel_comercial', mascaraFone(e.target.value))} />
+              {check('sem_cobranca', 'Jurídico / sem cobrança')}
+            </div>
+          </Campo>
+          <Campo r="Celular">
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+              <input style={{ ...inp, width: 160, fontFamily: 'var(--mono)' }} value={form.celular} onChange={e => set('celular', mascaraFone(e.target.value))} />
+              {check('nao_receber_msg', 'Não receber WhatsApp/e-mail')}
+            </div>
+          </Campo>
+          <Campo r="Situação">{radio('situacao_cad', 'ativo', 'Ativo')}{radio('situacao_cad', 'analise', 'Análise')}{radio('situacao_cad', 'bloqueado', 'Bloqueado')}{radio('situacao_cad', 'inativo', 'Inativo')}</Campo>
+          <Campo r="Cobrança">{radio('cobranca', 'externa', 'Externa')}{radio('cobranca', 'telemark', 'Telemark')}{radio('cobranca', 'normal', 'Normal')}</Campo>
+          <Campo r="Região"><input style={inp} list="op-regiao" value={form.regiao} onChange={e => set('regiao', e.target.value)} /></Campo>
+          <Campo r="Localidade"><input style={inp} list="op-localidade" value={form.localidade} onChange={e => set('localidade', e.target.value)} /></Campo>
+        </div>
+
+        <div style={{ display: 'grid', gap: 4 }}>
+          <Campo r="CEP">
+            <div style={{ display: 'flex', gap: 6 }}>
+              <input style={{ ...inp, width: 130, fontFamily: 'var(--mono)' }} value={form.cep} onChange={e => set('cep', mascaraCep(e.target.value))} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); buscarCep(); } }} placeholder="00000-000" />
+              <button title="Buscar endereço pelo CEP" onClick={buscarCep} disabled={buscandoCep} style={{ width: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 5, cursor: 'pointer' }}><Icone nome="busca" size={15} /></button>
+            </div>
+          </Campo>
+          <Campo r="Endereço"><input style={inp} value={form.endereco} onChange={e => set('endereco', e.target.value)} /></Campo>
+          <Campo r="Número"><input style={{ ...inp, width: 130 }} value={form.numero} onChange={e => set('numero', e.target.value)} /></Campo>
+          <Campo r="Complemento"><input style={inp} value={form.complemento} onChange={e => set('complemento', e.target.value)} /></Campo>
+          <Campo r="Bairro"><input style={inp} list="op-bairro" value={form.bairro} onChange={e => set('bairro', e.target.value)} /></Campo>
+          <Campo r="Cidade"><input style={inp} list="op-cidade" value={form.cidade} onChange={e => set('cidade', e.target.value)} /></Campo>
+          <Campo r="UF"><input style={{ ...inp, width: 70, textTransform: 'uppercase' }} maxLength={2} value={form.uf} onChange={e => set('uf', e.target.value.toUpperCase())} /></Campo>
+          <Campo r="Referência"><input style={inp} value={form.referencia} onChange={e => set('referencia', e.target.value)} placeholder="Ponto de referência para o cobrador" /></Campo>
+          <Campo r="Observações"><textarea style={{ ...inp, minHeight: 56, resize: 'vertical' }} value={form.observacao} onChange={e => set('observacao', e.target.value)} /></Campo>
+          <Campo r="E-mail"><input style={inp} type="email" value={form.email} onChange={e => set('email', e.target.value)} /></Campo>
+          {!pj && <Campo r="Mãe"><input style={inp} value={form.mae} onChange={e => set('mae', e.target.value)} /></Campo>}
+          {!pj && <Campo r="Pai"><input style={inp} value={form.pai} onChange={e => set('pai', e.target.value)} /></Campo>}
+          {!pj && <Campo r="Cônjuge"><input style={inp} value={form.conjuge} onChange={e => set('conjuge', e.target.value)} /></Campo>}
+        </div>
+
+        <div style={{ display: 'grid', gap: 8 }}>
+          <div style={{ aspectRatio: '3 / 4', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--surface-alt)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+            {c?.foto
+              ? <img src={c.foto} alt={c.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}><Icone nome="camera" size={34} style={{ margin: '0 auto 6px' }} /><div>{novo ? 'Salve para pôr foto' : 'Sem foto'}</div></div>}
           </div>
+          <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
+            <label title="Tirar ou escolher foto" style={{ width: 36, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface-alt)', border: '1px solid var(--border)', borderRadius: 5, cursor: novo ? 'default' : 'pointer', opacity: novo ? 0.4 : 1, color: 'var(--text)' }}>
+              <Icone nome="camera" size={16} />
+              <input type="file" accept="image/*" capture="user" disabled={novo} onChange={trocarFoto} style={{ display: 'none' }} />
+            </label>
+            <button title="Remover foto" disabled={!c?.foto} onClick={tirarFoto} style={{ width: 36, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface-alt)', border: '1px solid var(--border)', borderRadius: 5, cursor: c?.foto ? 'pointer' : 'default', opacity: c?.foto ? 1 : 0.4, color: 'var(--text)' }}><Icone nome="excluir" size={16} /></button>
+          </div>
+          <div style={{ display: 'grid', gap: 2, marginTop: 6 }}>
+            <span style={rot}>Loja</span>
+            <span style={{ fontSize: 13, color: 'var(--text)', background: 'var(--surface-alt)', border: '1px solid var(--border)', borderRadius: 5, padding: '6px 8px' }}>{c?.loja_nome || 'Todas as lojas'}</span>
+          </div>
+          {!novo && c?.created_at && <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>Cadastrado em {fmtD(c.created_at)}</div>}
+        </div>
+      </div>
 
+      {mapa && enderecoMapa && (
+        <div style={{ ...card, marginTop: 10, overflow: 'hidden' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', fontSize: 12.5, color: 'var(--text-dim)' }}>
+            <span>{enderecoMapa}</span>
+            <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enderecoMapa)}`} target="_blank" rel="noreferrer" style={{ color: 'var(--primary)' }}>Abrir no Google Maps</a>
+          </div>
+          <iframe title="Mapa" src={`https://maps.google.com/maps?q=${encodeURIComponent(enderecoMapa)}&z=16&output=embed`} style={{ width: '100%', height: 280, border: 0, display: 'block' }} loading="lazy" />
+        </div>
+      )}
+
+      <datalist id="op-regiao">{opcoes.regiao.map(v => <option key={v} value={v} />)}</datalist>
+      <datalist id="op-localidade">{opcoes.localidade.map(v => <option key={v} value={v} />)}</datalist>
+      <datalist id="op-bairro">{opcoes.bairro.map(v => <option key={v} value={v} />)}</datalist>
+      <datalist id="op-cidade">{opcoes.cidade.map(v => <option key={v} value={v} />)}</datalist>
+
+      {!novo && p && r && (
+        <>
           {/* Números */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, margin: '12px 0' }}>
             {[
               { l: 'Total comprado', v: brl(r.total_comprado), cor: 'var(--primary)' },
               { l: 'Vendas', v: String(r.qtd_vendas), s: r.ultima_compra ? `última ${haQuanto(r.ultima_compra)}` : '' },
@@ -168,9 +375,9 @@ export default function ClientePerfil() {
               { l: 'Em aberto', v: brl(r.em_aberto), cor: r.em_aberto > 0 ? '#d97706' : undefined },
               { l: 'Em atraso', v: brl(r.em_atraso), cor: r.em_atraso > 0 ? '#dc2626' : '#16a34a', s: r.atraso_medio_dias !== null ? `paga c/ média de ${r.atraso_medio_dias.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} dia(s) de atraso` : '' },
             ].map(k => (
-              <div key={k.l} style={{ ...card, padding: '12px 14px' }}>
-                <div style={{ fontSize: 10.5, fontWeight: 600, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '.4px' }}>{k.l}</div>
-                <div style={{ fontSize: 19, fontWeight: 700, fontFamily: 'var(--mono)', color: k.cor || 'var(--text)', marginTop: 2 }}>{k.v}</div>
+              <div key={k.l} style={{ ...card, padding: '10px 12px' }}>
+                <div style={rot}>{k.l}</div>
+                <div style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--mono)', color: k.cor || 'var(--text)', marginTop: 2 }}>{k.v}</div>
                 {k.s && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{k.s}</div>}
               </div>
             ))}
@@ -189,16 +396,14 @@ export default function ClientePerfil() {
               <div>
                 {!p.vendas.length && <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>Nenhuma venda.</div>}
                 {p.vendas.map(v => (
-                  <div key={v.id} style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', display: 'grid', gridTemplateColumns: '90px 1fr auto', gap: 14, alignItems: 'center', opacity: v.situacao === 'cancelada' ? 0.5 : 1 }}>
+                  <div key={v.id} style={{ padding: '11px 16px', borderBottom: '1px solid var(--border)', display: 'grid', gridTemplateColumns: '90px 1fr auto', gap: 14, alignItems: 'center', opacity: v.situacao === 'cancelada' ? 0.5 : 1 }}>
                     <div>
                       <div style={{ fontFamily: 'var(--mono)', fontWeight: 700, color: 'var(--primary)', fontSize: 15 }}>#{v.numero}</div>
                       <div style={{ fontSize: 11.5, color: 'var(--text-muted)', fontFamily: 'var(--mono)' }}>{fmtD(v.created_at)}</div>
                     </div>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: 13, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{v.itens || '-'}</div>
-                      <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>
-                        {[v.vendedor, v.loja, v.forma_pagamento].filter(Boolean).join(' · ')}{v.situacao === 'cancelada' ? ' · CANCELADA' : ''}
-                      </div>
+                      <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>{[v.vendedor, v.loja, v.forma_pagamento].filter(Boolean).join(' · ')}{v.situacao === 'cancelada' ? ' · CANCELADA' : ''}</div>
                     </div>
                     <div style={{ textAlign: 'right', fontFamily: 'var(--mono)' }}>
                       <div style={{ fontWeight: 700, color: 'var(--text)' }}>{brl(v.valor_final)}</div>
@@ -217,7 +422,7 @@ export default function ClientePerfil() {
                   const aberto = g.itens.filter(t => t.situacao !== 'recebido').reduce((s, t) => s + t.valor, 0);
                   const temAtraso = g.itens.some(t => t.situacao === 'vencido');
                   return (
-                    <div key={k} style={{ border: `1px solid ${temAtraso ? 'rgba(220,38,38,.4)' : 'var(--border)'}`, borderRadius: 10, overflow: 'hidden' }}>
+                    <div key={k} style={{ border: `1px solid ${temAtraso ? 'rgba(220,38,38,.4)' : 'var(--border)'}`, borderRadius: 8, overflow: 'hidden' }}>
                       <div style={{ padding: '9px 14px', background: temAtraso ? 'rgba(220,38,38,.08)' : 'var(--surface-alt)', display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 13.5 }}>
                         <b style={{ color: 'var(--text)' }}>{g.titulo}</b>
                         <span style={{ fontFamily: 'var(--mono)', color: aberto > 0 ? (temAtraso ? '#dc2626' : '#d97706') : '#16a34a', fontWeight: 700 }}>{aberto > 0 ? `aberto ${brl(aberto)}` : 'quitado'}</span>
@@ -231,7 +436,7 @@ export default function ClientePerfil() {
                             <span style={{ fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{fmtD(t.vencimento)} <span style={{ fontSize: 11, color: cor }}>{t.situacao === 'vencido' ? `${t.dias_atraso}d atraso` : t.situacao === 'recebido' ? `pago ${fmtD(t.recebido_em)}` : ''}</span></span>
                             <span style={{ fontFamily: 'var(--mono)', fontWeight: 700, textAlign: 'right', color: 'var(--text)' }}>{brl(t.valor)}</span>
                             <span style={{ textAlign: 'right' }}>
-                              {t.situacao !== 'recebido' && <button onClick={() => setBaixa(t)} style={{ padding: '4px 10px', fontSize: 12, fontWeight: 600, background: 'rgba(34,197,94,0.12)', color: '#16a34a', border: 'none', borderRadius: 6, cursor: 'pointer' }}>Baixar</button>}
+                              {t.situacao !== 'recebido' && <button onClick={() => setBaixa(t)} style={{ padding: '4px 10px', fontSize: 12, fontWeight: 600, background: 'rgba(34,197,94,0.12)', color: '#16a34a', border: 'none', borderRadius: 5, cursor: 'pointer' }}>Baixar</button>}
                             </span>
                           </div>
                         );
@@ -265,7 +470,7 @@ export default function ClientePerfil() {
               </div>
             )}
 
-            {aba === 'receita' && (
+            {aba === 'receita' && c && (
               <div style={{ padding: 18 }}>
                 <table style={{ borderCollapse: 'collapse', fontFamily: 'var(--mono)', fontSize: 14 }}>
                   <thead><tr>{['', 'Esférico', 'Cilíndrico', 'Eixo'].map(h => <th key={h} style={{ padding: '6px 16px', fontSize: 11, color: 'var(--text-muted)', textAlign: 'left', fontFamily: 'var(--sans)' }}>{h}</th>)}</tr></thead>
@@ -278,29 +483,11 @@ export default function ClientePerfil() {
               </div>
             )}
           </div>
-        </div>
+        </>
+      )}
 
-        {/* Coluna da direita: foto e ações */}
-        <div style={{ display: 'grid', gap: 10, position: 'sticky', top: 20 }}>
-          <label style={{ ...card, aspectRatio: '1 / 1', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', cursor: 'pointer', position: 'relative' }} title="Trocar foto">
-            {c.foto
-              ? <img src={c.foto} alt={c.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              : <div style={{ textAlign: 'center', color: 'var(--text-muted)' }}><div style={{ fontSize: 46 }}></div><div style={{ fontSize: 12.5 }}>Sem foto</div></div>}
-            <input type="file" accept="image/*" capture="user" onChange={trocarFoto} style={{ display: 'none' }} />
-          </label>
-          <label style={{ ...btn('var(--primary)'), cursor: 'pointer' }}>{c.foto ? 'Trocar foto' : 'Capturar foto'}<input type="file" accept="image/*" capture="user" onChange={trocarFoto} style={{ display: 'none' }} /></label>
-          <button onClick={() => setEditar(true)} style={btn('var(--primary)')}>Alterar dados</button>
-          <button onClick={() => setNovaVenda(true)} style={btn('#16a34a')}>Iniciar venda</button>
-          <button onClick={() => setNovaOS(true)} style={btn('#7c3aed')}>Abrir O.S.</button>
-          {wa && <a href={`https://wa.me/55${wa.replace(/^55/, '')}`} target="_blank" rel="noreferrer" style={btn('#25D366')}>WhatsApp</a>}
-          {abertos.length > 0 && <a href={`/financeiro/cobranca/imprimir?cliente_id=${c.id}&situacao=aberto`} target="_blank" rel="noreferrer" style={btn('transparent', 'var(--text)')}>Ficha de cobrança</a>}
-          <button onClick={() => navigate('/clientes')} style={btn('transparent', 'var(--text-dim)')}>← Voltar aos clientes</button>
-        </div>
-      </div>
-
-      {editar && <ClienteModal cliente={c} onClose={() => setEditar(false)} onSaved={() => { setEditar(false); load(); }} />}
-      {novaVenda && <VendaModal venda={null} clienteInicial={{ id: c.id, nome: c.nome }} onClose={() => setNovaVenda(false)} onSaved={() => { setNovaVenda(false); load(); }} />}
-      {novaOS && <OSModal os={null} clienteInicial={{ id: c.id, nome: c.nome }} onClose={() => setNovaOS(false)} onSaved={() => { setNovaOS(false); load(); }} />}
+      {novaVenda && c && <VendaModal venda={null} clienteInicial={{ id: c.id, nome: c.nome }} onClose={() => setNovaVenda(false)} onSaved={() => { setNovaVenda(false); load(); }} />}
+      {novaOS && c && <OSModal os={null} clienteInicial={{ id: c.id, nome: c.nome }} onClose={() => setNovaOS(false)} onSaved={() => { setNovaOS(false); load(); }} />}
       {baixa && <BaixaModal t={baixa} contas={contas} onClose={() => setBaixa(null)} onSaved={() => { setBaixa(null); load(); }} />}
     </div>
   );

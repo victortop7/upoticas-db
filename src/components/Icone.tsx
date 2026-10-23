@@ -4,7 +4,8 @@ import {
   Boxes, Trophy, Store, UserCog, Settings, Search, Sun, Moon, LogOut, Lock, CheckCircle2, Clock, Glasses, Wallet,
   Vault, ShoppingBag, CircleDollarSign, Handshake, Microscope, ClipboardList, Pin, Eye, X, ScanLine, Repeat,
   AlertTriangle, Phone, MapPin, Printer, Smartphone, Award, Star, UserPlus, RefreshCw, Medal, CreditCard, Send,
-  Building, Inbox, Pencil, Trash2, Plus, Sparkles, Shield, Menu, Keyboard, ArrowRight, type LucideIcon,
+  Building, Inbox, Pencil, Trash2, Plus, Sparkles, Shield, Menu, Keyboard, ArrowRight, Save, RotateCcw, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight,
+  MessageCircle, Camera, User, Map as MapIcon, Ban, type LucideIcon,
 } from 'lucide-react';
 
 // Ícones de linha (SVG) usados no lugar de emojis. Herdam a cor do texto.
@@ -20,7 +21,9 @@ const MAPA = {
   alerta: AlertTriangle, telefone: Phone, local: MapPin, imprimir: Printer, celular: Smartphone, premio: Award,
   estrela: Star, novo: UserPlus, reativar: RefreshCw, medalha: Medal, cartao: CreditCard, enviar: Send,
   empresa: Building, caixaEntrada: Inbox, editar: Pencil, excluir: Trash2, mais: Plus, destaque: Sparkles, escudo: Shield,
-  menu: Menu, teclado: Keyboard, seta: ArrowRight,
+  menu: Menu, teclado: Keyboard, seta: ArrowRight, salvar: Save, desfazer: RotateCcw,
+  primeiro: ChevronsLeft, anterior: ChevronLeft, proximo: ChevronRight, ultimo: ChevronsRight,
+  whatsapp: MessageCircle, camera: Camera, usuario: User, mapa: MapIcon, bloqueio: Ban,
 } satisfies Record<string, LucideIcon>;
 
 export type NomeIcone = keyof typeof MAPA;

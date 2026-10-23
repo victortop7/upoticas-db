@@ -62,9 +62,9 @@ export default function Clientes() {
     load();
   }
 
+  // cadastro novo abre a ficha completa
   function abrirNovo() {
-    setEditando(null);
-    setModalOpen(true);
+    navigate('/clientes/novo');
   }
 
   function abrirEditar(cliente: Cliente) {

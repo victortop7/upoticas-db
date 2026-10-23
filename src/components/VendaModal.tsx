@@ -507,6 +507,7 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
               borderRadius: '8px', padding: '8px 12px', fontSize: '13px', marginBottom: '14px',
             }}>
               <span style={{ fontWeight: '600', color: 'var(--primary)' }}>{clienteSelecionado.nome}</span>
+              {(() => { const x = clienteSelecionado as unknown as { situacao_cad?: string; spc?: number }; const avisos = [x.situacao_cad === 'bloqueado' && 'cliente BLOQUEADO para venda a prazo', x.situacao_cad === 'analise' && 'cadastro em análise', x.spc && 'incluído no SPC/Serasa'].filter(Boolean); return avisos.length ? <div style={{ marginTop: 4, fontSize: 12, fontWeight: 600, color: '#dc2626' }}>Atenção: {avisos.join(' · ')}</div> : null; })()}
             </div>
           )}
 
