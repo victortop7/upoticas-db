@@ -434,6 +434,7 @@ export default function Configuracoes() {
           <input style={{ ...inputStyle, fontFamily: 'var(--mono)' }} value={form.pix_chave}
             onChange={e => set('pix_chave', e.target.value)}
             placeholder="CPF, CNPJ, e-mail, telefone (+55...) ou chave aleatória" />
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>Se a chave for o celular, digite com DDD (ex.: 85 98659-6927). O sistema grava como +55 sozinho, senão o banco lê como CPF e recusa o pagamento.</div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px', marginBottom: '18px' }}>
           <div>

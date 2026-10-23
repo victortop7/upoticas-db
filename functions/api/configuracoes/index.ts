@@ -1,5 +1,6 @@
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
+import { normalizarChavePix } from '../../lib/pix';
 
 async function ensureColumns(db: Env['DB']) {
   const cols = [
@@ -51,7 +52,7 @@ export const onRequestPut = async ({ request, env }: { request: Request; env: En
       body.nfce_api_key || null,
       body.nfce_ambiente || 'homologacao',
       body.bling_natureza_id ? String(body.bling_natureza_id) : null,
-      body.pix_chave !== undefined ? (body.pix_chave || '') : null,
+      body.pix_chave !== undefined ? normalizarChavePix(String(body.pix_chave || '')).chave : null,
       body.pix_beneficiario !== undefined ? (body.pix_beneficiario || '') : null,
       body.pix_cidade !== undefined ? (body.pix_cidade || '') : null,
       auth.tenant_id,

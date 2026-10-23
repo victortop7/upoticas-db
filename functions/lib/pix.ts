@@ -31,29 +31,48 @@ function limpaTxid(s: string): string {
   return t || '***';
 }
 
+function cpfValido(c: string): boolean {
+  if (!/^\d{11}$/.test(c) || /^(\d)\1{10}$/.test(c)) return false;
+  const dv = (n: number) => { let soma = 0; for (let i = 0; i < n; i++) soma += Number(c[i]) * (n + 1 - i); return (soma * 10) % 11 % 10; };
+  return dv(9) === Number(c[9]) && dv(10) === Number(c[10]);
+}
+
+// Deixa a chave no formato que os bancos exigem no QR Code:
+// telefone = +55DDDNUMERO, CPF/CNPJ = só números, e-mail = minúsculo, aleatória = como está.
+// Ex.: "85986596927" não é CPF válido e é celular → "+5585986596927" (sem o +55 o banco lê como CPF e recusa).
+export function normalizarChavePix(bruta: string): { chave: string; tipo: 'email' | 'telefone' | 'cpf' | 'cnpj' | 'aleatoria' | 'invalida' } {
+  const t = (bruta || '').trim();
+  if (!t) return { chave: '', tipo: 'invalida' };
+  if (t.includes('@')) return { chave: t.toLowerCase(), tipo: 'email' };
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(t)) return { chave: t.toLowerCase(), tipo: 'aleatoria' };
+  const d = t.replace(/\D/g, '');
+  if (t.startsWith('+')) return { chave: '+' + d, tipo: 'telefone' };
+  if (d.length === 14) return { chave: d, tipo: 'cnpj' };
+  if (d.length === 11 && cpfValido(d)) return { chave: d, tipo: 'cpf' };
+  if (d.length === 11 || d.length === 10) return { chave: '+55' + d, tipo: 'telefone' };          // DDD + número
+  if ((d.length === 13 || d.length === 12) && d.startsWith('55')) return { chave: '+' + d, tipo: 'telefone' };
+  return { chave: t, tipo: 'invalida' };
+}
+
 export interface PixParams {
   chave: string;        // chave Pix (cpf/cnpj/email/telefone/aleatória)
   nome: string;         // nome do recebedor (máx 25)
   cidade: string;       // cidade do recebedor (máx 15)
   valor: number;        // valor em reais
   txid?: string;        // identificador (máx 25 alfanum): ex: nº do carnê/parcela
-  descricao?: string;   // descrição curta opcional
+  descricao?: string;   // não vai mais no QR (compatibilidade com os apps de banco)
 }
 
 // Monta o "copia e cola" do Pix
 export function montarPixBRCode(p: PixParams): string {
-  const chave = (p.chave || '').trim();
+  const chave = normalizarChavePix(p.chave).chave;
   const nome = limpa(p.nome, 25) || 'RECEBEDOR';
   const cidade = limpa(p.cidade, 15) || 'CIDADE';
   const valor = (Math.round((p.valor || 0) * 100) / 100).toFixed(2);
   const txid = limpaTxid(p.txid || '');
 
   // Merchant Account Information (ID 26): GUI + chave (+ descrição opcional)
-  let mai = tlv('00', 'br.gov.bcb.pix') + tlv('01', chave);
-  if (p.descricao) {
-    const desc = limpa(p.descricao, 40);
-    if (desc) mai += tlv('02', desc);
-  }
+  const mai = tlv('00', 'br.gov.bcb.pix') + tlv('01', chave);
 
   let payload =
     tlv('00', '01') +             // Payload Format Indicator
