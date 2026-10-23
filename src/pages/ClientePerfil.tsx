@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../lib/api';
 import type { Cliente } from '../types';
 import VendaModal from '../components/VendaModal';
-import OSModal from '../components/OSModal';
 import Icone from '../components/Icone';
 import { useTituloAba } from '../components/Abas';
 import { BaixaModal, type Titulo } from './financeiro/ContasReceber';
@@ -125,7 +124,6 @@ export default function ClientePerfil() {
   const [opcoes, setOpcoes] = useState<Opcoes>({ regiao: [], localidade: [], bairro: [], cidade: [] });
   const [aba, setAba] = useState<'vendas' | 'crediario' | 'os' | 'receita'>('vendas');
   const [novaVenda, setNovaVenda] = useState(false);
-  const [novaOS, setNovaOS] = useState(false);
   const [baixa, setBaixa] = useState<Titulo | null>(null);
   const [contas, setContas] = useState<Conta[]>([]);
   const [editando, setEditando] = useState(novo);
@@ -300,8 +298,7 @@ export default function ClientePerfil() {
         {ferr('whatsapp', 'WhatsApp', () => window.open(`https://wa.me/55${wa.replace(/^55/, '')}`, '_blank'), { desativado: !wa || form.nao_receber_msg })}
         {!novo && abertos.length > 0 && ferr('imprimir', 'Ficha de cobrança', () => window.open(`/financeiro/cobranca/imprimir?cliente_id=${id}&situacao=aberto`, '_blank'))}
         {sep}
-        {ferr('vendas', 'Iniciar venda', () => setNovaVenda(true), { desativado: novo || editando, cor: '#2563eb', texto: 'Venda' })}
-        {ferr('os', 'Abrir O.S.', () => setNovaOS(true), { desativado: novo || editando, cor: '#0f766e', texto: 'O.S.' })}
+        {ferr('vendas', 'Iniciar venda (a O.S. é feita junto)', () => setNovaVenda(true), { desativado: novo || editando, cor: '#2563eb', texto: 'Venda' })}
         {ferr('fechar', 'Fechar', () => { if (sairSePuder()) navigate('/clientes'); })}
       </div>
 
@@ -618,7 +615,6 @@ export default function ClientePerfil() {
       )}
 
       {novaVenda && c && <VendaModal venda={null} clienteInicial={{ id: c.id, nome: c.nome }} onClose={() => setNovaVenda(false)} onSaved={() => { setNovaVenda(false); load(); }} />}
-      {novaOS && c && <OSModal os={null} clienteInicial={{ id: c.id, nome: c.nome }} onClose={() => setNovaOS(false)} onSaved={() => { setNovaOS(false); load(); }} />}
       {baixa && <BaixaModal t={baixa} contas={contas} onClose={() => setBaixa(null)} onSaved={() => { setBaixa(null); load(); }} />}
     </div>
   );
