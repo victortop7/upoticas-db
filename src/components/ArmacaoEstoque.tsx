@@ -8,7 +8,8 @@ import Icone from './Icone';
 interface Sub { id: string; nome: string; pecas?: number }
 interface Cat { id: string; nome: string; modo?: string; pecas?: number; subs: Sub[] }
 interface Modelo { produto_id: string; descricao: string; quantidade: number; preco_venda: number; codigo?: string; codigo_barras?: string; subcategoria_nome?: string }
-export interface Escolhido { produto_id: string; descricao: string; preco_venda: number }
+export interface EstoqueRef { categoria_id: string; subcategoria_id: string | null }
+export interface Escolhido { produto_id: string | null; descricao: string; preco_venda: number; estoque_ref?: EstoqueRef }
 
 const brl = (v: number) => (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
@@ -49,8 +50,11 @@ export default function ArmacaoEstoque({ onEscolher, inputStyle }: { onEscolher:
     try {
       const ps = new URLSearchParams({ categoria_id: cat.id });
       if (s) ps.set('subcategoria_id', s.id);
-      const r = await api.get<{ produto: Escolhido & { id: string; quantidade: number } }>(`/estoque/quantidade?${ps}`);
-      onEscolher({ produto_id: r.produto.id, descricao: r.produto.descricao, preco_venda: r.produto.preco_venda || 0 });
+      const r = await api.get<{ produto: { id: string | null; descricao: string; preco_venda: number; quantidade: number } }>(`/estoque/quantidade?${ps}`);
+      onEscolher({
+        produto_id: r.produto.id, descricao: r.produto.descricao, preco_venda: r.produto.preco_venda || 0,
+        ...(r.produto.id ? {} : { estoque_ref: { categoria_id: cat.id, subcategoria_id: s?.id || null } }),
+      });
       if ((r.produto.quantidade ?? 0) <= 0) setAviso(`${r.produto.descricao} está com 0 no estoque. A venda vai deixar negativo até alguém dar entrada.`);
     } catch (e) { setAviso(e instanceof Error ? e.message : 'Não consegui buscar no estoque'); }
     setOcupado(false);
@@ -77,7 +81,7 @@ export default function ArmacaoEstoque({ onEscolher, inputStyle }: { onEscolher:
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
         <Icone nome="oculos" size={15} color="var(--text-dim)" />
         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Armação do estoque</span>
-        <span style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>entra na venda e dá baixa</span>
+        <span style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>dá baixa só ao registrar a venda</span>
       </div>
 
       <div className="modal-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>

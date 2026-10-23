@@ -69,3 +69,32 @@ export const onRequestPatch = async ({ request, env }: { request: Request; env: 
     return json({ error: 'Erro interno', detail: String(err) }, 500);
   }
 };
+
+// DELETE /api/estoque/item?produto_id=: tira o item do estoque (ex.: criado por engano).
+// Só se nunca foi vendido. O que já tem venda não pode sumir: ajuste a quantidade pra 0.
+export const onRequestDelete = async ({ request, env }: { request: Request; env: Env }) => {
+  const auth = await requireAuth(request, env);
+  if (auth instanceof Response) return auth;
+  try {
+    await ensureEstoque(env.DB);
+    const pid = new URL(request.url).searchParams.get('produto_id') || '';
+    const p = await env.DB.prepare('SELECT id, COALESCE(generico, 0) AS generico FROM produtos WHERE id = ? AND tenant_id = ?')
+      .bind(pid, auth.tenant_id).first<{ id: string; generico: number }>();
+    if (!p) return json({ error: 'Item não encontrado' }, 404);
+    let vendido = null;
+    try {
+      vendido = await env.DB.prepare('SELECT 1 FROM venda_itens WHERE produto_id = ? AND tenant_id = ? LIMIT 1').bind(pid, auth.tenant_id).first();
+    } catch { /* tabela ainda não existe */ }
+    if (vendido) return json({ error: 'Esse item já aparece em venda. Para zerar, use Movimentar e conte 0.' }, 409);
+    const stmts = [
+      env.DB.prepare('DELETE FROM estoque_movimentacoes WHERE produto_id = ? AND tenant_id = ?').bind(pid, auth.tenant_id),
+      env.DB.prepare('DELETE FROM estoque WHERE produto_id = ? AND tenant_id = ?').bind(pid, auth.tenant_id),
+    ];
+    // genérico (material no modo quantidade) só existe pro estoque: apaga. Produto de catálogo só sai do estoque.
+    if (p.generico) stmts.push(env.DB.prepare('DELETE FROM produtos WHERE id = ? AND tenant_id = ?').bind(pid, auth.tenant_id));
+    await env.DB.batch(stmts);
+    return json({ ok: true });
+  } catch (err) {
+    return json({ error: 'Erro interno', detail: String(err) }, 500);
+  }
+};

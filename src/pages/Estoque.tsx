@@ -14,7 +14,7 @@ interface Resumo { total_itens: number; abaixo_minimo: number; valor_total: numb
 interface Movimentacao {
   id: string; produto_id: string; produto_desc: string; produto_codigo?: string;
   tipo: string; quantidade: number; quantidade_anterior: number; quantidade_nova: number;
-  motivo?: string; documento?: string; fornecedor_nome?: string; usuario_nome?: string; created_at: string;
+  motivo?: string; documento?: string; fornecedor_nome?: string; usuario_nome?: string; created_at: string; venda_id?: string | null;
 }
 export interface Sub { id: string; nome: string; itens: number; pecas: number; baixo: number }
 export interface Categoria { id: string; nome: string; icone?: string | null; itens: number; pecas: number; baixo: number; subs: Sub[]; modo?: 'modelo' | 'quantidade'; ncm?: string | null }
@@ -322,6 +322,17 @@ export default function Estoque() {
     setSavingMov(false);
   }
 
+  async function excluirItem(item: { produto_id: string; descricao: string }) {
+    if (!confirm(`Excluir "${item.descricao}" do estoque? O histórico de movimentações dele também sai.`)) return;
+    try { await api.delete(`/estoque/item?produto_id=${encodeURIComponent(item.produto_id)}`); recarregar(); }
+    catch (e) { alert(e instanceof Error ? e.message : 'Não consegui excluir'); }
+  }
+  async function desfazerMov(m: Movimentacao) {
+    if (!confirm(`Desfazer esta movimentação de ${m.produto_desc}? A quantidade volta para ${m.quantidade_anterior ?? 'o que era antes'}.`)) return;
+    try { await api.delete(`/estoque/movimentacoes/${m.id}`); loadMovs(); loadCats(); }
+    catch (e) { alert(e instanceof Error ? e.message : 'Não consegui desfazer'); }
+  }
+
   async function salvarMover() {
     if (!mover) return;
     await api.patch('/estoque/item', { produto_id: mover.produto_id, categoria_id: moverPara.categoria_id || null, subcategoria_id: moverPara.subcategoria_id || null });
@@ -480,7 +491,8 @@ export default function Estoque() {
                         <button onClick={() => { setItemSel(item); setMovForm({ tipo: 'entrada', quantidade: '', motivo: '', documento: '', preco_unitario: '' }); setErroMov(''); }}
                           className="btn btn-xs" style={{ marginRight: 6 }}><Icone nome="repetir" size={13} />Movimentar</button>
                         <button onClick={() => { setMover(item); setMoverPara({ categoria_id: item.categoria_id || cats?.categorias[0]?.id || '', subcategoria_id: item.subcategoria_id || '' }); }}
-                          className="btn btn-xs"><Icone nome="mover" size={13} />Mover</button>
+                          className="btn btn-xs" style={{ marginRight: 6 }}><Icone nome="mover" size={13} />Mover</button>
+                        <button onClick={() => excluirItem(item)} className="btn btn-xs" title="Excluir do estoque (só se nunca foi vendido)"><Icone nome="excluir" size={13} color="var(--red)" /></button>
                       </td>
                     </tr>
                   );
@@ -503,7 +515,7 @@ export default function Estoque() {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                  {['Data', 'Produto', 'Tipo', 'Qtd', 'Antes → Depois', 'Motivo/Doc', 'Usuário'].map(h => (
+                  {['Data', 'Produto', 'Tipo', 'Qtd', 'Antes → Depois', 'Motivo/Doc', 'Usuário', ''].map(h => (
                     <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
                   ))}
                 </tr>
@@ -523,6 +535,11 @@ export default function Estoque() {
                     <td style={{ padding: '10px 14px', fontSize: 12, fontFamily: 'var(--mono)', color: 'var(--text-dim)' }}>{m.quantidade_anterior} → {m.quantidade_nova}</td>
                     <td style={{ padding: '10px 14px', fontSize: 12, color: 'var(--text-dim)' }}>{m.motivo || m.documento ? <>{m.motivo}{m.documento && m.documento !== m.motivo ? ` • ${m.documento}` : ''}</> : '-'}</td>
                     <td style={{ padding: '10px 14px', fontSize: 12, color: 'var(--text-dim)' }}>{m.usuario_nome || '-'}</td>
+                    <td style={{ padding: '10px 14px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                      {m.venda_id
+                        ? <span style={{ fontSize: 11.5, color: 'var(--text-muted)' }} title="Para devolver, cancele ou edite a venda">da venda</span>
+                        : <button className="btn btn-xs" onClick={() => desfazerMov(m)}><Icone nome="desfazer" size={13} />Desfazer</button>}
+                    </td>
                   </tr>
                 ))}
               </tbody>

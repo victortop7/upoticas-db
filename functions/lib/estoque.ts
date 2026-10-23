@@ -64,6 +64,50 @@ export async function garantirCategorias(db: D1Database, tenant: string) {
   }
 }
 
+// Item precisa de reposição: ficou negativo ou chegou no mínimo (mínimo 0 = sem alerta)
+export const sqlBaixo = (e = 'e') => `(${e}.quantidade < 0 OR (${e}.quantidade_minima > 0 AND ${e}.quantidade <= ${e}.quantidade_minima))`;
+
+// Produto "genérico" de um material no modo quantidade (ex.: "Armações Metal"). Cria se não existir.
+export async function produtoGenerico(db: D1Database, tenant: string, categoriaId: string, subId: string | null, precos?: { venda?: number; custo?: number }) {
+  const cat = await db.prepare('SELECT id, nome FROM estoque_categorias WHERE id = ? AND tenant_id = ? AND parent_id IS NULL').bind(categoriaId, tenant).first<{ id: string; nome: string }>();
+  if (!cat) return null;
+  let subNome = '';
+  if (subId) {
+    const s = await db.prepare('SELECT nome FROM estoque_categorias WHERE id = ? AND tenant_id = ? AND parent_id = ?').bind(subId, tenant, categoriaId).first<{ nome: string }>();
+    if (!s) return null;
+    subNome = s.nome;
+  }
+  const achado = await acharGenerico(db, tenant, categoriaId, subId);
+  if (achado) return achado;
+  const id = crypto.randomUUID();
+  const descricao = `${cat.nome} ${subNome}`.trim();
+  await db.batch([
+    db.prepare(
+      `INSERT INTO produtos (id, tenant_id, codigo, descricao, grupo, unidade, preco_custo, preco_venda, categoria_id, subcategoria_id, generico)
+       VALUES (?, ?, NULL, ?, ?, 'UN', ?, ?, ?, ?, 1)`
+    ).bind(id, tenant, descricao, cat.nome, precos?.custo || 0, precos?.venda || 0, categoriaId, subId),
+    db.prepare('INSERT INTO estoque (id, tenant_id, produto_id, quantidade, quantidade_minima) VALUES (?, ?, ?, 0, 0)').bind(crypto.randomUUID(), tenant, id),
+  ]);
+  return { id, descricao };
+}
+
+export async function acharGenerico(db: D1Database, tenant: string, categoriaId: string, subId: string | null) {
+  return db.prepare(
+    `SELECT id, descricao FROM produtos WHERE tenant_id = ? AND ativo = 1 AND generico = 1 AND categoria_id = ? AND COALESCE(subcategoria_id, '') = ? LIMIT 1`
+  ).bind(tenant, categoriaId, subId || '').first<{ id: string; descricao: string }>();
+}
+
+// Itens da venda escolhidos por material (sem produto ainda): cria o genérico agora, no registro.
+export async function resolverItensEstoque(db: D1Database, tenant: string, itens: Record<string, unknown>[]) {
+  for (const it of itens) {
+    const ref = it.estoque_ref as { categoria_id?: string; subcategoria_id?: string | null } | undefined;
+    if (it.produto_id || !ref?.categoria_id) continue;
+    await ensureEstoque(db);
+    const g = await produtoGenerico(db, tenant, ref.categoria_id, ref.subcategoria_id || null);
+    if (g) it.produto_id = g.id;
+  }
+}
+
 type LinhaQtd = { produto_id: string; qtd: number };
 
 // Deixa o estoque coerente com a venda: soma o que já foi baixado por ela e lança só a diferença.

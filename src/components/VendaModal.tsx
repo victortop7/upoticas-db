@@ -94,7 +94,7 @@ const EMPTY = {
 
 interface UsuarioSimples { id: string; nome: string; perfil: string; }
 interface ProdutoSimples { id: string; codigo?: string; descricao: string; grupo?: string; preco_venda?: number; }
-interface ItemVenda { produto_id: string | null; descricao: string; quantidade: number; valor_unitario: number; desconto: number; }
+interface ItemVenda { produto_id: string | null; descricao: string; quantidade: number; valor_unitario: number; desconto: number; estoque_ref?: { categoria_id: string; subcategoria_id: string | null }; }
 interface PagLinha { forma: string; valor: string; bandeira: string; parcelas: string; data_recebimento: string; conta: string; }
 interface PagApi { forma: string; valor: number; bandeira?: string | null; parcelas?: number | null; data_recebimento?: string | null; conta?: string | null; }
 interface AdicionalVenda { cliente_id: string; cliente_nome: string; valor_total: string; desconto: string; }
@@ -283,7 +283,7 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
   }
   // armação escolhida do estoque: vira item da venda (baixa) e já vai pra OS
   function addDoEstoque(p: Escolhido) {
-    setItens(prev => [...prev, { produto_id: p.produto_id, descricao: p.descricao, quantidade: 1, valor_unitario: p.preco_venda || 0, desconto: 0 }]);
+    setItens(prev => [...prev, { produto_id: p.produto_id, descricao: p.descricao, quantidade: 1, valor_unitario: p.preco_venda || 0, desconto: 0, ...(p.estoque_ref ? { estoque_ref: p.estoque_ref } : {}) }]);
     setOsForm(f => ({ ...f, armacao_desc: f.armacao_desc ? `${f.armacao_desc}, ${p.descricao}` : p.descricao }));
   }
   function addAvulso() {

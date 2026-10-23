@@ -1,6 +1,6 @@
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
-import { sincronizarEstoqueVenda } from '../../lib/estoque';
+import { sincronizarEstoqueVenda, resolverItensEstoque } from '../../lib/estoque';
 import { ensureLojaCols, filtroLoja, lojaParaGravar } from '../../lib/lojas';
 import { normalizarLinhas, recebidoDasLinhas, formaResumo, salvarPagamentos } from '../../lib/pagamentos';
 import { ensureCrmFluxo, recalcularFunil } from '../../lib/crmFluxo';
@@ -146,6 +146,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     // Itens da venda (produtos comprados): opcional
     const itens = Array.isArray((body as Record<string, unknown>).itens) ? (body as Record<string, unknown>).itens as Record<string, unknown>[] : [];
     if (itens.length) {
+      await resolverItensEstoque(env.DB, auth.tenant_id, itens);
       try { await env.DB.prepare(`CREATE TABLE IF NOT EXISTS venda_itens (id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL, venda_id TEXT NOT NULL, produto_id TEXT, descricao TEXT NOT NULL, quantidade REAL NOT NULL DEFAULT 1, valor_unitario REAL NOT NULL DEFAULT 0, desconto REAL NOT NULL DEFAULT 0, valor_total REAL NOT NULL DEFAULT 0, created_at TEXT NOT NULL DEFAULT (datetime('now')))`).run(); } catch {}
       const stmts = itens
         .filter(it => String(it.descricao || '').trim())

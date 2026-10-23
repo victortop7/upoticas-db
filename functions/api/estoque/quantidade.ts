@@ -1,35 +1,13 @@
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
-import { ensureEstoque } from '../../lib/estoque';
+import { ensureEstoque, produtoGenerico as produtoGenericoLib, acharGenerico } from '../../lib/estoque';
 
 // Modo "por quantidade": cada material da categoria (ex.: Armação Conceito › Metal) é um
 // produto genérico só com quantidade. É ele que a vendedora escolhe na venda (baixa automática)
 // e que vai na nota do Bling como "ARMAÇÃO CONCEITO METAL".
 
-async function produtoGenerico(env: Env, tenant: string, categoriaId: string, subId: string | null, precos?: { venda?: number; custo?: number }) {
-  const cat = await env.DB.prepare('SELECT id, nome FROM estoque_categorias WHERE id = ? AND tenant_id = ? AND parent_id IS NULL').bind(categoriaId, tenant).first<{ id: string; nome: string }>();
-  if (!cat) return null;
-  let subNome = '';
-  if (subId) {
-    const s = await env.DB.prepare('SELECT nome FROM estoque_categorias WHERE id = ? AND tenant_id = ? AND parent_id = ?').bind(subId, tenant, categoriaId).first<{ nome: string }>();
-    if (!s) return null;
-    subNome = s.nome;
-  }
-  const achado = await env.DB.prepare(
-    `SELECT id, descricao FROM produtos WHERE tenant_id = ? AND ativo = 1 AND generico = 1 AND categoria_id = ? AND COALESCE(subcategoria_id, '') = ? LIMIT 1`
-  ).bind(tenant, categoriaId, subId || '').first<{ id: string; descricao: string }>();
-  if (achado) return achado;
-  const id = crypto.randomUUID();
-  const descricao = `${cat.nome} ${subNome}`.trim();
-  await env.DB.batch([
-    env.DB.prepare(
-      `INSERT INTO produtos (id, tenant_id, codigo, descricao, grupo, unidade, preco_custo, preco_venda, categoria_id, subcategoria_id, generico)
-       VALUES (?, ?, NULL, ?, ?, 'UN', ?, ?, ?, ?, 1)`
-    ).bind(id, tenant, descricao, cat.nome, precos?.custo || 0, precos?.venda || 0, categoriaId, subId),
-    env.DB.prepare('INSERT INTO estoque (id, tenant_id, produto_id, quantidade, quantidade_minima) VALUES (?, ?, ?, 0, 0)').bind(crypto.randomUUID(), tenant, id),
-  ]);
-  return { id, descricao };
-}
+const produtoGenerico = (env: Env, tenant: string, categoriaId: string, subId: string | null, precos?: { venda?: number; custo?: number }) =>
+  produtoGenericoLib(env.DB, tenant, categoriaId, subId, precos);
 
 // POST /api/estoque/quantidade
 //   { categoria_id, subcategoria_id?, tipo: 'entrada'|'saida'|'ajuste', quantidade, preco_venda?, preco_custo?, quantidade_minima?, motivo?, documento? }
@@ -79,7 +57,8 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
 };
 
 // GET /api/estoque/quantidade?categoria_id=&subcategoria_id=
-// Usado na venda: devolve o produto genérico do material (cria se ainda não existir) e quanto tem.
+// Usado na venda: devolve o produto genérico do material e quanto tem. NÃO cria nada:
+// se ainda não existe, o produto só nasce quando a venda for registrada (estoque_ref no item).
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;
@@ -88,8 +67,15 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
     const url = new URL(request.url);
     const cat = url.searchParams.get('categoria_id') || '';
     if (!cat) return json({ error: 'categoria_id obrigatório' }, 400);
-    const p = await produtoGenerico(env, auth.tenant_id, cat, url.searchParams.get('subcategoria_id') || null);
-    if (!p) return json({ error: 'Categoria ou material não encontrado' }, 404);
+    const sub = url.searchParams.get('subcategoria_id') || null;
+    const c = await env.DB.prepare('SELECT nome FROM estoque_categorias WHERE id = ? AND tenant_id = ? AND parent_id IS NULL').bind(cat, auth.tenant_id).first<{ nome: string }>();
+    if (!c) return json({ error: 'Categoria não encontrada' }, 404);
+    const p = await acharGenerico(env.DB, auth.tenant_id, cat, sub);
+    if (!p) {
+      const s = sub ? await env.DB.prepare('SELECT nome FROM estoque_categorias WHERE id = ? AND tenant_id = ? AND parent_id = ?').bind(sub, auth.tenant_id, cat).first<{ nome: string }>() : null;
+      if (sub && !s) return json({ error: 'Material não encontrado' }, 404);
+      return json({ produto: { id: null, descricao: `${c.nome} ${s?.nome || ''}`.trim(), preco_venda: 0, quantidade: 0 } });
+    }
     const r = await env.DB.prepare(
       `SELECT p.id, p.descricao, p.preco_venda, COALESCE(e.quantidade, 0) AS quantidade
        FROM produtos p LEFT JOIN estoque e ON e.produto_id = p.id AND e.tenant_id = p.tenant_id

@@ -1,6 +1,6 @@
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
-import { garantirCategorias, MATERIAIS_PADRAO } from '../../lib/estoque';
+import { garantirCategorias, MATERIAIS_PADRAO, sqlBaixo } from '../../lib/estoque';
 
 // GET /api/estoque/categorias: categorias (abas) com subcategorias e totais
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
@@ -12,7 +12,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
       .bind(auth.tenant_id).all<{ id: string; nome: string; parent_id: string | null; icone: string | null; ordem: number; modo: string; ncm: string | null }>();
     const tot = await env.DB.prepare(
       `SELECT p.categoria_id, p.subcategoria_id, COUNT(*) AS itens, SUM(e.quantidade) AS pecas,
-              SUM(CASE WHEN e.quantidade <= e.quantidade_minima THEN 1 ELSE 0 END) AS baixo
+              SUM(CASE WHEN ${sqlBaixo()} THEN 1 ELSE 0 END) AS baixo
        FROM estoque e JOIN produtos p ON p.id = e.produto_id
        WHERE e.tenant_id = ? AND p.ativo = 1 GROUP BY p.categoria_id, p.subcategoria_id`
     ).bind(auth.tenant_id).all<{ categoria_id: string | null; subcategoria_id: string | null; itens: number; pecas: number; baixo: number }>();

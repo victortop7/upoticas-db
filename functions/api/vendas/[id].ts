@@ -1,6 +1,6 @@
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
-import { sincronizarEstoqueVenda } from '../../lib/estoque';
+import { sincronizarEstoqueVenda, resolverItensEstoque } from '../../lib/estoque';
 import { aplicarFluxoReceber } from '../../lib/crmFluxo';
 import { ensurePagamentos, normalizarLinhas, recebidoDasLinhas, formaResumo, salvarPagamentos } from '../../lib/pagamentos';
 
@@ -95,6 +95,7 @@ export const onRequestPut = async ({ request, env, params }: { request: Request;
     // Itens da venda: se enviados, substitui os existentes
     const itens = (body as Record<string, unknown>).itens;
     if (Array.isArray(itens)) {
+      await resolverItensEstoque(env.DB, auth.tenant_id, itens as Record<string, unknown>[]);
       try { await env.DB.prepare(`CREATE TABLE IF NOT EXISTS venda_itens (id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL, venda_id TEXT NOT NULL, produto_id TEXT, descricao TEXT NOT NULL, quantidade REAL NOT NULL DEFAULT 1, valor_unitario REAL NOT NULL DEFAULT 0, desconto REAL NOT NULL DEFAULT 0, valor_total REAL NOT NULL DEFAULT 0, created_at TEXT NOT NULL DEFAULT (datetime('now')))`).run(); } catch {}
       await env.DB.prepare('DELETE FROM venda_itens WHERE venda_id = ? AND tenant_id = ?').bind(params.id, auth.tenant_id).run();
       const stmts = (itens as Record<string, unknown>[])

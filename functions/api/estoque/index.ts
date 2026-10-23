@@ -1,6 +1,6 @@
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
-import { garantirCategorias } from '../../lib/estoque';
+import { garantirCategorias, sqlBaixo } from '../../lib/estoque';
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   try {
@@ -23,7 +23,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
         p.codigo, p.codigo_barras, p.descricao, p.grupo, p.unidade, p.preco_venda, p.preco_custo,
         p.categoria_id, p.subcategoria_id, sc.nome AS subcategoria_nome, COALESCE(p.generico, 0) AS generico,
         f.nome as fornecedor_nome,
-        CASE WHEN e.quantidade <= e.quantidade_minima THEN 1 ELSE 0 END as abaixo_minimo
+        CASE WHEN ${sqlBaixo()} THEN 1 ELSE 0 END as abaixo_minimo
       FROM estoque e
       JOIN produtos p ON p.id = e.produto_id
       LEFT JOIN fornecedores f ON f.id = p.fornecedor_id
@@ -40,7 +40,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
     if (sub) { filtroCat += ' AND p.subcategoria_id = ?'; paramsCat.push(sub); }
     query += filtroCat; params.push(...paramsCat);
     if (grupo) { query += ' AND p.grupo = ?'; params.push(grupo); }
-    if (alerta === '1') { query += ' AND e.quantidade <= e.quantidade_minima'; }
+    if (alerta === '1') { query += ` AND ${sqlBaixo()}`; }
 
     query += ' ORDER BY abaixo_minimo DESC, p.descricao ASC';
 
@@ -49,7 +49,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
     const resumo = await env.DB.prepare(`
       SELECT
         COUNT(*) as total_itens,
-        SUM(CASE WHEN e.quantidade <= e.quantidade_minima THEN 1 ELSE 0 END) as abaixo_minimo,
+        SUM(CASE WHEN ${sqlBaixo()} THEN 1 ELSE 0 END) as abaixo_minimo,
         SUM(e.quantidade * p.preco_venda) as valor_total,
         SUM(e.quantidade) as pecas,
         SUM(e.quantidade * p.preco_custo) as custo_total
