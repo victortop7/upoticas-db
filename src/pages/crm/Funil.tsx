@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { whatsappLink, foneValido, aplicarVariaveis } from '../../lib/whatsapp';
 import { useAuth } from '../../hooks/useAuth';
@@ -47,6 +48,11 @@ const MSG_ANIVERSARIO_CONCEITO =
 function ehOticaConceito(loja?: string) {
   return /conceito/i.test(loja || '');
 }
+
+// avatar com iniciais (cor fixa por nome)
+const CORES_AVATAR = ['#64748b', '#2563eb', '#0891b2', '#16a34a', '#b45309', '#be185d', '#475569', '#0f766e'];
+function corAvatar(nome: string) { let h = 0; for (const ch of nome) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return CORES_AVATAR[h % CORES_AVATAR.length]; }
+function iniciais(nome: string) { const p = nome.trim().split(/\s+/); return ((p[0]?.[0] || '') + (p.length > 1 ? p[p.length - 1][0] : '')).toUpperCase(); }
 
 function brl(v: number) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 function diasAtras(s?: string) {
@@ -222,6 +228,7 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
   tenant: string;
   onAtualizar: () => void;
 }) {
+  const navigate = useNavigate();
   const [expandido, setExpandido] = useState(false);
   const [nota, setNota] = useState(card.notas || '');
   const [prioridade, setPrioridade] = useState(card.prioridade);
@@ -234,8 +241,6 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
   const fone = card.celular || card.telefone || '';
   const temFone = foneValido(fone);
   const aniv = proximoAniversario(card.data_nascimento);
-  const ultimaAtiv = card.ultima_entrega || card.ultima_venda;
-  const estagio = estagios.find(e => e.key === card.estagio);
   const priorCor: Record<string, string> = { alta: '#dc2626', normal: '#64748b', baixa: '#94a3b8' };
 
   // Fonte do saldo a receber: prioriza venda pendente; senão usa a OS em aberto ()
@@ -288,6 +293,30 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
     } catch {}
     setFinalizando(false);
   }
+
+  // texto do balão principal, conforme a etapa
+  const br = (x?: string | null) => (x ? x.slice(0, 10).split('-').reverse().join('/') : '');
+  const diasAte = (x: string) => Math.round((new Date(x.slice(0, 10) + 'T12:00:00').getTime() - new Date(new Date().toISOString().slice(0, 10) + 'T12:00:00').getTime()) / 86_400_000);
+  let contexto: { txt: string; cor: string } | null = null;
+  if (card.estagio === 'a_receber') {
+    const partes = [saldo > 0 ? `${brl(saldo)} em aberto` : '', (card.carne_vencido || 0) > 0 ? `carnê vencido ${brl(card.carne_vencido!)}` : ''].filter(Boolean);
+    if (partes.length) contexto = { txt: partes.join(' · '), cor: '#dc2626' };
+  } else if (card.estagio === 'contato' && card.prazo_entrega) {
+    const n = diasAte(card.prazo_entrega); contexto = { txt: `Entrega ${br(card.prazo_entrega)}${n > 0 ? ` · ${n}d` : ''}`, cor: '#2563eb' };
+  } else if (card.estagio === 'oculos_pronto' && card.prazo_entrega) {
+    contexto = { txt: `Pronto desde ${br(card.prazo_entrega)}`, cor: '#16a34a' };
+  } else if (card.estagio === 'oculos_pendente' && card.prazo_entrega) {
+    const n = -diasAte(card.prazo_entrega); contexto = { txt: `Não buscou há ${n} dia${n > 1 ? 's' : ''}`, cor: '#d97706' };
+  } else if (card.estagio === 'aniversario' && aniv) {
+    contexto = { txt: `Aniversário ${aniv}`, cor: '#d97706' };
+  } else if ((card.estagio === 'pos_venda' || card.estagio === 'indicacao') && card.entregue_em) {
+    contexto = { txt: `Entregue em ${br(card.entregue_em)}`, cor: 'var(--text-dim)' };
+  } else if ((card.estagio === 'vip' || card.estagio === 'reativacao') && card.total_gasto > 0) {
+    contexto = { txt: `Comprou ${brl(card.total_gasto)}`, cor: card.estagio === 'vip' ? '#b45309' : '#ea580c' };
+  }
+  const dataRef = card.estagio === 'contato' || card.estagio === 'oculos_pronto' || card.estagio === 'oculos_pendente' ? card.ultima_venda : (card.entregue_em || card.ultima_venda || card.updated_at);
+  const dataCard = dataRef ? (diasAte(dataRef) === 0 ? 'Hoje' : diasAte(dataRef) === -1 ? 'Ontem' : br(dataRef)) : '';
+  const acaoBtn = (cor: string): React.CSSProperties => ({ width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', borderRadius: 4, cursor: 'pointer', color: cor });
 
   const recebidoNum = parseFloat(valorRecebido) || 0;
   const novoSaldo = Math.max(0, saldo - recebidoNum);
@@ -354,109 +383,87 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
         </div>
       </div>
     )}
-    <div style={{
-      background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px',
-      marginBottom: '8px', borderLeft: `3px solid ${estagio?.color || '#64748b'}`,
-      transition: 'box-shadow 0.15s',
-    }}
-      onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.08)')}
-      onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
-    >
-      <div style={{ padding: '12px 14px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
-          <button onClick={() => setExpandido(v => !v)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left' }}>
-            <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>{card.nome}</span>
-          </button>
-          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-            {aniv && <span style={{ fontSize: '10px', fontWeight: '600', color: '#d97706', background: 'rgba(217,119,6,0.1)', padding: '1px 6px', borderRadius: '4px' }}>{aniv}</span>}
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: priorCor[prioridade] }} title={`Prioridade: ${prioridade}`} />
+    <div className="crm-card" style={{
+      position: 'relative', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '4px',
+      marginBottom: '6px', padding: '9px 10px 8px', display: 'flex', gap: '10px',
+    }}>
+      {/* avatar */}
+      <div style={{ width: 34, height: 34, borderRadius: '50%', flexShrink: 0, background: corAvatar(card.nome), color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700 }}>
+        {iniciais(card.nome)}
+      </div>
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {/* linha de cima: telefone/cidade e data */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 6, fontSize: '11.5px', color: 'var(--text-muted)' }}>
+          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{[temFone ? fone : '', card.cidade].filter(Boolean).join(' · ') || 'sem telefone'}</span>
+          {dataCard && <span style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>{dataCard}</span>}
+        </div>
+        {/* nome em azul: abre a ficha */}
+        <button onClick={() => navigate(`/clientes/${card.cliente_id}`)} title="Abrir ficha do cliente"
+          style={{ display: 'block', maxWidth: '100%', background: 'none', border: 'none', padding: 0, margin: '1px 0 0', cursor: 'pointer', textAlign: 'left', fontSize: '13.5px', fontWeight: 500, color: '#3b82f6', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {card.nome}
+        </button>
+
+        {/* balões de contexto */}
+        {(contexto || aniv || card.notas) && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 5 }}>
+            {contexto && <span style={{ fontSize: '11px', padding: '2px 7px', borderRadius: 4, background: `${contexto.cor}1f`, color: contexto.cor, fontWeight: 600 }}>{contexto.txt}</span>}
+            {aniv && card.estagio !== 'aniversario' && <span style={{ fontSize: '11px', padding: '2px 7px', borderRadius: 4, background: 'rgba(217,119,6,0.12)', color: '#d97706' }}>Aniversário {aniv}</span>}
+            {card.notas && !expandido && <span title={card.notas} style={{ fontSize: '11px', padding: '2px 7px', borderRadius: 4, background: 'var(--surface-alt)', color: 'var(--text-dim)', maxWidth: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{card.notas}</span>}
           </div>
-        </div>
-
-        {card.cidade && <p style={{ margin: '0 0 3px', fontSize: '11px', color: 'var(--text-muted)' }}>{card.cidade}{card.uf ? `/${card.uf}` : ''}</p>}
-        {temFone && <p style={{ margin: '0 0 4px', fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--mono)' }}>{fone}</p>}
-
-        <div style={{ display: 'flex', gap: '6px', marginTop: '6px', flexWrap: 'wrap' }}>
-          {card.total_os > 0 && <span style={{ fontSize: '10px', background: 'rgba(37,99,235,0.08)', color: '#2563eb', padding: '1px 6px', borderRadius: '4px' }}>{card.total_os} OS</span>}
-          {card.total_gasto > 0 && <span style={{ fontSize: '10px', background: 'rgba(22,163,74,0.08)', color: '#16a34a', padding: '1px 6px', borderRadius: '4px' }}>{brl(card.total_gasto)}</span>}
-          {card.valor_pendente > 0 && <span style={{ fontSize: '10px', background: 'rgba(220,38,38,0.1)', color: '#dc2626', padding: '1px 6px', borderRadius: '4px', fontWeight: '600' }}>{brl(card.valor_pendente)}</span>}
-          {(card.saldo_venda_pendente || 0) > 0 && <span style={{ fontSize: '10px', background: 'rgba(245,158,11,0.12)', color: '#d97706', padding: '1px 6px', borderRadius: '4px', fontWeight: '600' }}>{brl(card.saldo_venda_pendente!)}</span>}
-          {(card.carne_vencido || 0) > 0 && <span title="Parcelas de carnê vencidas" style={{ fontSize: '10px', background: 'rgba(220,38,38,0.1)', color: '#dc2626', padding: '1px 6px', borderRadius: '4px', fontWeight: '600' }}>carnê vencido {brl(card.carne_vencido!)}</span>}
-          {ultimaAtiv && <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{diasAtras(ultimaAtiv)}</span>}
-        </div>
-        {(() => {
-          const br = (x?: string | null) => (x ? x.slice(0, 10).split('-').reverse().join('/') : '');
-          const dias = (x: string) => Math.round((new Date(x.slice(0, 10) + 'T12:00:00').getTime() - new Date(new Date().toISOString().slice(0, 10) + 'T12:00:00').getTime()) / 86_400_000);
-          let txt = '', cor = 'var(--text-muted)';
-          if (card.estagio === 'contato' && card.prazo_entrega) { const n = dias(card.prazo_entrega); txt = `Prazo de entrega ${br(card.prazo_entrega)}${n > 0 ? ` · faltam ${n} dia${n > 1 ? 's' : ''}` : ''}`; cor = '#2563eb'; }
-          if (card.estagio === 'oculos_pronto' && card.prazo_entrega) { txt = `Pronto desde ${br(card.prazo_entrega)} · aguardando o cliente`; cor = '#16a34a'; }
-          if (card.estagio === 'oculos_pendente' && card.prazo_entrega) { const n = -dias(card.prazo_entrega); txt = `Pronto há ${n} dia${n > 1 ? 's' : ''} · cliente ainda não buscou`; cor = '#d97706'; }
-          if ((card.estagio === 'pos_venda' || card.estagio === 'indicacao') && card.entregue_em) { txt = `Entregue em ${br(card.entregue_em)}`; }
-          return txt ? <p style={{ margin: '5px 0 0', fontSize: '10.5px', color: cor }}>{txt}</p> : null;
-        })()}
-
-        {card.notas && !expandido && (
-          <p style={{ margin: '6px 0 0', fontSize: '11px', color: 'var(--text-dim)', fontStyle: 'italic', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{card.notas}</p>
         )}
 
-        {podeReceber && (
-          <button onClick={abrirModalFinalizar} style={{ width: '100%', marginTop: '8px', padding: '7px', fontSize: '12px', fontWeight: '700', background: 'rgba(245,158,11,0.15)', color: '#d97706', border: '1px solid rgba(245,158,11,0.4)', borderRadius: '7px', cursor: 'pointer' }}>
-            {`Receber Pagamento · ${brl(saldo)}`}
-          </button>
-        )}
-
-        {(card.estagio === 'oculos_pronto' || card.estagio === 'oculos_pendente') && (
-          <button onClick={handleEntregar} disabled={finalizando} title="O cliente buscou o óculos. Em 20 dias ele aparece no Pós-venda."
-            style={{ width: '100%', marginTop: '8px', padding: '7px', fontSize: '12px', fontWeight: '700', background: '#16a34a', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', opacity: finalizando ? 0.7 : 1 }}>
-            {finalizando ? 'Salvando...' : 'Entregue'}
-          </button>
-        )}
-
-        <div style={{ display: 'flex', gap: '6px', marginTop: '10px', alignItems: 'center' }}>
-          {temFone ? (
-            <button onClick={abrirWhatsApp} style={{ flex: 1, padding: '6px 0', fontSize: '12px', fontWeight: '600', background: '#25D366', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M5.296 19.935l.646-2.352a9.15 9.15 0 01-1.225-4.61C4.72 7.867 8.572 4 13.28 4a8.549 8.549 0 016.073 2.513 8.633 8.633 0 012.511 6.109c-.002 4.767-3.854 8.634-8.562 8.634a8.57 8.57 0 01-4.097-1.04L5.296 19.935zm2.454-1.414l.261.155a7.11 7.11 0 003.441.893c3.938 0 7.141-3.217 7.143-7.172a7.18 7.18 0 00-2.088-5.085 7.112 7.112 0 00-5.052-2.106c-3.942 0-7.145 3.217-7.145 7.17 0 1.356.375 2.68 1.084 3.829l.169.267-.714 2.601 2.901-.552z"/></svg>
-              WhatsApp
-            </button>
-          ) : (
-            <span style={{ flex: 1, fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center' }}>Sem telefone</span>
-          )}
-
-          <div style={{ position: 'relative' }}>
-            <button onClick={() => setMovMenu(m => !m)} style={{ padding: '6px 8px', fontSize: '12px', background: 'var(--surface-alt)', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer' }} title="Mover estágio">⇄</button>
-            {movMenu && (
-              <div style={{ position: 'absolute', bottom: '100%', right: 0, marginBottom: '4px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '6px', minWidth: '160px', zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}>
-                {estagios.filter(e => e.key !== card.estagio).map(e => (
-                  <button key={e.key} onClick={() => { onMover(card.id, e.key); setMovMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '7px 10px', fontSize: '13px', background: 'none', border: 'none', borderRadius: '6px', cursor: 'pointer', color: 'var(--text-dim)', textAlign: 'left' }}
-                    onMouseEnter={e2 => (e2.currentTarget.style.background = 'var(--surface-alt)')}
-                    onMouseLeave={e2 => (e2.currentTarget.style.background = 'none')}>
-                    <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 2, background: e.color, marginRight: 6 }} />{e.label}
-                  </button>
-                ))}
-              </div>
+        {/* ação principal da etapa */}
+        {(podeReceber || card.estagio === 'oculos_pronto' || card.estagio === 'oculos_pendente') && (
+          <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
+            {podeReceber && <button onClick={abrirModalFinalizar} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '12px', fontWeight: 700, color: '#d97706' }}>Receber {brl(saldo)}</button>}
+            {(card.estagio === 'oculos_pronto' || card.estagio === 'oculos_pendente') && (
+              <button onClick={handleEntregar} disabled={finalizando} title="O cliente buscou o óculos. Em 20 dias ele aparece no Pós-venda."
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '12px', fontWeight: 700, color: '#16a34a' }}>
+                <Icone nome="ok" size={13} /> {finalizando ? 'Salvando...' : 'Entregue'}
+              </button>
             )}
           </div>
-
-          <button onClick={() => setExpandido(v => !v)} style={{ padding: '6px 8px', fontSize: '12px', background: 'var(--surface-alt)', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer' }}>
-            {expandido ? '▲' : '▼'}
-          </button>
-        </div>
+        )}
 
         {expandido && (
-          <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid var(--border)' }}>
+          <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--border)' }}>
             <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', alignItems: 'center' }}>
               <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Prioridade:</span>
               {(['baixa', 'normal', 'alta'] as const).map(p => (
-                <button key={p} onClick={() => setPrioridade(p)} style={{ padding: '2px 8px', fontSize: '11px', borderRadius: '10px', cursor: 'pointer', border: 'none', background: prioridade === p ? priorCor[p] : 'var(--surface-alt)', color: prioridade === p ? 'white' : 'var(--text-muted)' }}>{p}</button>
+                <button key={p} onClick={() => setPrioridade(p)} style={{ padding: '2px 8px', fontSize: '11px', borderRadius: '4px', cursor: 'pointer', border: 'none', background: prioridade === p ? priorCor[p] : 'var(--surface-alt)', color: prioridade === p ? 'white' : 'var(--text-muted)' }}>{p}</button>
               ))}
             </div>
-            <textarea value={nota} onChange={e => setNota(e.target.value)} placeholder="Adicionar nota..." style={{ width: '100%', minHeight: '70px', padding: '8px', fontSize: '12px', border: '1px solid var(--border)', borderRadius: '6px', background: 'var(--surface-alt)', color: 'var(--text)', outline: 'none', resize: 'vertical', boxSizing: 'border-box', lineHeight: '1.5' }} onBlur={salvarNota} />
+            <textarea value={nota} onChange={e => setNota(e.target.value)} placeholder="Adicionar nota..." style={{ width: '100%', minHeight: '64px', padding: '7px', fontSize: '12px', border: '1px solid var(--border)', borderRadius: '4px', background: 'var(--surface-alt)', color: 'var(--text)', outline: 'none', resize: 'vertical', boxSizing: 'border-box', lineHeight: '1.5' }} onBlur={salvarNota} />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
               <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Atualizado {diasAtras(card.updated_at)}</span>
-              <button onClick={salvarNota} style={{ padding: '4px 10px', fontSize: '11px', fontWeight: '600', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Salvar</button>
+              <button onClick={salvarNota} style={{ padding: '4px 10px', fontSize: '11px', fontWeight: '600', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Salvar</button>
             </div>
           </div>
         )}
+      </div>
+
+      {/* pontinho de prioridade no canto */}
+      <span title={`Prioridade: ${prioridade}`} style={{ position: 'absolute', right: 8, bottom: 8, width: 6, height: 6, borderRadius: '50%', background: prioridade === 'normal' ? '#e0a800' : priorCor[prioridade] }} />
+
+      {/* ações que aparecem ao passar o mouse (como no Kommo) */}
+      <div className="crm-card-acoes" style={{ position: 'absolute', top: 4, right: 4, display: 'flex', gap: 2, background: 'var(--surface)', borderRadius: 4, padding: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
+        {temFone && <button title="WhatsApp" onClick={abrirWhatsApp} style={acaoBtn('#25D366')}><Icone nome="whatsapp" size={15} /></button>}
+        <div style={{ position: 'relative' }}>
+          <button title="Mover de etapa" onClick={() => setMovMenu(m => !m)} style={acaoBtn('var(--primary)')}><Icone nome="seta" size={15} /></button>
+          {movMenu && (
+            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '4px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '6px', padding: '4px', minWidth: '170px', zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,0.18)' }}>
+              {estagios.filter(e => e.key !== card.estagio).map(e => (
+                <button key={e.key} onClick={() => { onMover(card.id, e.key); setMovMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '6px 8px', fontSize: '12.5px', background: 'none', border: 'none', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-dim)', textAlign: 'left' }}
+                  onMouseEnter={e2 => (e2.currentTarget.style.background = 'var(--surface-alt)')}
+                  onMouseLeave={e2 => (e2.currentTarget.style.background = 'none')}>
+                  <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 2, background: e.color }} />{e.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        <button title={expandido ? 'Fechar nota' : 'Nota e prioridade'} onClick={() => setExpandido(v => !v)} style={acaoBtn('var(--text-dim)')}><Icone nome="editar" size={14} /></button>
       </div>
     </div>
     </>
@@ -615,7 +622,7 @@ export default function Funil() {
         <div>
           <h1 style={{ margin: '0 0 4px', fontSize: '22px', fontWeight: '600', color: 'var(--text)' }}>Funil CRM</h1>
           <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-dim)' }}>
-            {cards.length} clientes · arraste ou use ⇄ para mover
+            {cards.length} clientes no funil · passe o mouse no card para as ações
           </p>
         </div>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -630,24 +637,21 @@ export default function Funil() {
       {loading ? (
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>Carregando funil...</div>
       ) : (
-        <div style={{ flex: 1, display: 'flex', gap: '12px', overflowX: 'auto', overflowY: 'hidden', paddingBottom: '8px' }}>
+        <div style={{ flex: 1, display: 'flex', gap: '14px', overflowX: 'auto', overflowY: 'hidden', paddingBottom: '8px' }}>
           {estagios.map(estagio => {
             const colCards = cardsFiltrados.filter(c => c.estagio === estagio.key);
             const isOver = dragOver === estagio.key;
             return (
-              <div key={estagio.key} onDragOver={e => onDragOver(e, estagio.key)} onDrop={() => onDrop(estagio.key)} style={{ width: '240px', flexShrink: 0, display: 'flex', flexDirection: 'column', background: isOver ? `${estagio.color}10` : 'var(--surface-alt)', border: `1px solid ${isOver ? estagio.color : 'var(--border)'}`, borderRadius: '12px', transition: 'border-color 0.15s, background 0.15s' }}>
-                <div style={{ padding: '12px 14px 10px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                    <span style={{ width: 9, height: 9, borderRadius: 2, background: estagio.color, flexShrink: 0 }} />
-                    <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text)' }}>{estagio.label}</span>
+              <div key={estagio.key} onDragOver={e => onDragOver(e, estagio.key)} onDrop={() => onDrop(estagio.key)} style={{ width: '270px', flexShrink: 0, display: 'flex', flexDirection: 'column', background: isOver ? `${estagio.color}12` : 'transparent', borderRadius: '4px', transition: 'background 0.15s' }}>
+                <div style={{ padding: '6px 8px 8px', textAlign: 'center', flexShrink: 0, borderBottom: `2px solid ${estagio.color}`, marginBottom: 8 }}>
+                  <div style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '.6px', textTransform: 'uppercase', color: 'var(--text-dim)' }}>{estagio.label}</div>
+                  <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', marginTop: 2 }}>
+                    {colCards.length} cliente{colCards.length === 1 ? '' : 's'}{estagio.key === 'a_receber' ? `: ${brl(colCards.reduce((t, c) => t + (c.saldo_venda_pendente || 0) + (c.valor_pendente || 0) + (c.carne_vencido || 0), 0))}` : ''}
                   </div>
-                  <span style={{ fontSize: '11px', fontWeight: '700', minWidth: '22px', height: '22px', borderRadius: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: colCards.length > 0 ? estagio.color : 'var(--surface)', color: colCards.length > 0 ? 'white' : 'var(--text-muted)' }}>
-                    {colCards.length}
-                  </span>
                 </div>
-                <div style={{ flex: 1, overflowY: 'auto', padding: '10px 10px 4px' }}>
+                <div className="menu-sem-barra" style={{ flex: 1, overflowY: 'auto', padding: '0 2px 4px' }}>
                   {colCards.length === 0 ? (
-                    <div style={{ padding: '20px 10px', textAlign: 'center', fontSize: '12px', color: 'var(--text-muted)', border: '1px dashed var(--border)', borderRadius: '8px', margin: '4px 0' }}>
+                    <div style={{ padding: '18px 10px', textAlign: 'center', fontSize: '12px', color: 'var(--text-muted)', border: '1px dashed var(--border)', borderRadius: '4px', margin: '2px 0' }}>
                       {isOver ? 'Soltar aqui' : 'Nenhum cliente'}
                     </div>
                   ) : colCards.map(card => (

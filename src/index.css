@@ -143,3 +143,7 @@ input, select, textarea, button { font-family: var(--sans); }
 .menu-sem-barra::-webkit-scrollbar { display: none; width: 0; height: 0; }
 /* hover dos itens do menu azul (o item ativo já tem fundo próprio) */
 .menu-azul-item:not(.active):hover { background: rgba(255,255,255,0.12) !important; }
+/* Funil (estilo Kommo): ações do card só aparecem ao passar o mouse */
+.crm-card .crm-card-acoes { opacity: 0; pointer-events: none; transition: opacity .12s; }
+.crm-card:hover .crm-card-acoes, .crm-card:focus-within .crm-card-acoes { opacity: 1; pointer-events: auto; }
+.crm-card:hover { border-color: var(--border-light, #3a3a48) !important; }
