@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../lib/api';
 import type { Cliente } from '../types';
@@ -14,9 +14,15 @@ type ClienteFicha = Cliente & {
   spc?: number; sem_cobranca?: number; nao_receber_msg?: number; situacao_cad?: string; cobranca?: string; data_compra?: string;
 };
 type VendaP = { id: string; numero: number; situacao: string; valor_total: number; desconto: number; valor_final: number; forma_pagamento?: string; valor_entrada: number; saldo_restante: number; created_at: string; vendedor?: string; loja?: string; itens?: string };
-type OSP = { id: string; numero: number; tipo: string; situacao: string; valor_total: number; valor_restante: number; data_entrega?: string; armacao_desc?: string; lente_desc?: string; created_at: string };
+type Grau = number | null;
+type OSP = { id: string; numero: number; tipo: string; situacao: string; valor_total: number; valor_restante: number; data_entrega?: string; armacao_desc?: string; lente_desc?: string; created_at: string;
+  longe_od_esf?: Grau; longe_od_cil?: Grau; longe_od_eixo?: Grau; longe_oe_esf?: Grau; longe_oe_cil?: Grau; longe_oe_eixo?: Grau;
+  perto_od_esf?: Grau; perto_od_cil?: Grau; perto_od_eixo?: Grau; perto_oe_esf?: Grau; perto_oe_cil?: Grau; perto_oe_eixo?: Grau;
+  dp?: Grau; altura?: Grau; adicao?: Grau; medico?: string | null };
+type Estagio = { key: string; label: string; color: string };
 type Resumo = { total_comprado: number; qtd_vendas: number; ticket_medio: number; em_aberto: number; em_atraso: number; parcelas_atraso: number; atraso_medio_dias: number | null; primeira_compra: string | null; ultima_compra: string | null };
-type Perfil = { cliente: ClienteFicha; vendas: VendaP[]; os: OSP[]; titulos: Titulo[]; resumo: Resumo };
+type Perfil = { cliente: ClienteFicha; vendas: VendaP[]; os: OSP[]; titulos: Titulo[]; resumo: Resumo; crm?: { id: string; estagio: string; quitado_em?: string | null } | null };
+type Achado = { id: string; nome: string; cpf?: string; codigo?: number | null; cidade?: string };
 type Conta = { id: string; nome: string };
 type Opcoes = { regiao: string[]; localidade: string[]; bairro: string[]; cidade: string[] };
 
@@ -31,6 +37,8 @@ type Form = typeof VAZIO;
 const brl = (v: number) => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const fmtD = (s?: string | null) => { if (!s) return '-'; const [y, m, d] = s.slice(0, 10).split('-'); return `${d}/${m}/${y}`; };
 const cod = (n?: number | null) => (n ? String(n).padStart(6, '0') : '');
+const gr = (v?: Grau | string, sinal = true) => { if (v === null || v === undefined || v === '') return '-'; const n = Number(v); if (isNaN(n)) return String(v); return (sinal && n > 0 ? '+' : '') + n.toFixed(2).replace('.', ','); };
+const eixo = (v?: Grau | string) => (v === null || v === undefined || v === '' ? '-' : `${Math.round(Number(v))}°`);
 const SIT_OS: Record<string, string> = { orcamento: 'Orçamento', aprovado: 'Aprovado', em_producao: 'Produção', pronto: 'Pronto', entregue: 'Entregue', cancelado: 'Cancelado', aberta: 'Aberta' };
 
 // "46 anos 3 meses 12 dias"
@@ -119,10 +127,18 @@ export default function ClientePerfil() {
   const [novaOS, setNovaOS] = useState(false);
   const [baixa, setBaixa] = useState<Titulo | null>(null);
   const [contas, setContas] = useState<Conta[]>([]);
+  const [editando, setEditando] = useState(novo);
+  const [painel, setPainel] = useState<'' | 'busca' | 'info' | 'optica'>('');
+  const [busca, setBusca] = useState('');
+  const [achados, setAchados] = useState<Achado[]>([]);
+  const [estagios, setEstagios] = useState<Estagio[]>([]);
+  const histRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(() => {
     setErro(''); setAviso('');
-    if (novo) { setP(null); setForm(VAZIO); setOriginal(VAZIO); return; }
+    setPainel('');
+    if (novo) { setP(null); setForm(VAZIO); setOriginal(VAZIO); setEditando(true); return; }
+    setEditando(false);
     api.get<Perfil>(`/clientes/${id}/perfil`).then(r => { setP(r); const f = doCliente(r.cliente); setForm(f); setOriginal(f); })
       .catch(e => setErro(e instanceof Error ? e.message : 'Erro'));
   }, [id, novo]);
@@ -130,7 +146,16 @@ export default function ClientePerfil() {
   useEffect(() => {
     api.get<Conta[]>('/financeiro/contas').then(setContas).catch(() => {});
     api.get<Opcoes>('/clientes/opcoes').then(setOpcoes).catch(() => {});
+    api.get<Estagio[]>('/crm/estagios').then(setEstagios).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (painel !== 'busca' || busca.trim().length < 2) { setAchados([]); return; }
+    const t = setTimeout(() => {
+      api.get<{ clientes: Achado[] }>(`/clientes?busca=${encodeURIComponent(busca.trim())}&page=1`).then(r => setAchados((r.clientes || []).slice(0, 12))).catch(() => setAchados([]));
+    }, 250);
+    return () => clearTimeout(t);
+  }, [busca, painel]);
 
   const alterado = useMemo(() => JSON.stringify(form) !== JSON.stringify(original), [form, original]);
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setForm(f => ({ ...f, [k]: v }));
@@ -147,8 +172,8 @@ export default function ClientePerfil() {
       } else {
         await api.put(`/clientes/${id}/ficha`, form);
         setOriginal(form);
-        setAviso('Salvo.');
         load();
+        setAviso('Salvo.');
       }
     } catch (e) { setAviso(e instanceof Error ? e.message.replace(/\s*\(HTTP \d+\)$/, '') : 'Erro ao salvar'); }
     setSalvando(false);
@@ -169,6 +194,15 @@ export default function ClientePerfil() {
     } catch { setAviso('Não foi possível consultar o CEP agora.'); }
     setBuscandoCep(false);
   }
+  async function mudarFunil(estagio: string) {
+    try { await api.post('/crm', { cliente_id: id, estagio }); load(); }
+    catch (e) { alert(e instanceof Error ? e.message : 'Erro ao mudar o funil'); }
+  }
+  function irCrediario() {
+    setAba('crediario');
+    setTimeout(() => histRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  }
+
   async function trocarFoto(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]; e.target.value = '';
     if (!f || novo) return;
@@ -245,32 +279,124 @@ export default function ClientePerfil() {
         </b>
         {alterado && <span style={{ fontSize: 11.5, color: '#d97706', marginRight: 4 }}>alterações não salvas</span>}
         {ferr('mais', 'Novo cliente', () => { if (sairSePuder()) navigate('/clientes/novo'); })}
-        {ferr('salvar', 'Salvar', salvar, { desativado: salvando || (!alterado && !novo), cor: alterado || novo ? '#16a34a' : undefined, texto: salvando ? 'Salvando' : 'Salvar' })}
-        {ferr('desfazer', 'Cancelar alterações', () => { setForm(original); setAviso(''); }, { desativado: !alterado })}
+        {ferr('abrir', 'Pesquisar cliente', () => setPainel(x => x === 'busca' ? '' : 'busca'))}
+        {ferr('editar', 'Editar', () => { setEditando(true); setAviso(''); }, { desativado: editando })}
+        {ferr('info', 'Informações', () => setPainel(x => x === 'info' ? '' : 'info'), { desativado: novo })}
+        {sep}
+        {ferr('salvar', 'Salvar', salvar, { desativado: !editando || salvando || (!alterado && !novo), cor: editando && (alterado || novo) ? '#16a34a' : undefined, texto: salvando ? 'Salvando' : 'Salvar' })}
+        {ferr('bloqueio', 'Cancelar', () => { if (novo) { navigate('/clientes'); return; } setForm(original); setEditando(false); setAviso(''); }, { desativado: !editando })}
         {sep}
         {ferr('primeiro', 'Primeiro', () => navegar('primeiro'))}
         {ferr('anterior', 'Anterior', () => navegar('anterior'))}
         {ferr('proximo', 'Próximo', () => navegar('proximo'))}
         {ferr('ultimo', 'Último', () => navegar('ultimo'))}
         {sep}
-        {ferr('mapa', 'Ver no mapa', () => setMapa(m => !m), { desativado: !enderecoMapa })}
+        {ferr('mapa', 'Google Maps', () => setMapa(m => !m), { desativado: !enderecoMapa })}
+        {ferr('olho', 'Consulta óptica (receita e graus)', () => setPainel(x => x === 'optica' ? '' : 'optica'), { desativado: novo })}
+        {ferr('receber', 'Contas a receber do cliente', irCrediario, { desativado: novo })}
         {ferr('whatsapp', 'WhatsApp', () => window.open(`https://wa.me/55${wa.replace(/^55/, '')}`, '_blank'), { desativado: !wa || form.nao_receber_msg })}
         {!novo && abertos.length > 0 && ferr('imprimir', 'Ficha de cobrança', () => window.open(`/financeiro/cobranca/imprimir?cliente_id=${id}&situacao=aberto`, '_blank'))}
         {sep}
-        {ferr('vendas', 'Iniciar venda', () => setNovaVenda(true), { desativado: novo || alterado, cor: '#2563eb', texto: 'Venda' })}
-        {ferr('os', 'Abrir O.S.', () => setNovaOS(true), { desativado: novo || alterado, cor: '#0f766e', texto: 'O.S.' })}
+        {ferr('vendas', 'Iniciar venda', () => setNovaVenda(true), { desativado: novo || editando, cor: '#2563eb', texto: 'Venda' })}
+        {ferr('os', 'Abrir O.S.', () => setNovaOS(true), { desativado: novo || editando, cor: '#0f766e', texto: 'O.S.' })}
         {ferr('fechar', 'Fechar', () => { if (sairSePuder()) navigate('/clientes'); })}
       </div>
 
       {aviso && <div style={{ marginBottom: 10, fontSize: 13, color: aviso === 'Salvo.' ? 'var(--green)' : 'var(--red)' }}>{aviso}</div>}
+
+      {/* Pesquisar cliente */}
+      {painel === 'busca' && (
+        <div style={{ ...card, padding: 10, marginBottom: 10 }}>
+          <input autoFocus value={busca} onChange={e => setBusca(e.target.value)} placeholder="Nome, CPF, telefone ou código" style={inp} />
+          {achados.length > 0 && (
+            <div style={{ marginTop: 6, maxHeight: 280, overflowY: 'auto' }}>
+              {achados.map(a => (
+                <button key={a.id} onClick={() => { if (sairSePuder()) { setBusca(''); navigate(`/clientes/${a.id}`); } }}
+                  style={{ display: 'grid', gridTemplateColumns: '70px 1fr auto', gap: 10, width: '100%', textAlign: 'left', padding: '7px 8px', background: 'none', border: 'none', borderBottom: '1px solid var(--border)', color: 'var(--text)', cursor: 'pointer', fontSize: 13 }}>
+                  <span style={{ fontFamily: 'var(--mono)', color: 'var(--text-muted)' }}>{cod(a.codigo)}</span>
+                  <span>{a.nome}</span>
+                  <span style={{ fontFamily: 'var(--mono)', color: 'var(--text-muted)', fontSize: 12 }}>{a.cpf || a.cidade || ''}</span>
+                </button>
+              ))}
+            </div>
+          )}
+          {busca.trim().length >= 2 && !achados.length && <div style={{ marginTop: 6, fontSize: 12.5, color: 'var(--text-muted)' }}>Nenhum cliente encontrado.</div>}
+        </div>
+      )}
+
+      {/* Informações */}
+      {painel === 'info' && c && (
+        <div style={{ ...card, padding: '10px 14px', marginBottom: 10, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 10, fontSize: 13 }}>
+          {[
+            ['Código', cod(c.codigo) || '-'], ['Loja', c.loja_nome || 'Todas as lojas'],
+            ['Cadastrado em', fmtD(c.created_at)], ['Última alteração', fmtD((c as unknown as { updated_at?: string }).updated_at)],
+            ['Total comprado', brl(r?.total_comprado || 0)], ['Última compra', r?.ultima_compra ? `${fmtD(r.ultima_compra)} (${haQuanto(r.ultima_compra)})` : '-'],
+            ['Vendas', String(r?.qtd_vendas || 0)], ['O.S.', String(p?.os.length || 0)],
+          ].map(([k, v]) => <div key={k}><div style={rot}>{k}</div><div style={{ color: 'var(--text)', marginTop: 2, fontFamily: /\d/.test(v) ? 'var(--mono)' : undefined }}>{v}</div></div>)}
+        </div>
+      )}
+
+      {/* Consulta óptica */}
+      {painel === 'optica' && c && p && (
+        <div style={{ ...card, padding: '12px 14px', marginBottom: 10 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+            <b style={{ fontSize: 14, color: 'var(--text)' }}>Consulta óptica</b>
+            <button onClick={() => setPainel('')} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><Icone nome="fechar" size={16} /></button>
+          </div>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5, fontFamily: 'var(--mono)' }}>
+              <thead>
+                <tr>{['Origem', 'Olho', 'Esférico', 'Cilíndrico', 'Eixo', 'Adição', 'DP', 'Altura', 'Médico'].map(h => <th key={h} style={{ ...rot, textAlign: 'left', padding: '6px 8px', borderBottom: '1px solid var(--border)', fontFamily: 'var(--sans)' }}>{h}</th>)}</tr>
+              </thead>
+              <tbody>
+                {[
+                  { k: 'cad', origem: 'Receita do cadastro', od: [c.rec_od_esf, c.rec_od_cil, c.rec_od_eixo], oe: [c.rec_oe_esf, c.rec_oe_cil, c.rec_oe_eixo], ad: c.rec_adicao, dp: c.rec_dp, alt: null as Grau | string | undefined, med: c.rec_obs || '' },
+                  ...p.os.map(o => ({ k: o.id, origem: `OS ${o.numero} · ${fmtD(o.created_at)}`, od: [o.longe_od_esf, o.longe_od_cil, o.longe_od_eixo], oe: [o.longe_oe_esf, o.longe_oe_cil, o.longe_oe_eixo], ad: o.adicao, dp: o.dp, alt: o.altura, med: o.medico || '' })),
+                ].filter(x => [...x.od, ...x.oe, x.ad].some(v => v !== null && v !== undefined && v !== '')).map(x => (
+                  ['OD', 'OE'].map((olho, i) => {
+                    const g = i === 0 ? x.od : x.oe;
+                    return (
+                      <tr key={x.k + olho} style={{ borderBottom: i === 1 ? '1px solid var(--border)' : undefined }}>
+                        <td style={{ padding: '5px 8px', color: 'var(--text-dim)', fontFamily: 'var(--sans)' }}>{i === 0 ? x.origem : ''}</td>
+                        <td style={{ padding: '5px 8px', fontWeight: 700 }}>{olho}</td>
+                        <td style={{ padding: '5px 8px' }}>{gr(g[0])}</td>
+                        <td style={{ padding: '5px 8px' }}>{gr(g[1])}</td>
+                        <td style={{ padding: '5px 8px' }}>{eixo(g[2])}</td>
+                        <td style={{ padding: '5px 8px' }}>{i === 0 ? gr(x.ad) : ''}</td>
+                        <td style={{ padding: '5px 8px' }}>{i === 0 ? gr(x.dp, false) : ''}</td>
+                        <td style={{ padding: '5px 8px' }}>{i === 0 ? gr(x.alt, false) : ''}</td>
+                        <td style={{ padding: '5px 8px', fontFamily: 'var(--sans)', color: 'var(--text-dim)' }}>{i === 0 ? x.med : ''}</td>
+                      </tr>
+                    );
+                  })
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+      {!novo && estagios.length > 0 && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, fontSize: 13 }}>
+          <Icone nome="crm" size={15} color="var(--text-muted)" />
+          <span style={rot}>Funil</span>
+          <select value={p?.crm?.estagio || ''} onChange={e => mudarFunil(e.target.value)} style={{ ...inp, width: 'auto', minWidth: 200, padding: '5px 8px' }}>
+            {!p?.crm && <option value="">Fora do funil</option>}
+            {estagios.map(e => <option key={e.key} value={e.key}>{e.label}</option>)}
+          </select>
+          {p?.crm?.quitado_em && <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>quitado em {fmtD(p.crm.quitado_em)}</span>}
+        </div>
+      )}
       {alertas.length > 0 && (
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
           {alertas.map(a => <span key={a.texto} style={{ fontSize: 12.5, fontWeight: 600, color: a.cor, border: `1px solid ${a.cor}`, background: `${a.cor}14`, padding: '4px 10px', borderRadius: 5 }}>{a.texto}</span>)}
         </div>
       )}
 
-      {/* Ficha */}
-      <div style={{ ...card, padding: '16px 18px', display: 'grid', gridTemplateColumns: 'minmax(0, 1.05fr) minmax(0, 1fr) 190px', gap: '6px 28px', alignItems: 'start' }}>
+      {/* Ficha: só consulta até clicar em Editar */}
+      <style>{`fieldset.ficha-cli:disabled input:not([type=radio]):not([type=checkbox]), fieldset.ficha-cli:disabled textarea { background: transparent !important; border-color: transparent !important; color: var(--text) !important; opacity: 1; }
+        fieldset.ficha-cli:disabled input[type=radio], fieldset.ficha-cli:disabled input[type=checkbox] { opacity: .8; }`}</style>
+      <fieldset className="ficha-cli" disabled={!editando} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
+      <div style={{ ...card, padding: '16px 18px', display: 'grid', outline: editando ? '1px solid var(--primary)' : undefined, gridTemplateColumns: 'minmax(0, 1.05fr) minmax(0, 1fr) 190px', gap: '6px 28px', alignItems: 'start' }}>
         <div style={{ display: 'grid', gap: 4 }}>
           <Campo r="Pessoa">{radio('pessoa', 'F', 'Física')}{radio('pessoa', 'J', 'Jurídica')}</Campo>
           <Campo r={pj ? 'Razão social' : 'Nome'}><input style={inp} value={form.nome} onChange={e => set('nome', e.target.value)} autoFocus={novo} /></Campo>
@@ -349,6 +475,8 @@ export default function ClientePerfil() {
         </div>
       </div>
 
+      </fieldset>
+
       {mapa && enderecoMapa && (
         <div style={{ ...card, marginTop: 10, overflow: 'hidden' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', fontSize: 12.5, color: 'var(--text-dim)' }}>
@@ -384,7 +512,7 @@ export default function ClientePerfil() {
           </div>
 
           {/* Histórico */}
-          <div style={{ ...card, overflow: 'hidden' }}>
+          <div ref={histRef} style={{ ...card, overflow: 'hidden', scrollMarginTop: 12 }}>
             <div style={{ display: 'flex', gap: 2, borderBottom: '1px solid var(--border)', padding: '0 10px', flexWrap: 'wrap' }}>
               {abaBtn('vendas', 'Vendas', p.vendas.length)}
               {abaBtn('crediario', 'Crediário', abertos.length)}

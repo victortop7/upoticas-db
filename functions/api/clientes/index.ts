@@ -4,6 +4,7 @@ import { requireAuth, json } from '../../lib/auth-middleware';
 import { ensureCrmTable, ensureEstagiosPadrao } from '../crm/setup';
 import { ensureClienteCols } from '../../lib/ensure-cliente-cols';
 import { ensureLojaCols, filtroLojaComLegado, lojaParaGravar } from '../../lib/lojas';
+import { ensureFicha } from '../../lib/clienteFicha';
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const auth = await requireAuth(request, env);
@@ -18,6 +19,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     const offset = (page - 1) * limit;
 
     await ensureLojaCols(env.DB);
+    await ensureFicha(env.DB);
     let query = 'SELECT * FROM clientes WHERE tenant_id = ? AND ativo = 1';
     let countQuery = 'SELECT COUNT(*) as total FROM clientes WHERE tenant_id = ? AND ativo = 1';
     const params: unknown[] = [auth.tenant_id];
@@ -27,10 +29,13 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     if (fl.sql) { query += fl.sql; countQuery += fl.sql; params.push(...fl.params); }
 
     if (busca) {
-      query += ' AND (nome LIKE ? OR cpf LIKE ? OR celular LIKE ? OR telefone LIKE ? OR email LIKE ?)';
-      countQuery += ' AND (nome LIKE ? OR cpf LIKE ? OR celular LIKE ? OR telefone LIKE ? OR email LIKE ?)';
+      const ehCodigo = /^\d{1,7}$/.test(busca.trim());
+      const cond = ' AND (nome LIKE ? OR cpf LIKE ? OR celular LIKE ? OR telefone LIKE ? OR email LIKE ?' + (ehCodigo ? ' OR codigo = ?' : '') + ')';
+      query += cond;
+      countQuery += cond;
       const like = `%${busca}%`;
       params.push(like, like, like, like, like);
+      if (ehCodigo) params.push(Number(busca.trim()));
     }
 
     // Filtro por data da compra (data_compra em YYYY-MM-DD; comparação de string funciona)

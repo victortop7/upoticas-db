@@ -5,7 +5,7 @@ import {
   Vault, ShoppingBag, CircleDollarSign, Handshake, Microscope, ClipboardList, Pin, Eye, X, ScanLine, Repeat,
   AlertTriangle, Phone, MapPin, Printer, Smartphone, Award, Star, UserPlus, RefreshCw, Medal, CreditCard, Send,
   Building, Inbox, Pencil, Trash2, Plus, Sparkles, Shield, Menu, Keyboard, ArrowRight, Save, RotateCcw, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight,
-  MessageCircle, Camera, User, Map as MapIcon, Ban, type LucideIcon,
+  MessageCircle, Camera, User, Map as MapIcon, Ban, FolderOpen, Info, type LucideIcon,
 } from 'lucide-react';
 
 // Ícones de linha (SVG) usados no lugar de emojis. Herdam a cor do texto.
@@ -23,7 +23,7 @@ const MAPA = {
   empresa: Building, caixaEntrada: Inbox, editar: Pencil, excluir: Trash2, mais: Plus, destaque: Sparkles, escudo: Shield,
   menu: Menu, teclado: Keyboard, seta: ArrowRight, salvar: Save, desfazer: RotateCcw,
   primeiro: ChevronsLeft, anterior: ChevronLeft, proximo: ChevronRight, ultimo: ChevronsRight,
-  whatsapp: MessageCircle, camera: Camera, usuario: User, mapa: MapIcon, bloqueio: Ban,
+  whatsapp: MessageCircle, camera: Camera, usuario: User, mapa: MapIcon, bloqueio: Ban, abrir: FolderOpen, info: Info,
 } satisfies Record<string, LucideIcon>;
 
 export type NomeIcone = keyof typeof MAPA;

@@ -29,7 +29,10 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env, params })
         WHERE v.cliente_id = ? AND v.tenant_id = ?
         ORDER BY v.created_at DESC, v.numero DESC`).bind(id, auth.tenant_id).all<Record<string, unknown>>(),
       env.DB.prepare(`
-        SELECT id, numero, tipo, situacao, valor_total, valor_entrada, valor_restante, data_entrega, armacao_desc, lente_desc, created_at
+        SELECT id, numero, tipo, situacao, valor_total, valor_entrada, valor_restante, data_entrega, armacao_desc, lente_desc, created_at,
+               longe_od_esf, longe_od_cil, longe_od_eixo, longe_oe_esf, longe_oe_cil, longe_oe_eixo,
+               perto_od_esf, perto_od_cil, perto_od_eixo, perto_oe_esf, perto_oe_cil, perto_oe_eixo,
+               dp, altura, adicao, medico
         FROM ordens_servico WHERE cliente_id = ? AND tenant_id = ? ORDER BY numero DESC`).bind(id, auth.tenant_id).all(),
       env.DB.prepare(`
         SELECT c.id, c.descricao, c.valor_total, c.num_parcelas, c.venda_id, c.created_at, v.numero AS venda_numero
@@ -38,6 +41,11 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env, params })
       listarTitulos(env.DB, auth.tenant_id, { cliente_id: id, situacao: 'todos' }),
     ]);
 
+    let crm: { id: string; estagio: string; quitado_em?: string | null } | null = null;
+    try {
+      crm = await env.DB.prepare('SELECT id, estagio, quitado_em FROM crm_cards WHERE cliente_id = ? AND tenant_id = ?')
+        .bind(id, auth.tenant_id).first<{ id: string; estagio: string; quitado_em?: string | null }>();
+    } catch { /* funil ainda não usado */ }
     const ativas = (vendas.results || []).filter(v => v.situacao !== 'cancelada');
     const total = ativas.reduce((s, v) => s + Number(v.valor_final || 0), 0);
     const soma = (s: string) => titulos.filter(t => t.situacao === s).reduce((a, t) => a + t.valor, 0);
@@ -55,6 +63,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env, params })
       os: os.results || [],
       carnes: carnes.results || [],
       titulos,
+      crm,
       resumo: {
         total_comprado: total,
         qtd_vendas: ativas.length,
