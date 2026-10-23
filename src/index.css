@@ -22,7 +22,7 @@
   --red-dim: rgba(220, 38, 38, 0.10);
   --purple: #7c3aed;
 
-  --sidebar-w: 240px;
+  --sidebar-w: 60px;
   --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --mono: 'JetBrains Mono', monospace;
 }

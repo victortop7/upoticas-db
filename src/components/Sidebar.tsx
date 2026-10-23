@@ -1,136 +1,139 @@
+import { useEffect, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { MENU_GRUPOS, menusDo } from '../lib/permissoes';
 import Icone from './Icone';
 
+// Menu lateral recolhível (igual ao Connect LAB): faixa só com ícones que abre ao encostar o mouse.
+// O botão de alfinete deixa o menu sempre aberto (fica salvo neste computador).
+const LARGO = 240;
+const ESTREITO = 60;
+const CHAVE_FIXO = 'menu_fixo';
+
+function lerFixo() {
+  try { return localStorage.getItem(CHAVE_FIXO) === '1'; } catch { return false; }
+}
+
 export default function Sidebar() {
   const { tenant, usuario, logout } = useAuth();
   const navigate = useNavigate();
   const { dark, toggle } = useTheme();
   const liberados = menusDo(usuario);
+  const [fixo, setFixo] = useState(lerFixo);
+  const [hover, setHover] = useState(false);
+  const aberto = fixo || hover;
+
+  // o conteúdo da página respeita só o menu fixo; aberto pelo mouse ele passa por cima
+  useEffect(() => {
+    document.documentElement.style.setProperty('--sidebar-w', `${fixo ? LARGO : ESTREITO}px`);
+    try { localStorage.setItem(CHAVE_FIXO, fixo ? '1' : '0'); } catch { /* sem storage */ }
+  }, [fixo]);
 
   async function handleLogout() {
     await logout();
     navigate('/login');
   }
 
+  const grupos = MENU_GRUPOS
+    .map(g => ({ label: g.label, items: g.items.filter(i => liberados.includes(i.to)).map(i => (i.to === '/vendedores' && usuario?.perfil !== 'admin') ? { ...i, label: 'Ranking' } : i) }))
+    .filter(g => g.items.length > 0);
+
+  const texto: React.CSSProperties = { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', opacity: aberto ? 1 : 0, transition: 'opacity .15s' };
+  const linhaBtn: React.CSSProperties = {
+    width: '100%', height: 36, padding: '0 0 0 12px', fontSize: '13.5px', color: 'var(--text-dim)', background: 'transparent',
+    border: 'none', borderRadius: '6px', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '12px',
+  };
+
   return (
-    <div style={{
-      width: 'var(--sidebar-w)',
-      height: '100vh',
-      background: 'var(--surface)',
-      borderRight: '1px solid var(--border)',
-      display: 'flex',
-      flexDirection: 'column',
-      position: 'fixed',
-      top: 0, left: 0,
-      zIndex: 100,
-      overflow: 'hidden',
-    }}>
-      {/* Logo */}
-      <div style={{ padding: '20px 16px', borderBottom: '1px solid var(--border)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-          <img src="/brand-192.png" alt="Conexão Óticas" width="32" height="32" style={{
-            width: '32px', height: '32px', borderRadius: '8px', objectFit: 'cover',
-            border: '1px solid var(--border)', flexShrink: 0
-          }} />
-          <span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text)' }}>
+    <div
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        width: aberto ? LARGO : ESTREITO,
+        height: '100vh',
+        background: 'var(--surface)',
+        borderRight: '1px solid var(--border)',
+        boxShadow: hover && !fixo ? '8px 0 24px rgba(0,0,0,0.25)' : 'none',
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'fixed',
+        top: 0, left: 0,
+        zIndex: 100,
+        overflow: 'hidden',
+        transition: 'width .18s ease, box-shadow .18s ease',
+      }}>
+      {/* Logo + loja */}
+      <div style={{ padding: '14px 10px', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingLeft: 4 }}>
+          <img src="/brand-192.png" alt="Conexão Óticas" width="32" height="32" onClick={() => navigate('/dashboard')} title="Painel"
+            style={{ width: '32px', height: '32px', borderRadius: '6px', objectFit: 'cover', border: '1px solid var(--border)', flexShrink: 0, cursor: 'pointer' }} />
+          <span style={{ ...texto, flex: 1, fontSize: '15px', fontWeight: 700, color: 'var(--text)' }}>
             Connect <span style={{ color: 'var(--primary)' }}>Óticas</span>
           </span>
+          <button onClick={() => setFixo(f => !f)} title={fixo ? 'Soltar menu (recolher)' : 'Fixar menu aberto'}
+            style={{ ...texto, width: 28, height: 28, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: fixo ? 'var(--primary-dim)' : 'transparent', color: fixo ? 'var(--primary)' : 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: 6, cursor: 'pointer' }}>
+            <Icone nome="pin" size={14} />
+          </button>
         </div>
-        <div style={{
-          background: 'var(--surface-alt)', border: '1px solid var(--border)',
-          borderRadius: '8px', padding: '8px 10px'
-        }}>
-          <p style={{ margin: 0, fontSize: '12px', fontWeight: '600', color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {tenant?.nome}
-          </p>
-          <p style={{ margin: '2px 0 0', fontSize: '11px', color: 'var(--text-muted)' }}>
-            {usuario?.nome}
-          </p>
+        <div style={{ ...texto, maxHeight: aberto ? 60 : 0, marginTop: aberto ? 10 : 0, transition: 'opacity .15s, max-height .18s, margin .18s', background: 'var(--surface-alt)', border: '1px solid var(--border)', borderRadius: '6px', padding: aberto ? '7px 10px' : '0 10px' }}>
+          <p style={{ margin: 0, fontSize: '12px', fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tenant?.nome}</p>
+          <p style={{ margin: '2px 0 0', fontSize: '11px', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{usuario?.nome}</p>
         </div>
       </div>
 
-      {/* Nav */}
-      <nav style={{ flex: 1, padding: '12px 8px', overflowY: 'auto', overflowX: 'hidden' }}>
-        {(
-          /* Menu conforme as permissões do usuário */
-          <>
-            <button
-              onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }))}
-              style={{
-                width: '100%', padding: '8px 10px', marginBottom: '8px',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                background: 'var(--surface-alt)', border: '1px solid var(--border)',
-                borderRadius: '8px', cursor: 'pointer', color: 'var(--text-muted)',
-                fontSize: '13px',
-              }}
-            >
-              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Icone nome="busca" size={15} /> Buscar...
-              </span>
-              <kbd style={{ fontSize: '10px', padding: '1px 5px', borderRadius: '3px', background: 'var(--surface)', border: '1px solid var(--border)', fontFamily: 'var(--mono)' }}>⌃K</kbd>
-            </button>
-            {MENU_GRUPOS.map(g => ({ label: g.label, items: g.items.filter(i => liberados.includes(i.to)).map(i => (i.to === '/vendedores' && usuario?.perfil !== 'admin') ? { ...i, label: 'Ranking' } : i) }))
-              .filter(g => g.items.length > 0).map(({ label, items }) => (
-              <div key={label}>
-                <p style={{ fontSize: '10px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', padding: '0 8px', margin: '8px 0 4px' }}>
-                  {label}
-                </p>
-                {items.map(item => (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    style={({ isActive }) => ({
-                      display: 'flex', alignItems: 'center', gap: '10px',
-                      padding: '8px 10px', borderRadius: '8px', marginBottom: '2px',
-                      fontSize: '13px', fontWeight: isActive ? '600' : '400',
-                      color: isActive ? 'var(--primary)' : 'var(--text-dim)',
-                      background: isActive ? 'var(--primary-dim)' : 'transparent',
-                      textDecoration: 'none', transition: 'all 0.15s',
-                    })}
-                  >
-                    <Icone nome={item.icon} size={16} />
-                    {item.label}
-                  </NavLink>
-                ))}
-              </div>
+      {/* Itens */}
+      <nav style={{ flex: 1, padding: '10px 8px', overflowY: 'auto', overflowX: 'hidden' }}>
+        <button
+          onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }))}
+          title="Buscar (Ctrl+K)"
+          style={{ ...linhaBtn, marginBottom: 6, background: 'var(--surface-alt)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+          <Icone nome="busca" size={16} />
+          <span style={{ ...texto, flex: 1 }}>Buscar...</span>
+          <kbd style={{ ...texto, fontSize: '10px', padding: '1px 5px', marginRight: 8, borderRadius: '3px', background: 'var(--surface)', border: '1px solid var(--border)', fontFamily: 'var(--mono)' }}>Ctrl K</kbd>
+        </button>
+        {grupos.map(({ label, items }, gi) => (
+          <div key={label}>
+            <div style={{ height: 26, display: 'flex', alignItems: 'center', margin: '4px 0 2px' }}>
+              {aberto
+                ? <span style={{ ...texto, fontSize: '10px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', padding: '0 8px' }}>{label}</span>
+                : gi > 0 && <span style={{ width: '100%', height: 1, background: 'var(--border)' }} />}
+            </div>
+            {items.map(item => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                title={item.label}
+                style={({ isActive }) => ({
+                  display: 'flex', alignItems: 'center', gap: '12px', height: 36,
+                  padding: '0 0 0 12px', borderRadius: '6px', marginBottom: '2px',
+                  fontSize: '13.5px', fontWeight: isActive ? 600 : 400,
+                  color: isActive ? 'var(--primary)' : 'var(--text-dim)',
+                  background: isActive ? 'var(--primary-dim)' : 'transparent',
+                  textDecoration: 'none', transition: 'background .12s',
+                })}
+              >
+                <Icone nome={item.icon} size={17} />
+                <span style={texto}>{item.label}</span>
+              </NavLink>
             ))}
-          </>
-        )}
+          </div>
+        ))}
       </nav>
 
-      {/* Footer */}
-      <div style={{ padding: '12px 8px', borderTop: '1px solid var(--border)' }}>
-        <button
-          onClick={toggle}
-          style={{
-            width: '100%', padding: '9px 10px', fontSize: '14px',
-            color: 'var(--text-dim)', background: 'transparent',
-            border: 'none', borderRadius: '8px', cursor: 'pointer',
-            textAlign: 'left', display: 'flex', alignItems: 'center', gap: '10px',
-            transition: 'background 0.15s', marginBottom: '2px',
-          }}
+      {/* Rodapé */}
+      <div style={{ padding: '8px', borderTop: '1px solid var(--border)' }}>
+        <button onClick={toggle} title={dark ? 'Modo claro' : 'Modo escuro'} style={linhaBtn}
           onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-alt)')}
-          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-        >
-          <Icone nome={dark ? 'sol' : 'lua'} size={16} />
-          {dark ? 'Modo claro' : 'Modo escuro'}
+          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+          <Icone nome={dark ? 'sol' : 'lua'} size={17} />
+          <span style={texto}>{dark ? 'Modo claro' : 'Modo escuro'}</span>
         </button>
-        <button
-          onClick={handleLogout}
-          style={{
-            width: '100%', padding: '9px 10px', fontSize: '14px',
-            color: 'var(--text-dim)', background: 'transparent',
-            border: 'none', borderRadius: '8px', cursor: 'pointer',
-            textAlign: 'left', display: 'flex', alignItems: 'center', gap: '10px',
-            transition: 'background 0.15s'
-          }}
+        <button onClick={handleLogout} title={`Sair · ${usuario?.nome ?? ''}`} style={linhaBtn}
           onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-alt)')}
-          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-        >
-          <Icone nome="sair" size={16} /> Sair
+          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+          <Icone nome="sair" size={17} />
+          <span style={texto}>Sair</span>
         </button>
       </div>
     </div>

@@ -97,6 +97,8 @@ export default function Layout() {
       <Sidebar />
       <main style={{
         marginLeft: 'var(--sidebar-w)',
+        transition: 'margin-left .18s ease',
+        minWidth: 0,
         flex: 1,
         background: 'var(--bg)',
         minHeight: '100vh',
