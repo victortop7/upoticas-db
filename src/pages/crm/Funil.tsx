@@ -422,9 +422,9 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
           <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
             {podeReceber && <button onClick={abrirModalFinalizar} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '12px', fontWeight: 700, color: '#d97706' }}>Receber {brl(saldo)}</button>}
             {card.estagio === 'a_receber' && (
-              <button onClick={() => setEditarPag(true)} title="Corrigir o que o cliente já pagou de uma compra"
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '12px', fontWeight: 700, color: 'var(--text-dim)' }}>
-                <Icone nome="editar" size={12} /> Editar pagamento
+              <button onClick={() => setEditarPag(true)} title="Corrigir o que o cliente já pagou (venda, OS ou carnê)"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '12px', fontWeight: 700, color: 'var(--text-dim)', whiteSpace: 'nowrap' }}>
+                <Icone nome="editar" size={12} /> Corrigir
               </button>
             )}
             {(card.estagio === 'oculos_pronto' || card.estagio === 'oculos_pendente') && (
