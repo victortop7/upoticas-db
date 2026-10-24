@@ -96,7 +96,7 @@ export default function Sidebar() {
   }
 
   const grupos = MENU_GRUPOS
-    .map(g => ({ label: g.label, items: g.items.filter(i => i.to !== '/dashboard' && liberados.includes(i.to)).map(i => (i.to === '/vendedores' && usuario?.perfil !== 'admin') ? { ...i, label: 'Ranking' } : i) }))
+    .map(g => ({ label: g.label, items: g.items.filter(i => !i.oculto && i.to !== '/dashboard' && liberados.includes(i.to)).map(i => (i.to === '/vendedores' && usuario?.perfil !== 'admin') ? { ...i, label: 'Ranking' } : i) }))
     .filter(g => g.items.length > 0);
 
   // grupo da tela atual abre sozinho; um grupo aberto por vez

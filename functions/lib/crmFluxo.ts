@@ -1,6 +1,7 @@
 import type { D1Database } from '@cloudflare/workers-types';
 import { ensureReceber, hojeSP } from './receber';
 import { ensurePagamentos } from './pagamentos';
+import { registrarHistorico } from './clienteExtra';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Funil do CRM (automático). Cada cliente fica em UMA etapa, pela ordem de prioridade:
@@ -33,6 +34,17 @@ export async function ensureCrmFluxo(db: D1Database) {
   await ensureReceber(db);
   await ensurePagamentos(db);
   try { await db.prepare('ALTER TABLE crm_cards ADD COLUMN quitado_em TEXT').run(); } catch { /* já existe */ }
+  // etapa escolhida à mão: fica até a situação do cliente mudar (manual_base = etapa automática na hora do arraste)
+  for (const c of ['estagio_manual TEXT', 'manual_base TEXT']) {
+    try { await db.prepare(`ALTER TABLE crm_cards ADD COLUMN ${c}`).run(); } catch { /* já existe */ }
+  }
+  // um card por cliente: apaga cards repetidos (fica o que tem nota / o mais recente) e trava com índice único
+  try {
+    await db.prepare(`DELETE FROM crm_cards WHERE id IN (
+      SELECT id FROM (SELECT id, ROW_NUMBER() OVER (PARTITION BY tenant_id, cliente_id ORDER BY (notas IS NOT NULL AND notas != '') DESC, updated_at DESC, rowid DESC) AS rn FROM crm_cards)
+      WHERE rn > 1)`).run();
+    await db.prepare('CREATE UNIQUE INDEX IF NOT EXISTS ux_crmcards_cliente ON crm_cards(tenant_id, cliente_id)').run();
+  } catch { /* ok */ }
   for (const c of ['prazo_entrega TEXT', 'entregue_em TEXT', 'origem TEXT']) {
     try { await db.prepare(`ALTER TABLE vendas ADD COLUMN ${c}`).run(); } catch { /* já existe */ }
   }
@@ -133,7 +145,7 @@ const DEVEDORES = `
 export const SQL_PRAZO_VENDA = `COALESCE(v.prazo_entrega, (SELECT os.data_entrega FROM ordens_servico os WHERE os.id = v.os_id AND os.data_entrega IS NOT NULL), date(v.created_at, '+${PRAZO_PADRAO_DIAS} days'))`;
 
 // Recalcula a etapa de todos os clientes da conta (ou de um só) e grava só o que mudou
-export async function recalcularFunil(db: D1Database, tenant: string, clienteId?: string) {
+export async function recalcularFunil(db: D1Database, tenant: string, clienteId?: string, opts?: { soCalcular?: boolean }) {
   await ensureCrmFluxo(db);
   await ajustarEstagios(db, tenant);
   const hoje = hojeSP();
@@ -151,7 +163,7 @@ export async function recalcularFunil(db: D1Database, tenant: string, clienteId?
   const devedores = new Set((dev.results || []).map(r => r.cliente_id));
 
   const linhas = await db.prepare(`
-    SELECT cc.id AS card_id, cc.estagio, c.id, c.data_nascimento, c.data_compra,
+    SELECT cc.id AS card_id, cc.estagio, cc.estagio_manual, cc.manual_base, c.id, c.data_nascimento, c.data_compra,
       (SELECT MIN(${SQL_PRAZO_VENDA}) FROM vendas v WHERE v.cliente_id = c.id AND v.tenant_id = c.tenant_id AND v.situacao != 'cancelada' AND v.entregue_em IS NULL) AS prazo_pend,
       (SELECT MAX(v.entregue_em) FROM vendas v WHERE v.cliente_id = c.id AND v.tenant_id = c.tenant_id AND v.situacao != 'cancelada') AS ult_entrega,
       (SELECT MAX(date(v.created_at)) FROM vendas v WHERE v.cliente_id = c.id AND v.tenant_id = c.tenant_id AND v.situacao != 'cancelada') AS ult_compra,
@@ -160,13 +172,13 @@ export async function recalcularFunil(db: D1Database, tenant: string, clienteId?
     FROM clientes c JOIN crm_cards cc ON cc.cliente_id = c.id AND cc.tenant_id = c.tenant_id
     WHERE c.tenant_id = ? AND c.ativo = 1${umSo}
   `).bind(tenant, ...(clienteId ? [clienteId] : [])).all<{
-    card_id: string; estagio: string; id: string; data_nascimento: string | null; data_compra: string | null;
+    card_id: string; estagio: string; estagio_manual: string | null; manual_base: string | null; id: string; data_nascimento: string | null; data_compra: string | null;
     prazo_pend: string | null; ult_entrega: string | null; ult_compra: string | null; total: number; sistema: number | null;
   }>();
 
-  const mudar: { id: string; etapa: string }[] = [];
+  const mudar: { id: string; etapa: string; soltar?: boolean }[] = [];
+  const autos = new Map<string, string>();
   for (const l of linhas.results || []) {
-    if (l.sistema === 0) continue; // etapa criada pela ótica: manual
     const etapa = etapaDoCliente({
       deve: devedores.has(l.id),
       prazoPendente: l.prazo_pend ? String(l.prazo_pend).slice(0, 10) : null,
@@ -175,13 +187,39 @@ export async function recalcularFunil(db: D1Database, tenant: string, clienteId?
       totalGasto: Number(l.total) || 0,
       nascimento: l.data_nascimento,
     }, hoje);
+    autos.set(l.id, etapa);
+    if (opts?.soCalcular) continue;
+    if (l.sistema === 0 && !l.estagio_manual) continue; // etapa criada pela ótica: manual
+    // movido à mão: fica onde a pessoa colocou enquanto a situação for a mesma de quando moveu
+    if (l.estagio_manual) {
+      if (etapa === l.manual_base) { if (l.estagio !== l.estagio_manual) mudar.push({ id: l.card_id, etapa: l.estagio_manual }); continue; }
+      mudar.push({ id: l.card_id, etapa, soltar: true }); // mudou algo (pagou, comprou, entregou...): volta pro automático
+      continue;
+    }
     if (etapa !== l.estagio) mudar.push({ id: l.card_id, etapa });
   }
   for (let i = 0; i < mudar.length; i += 90) {
-    await db.batch(mudar.slice(i, i + 90).map(m =>
-      db.prepare(`UPDATE crm_cards SET estagio = ?, updated_at = datetime('now') WHERE id = ?`).bind(m.etapa, m.id)));
+    await db.batch(mudar.slice(i, i + 90).map(m => m.soltar
+      ? db.prepare(`UPDATE crm_cards SET estagio = ?, estagio_manual = NULL, manual_base = NULL, updated_at = datetime('now') WHERE id = ?`).bind(m.etapa, m.id)
+      : db.prepare(`UPDATE crm_cards SET estagio = ?, updated_at = datetime('now') WHERE id = ?`).bind(m.etapa, m.id)));
   }
-  return { mudaram: mudar.length };
+  return { mudaram: mudar.length, autos };
+}
+
+// Arraste manual no Funil: grava a etapa escolhida e "congela" até a situação do cliente mudar
+export async function moverManual(db: D1Database, tenant: string, cardId: string, etapa: string, usuarioId?: string | null) {
+  await ensureCrmFluxo(db);
+  const card = await db.prepare('SELECT cliente_id FROM crm_cards WHERE id = ? AND tenant_id = ?').bind(cardId, tenant).first<{ cliente_id: string }>();
+  if (!card) return false;
+  const r = await recalcularFunil(db, tenant, card.cliente_id, { soCalcular: true });
+  const base = r.autos.get(card.cliente_id) ?? null;
+  // escolheu justamente a etapa automática: não precisa congelar
+  const manual = etapa === base ? null : etapa;
+  await db.prepare(`UPDATE crm_cards SET estagio = ?, estagio_manual = ?, manual_base = ?, updated_at = datetime('now') WHERE id = ? AND tenant_id = ?`)
+    .bind(etapa, manual, manual ? base : null, cardId, tenant).run();
+  const est = await db.prepare('SELECT label FROM crm_estagios WHERE tenant_id = ? AND key = ?').bind(tenant, etapa).first<{ label: string }>();
+  await registrarHistorico(db, { tenant, clienteId: card.cliente_id, tipo: 'funil', descricao: `Funil: movido para ${est?.label || etapa}`, usuarioId });
+  return true;
 }
 
 // nomes antigos usados em outros arquivos

@@ -6,6 +6,11 @@ import VendaModal from '../components/VendaModal';
 import Icone from '../components/Icone';
 import { useTituloAba } from '../components/Abas';
 import { BaixaModal, type Titulo } from './financeiro/ContasReceber';
+import ReceitasCliente, { type ReceitaOS } from '../components/ReceitasCliente';
+import HistoricoCliente from '../components/HistoricoCliente';
+import EditarPagamentos from '../components/EditarPagamentos';
+import { useAuth } from '../hooks/useAuth';
+import { menusDo } from '../lib/permissoes';
 
 type ClienteFicha = Cliente & {
   foto?: string | null; referencia?: string | null; loja_id?: string | null; loja_nome?: string | null; created_at?: string;
@@ -122,7 +127,10 @@ export default function ClientePerfil() {
   const [buscandoCep, setBuscandoCep] = useState(false);
   const [mapa, setMapa] = useState(false);
   const [opcoes, setOpcoes] = useState<Opcoes>({ regiao: [], localidade: [], bairro: [], cidade: [] });
-  const [aba, setAba] = useState<'vendas' | 'crediario' | 'os' | 'receita'>('vendas');
+  const [aba, setAba] = useState<'vendas' | 'crediario' | 'os' | 'receita' | 'historico'>('vendas');
+  const [pagVenda, setPagVenda] = useState<string | null>(null);
+  const { usuario } = useAuth();
+  const veHistorico = menusDo(usuario).includes('/clientes/historico');
   const [novaVenda, setNovaVenda] = useState(false);
   const [baixa, setBaixa] = useState<Titulo | null>(null);
   const [contas, setContas] = useState<Conta[]>([]);
@@ -199,10 +207,11 @@ export default function ClientePerfil() {
     try { await api.post('/crm', { cliente_id: id, estagio }); load(); }
     catch (e) { alert(e instanceof Error ? e.message : 'Erro ao mudar o funil'); }
   }
-  function irCrediario() {
-    setAba('crediario');
+  function irPara(a: typeof aba) {
+    setAba(a);
     setTimeout(() => histRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
   }
+  const irCrediario = () => irPara('crediario');
 
   async function trocarFoto(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]; e.target.value = '';
@@ -293,7 +302,7 @@ export default function ClientePerfil() {
         {ferr('ultimo', 'Último', () => navegar('ultimo'))}
         {sep}
         {ferr('mapa', 'Google Maps', () => setMapa(m => !m), { desativado: !enderecoMapa })}
-        {ferr('olho', 'Consulta óptica (receita e graus)', () => setPainel(x => x === 'optica' ? '' : 'optica'), { desativado: novo })}
+        {ferr('olho', 'Receitas do cliente (ver, adicionar e editar)', () => irPara('receita'), { desativado: novo })}
         {ferr('receber', 'Contas a receber do cliente', irCrediario, { desativado: novo })}
         {ferr('whatsapp', 'WhatsApp', () => window.open(`https://wa.me/55${wa.replace(/^55/, '')}`, '_blank'), { desativado: !wa || form.nao_receber_msg })}
         {!novo && abertos.length > 0 && ferr('imprimir', 'Ficha de cobrança', () => window.open(`/financeiro/cobranca/imprimir?cliente_id=${id}&situacao=aberto`, '_blank'))}
@@ -517,7 +526,8 @@ export default function ClientePerfil() {
               {abaBtn('vendas', 'Vendas', p.vendas.length)}
               {abaBtn('crediario', 'Crediário', abertos.length)}
               {abaBtn('os', 'O.S.', p.os.length)}
-              {abaBtn('receita', 'Receita')}
+              {abaBtn('receita', 'Receitas')}
+              {veHistorico && abaBtn('historico', 'Histórico')}
             </div>
 
             {aba === 'vendas' && (
@@ -537,6 +547,7 @@ export default function ClientePerfil() {
                       <div style={{ fontWeight: 700, color: 'var(--text)' }}>{brl(v.valor_final)}</div>
                       {v.desconto > 0 && <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>desc. {brl(v.desconto)}</div>}
                       {v.saldo_restante > 0.009 && v.situacao !== 'cancelada' && <div style={{ fontSize: 11, color: '#d97706' }}>falta {brl(v.saldo_restante)}</div>}
+                      {v.situacao !== 'cancelada' && <button className="btn btn-xs" style={{ marginTop: 4, fontFamily: 'var(--sans)' }} onClick={() => setPagVenda(v.id)}><Icone nome="editar" size={12} />Pagamento</button>}
                     </div>
                   </div>
                 ))}
@@ -553,7 +564,10 @@ export default function ClientePerfil() {
                     <div key={k} style={{ border: `1px solid ${temAtraso ? 'rgba(220,38,38,.4)' : 'var(--border)'}`, borderRadius: 8, overflow: 'hidden' }}>
                       <div style={{ padding: '9px 14px', background: temAtraso ? 'rgba(220,38,38,.08)' : 'var(--surface-alt)', display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 13.5 }}>
                         <b style={{ color: 'var(--text)' }}>{g.titulo}</b>
-                        <span style={{ fontFamily: 'var(--mono)', color: aberto > 0 ? (temAtraso ? '#dc2626' : '#d97706') : '#16a34a', fontWeight: 700 }}>{aberto > 0 ? `aberto ${brl(aberto)}` : 'quitado'}</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          {g.itens[0]?.venda_id && <button className="btn btn-xs" onClick={() => setPagVenda(g.itens[0].venda_id!)}><Icone nome="editar" size={12} />Editar pagamento</button>}
+                          <span style={{ fontFamily: 'var(--mono)', color: aberto > 0 ? (temAtraso ? '#dc2626' : '#d97706') : '#16a34a', fontWeight: 700 }}>{aberto > 0 ? `aberto ${brl(aberto)}` : 'quitado'}</span>
+                        </span>
                       </div>
                       {g.itens.map(t => {
                         const cor = t.situacao === 'recebido' ? '#16a34a' : t.situacao === 'vencido' ? '#dc2626' : '#d97706';
@@ -598,23 +612,14 @@ export default function ClientePerfil() {
               </div>
             )}
 
-            {aba === 'receita' && c && (
-              <div style={{ padding: 18 }}>
-                <table style={{ borderCollapse: 'collapse', fontFamily: 'var(--mono)', fontSize: 14 }}>
-                  <thead><tr>{['', 'Esférico', 'Cilíndrico', 'Eixo'].map(h => <th key={h} style={{ padding: '6px 16px', fontSize: 11, color: 'var(--text-muted)', textAlign: 'left', fontFamily: 'var(--sans)' }}>{h}</th>)}</tr></thead>
-                  <tbody>
-                    <tr><td style={{ padding: '6px 16px', fontWeight: 700 }}>OD</td><td style={{ padding: '6px 16px' }}>{c.rec_od_esf || '-'}</td><td style={{ padding: '6px 16px' }}>{c.rec_od_cil || '-'}</td><td style={{ padding: '6px 16px' }}>{c.rec_od_eixo || '-'}</td></tr>
-                    <tr><td style={{ padding: '6px 16px', fontWeight: 700 }}>OE</td><td style={{ padding: '6px 16px' }}>{c.rec_oe_esf || '-'}</td><td style={{ padding: '6px 16px' }}>{c.rec_oe_cil || '-'}</td><td style={{ padding: '6px 16px' }}>{c.rec_oe_eixo || '-'}</td></tr>
-                  </tbody>
-                </table>
-                <div style={{ marginTop: 10, fontSize: 13, color: 'var(--text-dim)' }}>Adição: <b style={{ fontFamily: 'var(--mono)' }}>{c.rec_adicao || '-'}</b> · DP: <b style={{ fontFamily: 'var(--mono)' }}>{c.rec_dp || '-'}</b>{c.rec_obs ? ` · ${c.rec_obs}` : ''}</div>
-              </div>
-            )}
+            {aba === 'receita' && c && p && <ReceitasCliente clienteId={c.id} os={p.os as unknown as ReceitaOS[]} />}
+            {aba === 'historico' && c && veHistorico && <HistoricoCliente clienteId={c.id} />}
           </div>
         </>
       )}
 
       {novaVenda && c && <VendaModal venda={null} clienteInicial={{ id: c.id, nome: c.nome }} onClose={() => setNovaVenda(false)} onSaved={() => { setNovaVenda(false); load(); }} />}
+      {pagVenda && <EditarPagamentos vendaId={pagVenda} onClose={() => setPagVenda(null)} onSaved={() => { setPagVenda(null); load(); }} />}
       {baixa && <BaixaModal t={baixa} contas={contas} onClose={() => setBaixa(null)} onSaved={() => { setBaixa(null); load(); }} />}
     </div>
   );

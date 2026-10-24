@@ -4,6 +4,8 @@ import { api } from '../../lib/api';
 import { whatsappLink, foneValido, aplicarVariaveis } from '../../lib/whatsapp';
 import { useAuth } from '../../hooks/useAuth';
 import Icone from '../../components/Icone';
+import EditarPagamentos from '../../components/EditarPagamentos';
+import UnificarDuplicados from '../../components/UnificarDuplicados';
 
 interface Estagio {
   id: string; key: string; label: string; icon: string; color: string;
@@ -263,6 +265,7 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
 
   function salvarNota() { onSalvarNota(card.id, nota, prioridade); }
 
+  const [editarPag, setEditarPag] = useState(false);
   function abrirModalFinalizar() {
     setValorRecebido(String(saldo));
     setFinalizarOpen(true);
@@ -323,6 +326,7 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
 
   return (
     <>
+    {editarPag && <EditarPagamentos clienteId={card.cliente_id} onClose={() => setEditarPag(false)} onSaved={() => { setEditarPag(false); onAtualizar(); }} />}
     {finalizarOpen && (
       <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
         onClick={e => e.target === e.currentTarget && setFinalizarOpen(false)}>
@@ -414,9 +418,15 @@ function CardItem({ card, estagios, onMover, onSalvarNota, tenant, onAtualizar }
         )}
 
         {/* ação principal da etapa */}
-        {(podeReceber || card.estagio === 'oculos_pronto' || card.estagio === 'oculos_pendente') && (
+        {(podeReceber || card.estagio === 'a_receber' || card.estagio === 'oculos_pronto' || card.estagio === 'oculos_pendente') && (
           <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
             {podeReceber && <button onClick={abrirModalFinalizar} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '12px', fontWeight: 700, color: '#d97706' }}>Receber {brl(saldo)}</button>}
+            {card.estagio === 'a_receber' && (
+              <button onClick={() => setEditarPag(true)} title="Corrigir o que o cliente já pagou de uma compra"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '12px', fontWeight: 700, color: 'var(--text-dim)' }}>
+                <Icone nome="editar" size={12} /> Editar pagamento
+              </button>
+            )}
             {(card.estagio === 'oculos_pronto' || card.estagio === 'oculos_pendente') && (
               <button onClick={handleEntregar} disabled={finalizando} title="O cliente buscou o óculos. Em 20 dias ele aparece no Pós-venda."
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '12px', fontWeight: 700, color: '#16a34a' }}>
@@ -568,6 +578,7 @@ export default function Funil() {
   const [loading, setLoading] = useState(true);
   const [busca, setBusca] = useState('');
   const [configOpen, setConfigOpen] = useState(false);
+  const [duplicados, setDuplicados] = useState(false);
   const [dragOver, setDragOver] = useState<string | null>(null);
   const [dragging, setDragging] = useState<string | null>(null);
 
@@ -627,6 +638,7 @@ export default function Funil() {
         </div>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar cliente..." style={{ padding: '8px 12px', fontSize: '13px', width: '200px', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--surface)', color: 'var(--text)', outline: 'none' }} />
+          {usuario?.perfil === 'admin' && <button className="btn" onClick={() => setDuplicados(true)} title="Achar e unificar clientes cadastrados mais de uma vez"><Icone nome="usuarios" size={15} />Duplicados</button>}
           <button onClick={() => setConfigOpen(true)} style={{ padding: '8px 14px', fontSize: '13px', fontWeight: '500', background: 'var(--surface)', color: 'var(--text-dim)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
             Estágios
           </button>
@@ -673,6 +685,7 @@ export default function Funil() {
           onSaved={() => { loadEstagios(); }}
         />
       )}
+      {duplicados && <UnificarDuplicados onClose={() => setDuplicados(false)} onMudou={load} />}
     </div>
   );
 }

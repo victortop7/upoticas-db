@@ -7,6 +7,7 @@ export interface AuthData {
   email: string;
   perfil: string;
   loja_id?: string | null;
+  menus?: string[] | null;   // telas liberadas pelo admin (null = padrão do cargo)
 }
 
 // Carrega a loja do usuário (multi-loja). Admin fica com loja_id null (vê tudo).
@@ -16,7 +17,11 @@ async function carregarLoja(env: Env, auth: AuthData): Promise<void> {
       .bind(auth.usuario_id).first<{ loja_id: string | null; permissoes: string | null }>();
     auth.loja_id = u?.loja_id ?? null;
     // permissão personalizada "ver todas as lojas" (definida no painel admin)
-    try { if (u?.permissoes && JSON.parse(u.permissoes)?.todas_lojas) auth.loja_id = null; } catch { /* json inválido */ }
+    try {
+      const perm = u?.permissoes ? JSON.parse(u.permissoes) : null;
+      if (perm?.todas_lojas) auth.loja_id = null;
+      auth.menus = Array.isArray(perm?.menus) ? perm.menus : null;
+    } catch { /* json inválido */ }
   } catch {
     // coluna permissoes ainda não existe
     try {

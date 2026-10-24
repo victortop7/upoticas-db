@@ -4,7 +4,7 @@ import { requireAuth, json } from '../../lib/auth-middleware';
 import { ensureCrmTable, ensureEstagiosPadrao } from './setup';
 import { ensureClienteCols } from '../../lib/ensure-cliente-cols';
 import { ensureIndexes } from '../../lib/ensure-indexes';
-import { recalcularFunil, SQL_CARD_PENDENTES, SQL_PRAZO_VENDA, FORA_DO_FUNIL } from '../../lib/crmFluxo';
+import { recalcularFunil, moverManual, SQL_CARD_PENDENTES, SQL_PRAZO_VENDA, FORA_DO_FUNIL } from '../../lib/crmFluxo';
 import { hojeSP } from '../../lib/receber';
 
 // Regras do funil: ver functions/lib/crmFluxo.ts (motor único)
@@ -73,9 +73,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
 
   if (existing) {
     // Já está no funil → move para a etapa escolhida
-    await env.DB.prepare(
-      'UPDATE crm_cards SET estagio = ?, updated_at = ? WHERE id = ?'
-    ).bind(estagio, now, existing.id).run();
+    await moverManual(env.DB, auth.tenant_id, existing.id, estagio, auth.usuario_id);
     return json({ id: existing.id, estagio, recolocado: true });
   }
 
@@ -83,6 +81,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   await env.DB.prepare(
     'INSERT INTO crm_cards (id, tenant_id, cliente_id, estagio, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)'
   ).bind(id, auth.tenant_id, body.cliente_id, estagio, now, now).run();
+  await moverManual(env.DB, auth.tenant_id, id, estagio, auth.usuario_id); // fica na etapa escolhida
 
   return json({ id, estagio }, 201);
 };

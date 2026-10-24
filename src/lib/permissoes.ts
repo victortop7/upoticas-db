@@ -1,7 +1,7 @@
 // Permissões por usuário do Connect Óticas.
 // Sem permissões personalizadas, vale o padrão do perfil (como sempre foi).
 
-export type ItemMenu = { to: string; label: string; icon: string };
+export type ItemMenu = { to: string; label: string; icon: string; oculto?: boolean }; // oculto: só permissão, não aparece no menu
 export type GrupoMenu = { label: string; items: ItemMenu[] };
 
 export const MENU_GRUPOS: GrupoMenu[] = [
@@ -39,6 +39,9 @@ export const MENU_GRUPOS: GrupoMenu[] = [
     { to: '/lojas', label: 'Lojas & Acessos', icon: 'lojas' },
     { to: '/usuarios', label: 'Usuários', icon: 'usuarios' },
     { to: '/configuracoes', label: 'Configurações', icon: 'config' },
+  ] },
+  { label: 'Acessos especiais', items: [
+    { to: '/clientes/historico', label: 'Histórico do cliente', icon: 'historico', oculto: true },
   ] },
 ];
 

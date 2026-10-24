@@ -5,6 +5,8 @@ import type { Cliente } from '../types';
 import ClienteModal from '../components/ClienteModal';
 import ClienteHistoricoModal from '../components/ClienteHistoricoModal';
 import Icone from '../components/Icone';
+import UnificarDuplicados from '../components/UnificarDuplicados';
+import { useAuth } from '../hooks/useAuth';
 
 interface ClientesResponse {
   clientes: Cliente[];
@@ -40,6 +42,8 @@ export default function Clientes() {
     api.get<Estagio[]>('/crm/estagios').then(setEstagios).catch(() => setEstagios([]));
   }, []);
 
+  const { usuario } = useAuth();
+  const [duplicados, setDuplicados] = useState(false);
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -129,6 +133,8 @@ export default function Clientes() {
             {data?.total ?? '...'} clientes cadastrados
           </p>
         </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+        {usuario?.perfil === 'admin' && <button className="btn" onClick={() => setDuplicados(true)} title="Achar e unificar clientes cadastrados mais de uma vez"><Icone nome="usuarios" size={15} />Duplicados</button>}
         <button onClick={abrirNovo} style={{
           padding: '9px 18px', fontSize: '14px', fontWeight: '600',
           background: 'var(--primary)', color: 'white',
@@ -136,6 +142,7 @@ export default function Clientes() {
         }}>
           + Novo Cliente
         </button>
+        </div>
       </div>
 
       {/* Busca */}
@@ -337,6 +344,7 @@ export default function Clientes() {
           </div>
         </div>
       )}
+      {duplicados && <UnificarDuplicados onClose={() => setDuplicados(false)} onMudou={load} />}
     </div>
   );
 }

@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 import type { Cliente } from '../../types';
+import EditarPagamentos from '../../components/EditarPagamentos';
+import Icone from '../../components/Icone';
 
 interface ContaReceber { id: string; descricao: string; cliente_id?: string; cliente_nome?: string; categoria?: string; valor: number; data_vencimento: string; data_recebimento?: string; situacao: string; forma_recebimento?: string; observacao?: string; }
 interface Conta { id: string; nome: string; }
@@ -169,6 +171,7 @@ export default function ContasReceber() {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [baixa, setBaixa] = useState<Titulo | null>(null);
+  const [pagVenda, setPagVenda] = useState<string | null>(null);
   const [mais, setMais] = useState(false);
 
   const load = useCallback(async () => {
@@ -302,6 +305,7 @@ export default function ContasReceber() {
                       ? <button onClick={() => setBaixa(t)} style={{ padding: '5px 12px', fontSize: 12, background: 'rgba(34,197,94,0.12)', color: '#16a34a', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}>Receber</button>
                       : t.origem !== 'venda' && <button onClick={() => desfazer(t)} style={{ padding: '5px 10px', fontSize: 12, background: 'var(--surface-alt)', color: 'var(--text-dim)', border: 'none', borderRadius: 6, cursor: 'pointer' }}>Desfazer</button>}
                     {t.origem === 'carne' && t.carne_id && <a href={`/carnes/${t.carne_id}/imprimir`} target="_blank" rel="noreferrer" style={{ marginLeft: 6, padding: '5px 10px', fontSize: 12, background: 'var(--primary-dim)', color: 'var(--primary)', borderRadius: 6, textDecoration: 'none' }}>Carnê</a>}
+                    {t.origem === 'venda' && t.venda_id && <button className="btn btn-xs" style={{ marginLeft: 6 }} title="Editar o que o cliente já pagou desta venda" onClick={() => setPagVenda(t.venda_id!)}><Icone nome="editar" size={12} />Editar</button>}
                     {t.origem === 'manual' && <button onClick={() => excluirManual(t)} style={{ marginLeft: 6, padding: '5px 10px', fontSize: 12, background: 'var(--red-dim)', color: 'var(--red)', border: 'none', borderRadius: 6, cursor: 'pointer' }}>Excluir</button>}
                   </td>
                 </tr>
@@ -314,6 +318,7 @@ export default function ContasReceber() {
 
       {modalOpen && <Modal conta={null} contas={contasFin} onClose={() => setModalOpen(false)} onSaved={() => { setModalOpen(false); load(); }} />}
       {baixa && <BaixaModal t={baixa} contas={contasFin} onClose={() => setBaixa(null)} onSaved={() => { setBaixa(null); load(); }} />}
+      {pagVenda && <EditarPagamentos vendaId={pagVenda} onClose={() => setPagVenda(null)} onSaved={() => { setPagVenda(null); load(); }} />}
     </div>
   );
 }
