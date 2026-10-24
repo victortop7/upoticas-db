@@ -1,6 +1,7 @@
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
 import { ensureEstoque } from '../../lib/estoque';
+import { movimentarEstoque, lojaDoMovimento, ensureEstoqueLojas } from '../../lib/estoqueLojas';
 
 async function nomeCategoria(env: Env, tenant: string, id?: string | null) {
   if (!id) return null;
@@ -32,13 +33,10 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
          VALUES (?, ?, ?, ?, ?, ?, 'UN', ?, ?, ?, ?)`
       ).bind(pid, auth.tenant_id, String(b.codigo || '').trim() || null, cb, descricao, grupo,
         Number(b.preco_custo) || 0, Number(b.preco_venda) || 0, b.categoria_id || null, b.subcategoria_id || null),
-      env.DB.prepare('INSERT INTO estoque (id, tenant_id, produto_id, quantidade, quantidade_minima, localizacao) VALUES (?, ?, ?, ?, ?, ?)')
-        .bind(crypto.randomUUID(), auth.tenant_id, pid, qtd, Number(b.quantidade_minima) || 0, String(b.localizacao || '').trim() || null),
-      env.DB.prepare(
-        `INSERT INTO estoque_movimentacoes (id, tenant_id, produto_id, tipo, quantidade, quantidade_anterior, quantidade_nova, motivo, usuario_id)
-         VALUES (?, ?, ?, 'entrada', ?, 0, ?, 'Cadastro inicial', ?)`
-      ).bind(crypto.randomUUID(), auth.tenant_id, pid, qtd, qtd, auth.usuario_id),
+      env.DB.prepare('INSERT INTO estoque (id, tenant_id, produto_id, quantidade, quantidade_minima, localizacao) VALUES (?, ?, ?, 0, ?, ?)')
+        .bind(crypto.randomUUID(), auth.tenant_id, pid, Number(b.quantidade_minima) || 0, String(b.localizacao || '').trim() || null),
     ]);
+    if (qtd) await movimentarEstoque(env.DB, auth.tenant_id, { produtoId: pid, lojaId: lojaDoMovimento(auth, b.loja_id), tipo: 'entrada', quantidade: qtd, motivo: 'Cadastro inicial', usuarioId: auth.usuario_id });
     return json({ id: pid }, 201);
   } catch (err) {
     return json({ error: 'Erro interno', detail: String(err) }, 500);
@@ -90,6 +88,8 @@ export const onRequestDelete = async ({ request, env }: { request: Request; env:
       env.DB.prepare('DELETE FROM estoque_movimentacoes WHERE produto_id = ? AND tenant_id = ?').bind(pid, auth.tenant_id),
       env.DB.prepare('DELETE FROM estoque WHERE produto_id = ? AND tenant_id = ?').bind(pid, auth.tenant_id),
     ];
+    await ensureEstoqueLojas(env.DB);
+    stmts.push(env.DB.prepare('DELETE FROM estoque_lojas WHERE produto_id = ? AND tenant_id = ?').bind(pid, auth.tenant_id));
     // genérico (material no modo quantidade) só existe pro estoque: apaga. Produto de catálogo só sai do estoque.
     if (p.generico) stmts.push(env.DB.prepare('DELETE FROM produtos WHERE id = ? AND tenant_id = ?').bind(pid, auth.tenant_id));
     await env.DB.batch(stmts);

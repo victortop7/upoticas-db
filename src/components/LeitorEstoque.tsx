@@ -17,7 +17,7 @@ function bip(ok: boolean) {
 
 // Leitura contínua com leitor de código de barras (USB/Bluetooth funciona como teclado + Enter)
 // ou pela câmera do celular, quando o navegador suporta.
-export default function LeitorEstoque({ onMudou, categorias = [] }: { onMudou: () => void; categorias?: CatLeitor[] }) {
+export default function LeitorEstoque({ onMudou, categorias = [], lojaId }: { onMudou: () => void; categorias?: CatLeitor[]; lojaId?: string }) {
   const [tipo, setTipo] = useState<'entrada' | 'saida'>('entrada');
   const [qtd, setQtd] = useState('1');
   const [codigo, setCodigo] = useState('');
@@ -58,7 +58,7 @@ export default function LeitorEstoque({ onMudou, categorias = [] }: { onMudou: (
       try {
         let r: { produto: Prod; depois: number };
         try {
-          r = await api.post<{ produto: Prod; depois: number }>('/estoque/leitura', { codigo: c, tipo: t, quantidade: q, ...extra });
+          r = await api.post<{ produto: Prod; depois: number }>('/estoque/leitura', { codigo: c, tipo: t, quantidade: q, loja_id: lojaId || undefined, ...extra });
         } catch (e) {
           const L = loteRef.current;
           const cat = categorias.find(x => x.id === L.categoria_id);
@@ -67,7 +67,7 @@ export default function LeitorEstoque({ onMudou, categorias = [] }: { onMudou: (
             const sub = cat.subs.find(s => s.id === L.subcategoria_id);
             const descricao = [L.nome.trim() || cat.nome, sub?.nome, c].filter(Boolean).join(' ');
             r = await api.post<{ produto: Prod; depois: number }>('/estoque/leitura', {
-              codigo: c, tipo: t, quantidade: q,
+              codigo: c, tipo: t, quantidade: q, loja_id: lojaId || undefined,
               novo: { descricao, categoria_id: cat.id, subcategoria_id: sub?.id, preco_custo: num(L.preco_custo), preco_venda: num(L.preco_venda) },
             });
             contarModelos.current.add(c);

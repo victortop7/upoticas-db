@@ -1,4 +1,5 @@
 import type { D1Database } from '@cloudflare/workers-types';
+import { movimentarEstoque } from './estoqueLojas';
 
 // Categorias do estoque (abas) e subcategorias (ex.: Armações → Metal, Acetato, TR90…)
 // + baixa automática do estoque pelas vendas.
@@ -114,8 +115,14 @@ type LinhaQtd = { produto_id: string; qtd: number };
 // Venda cancelada/excluída → devolve tudo. Pode chamar quantas vezes quiser (idempotente).
 export async function sincronizarEstoqueVenda(db: D1Database, tenant: string, vendaId: string, usuarioId?: string | null, opts?: { excluindo?: boolean }) {
   await ensureEstoque(db);
-  const venda = await db.prepare('SELECT id, numero, situacao, created_at FROM vendas WHERE id = ? AND tenant_id = ?')
-    .bind(vendaId, tenant).first<{ id: string; numero: number; situacao: string; created_at: string }>();
+  let venda: { id: string; numero: number; situacao: string; created_at: string; loja_id?: string | null } | null;
+  try {
+    venda = await db.prepare('SELECT id, numero, situacao, created_at, loja_id FROM vendas WHERE id = ? AND tenant_id = ?')
+      .bind(vendaId, tenant).first<{ id: string; numero: number; situacao: string; created_at: string; loja_id: string | null }>();
+  } catch {
+    venda = await db.prepare('SELECT id, numero, situacao, created_at FROM vendas WHERE id = ? AND tenant_id = ?')
+      .bind(vendaId, tenant).first<{ id: string; numero: number; situacao: string; created_at: string }>();
+  }
 
   const jaMexeu = await db.prepare(
     `SELECT produto_id, SUM(CASE WHEN tipo = 'saida' THEN quantidade WHEN tipo = 'entrada' THEN -quantidade ELSE 0 END) AS qtd
@@ -143,20 +150,10 @@ export async function sincronizarEstoqueVenda(db: D1Database, tenant: string, ve
   for (const pid of produtos) {
     const delta = Math.round(((desejado.get(pid) || 0) - (aplicado.get(pid) || 0)) * 1000) / 1000;
     if (!delta) continue;
-    const atual = await db.prepare('SELECT quantidade FROM estoque WHERE tenant_id = ? AND produto_id = ?').bind(tenant, pid).first<{ quantidade: number }>();
-    const antes = Number(atual?.quantidade ?? 0);
-    const depois = antes - delta; // pode ficar negativo: mostra que faltou dar entrada
     const tipo = delta > 0 ? 'saida' : 'entrada';
     const motivo = delta > 0 ? `Venda #${numero}` : (opts?.excluindo || venda?.situacao === 'cancelada' ? `Estorno · venda #${numero} cancelada` : `Ajuste da venda #${numero}`);
-    await db.batch([
-      atual
-        ? db.prepare("UPDATE estoque SET quantidade = ?, updated_at = datetime('now') WHERE tenant_id = ? AND produto_id = ?").bind(depois, tenant, pid)
-        : db.prepare('INSERT INTO estoque (id, tenant_id, produto_id, quantidade, quantidade_minima) VALUES (?, ?, ?, ?, 0)').bind(crypto.randomUUID(), tenant, pid, depois),
-      db.prepare(
-        `INSERT INTO estoque_movimentacoes (id, tenant_id, produto_id, tipo, quantidade, quantidade_anterior, quantidade_nova, motivo, documento, usuario_id, venda_id)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).bind(crypto.randomUUID(), tenant, pid, tipo, Math.abs(delta), antes, depois, motivo, `Venda #${numero}`, usuarioId || null, vendaId),
-    ]);
+    // sai (ou volta) da loja da venda; pode ficar negativo: mostra que faltou dar entrada
+    await movimentarEstoque(db, tenant, { produtoId: pid, lojaId: venda?.loja_id || null, tipo, quantidade: Math.abs(delta), motivo, documento: `Venda #${numero}`, usuarioId: usuarioId || null, vendaId });
     mudou++;
   }
   return { mudou };

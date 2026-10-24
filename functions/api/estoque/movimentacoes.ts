@@ -1,5 +1,6 @@
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
+import { ensureEstoqueLojas } from '../../lib/estoqueLojas';
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   try {
@@ -15,8 +16,9 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
     let query = `
       SELECT
         m.*, p.descricao as produto_desc, p.codigo as produto_codigo,
-        u.nome as usuario_nome, f.nome as fornecedor_nome
+        u.nome as usuario_nome, f.nome as fornecedor_nome, lj.nome as loja_nome
       FROM estoque_movimentacoes m
+      LEFT JOIN lojas lj ON lj.id = m.loja_id
       JOIN produtos p ON p.id = m.produto_id
       LEFT JOIN usuarios u ON u.id = m.usuario_id
       LEFT JOIN fornecedores f ON f.id = m.fornecedor_id
@@ -26,6 +28,9 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
 
     if (produto_id) { query += ' AND m.produto_id = ?'; params.push(produto_id); }
     if (tipo) { query += ' AND m.tipo = ?'; params.push(tipo); }
+    await ensureEstoqueLojas(env.DB);
+    const lojaQ = auth.perfil !== 'admin' && auth.loja_id ? auth.loja_id : (url.searchParams.get('loja_id') || '');
+    if (lojaQ) { query += ' AND m.loja_id = ?'; params.push(lojaQ); }
 
     query += ` ORDER BY m.created_at DESC LIMIT ${limit}`;
 

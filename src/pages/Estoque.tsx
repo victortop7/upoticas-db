@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { api } from '../lib/api';
 import LeitorEstoque from '../components/LeitorEstoque';
 import Icone from '../components/Icone';
+import { useAuth } from '../hooks/useAuth';
 
 interface ItemEstoque {
   id: string; produto_id: string; codigo?: string; codigo_barras?: string; descricao: string;
@@ -9,18 +10,20 @@ interface ItemEstoque {
   categoria_id?: string | null; subcategoria_id?: string | null; subcategoria_nome?: string | null; generico?: number;
   quantidade: number; quantidade_minima: number; quantidade_maxima?: number;
   localizacao?: string; fornecedor_nome?: string; abaixo_minimo: number;
+  por_loja?: string | null; // "lojaId:qtd,lojaId:qtd"
 }
+interface Loja { id: string; nome: string }
 interface Resumo { total_itens: number; abaixo_minimo: number; valor_total: number; pecas: number; custo_total: number; }
 interface Movimentacao {
   id: string; produto_id: string; produto_desc: string; produto_codigo?: string;
   tipo: string; quantidade: number; quantidade_anterior: number; quantidade_nova: number;
-  motivo?: string; documento?: string; fornecedor_nome?: string; usuario_nome?: string; created_at: string; venda_id?: string | null;
+  motivo?: string; documento?: string; fornecedor_nome?: string; usuario_nome?: string; created_at: string; venda_id?: string | null; loja_id?: string | null; loja_nome?: string | null;
 }
 export interface Sub { id: string; nome: string; itens: number; pecas: number; baixo: number }
 export interface Categoria { id: string; nome: string; icone?: string | null; itens: number; pecas: number; baixo: number; subs: Sub[]; modo?: 'modelo' | 'quantidade'; ncm?: string | null }
 
 // Modo "por quantidade": um cartão por material, só com o contador
-function PainelQuantidade({ cat, itens, onMudou }: { cat: Categoria; itens: ItemEstoque[]; onMudou: () => void }) {
+function PainelQuantidade({ cat, itens, onMudou, lojaId, lojaNome }: { cat: Categoria; itens: ItemEstoque[]; onMudou: () => void; lojaId?: string; lojaNome?: string }) {
   const [acao, setAcao] = useState<{ sub: string; tipo: 'entrada' | 'saida' | 'ajuste' } | null>(null);
   const [qtd, setQtd] = useState('');
   const [preco, setPreco] = useState('');
@@ -36,7 +39,7 @@ function PainelQuantidade({ cat, itens, onMudou }: { cat: Categoria; itens: Item
     setSalvando(true); setErro('');
     try {
       await api.post('/estoque/quantidade', {
-        categoria_id: cat.id, subcategoria_id: acao.sub || null, tipo: acao.tipo, quantidade: num(qtd),
+        categoria_id: cat.id, subcategoria_id: acao.sub || null, tipo: acao.tipo, quantidade: num(qtd), loja_id: lojaId || undefined,
         ...(preco.trim() ? { preco_venda: num(preco) } : {}), documento: doc || undefined,
       });
       setAcao(null); setQtd(''); setPreco(''); setDoc('');
@@ -50,7 +53,7 @@ function PainelQuantidade({ cat, itens, onMudou }: { cat: Categoria; itens: Item
     <div>
       <div style={{ fontSize: 13, color: 'var(--text-dim)', marginBottom: 12 }}>
         Controle <b>por quantidade</b>: sem código nem preço por peça. Total em {cat.nome}: <b style={{ fontFamily: 'var(--mono)', color: 'var(--text)' }}>{total}</b> peça(s).
-        Na venda, a vendedora escolhe <b>"{cat.nome} {linhas[0].id ? linhas[0].nome : ''}"</b> e digita o valor · o estoque baixa sozinho.
+        {lojaNome ? <> Lançamentos vão para <b>{lojaNome}</b>.</> : null} Na venda, a vendedora escolhe <b>"{cat.nome} {linhas[0].id ? linhas[0].nome : ''}"</b> e digita o valor · o estoque baixa sozinho.
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(270px, 1fr))', gap: 12 }}>
         {linhas.map(l => {
@@ -127,7 +130,7 @@ function Janela({ titulo, onClose, largura = 460, children }: { titulo: string; 
 }
 
 // Novo item já dentro da categoria (cria o produto + estoque inicial)
-function NovoItem({ categorias, catInicial, subInicial, onClose, onSaved }: { categorias: Categoria[]; catInicial: string; subInicial: string; onClose: () => void; onSaved: () => void }) {
+function NovoItem({ categorias, catInicial, subInicial, onClose, onSaved, lojaId }: { categorias: Categoria[]; catInicial: string; subInicial: string; onClose: () => void; onSaved: () => void; lojaId?: string }) {
   const [f, setF] = useState({ categoria_id: catInicial || categorias[0]?.id || '', subcategoria_id: subInicial, descricao: '', codigo: '', codigo_barras: '', preco_custo: '', preco_venda: '', quantidade: '1', quantidade_minima: '0', localizacao: '' });
   const [erro, setErro] = useState('');
   const [saving, setSaving] = useState(false);
@@ -136,7 +139,7 @@ function NovoItem({ categorias, catInicial, subInicial, onClose, onSaved }: { ca
   async function salvar(e: React.FormEvent) {
     e.preventDefault(); setSaving(true); setErro('');
     try {
-      await api.post('/estoque/item', { ...f, subcategoria_id: f.subcategoria_id || null, preco_custo: num(f.preco_custo), preco_venda: num(f.preco_venda), quantidade: num(f.quantidade), quantidade_minima: num(f.quantidade_minima) });
+      await api.post('/estoque/item', { ...f, subcategoria_id: f.subcategoria_id || null, preco_custo: num(f.preco_custo), preco_venda: num(f.preco_venda), quantidade: num(f.quantidade), quantidade_minima: num(f.quantidade_minima), loja_id: lojaId || undefined });
       onSaved();
     } catch (err) { setErro(err instanceof Error ? err.message : 'Erro'); setSaving(false); }
   }
@@ -313,6 +316,17 @@ type Aba = { tipo: 'cat'; id: string } | { tipo: 'sem' } | { tipo: 'leitor' } | 
 export default function Estoque() {
   const [cats, setCats] = useState<RespCat | null>(null);
   const [aba, setAba] = useState<Aba | null>(null);
+  // lojas: '' = total das lojas. Vendedor preso numa loja só vê a dele.
+  const { usuario } = useAuth();
+  const [lojas, setLojas] = useState<Loja[]>([]);
+  const lojaFixa = usuario?.perfil !== 'admin' && !usuario?.permissoes?.todas_lojas ? (usuario?.loja_id || '') : '';
+  const [lojaSel, setLojaSel] = useState('');
+  const [lojaLanc, setLojaLanc] = useState('');
+  useEffect(() => { api.get<Loja[]>('/lojas').then(l => { setLojas(l || []); setLojaLanc(x => x || l?.[0]?.id || ''); }).catch(() => setLojas([])); }, []);
+  const lojaVer = lojaFixa || lojaSel;                 // de qual loja mostrar as quantidades
+  const lojaMov = lojaFixa || lojaSel || lojaLanc;     // em qual loja lançar entradas e saídas
+  const nomeLoja = (id: string) => (id ? lojas.find(l => l.id === id)?.nome || 'Loja' : 'Sem loja');
+  const qsLoja = lojaVer ? `loja_id=${encodeURIComponent(lojaVer)}` : '';
   const [sub, setSub] = useState('');
   const [itens, setItens] = useState<ItemEstoque[]>([]);
   const [resumo, setResumo] = useState<Resumo | null>(null);
@@ -331,11 +345,11 @@ export default function Estoque() {
   const [erroMov, setErroMov] = useState('');
 
   const loadCats = useCallback(() => {
-    api.get<RespCat>('/estoque/categorias').then(r => {
+    api.get<RespCat>(`/estoque/categorias${qsLoja ? '?' + qsLoja : ''}`).then(r => {
       setCats(r);
       setAba(a => a ?? (r.categorias[0] ? { tipo: 'cat', id: r.categorias[0].id } : { tipo: 'leitor' }));
     }).catch(() => setAba(a => a ?? { tipo: 'leitor' }));
-  }, []);
+  }, [qsLoja]);
   useEffect(() => { loadCats(); }, [loadCats]);
 
   const loadEstoque = useCallback(() => {
@@ -347,15 +361,16 @@ export default function Estoque() {
     if (aba.tipo === 'sem') p.set('categoria_id', 'sem');
     if (aba.tipo === 'cat' && sub) p.set('subcategoria_id', sub);
     if (aba.tipo === 'compras') p.set('alerta', '1');
+    if (lojaVer) p.set('loja_id', lojaVer);
     api.get<{ itens: ItemEstoque[]; resumo: Resumo }>(`/estoque?${p}`)
       .then(d => { setItens(d.itens); setResumo(d.resumo); })
       .catch(() => {}).finally(() => setLoading(false));
-  }, [aba, sub, busca]);
+  }, [aba, sub, busca, lojaVer]);
 
   const loadMovs = useCallback(() => {
     setLoading(true);
-    api.get<Movimentacao[]>('/estoque/movimentacoes').then(setMovs).catch(() => setMovs([])).finally(() => setLoading(false));
-  }, []);
+    api.get<Movimentacao[]>(`/estoque/movimentacoes${qsLoja ? '?' + qsLoja : ''}`).then(setMovs).catch(() => setMovs([])).finally(() => setLoading(false));
+  }, [qsLoja]);
 
   useEffect(() => {
     if (aba?.tipo === 'mov') loadMovs();
@@ -370,7 +385,7 @@ export default function Estoque() {
     setSavingMov(true); setErroMov('');
     try {
       await api.post('/estoque', {
-        produto_id: itemSel.produto_id, tipo: movForm.tipo, quantidade: num(movForm.quantidade),
+        produto_id: itemSel.produto_id, tipo: movForm.tipo, quantidade: num(movForm.quantidade), loja_id: lojaMov || undefined,
         motivo: movForm.motivo || null, documento: movForm.documento || null, preco_unitario: num(movForm.preco_unitario) || null,
       });
       setItemSel(null);
@@ -428,6 +443,27 @@ export default function Estoque() {
         </div>
       </div>
 
+      {lojas.length > 0 && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 14 }}>
+          {lojaFixa ? (
+            <span style={{ fontSize: 13, color: 'var(--text-dim)' }}>Estoque da loja <b style={{ color: 'var(--text)' }}>{nomeLoja(lojaFixa)}</b></span>
+          ) : (
+            <div className="seg">
+              <button className={!lojaSel ? 'on' : ''} onClick={() => setLojaSel('')}><Icone nome="lojas" size={14} />Total das lojas</button>
+              {lojas.map(l => <button key={l.id} className={lojaSel === l.id ? 'on' : ''} onClick={() => setLojaSel(l.id)}>{l.nome}</button>)}
+            </div>
+          )}
+          {!lojaVer && lojas.length > 1 && (
+            <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: 'var(--text-muted)' }}>
+              Entradas e saídas vão para
+              <select value={lojaLanc} onChange={e => setLojaLanc(e.target.value)} style={{ ...inp, width: 'auto', height: 32, padding: '0 8px' }}>
+                {lojas.map(l => <option key={l.id} value={l.id}>{l.nome}</option>)}
+              </select>
+            </label>
+          )}
+        </div>
+      )}
+
       {cats && cats.categorias.length > 6 && (
         <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Ir para:</span>
@@ -469,7 +505,7 @@ export default function Estoque() {
         </div>
       )}
       {aba?.tipo === 'cat' && catAtual && catAtual.modo === 'quantidade' && (
-        <div style={{ marginBottom: 18 }}><PainelQuantidade cat={catAtual} itens={itens} onMudou={recarregar} /></div>
+        <div style={{ marginBottom: 18 }}><PainelQuantidade cat={catAtual} itens={itens} onMudou={recarregar} lojaId={lojaMov} lojaNome={lojas.length > 1 ? nomeLoja(lojaMov) : undefined} /></div>
       )}
 
       {aba?.tipo === 'cat' && catAtual && catAtual.modo !== 'quantidade' && (catAtual.subs.length > 0) && (
@@ -539,6 +575,11 @@ export default function Estoque() {
                       </td>
                       <td style={{ padding: '10px 14px', textAlign: 'right' }}>
                         <span style={{ fontSize: 16, fontWeight: 800, fontFamily: 'var(--mono)', color: corQtd }} title={item.quantidade < 0 ? 'Vendeu mais do que tinha registrado · dê entrada' : ''}>{item.quantidade}</span>
+                        {!lojaVer && lojas.length > 1 && item.por_loja && (
+                          <div style={{ fontSize: 10.5, color: 'var(--text-muted)', whiteSpace: 'nowrap', marginTop: 2 }}>
+                            {item.por_loja.split(',').map(x => { const [id, q] = x.split(':'); return `${nomeLoja(id)} ${Number(q)}`; }).join(' · ')}
+                          </div>
+                        )}
                       </td>
                       <td style={{ padding: '10px 14px', fontSize: 13, fontFamily: 'var(--mono)', color: 'var(--text-dim)', textAlign: 'right' }}>{item.quantidade_minima}</td>
                       <td style={{ padding: '10px 14px', fontSize: 13, fontFamily: 'var(--mono)', color: 'var(--text-dim)', textAlign: 'right' }}>{brl(item.preco_custo)}</td>
@@ -560,7 +601,7 @@ export default function Estoque() {
         </div>
       )}
 
-      {aba?.tipo === 'leitor' && <LeitorEstoque categorias={cats?.categorias || []} onMudou={recarregar} />}
+      {aba?.tipo === 'leitor' && <LeitorEstoque categorias={cats?.categorias || []} onMudou={recarregar} lojaId={lojaMov} />}
 
       {aba?.tipo === 'mov' && (
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, overflowX: 'auto' }}>
@@ -572,7 +613,7 @@ export default function Estoque() {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                  {['Data', 'Produto', 'Tipo', 'Qtd', 'Antes → Depois', 'Motivo/Doc', 'Usuário', ''].map(h => (
+                  {['Data', 'Produto', 'Loja', 'Tipo', 'Qtd', 'Antes → Depois', 'Motivo/Doc', 'Usuário', ''].map(h => (
                     <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
                   ))}
                 </tr>
@@ -585,6 +626,7 @@ export default function Estoque() {
                       <div style={{ fontSize: 13, color: 'var(--text)' }}>{m.produto_desc}</div>
                       {m.produto_codigo && <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--text-muted)' }}>{m.produto_codigo}</div>}
                     </td>
+                    <td style={{ padding: '10px 14px', fontSize: 12, color: 'var(--text-dim)' }}>{m.loja_nome || (m.loja_id ? 'Loja' : '-')}</td>
                     <td style={{ padding: '10px 14px' }}>
                       <span style={{ fontSize: 11, fontWeight: 600, color: TIPO_COLOR[m.tipo], background: `${TIPO_COLOR[m.tipo]}18`, padding: '3px 8px', borderRadius: 6 }}>{TIPO_LABEL[m.tipo] ?? m.tipo}</span>
                     </td>
@@ -661,7 +703,7 @@ export default function Estoque() {
       )}
 
       {novoItem && cats && (
-        <NovoItem categorias={cats.categorias} catInicial={catAtual?.id || ''} subInicial={sub} onClose={() => setNovoItem(false)} onSaved={() => { setNovoItem(false); recarregar(); }} />
+        <NovoItem categorias={cats.categorias} catInicial={catAtual?.id || ''} subInicial={sub} onClose={() => setNovoItem(false)} onSaved={() => { setNovoItem(false); recarregar(); }} lojaId={lojaMov} />
       )}
       {gerenciar && cats && <GerenciarCategorias categorias={cats.categorias} onClose={() => setGerenciar(false)} onMudou={recarregar} />}
     </div>

@@ -1,6 +1,7 @@
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
 import { garantirCategorias, MATERIAIS_PADRAO, sqlBaixo } from '../../lib/estoque';
+import { ensureEstoqueLojas, fonteEstoque, paramsFonte } from '../../lib/estoqueLojas';
 
 // GET /api/estoque/categorias: categorias (abas) com subcategorias e totais
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
@@ -8,14 +9,17 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
   if (auth instanceof Response) return auth;
   try {
     await garantirCategorias(env.DB, auth.tenant_id);
+    const url = new URL(request.url);
+    const lojaQ = auth.perfil !== 'admin' && auth.loja_id ? auth.loja_id : (url.searchParams.get('loja_id') || '');
+    await ensureEstoqueLojas(env.DB);
     const cats = await env.DB.prepare("SELECT id, nome, parent_id, icone, ordem, COALESCE(modo, 'modelo') AS modo, ncm FROM estoque_categorias WHERE tenant_id = ? ORDER BY ordem, nome")
       .bind(auth.tenant_id).all<{ id: string; nome: string; parent_id: string | null; icone: string | null; ordem: number; modo: string; ncm: string | null }>();
     const tot = await env.DB.prepare(
       `SELECT p.categoria_id, p.subcategoria_id, COUNT(*) AS itens, SUM(e.quantidade) AS pecas,
               SUM(CASE WHEN ${sqlBaixo()} THEN 1 ELSE 0 END) AS baixo
-       FROM estoque e JOIN produtos p ON p.id = e.produto_id
+       FROM ${fonteEstoque(lojaQ)} e JOIN produtos p ON p.id = e.produto_id
        WHERE e.tenant_id = ? AND p.ativo = 1 GROUP BY p.categoria_id, p.subcategoria_id`
-    ).bind(auth.tenant_id).all<{ categoria_id: string | null; subcategoria_id: string | null; itens: number; pecas: number; baixo: number }>();
+    ).bind(...paramsFonte(lojaQ), auth.tenant_id).all<{ categoria_id: string | null; subcategoria_id: string | null; itens: number; pecas: number; baixo: number }>();
     const somar = (f: (t: { categoria_id: string | null; subcategoria_id: string | null }) => boolean) =>
       (tot.results || []).filter(f).reduce((a, t) => ({ itens: a.itens + t.itens, pecas: a.pecas + (t.pecas || 0), baixo: a.baixo + (t.baixo || 0) }), { itens: 0, pecas: 0, baixo: 0 });
     const todas = cats.results || [];

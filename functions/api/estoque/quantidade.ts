@@ -1,6 +1,7 @@
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
 import { ensureEstoque, produtoGenerico as produtoGenericoLib, acharGenerico } from '../../lib/estoque';
+import { movimentarEstoque, lojaDoMovimento } from '../../lib/estoqueLojas';
 
 // Modo "por quantidade": cada material da categoria (ex.: Armação Conceito › Metal) é um
 // produto genérico só com quantidade. É ele que a vendedora escolhe na venda (baixa automática)
@@ -18,7 +19,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     await ensureEstoque(env.DB);
     const b = await request.json() as {
       categoria_id?: string; subcategoria_id?: string | null; tipo?: string; quantidade?: number;
-      preco_venda?: number; preco_custo?: number; quantidade_minima?: number; motivo?: string; documento?: string;
+      preco_venda?: number; preco_custo?: number; quantidade_minima?: number; motivo?: string; documento?: string; loja_id?: string;
     };
     if (!b.categoria_id) return json({ error: 'categoria_id obrigatório' }, 400);
     const tipo = b.tipo === 'saida' ? 'saida' : b.tipo === 'ajuste' ? 'ajuste' : 'entrada';
@@ -39,17 +40,11 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     }
     if (!qtd && tipo !== 'ajuste') return json({ ok: true, produto: p });
 
-    const atual = await env.DB.prepare('SELECT quantidade FROM estoque WHERE produto_id = ? AND tenant_id = ?').bind(p.id, auth.tenant_id).first<{ quantidade: number }>();
-    const antes = Number(atual?.quantidade ?? 0);
-    const depois = tipo === 'entrada' ? antes + qtd : tipo === 'saida' ? antes - qtd : qtd;
-    await env.DB.batch([
-      env.DB.prepare("UPDATE estoque SET quantidade = ?, updated_at = datetime('now') WHERE produto_id = ? AND tenant_id = ?").bind(depois, p.id, auth.tenant_id),
-      env.DB.prepare(
-        `INSERT INTO estoque_movimentacoes (id, tenant_id, produto_id, tipo, quantidade, quantidade_anterior, quantidade_nova, motivo, documento, usuario_id)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).bind(crypto.randomUUID(), auth.tenant_id, p.id, tipo, tipo === 'ajuste' ? qtd : qtd, antes, depois,
-        (b.motivo || '').trim() || (tipo === 'entrada' ? 'Entrada' : tipo === 'saida' ? 'Saída manual' : 'Contagem / ajuste'), (b.documento || '').trim() || null, auth.usuario_id),
-    ]);
+    const { antes, depois } = await movimentarEstoque(env.DB, auth.tenant_id, {
+      produtoId: p.id, lojaId: lojaDoMovimento(auth, b.loja_id), tipo, quantidade: qtd, usuarioId: auth.usuario_id,
+      motivo: (b.motivo || '').trim() || (tipo === 'entrada' ? 'Entrada' : tipo === 'saida' ? 'Saída manual' : 'Contagem / ajuste'),
+      documento: (b.documento || '').trim() || null,
+    });
     return json({ ok: true, produto: p, antes, depois });
   } catch (err) {
     return json({ error: 'Erro interno', detail: String(err) }, 500);

@@ -21,6 +21,7 @@ export interface Usuario {
   ativo: boolean;
   permissoes?: { menus?: string[] | null; todas_lojas?: boolean } | null;
   foto?: string | null;
+  loja_id?: string | null;
 }
 
 export interface Cliente {

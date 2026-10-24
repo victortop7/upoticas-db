@@ -1,6 +1,7 @@
 import type { Env } from '../../lib/types';
 import { requireAuth, json } from '../../lib/auth-middleware';
 import { ensureEstoque } from '../../lib/estoque';
+import { movimentarEstoque, lojaDoMovimento, ensureEstoqueLojas } from '../../lib/estoqueLojas';
 
 let jaGarantiu = false;
 export async function ensureCodigoBarras(db: Env['DB']) {
@@ -42,7 +43,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   try {
     await ensureCodigoBarras(env.DB);
     const body = await request.json() as {
-      codigo?: string; tipo?: string; quantidade?: number; motivo?: string;
+      codigo?: string; tipo?: string; quantidade?: number; motivo?: string; loja_id?: string;
       novo?: { descricao?: string; grupo?: string; preco_venda?: number; preco_custo?: number; categoria_id?: string; subcategoria_id?: string };
     };
     const codigo = String(body.codigo || '').trim();
@@ -68,24 +69,18 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       p = { id, codigo, codigo_barras: codigo, descricao: body.novo.descricao.trim(), grupo: body.novo.grupo?.trim() || 'Armações', preco_venda: Number(body.novo.preco_venda) || 0 };
     }
 
-    const atual = await env.DB.prepare('SELECT quantidade FROM estoque WHERE tenant_id = ? AND produto_id = ?')
-      .bind(auth.tenant_id, p.id).first<{ quantidade: number }>();
-    const antes = atual?.quantidade ?? 0;
-    if (tipo === 'saida' && antes < qtd) {
-      return json({ error: `Sem estoque suficiente de "${p.descricao}" (tem ${antes}).`, produto: p, quantidade: antes }, 409);
+    await ensureEstoqueLojas(env.DB);
+    const loja = lojaDoMovimento(auth, body.loja_id);
+    const atual = await env.DB.prepare('SELECT quantidade FROM estoque_lojas WHERE tenant_id = ? AND produto_id = ? AND loja_id = ?')
+      .bind(auth.tenant_id, p.id, loja || '').first<{ quantidade: number }>();
+    const tem = Number(atual?.quantidade ?? 0);
+    if (tipo === 'saida' && tem < qtd) {
+      return json({ error: `Sem estoque suficiente de "${p.descricao}" nesta loja (tem ${tem}).`, produto: p, quantidade: tem }, 409);
     }
-    const depois = tipo === 'entrada' ? antes + qtd : antes - qtd;
-    const stmts = [
-      atual
-        ? env.DB.prepare("UPDATE estoque SET quantidade = ?, updated_at = datetime('now') WHERE tenant_id = ? AND produto_id = ?").bind(depois, auth.tenant_id, p.id)
-        : env.DB.prepare('INSERT INTO estoque (id, tenant_id, produto_id, quantidade, quantidade_minima) VALUES (?, ?, ?, ?, 0)').bind(crypto.randomUUID(), auth.tenant_id, p.id, depois),
-      env.DB.prepare(
-        `INSERT INTO estoque_movimentacoes (id, tenant_id, produto_id, tipo, quantidade, quantidade_anterior, quantidade_nova, motivo, usuario_id)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).bind(crypto.randomUUID(), auth.tenant_id, p.id, tipo, qtd, antes, depois,
-        body.motivo?.trim() || (tipo === 'entrada' ? 'Entrada por leitor' : 'Baixa por leitor'), auth.usuario_id),
-    ];
-    await env.DB.batch(stmts);
+    const { antes, depois } = await movimentarEstoque(env.DB, auth.tenant_id, {
+      produtoId: p.id, lojaId: loja, tipo, quantidade: qtd, usuarioId: auth.usuario_id,
+      motivo: body.motivo?.trim() || (tipo === 'entrada' ? 'Entrada por leitor' : 'Baixa por leitor'),
+    });
     return json({ ok: true, produto: p, tipo, quantidade: qtd, antes, depois });
   } catch (err) {
     return json({ error: 'Erro interno', detail: String(err) }, 500);

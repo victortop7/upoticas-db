@@ -25,6 +25,9 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
     ).bind(auth.usuario_id).first<Record<string, unknown>>();
 
     if (!usuario) return json({ error: 'Usuário não encontrado' }, 404);
+    // loja do usuário (multi-loja): usada nas telas que separam por loja
+    let lojaId: string | null = null;
+    try { lojaId = (await env.DB.prepare('SELECT loja_id FROM usuarios WHERE id = ?').bind(auth.usuario_id).first<{ loja_id: string | null }>())?.loja_id ?? null; } catch { /* sem coluna */ }
 
     return json({
       token: null,
@@ -37,6 +40,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
         ativo: Boolean(usuario.ativo),
         permissoes: lerPermissoes(usuario.permissoes),
         foto: usuario.foto || null,
+        loja_id: lojaId,
       },
       tenant: {
         id: usuario.tenant_id,
