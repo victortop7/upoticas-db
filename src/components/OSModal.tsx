@@ -3,6 +3,7 @@ import { api } from '../lib/api';
 import type { OrdemServico, Cliente } from '../types';
 import ClienteModal from './ClienteModal';
 import Icone from './Icone';
+import { receitaParaOS, type ReceitaCli } from './OSNaVenda';
 
 interface Props {
   os: OrdemServico | null;
@@ -107,6 +108,27 @@ export default function OSModal({ os, onClose, onSaved, clienteInicial }: Props)
       setClientes(res.clientes);
     } catch {}
   }
+
+  // receitas do cliente: na OS nova a mais recente já entra; dá pra trocar
+  const [receitasCli, setReceitasCli] = useState<ReceitaCli[]>([]);
+  const [receitaUsada, setReceitaUsada] = useState('');
+  useEffect(() => {
+    if (os || !form.cliente_id) { setReceitasCli([]); setReceitaUsada(''); return; }
+    let vivo = true;
+    api.get<ReceitaCli[]>(`/clientes/${form.cliente_id}/receitas`).then(rs => {
+      if (!vivo) return;
+      setReceitasCli(rs || []);
+      setReceitaUsada('');
+      if (!rs?.[0]) return;
+      setForm(f => {
+        const temGrau = Object.keys(f).some(k => /^(longe|perto)_/.test(k) && (f as Record<string, string>)[k]);
+        if (temGrau) return f;
+        setReceitaUsada(rs[0].id);
+        return { ...f, ...receitaParaOS(rs[0]) };
+      });
+    }).catch(() => setReceitasCli([]));
+    return () => { vivo = false; };
+  }, [form.cliente_id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function set(field: string, value: string) {
     setForm(f => ({ ...f, [field]: value }));
@@ -293,6 +315,16 @@ export default function OSModal({ os, onClose, onSaved, clienteInicial }: Props)
           <div>
           {/* === RECEITA (GRAU) === */}
           <Section icon="oculos" title="Receita (Grau)">
+            {receitasCli.length > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+                Receita do cliente
+                <select style={{ ...inputStyle, width: 'auto', padding: '4px 8px', fontSize: 12 }} value={receitaUsada}
+                  onChange={e => { const x = receitasCli.find(r => r.id === e.target.value); if (x) { setReceitaUsada(x.id); setForm(f => ({ ...f, ...receitaParaOS(x) })); } }}>
+                  {!receitaUsada && <option value="">Escolher</option>}
+                  {receitasCli.map(x => <option key={x.id} value={x.id}>{x.data.slice(0, 10).split('-').reverse().join('/')}{x.medico ? ` · ${x.medico}` : ''}</option>)}
+                </select>
+              </div>
+            )}
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '400px' }}>
                 <thead>

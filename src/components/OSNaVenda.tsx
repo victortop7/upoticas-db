@@ -18,7 +18,21 @@ const LINHAS = [
   { label: 'Perto OD', p: 'perto_od' }, { label: 'Perto OE', p: 'perto_oe' },
 ];
 
+export interface ReceitaCli { id: string; data: string; origem?: string; od_esf?: string | null; od_cil?: string | null; od_eixo?: string | null; oe_esf?: string | null; oe_cil?: string | null; oe_eixo?: string | null; adicao?: string | null; dp?: string | null; altura?: string | null; medico?: string | null }
+// receita do cadastro do cliente -> campos da OS
+export function receitaParaOS(r: ReceitaCli): OSForm {
+  const v = (x: string | null | undefined) => (x === null || x === undefined ? '' : String(x));
+  return {
+    longe_od_esf: v(r.od_esf), longe_od_cil: v(r.od_cil), longe_od_eixo: v(r.od_eixo),
+    longe_oe_esf: v(r.oe_esf), longe_oe_cil: v(r.oe_cil), longe_oe_eixo: v(r.oe_eixo),
+    adicao: v(r.adicao), dp: v(r.dp), altura: v(r.altura), ...(r.medico ? { medico: r.medico } : {}),
+  };
+}
+
 interface Props {
+  receitas?: ReceitaCli[];
+  receitaUsada?: string;
+  onUsarReceita?: (r: ReceitaCli) => void;
   ativo: boolean;
   onAtivo: (v: boolean) => void;
   value: OSForm;
@@ -27,7 +41,7 @@ interface Props {
   labelStyle: React.CSSProperties;
 }
 
-export default function OSNaVenda({ ativo, onAtivo, value, onChange, inputStyle, labelStyle }: Props) {
+export default function OSNaVenda({ ativo, onAtivo, value, onChange, inputStyle, labelStyle, receitas = [], receitaUsada, onUsarReceita }: Props) {
   const mono: React.CSSProperties = { ...inputStyle, fontFamily: 'var(--mono)', textAlign: 'center', padding: '7px 6px' };
   const v = (k: string) => value[k] ?? '';
   return (
@@ -65,7 +79,17 @@ export default function OSNaVenda({ ativo, onAtivo, value, onChange, inputStyle,
           </div>
 
           <div>
-            <label style={labelStyle}>Receita</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              <label style={{ ...labelStyle, marginBottom: 0 }}>Receita</label>
+              {receitas.length > 0 && (
+                <select style={{ ...inputStyle, width: 'auto', padding: '4px 8px', fontSize: 12 }} value={receitaUsada || ''}
+                  onChange={e => { const r = receitas.find(x => x.id === e.target.value); if (r) onUsarReceita?.(r); }}>
+                  {!receitaUsada && <option value="">Usar receita do cliente</option>}
+                  {receitas.map(r => <option key={r.id} value={r.id}>{r.origem || 'Receita'} de {r.data.slice(0, 10).split('-').reverse().join('/')}</option>)}
+                </select>
+              )}
+            </div>
+            {receitas.length === 0 && <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginBottom: 6 }}>Este cliente ainda não tem receita no cadastro. O que digitar aqui fica na OS.</div>}
             <div style={{ display: 'grid', gridTemplateColumns: '72px repeat(3, minmax(0, 1fr))', gap: 6, alignItems: 'center' }}>
               <span />
               {['Esf', 'Cil', 'Eixo'].map(h => <span key={h} style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'center' }}>{h}</span>)}

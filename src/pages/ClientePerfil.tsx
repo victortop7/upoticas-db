@@ -129,6 +129,7 @@ export default function ClientePerfil() {
   const [opcoes, setOpcoes] = useState<Opcoes>({ regiao: [], localidade: [], bairro: [], cidade: [] });
   const [aba, setAba] = useState<'vendas' | 'crediario' | 'os' | 'receita' | 'historico'>('vendas');
   const [pagVenda, setPagVenda] = useState<string | null>(null);
+  const [receitasNovas, setReceitasNovas] = useState<Record<string, string>[]>([]);
   const { usuario } = useAuth();
   const veHistorico = menusDo(usuario).includes('/clientes/historico');
   const [novaVenda, setNovaVenda] = useState(false);
@@ -176,6 +177,9 @@ export default function ClientePerfil() {
     try {
       if (novo) {
         const r = await api.post<{ id: string }>('/clientes/ficha', form);
+        // receitas lançadas antes de salvar o cadastro
+        for (const rec of receitasNovas) { try { await api.post(`/clientes/${r.id}/receitas`, rec); } catch { /* segue com as outras */ } }
+        setReceitasNovas([]);
         setOriginal(form);
         navigate(`/clientes/${r.id}`, { replace: true });
       } else {
@@ -302,7 +306,7 @@ export default function ClientePerfil() {
         {ferr('ultimo', 'Último', () => navegar('ultimo'))}
         {sep}
         {ferr('mapa', 'Google Maps', () => setMapa(m => !m), { desativado: !enderecoMapa })}
-        {ferr('olho', 'Receitas do cliente (ver, adicionar e editar)', () => irPara('receita'), { desativado: novo })}
+        {ferr('olho', 'Receitas do cliente (ver, adicionar e editar)', () => (novo ? setPainel(x => (x === 'optica' ? '' : 'optica')) : irPara('receita')), { cor: novo && receitasNovas.length ? '#2563eb' : undefined, texto: novo && receitasNovas.length ? String(receitasNovas.length) : undefined })}
         {ferr('receber', 'Contas a receber do cliente', irCrediario, { desativado: novo })}
         {ferr('whatsapp', 'WhatsApp', () => window.open(`https://wa.me/55${wa.replace(/^55/, '')}`, '_blank'), { desativado: !wa || form.nao_receber_msg })}
         {!novo && abertos.length > 0 && ferr('imprimir', 'Ficha de cobrança', () => window.open(`/financeiro/cobranca/imprimir?cliente_id=${id}&situacao=aberto`, '_blank'))}
@@ -342,6 +346,17 @@ export default function ClientePerfil() {
             ['Total comprado', brl(r?.total_comprado || 0)], ['Última compra', r?.ultima_compra ? `${fmtD(r.ultima_compra)} (${haQuanto(r.ultima_compra)})` : '-'],
             ['Vendas', String(r?.qtd_vendas || 0)], ['O.S.', String(p?.os.length || 0)],
           ].map(([k, v]) => <div key={k}><div style={rot}>{k}</div><div style={{ color: 'var(--text)', marginTop: 2, fontFamily: /\d/.test(v) ? 'var(--mono)' : undefined }}>{v}</div></div>)}
+        </div>
+      )}
+
+      {/* Receitas no cadastro novo (gravadas junto ao salvar) */}
+      {painel === 'optica' && novo && (
+        <div style={{ ...card, marginBottom: 10 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px 0' }}>
+            <b style={{ fontSize: 14, color: 'var(--text)' }}>Receitas</b>
+            <button onClick={() => setPainel('')} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><Icone nome="fechar" size={16} /></button>
+          </div>
+          <ReceitasCliente clienteId={null} os={[]} pendentes={receitasNovas} onPendentes={setReceitasNovas} />
         </div>
       )}
 

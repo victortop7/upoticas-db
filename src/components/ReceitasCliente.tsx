@@ -20,14 +20,19 @@ const g = (v: Grau, sinal = true) => {
 const ex = (v: Grau) => (v === null || v === undefined || v === '' ? '-' : `${String(v).replace(/\.0+$/, '')}°`);
 const VAZIA = (): Record<string, string> => ({ data: hoje(), medico: '', observacao: '', ...Object.fromEntries(CAMPOS.map(c => [c, ''])) });
 
-export default function ReceitasCliente({ clienteId, os }: { clienteId: string; os: ReceitaOS[] }) {
+// clienteId vazio = cadastro novo: as receitas ficam em "pendentes" e o pai grava depois de salvar o cliente
+export default function ReceitasCliente({ clienteId, os, pendentes, onPendentes }: { clienteId: string | null; os: ReceitaOS[]; pendentes?: Record<string, string>[]; onPendentes?: (l: Record<string, string>[]) => void }) {
+  const local = !clienteId;
   const [lista, setLista] = useState<Receita[]>([]);
   const [form, setForm] = useState<Record<string, string> | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   const [erro, setErro] = useState('');
   const [salvando, setSalvando] = useState(false);
 
-  const load = useCallback(() => { api.get<Receita[]>(`/clientes/${clienteId}/receitas`).then(setLista).catch(() => setLista([])); }, [clienteId]);
+  const load = useCallback(() => {
+    if (local) { setLista((pendentes || []).map((r, i) => ({ ...r, id: `novo-${i}` }) as unknown as Receita)); return; }
+    api.get<Receita[]>(`/clientes/${clienteId}/receitas`).then(setLista).catch(() => setLista([]));
+  }, [clienteId, local, pendentes]);
   useEffect(() => { load(); }, [load]);
 
   function editar(r: Receita) {
@@ -39,7 +44,12 @@ export default function ReceitasCliente({ clienteId, os }: { clienteId: string; 
     if (!form) return;
     setSalvando(true); setErro('');
     try {
-      if (editId) await api.put(`/clientes/${clienteId}/receitas/${editId}`, form);
+      if (local) {
+        if (!CAMPOS.some(c => String(form[c] ?? '').trim())) throw new Error('Preencha pelo menos um grau');
+        const l = [...(pendentes || [])];
+        if (editId) l[Number(editId.replace('novo-', ''))] = form; else l.push(form);
+        onPendentes?.(l);
+      } else if (editId) await api.put(`/clientes/${clienteId}/receitas/${editId}`, form);
       else await api.post(`/clientes/${clienteId}/receitas`, form);
       setForm(null); setEditId(null); load();
     } catch (err) { setErro(err instanceof Error ? err.message.replace(/\s*\(HTTP \d+\)$/, '') : 'Erro ao salvar'); }
@@ -47,6 +57,7 @@ export default function ReceitasCliente({ clienteId, os }: { clienteId: string; 
   }
   async function excluir(r: Receita) {
     if (!confirm(`Excluir a receita de ${fmtD(r.data)}?`)) return;
+    if (local) { onPendentes?.((pendentes || []).filter((_, i) => `novo-${i}` !== r.id)); return; }
     await api.delete(`/clientes/${clienteId}/receitas/${r.id}`).catch(() => {});
     load();
   }
@@ -66,7 +77,10 @@ export default function ReceitasCliente({ clienteId, os }: { clienteId: string; 
   return (
     <div style={{ padding: 14 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, gap: 10 }}>
-        <span style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>{linhas.length ? `${linhas.length} receita(s), da mais nova para a mais antiga` : 'Nenhuma receita ainda.'}</span>
+        <span style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>
+          {linhas.length ? `${linhas.length} receita(s), da mais nova para a mais antiga` : 'Nenhuma receita ainda.'}
+          {local && linhas.length > 0 && ' · serão gravadas quando você salvar o cliente'}
+        </span>
         {!form && <button className="btn btn-sm btn-prim" onClick={() => { setEditId(null); setForm(VAZIA()); setErro(''); }}><Icone nome="mais" size={14} strokeWidth={2.2} />Nova receita</button>}
       </div>
 

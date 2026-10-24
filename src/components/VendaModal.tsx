@@ -6,7 +6,7 @@ import ClienteModal from './ClienteModal';
 import Icone from './Icone';
 import { ORIGENS } from '../lib/origens';
 import ArmacaoEstoque, { type Escolhido } from './ArmacaoEstoque';
-import OSNaVenda, { OS_VAZIA, type OSForm } from './OSNaVenda';
+import OSNaVenda, { OS_VAZIA, receitaParaOS, type OSForm, type ReceitaCli } from './OSNaVenda';
 
 interface Venda {
   id: string;
@@ -211,6 +211,10 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
   const [confirmar, setConfirmar] = useState<null | 'venda' | 'os'>(null);
   const [osForm, setOsForm] = useState<OSForm>(OS_VAZIA);
   const setOs = (k: string, val: string) => setOsForm(f => ({ ...f, [k]: val }));
+  // receitas do cliente escolhido: a mais recente já entra na OS
+  const [receitasCli, setReceitasCli] = useState<ReceitaCli[]>([]);
+  const [receitaUsada, setReceitaUsada] = useState('');
+  function usarReceita(r: ReceitaCli) { setReceitaUsada(r.id); setOsForm(f => ({ ...f, ...receitaParaOS(r) })); }
 
   useEffect(() => {
     if (!venda && clienteInicial) {
@@ -422,6 +426,31 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
 
   const clienteSelecionado = clientes.find(c => c.id === form.cliente_id);
 
+  useEffect(() => {
+    if (venda || isMarketing || !form.cliente_id) { setReceitasCli([]); setReceitaUsada(''); return; }
+    let vivo = true;
+    api.get<ReceitaCli[]>(`/clientes/${form.cliente_id}/receitas`).then(lista => {
+      if (!vivo) return;
+      let rs = lista || [];
+      // cliente antigo: receita só no cadastro (rec_*)
+      const c = clientes.find(x => x.id === form.cliente_id) as unknown as Record<string, string | null> | undefined;
+      if (!rs.length && c && [c.rec_od_esf, c.rec_oe_esf, c.rec_od_cil, c.rec_oe_cil, c.rec_adicao].some(Boolean)) {
+        rs = [{ id: 'cadastro', origem: 'Cadastro', data: String(c.updated_at || c.created_at || '').slice(0, 10) || new Date().toISOString().slice(0, 10),
+          od_esf: c.rec_od_esf, od_cil: c.rec_od_cil, od_eixo: c.rec_od_eixo, oe_esf: c.rec_oe_esf, oe_cil: c.rec_oe_cil, oe_eixo: c.rec_oe_eixo, adicao: c.rec_adicao, dp: c.rec_dp }];
+      }
+      setReceitasCli(rs);
+      setReceitaUsada('');
+      // só preenche sozinho se a OS ainda está sem graus (não apaga o que já digitaram)
+      setOsForm(f => {
+        const temGrau = Object.keys(f).some(k => /^(longe|perto)_/.test(k) && f[k]);
+        if (temGrau || !rs[0]) return f;
+        setReceitaUsada(rs[0].id);
+        return { ...f, ...receitaParaOS(rs[0]) };
+      });
+    }).catch(() => setReceitasCli([]));
+    return () => { vivo = false; };
+  }, [form.cliente_id]); // eslint-disable-line react-hooks/exhaustive-deps
+
   async function handleClienteCadastrado() {
     setNovoClienteOpen(false);
     // Recarrega lista e tenta selecionar o mais recente
@@ -495,7 +524,7 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
             </button>
             <button type="button" className={'aba-linha' + (abaModal === 'os' ? ' on' : '')} onClick={() => setAbaModal('os')}>
               <Icone nome="os" size={15} />Ordem de serviço
-              <span className="aba-n" style={gerarOS ? { color: 'var(--primary)' } : undefined}>{gerarOS ? 'gerar' : 'sem OS'}</span>
+              <span className="aba-n" style={gerarOS ? { color: 'var(--primary)' } : undefined}>{gerarOS ? (receitaUsada ? 'receita do cadastro' : 'gerar') : 'sem OS'}</span>
             </button>
           </div>
         )}
@@ -898,7 +927,8 @@ export default function VendaModal({ venda, onClose, onSaved, clienteInicial }: 
           </div>
 
           {temAbaOS && abaModal === 'os' && (
-            <OSNaVenda ativo={gerarOS} onAtivo={setGerarOS} value={osForm} onChange={setOs} inputStyle={inputStyle} labelStyle={labelStyle} />
+            <OSNaVenda ativo={gerarOS} onAtivo={setGerarOS} value={osForm} onChange={setOs} inputStyle={inputStyle} labelStyle={labelStyle}
+              receitas={receitasCli} receitaUsada={receitaUsada} onUsarReceita={usarReceita} />
           )}
           {venda?.os_id && (
             <div style={{ fontSize: 12.5, color: 'var(--text-muted)', marginTop: 4 }}>
